@@ -10,7 +10,7 @@ argument-hint: "[--work-card <업무 로그 페이지 URL>] [--dry-run]"
 
 **쓰는 것은 후보 목록이지 글이 아니다.** 초안을 쓰는 것은 `/blog-draft`, 같이 쓰는 것은 `/blog-mentor` 몫이다. 여기서는 제목 후보와 "왜 쓸 만한가" 한 줄까지만 간다.
 
-## 저장소 — 노션 개인 업무 로그 (guesung, `notion-home` MCP)
+## 저장소 — 노션 개인 업무 로그 (guesung, [Notion 접근 규칙](../../notion-access.md))
 
 **시작 전에 [notion-databases.md](~/.agents/docs/notion-databases.md#개인-업무-로그)를 읽는다.** data source ID · `블로그 소재`(rich_text) 규칙 · 본문 골격과 **[AI 작성 경계](~/.agents/docs/notion-databases.md#ai-작성-경계)**가 거기 있다.
 
@@ -78,7 +78,7 @@ URL을 확보했으면 [orca-worktree.md](../../orca-worktree.md)의 절차대�
 | | 조건 | 남기는 것 |
 |---|---|---|
 | A | 작업카드 URL을 못 정함 | 뽑은 소재를 콘솔에 그대로 내고 끝낸다. **짐작한 카드에 쓰지 않는다** |
-| B | 노션 접근 실패 (개인 DB는 `notion-home`) | 소재 전문과 에러. 사람이 손으로 옮길 수 있게 |
+| B | 노션 접근 실패 (선택한 개인 Notion 연결) | 소재 전문과 에러. 사람이 손으로 옮길 수 있게 |
 
 ## 하지 않는 것
 

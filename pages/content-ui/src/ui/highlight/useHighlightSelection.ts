@@ -257,9 +257,19 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 		setIsMenuOpen(!isMenuOpen);
 	};
 	const handleBubbleCloseClick = () => {
+		const wasIntroVisible =
+			selectionState &&
+			isIntroPending &&
+			!isMenuOpen &&
+			!editState &&
+			!disabledNoticePosition &&
+			!panelOpenErrorPosition;
 		controllerRef.current?.dismissSelection();
 		setIsMenuOpen(false);
 		setMenuError("");
+		if (wasIntroVisible) {
+			void markIntroSeen();
+		}
 		analytics.trackEvent({ name: "highlight_bubble_dismiss" });
 	};
 	const handleMenuDismiss = () => {

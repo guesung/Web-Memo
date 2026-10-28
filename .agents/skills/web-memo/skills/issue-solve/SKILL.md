@@ -23,7 +23,7 @@ notion-orca (시작 단계=이슈 해결) → 카드 생성, `# 인간 작성`�
 
 ## 노션 접근
 
-시작 전에 [notion-databases.md](~/.agents/docs/notion-databases.md#개인-업무-로그)를 읽는다. `notion-home` MCP로만 접근한다.
+시작 전에 [notion-databases.md](~/.agents/docs/notion-databases.md#개인-업무-로그)를 읽는다. 접근 도구는 [Notion 접근 규칙](../../notion-access.md)을 따른다.
 
 **본문은 `# AI 작성` 아래만 고친다.** `# 인간 작성` 아래는 읽기만 한다 — [AI 작성 경계](~/.agents/docs/notion-databases.md#ai-작성-경계).
 

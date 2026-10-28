@@ -41,7 +41,7 @@ argument-hint: '<개인 업무 로그 페이지 URL | 설계서 파일 경로> [
 
 ## 노션 접근
 
-개인 업무 로그 페이지를 읽고 쓴다. **식별자·속성·본문 골격은 [notion-databases.md](~/.agents/docs/notion-databases.md#개인-업무-로그)를 따른다.** `notion-home` MCP로만 접근한다.
+개인 업무 로그 페이지를 읽고 쓴다. **식별자·속성·본문 골격은 [notion-databases.md](~/.agents/docs/notion-databases.md#개인-업무-로그)를 따른다.** 접근 도구는 [Notion 접근 규칙](../../notion-access.md)을 따른다.
 
 **본문은 `# AI 작성` 아래만 고친다.** `# 인간 작성` 아래는 읽기만 하고, 섹션도 그 H1 아래에서 찾는다 — [AI 작성 경계](~/.agents/docs/notion-databases.md#ai-작성-경계).
 
@@ -146,7 +146,7 @@ argument-hint: '<개인 업무 로그 페이지 URL | 설계서 파일 경로> [
 
 ## 마무리 — 개인 작업 페이지 갱신
 
-`notion-home` MCP(`API-patch-page`, `API-patch-block-children`)로:
+[Notion 접근 규칙](../../notion-access.md)에 따라 페이지 속성과 본문을 갱신한다:
 
 - `## TDL` 전부 체크. 속성 `TODO`는 비움
 - `## 해결한 문제`는 여기서 채우지 않는다 — 마지막 출력 뒤 ④에서 승인받은 기록만 채운다
@@ -208,14 +208,14 @@ AI가 정한 것 (n건 · 되돌리는 비용 순):   ← 없으면 "AI가 정�
 |---|---|---|
 | B | 설계서 미확정 (§0-4) — 확정 도장 없음 · `TBD` 잔존 | 무엇이 걸렸는지. **`/web-memo:design <페이지 URL>`(또는 `/web-memo:discuss`) 먼저** |
 | D | 타입체크·빌드 FAIL 2회 연속, `/web-memo:implement` ①-c E2E FAIL 2회 연속, 또는 QA FAIL 2회 연속 | 에러 로그 · FAIL 항목(spec) |
-| E | 노션 페이지 접근 실패 (개인 DB는 `notion-home`) | URL, 에러 |
+| E | 노션 페이지 접근 실패 (선택한 개인 Notion 연결) | URL, 에러 |
 | F | 대상 레포가 cashwalk 안 (§0-2) — 회사 작업 | 레포 경로와 `/nudge:implement-loop` 안내 한 줄 |
 
 ## 하지 않는 것
 
 - 설계서를 바꾸지 않는다. 설계가 틀렸다고 판단되면 `논의 필요`에 적고 설계서대로 구현한다.
 - **마지막 출력까지는 사람에게 아무것도 묻지 않는다.** `AskUserQuestion`을 부르지 않고, 하위 스킬(`/web-memo:implement`·`/web-memo:self-qa`)도 묻지 않는다. 예외는 마지막 출력 뒤의 ④ `/common:problem-log` 승인 하나다 — PR까지 다 나간 뒤라 루프를 멈추지 않는다. 검토는 `/web-memo:design` ⑥(또는 `/web-memo:discuss` 확정)에서 끝났고, 사후 검토는 마지막 보고의 `AI가 정한 것`으로 한다.
-- 권한·시크릿이 필요하다고 사람에게 되묻지 않는다. `vercel`·`aside-browser`·`notion-home` MCP로 직접 뚫고, 막히면 그 항목만 건너뛰고 보고한다.
+- 권한·시크릿이 필요하다고 사람에게 되묻지 않는다. `vercel`·`aside-browser`·[Notion 접근 규칙](../../notion-access.md)의 도구로 직접 확인하고, 막히면 그 항목만 건너뛰고 보고한다.
 - 배포가 실패했다고 PR을 감추지 않는다. 올리고 사유를 적는다.
 - 구현을 직접 하지 않는다. 에이전트 라우팅·커밋 단위·아키텍처 문서 규칙은 `/web-memo:implement`가 SSOT다. 여기에 다시 적으면 두 경로가 갈라진다.
 - develop 브랜치를 만들지 않는다. 없으면 머지를 건너뛴다.

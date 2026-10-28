@@ -111,7 +111,7 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 			"2",
 		);
 	});
-	test("자동 재생은 hover와 focus 동안 멈추고 벗어나면 이어진다", async ({
+	test("마우스를 올려도 진행하고 focus 동안 멈췄다가 이어진다", async ({
 		page,
 	}) => {
 		await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -126,10 +126,8 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 		await page.mouse.move(0, 0);
 		await expect(scene).toHaveAttribute("data-stage", "1", { timeout: 5000 });
 		await demo.hover();
-		await page.waitForTimeout(2100);
-		await expect(scene).toHaveAttribute("data-stage", "1");
-		await page.mouse.move(0, 0);
 		await expect(scene).toHaveAttribute("data-stage", "2", { timeout: 4000 });
+		await page.mouse.move(0, 0);
 		await demo.getByRole("button", { name: "패널 열기" }).focus();
 		await page.waitForTimeout(3100);
 		await expect(scene).toHaveAttribute("data-stage", "2");
@@ -203,7 +201,7 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 				{ action: "pause", stage: "saved" },
 			]);
 	});
-	test("메모 타이핑은 hover와 focus 동안 현재 분량을 보존하고 재개한다", async ({
+	test("메모 타이핑은 hover 중 계속되고 focus 동안 현재 분량을 보존한다", async ({
 		page,
 	}) => {
 		await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -223,11 +221,13 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 		await expect
 			.poll(async () => (await memo.textContent())?.length ?? 0)
 			.toBeGreaterThan(5);
+		const beforeHoverLength = (await memo.textContent())?.length ?? 0;
 		await demo.hover();
-		const pausedText = await memo.textContent();
-		await page.waitForTimeout(500);
-		await expect(memo).toHaveText(pausedText ?? "");
+		await expect
+			.poll(async () => (await memo.textContent())?.length ?? 0)
+			.toBeGreaterThan(beforeHoverLength);
 		await writeStep.focus();
+		const pausedText = await memo.textContent();
 		await page.mouse.move(0, 0);
 		await page.waitForTimeout(500);
 		await expect(memo).toHaveText(pausedText ?? "");

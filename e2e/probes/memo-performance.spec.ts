@@ -158,6 +158,16 @@ const extended: Scenario[] = [
 		view: "list",
 		profile: "normal",
 	},
+	...[200, 2000].map(
+		(size): Scenario => ({
+			name: `all_load_more_${size}`,
+			route: "all",
+			action: "load_more",
+			size,
+			view: "list",
+			profile: "normal",
+		}),
+	),
 	{
 		name: "all_cache_20",
 		route: "all",
@@ -314,6 +324,8 @@ for (const scenario of selected) {
 			context,
 			browser,
 		}) => {
+			if (scenario.action === "load_more" && scenario.size > PAGE_SIZE + 1)
+				test.setTimeout(180_000);
 			test.info().annotations.push({
 				type: "memo-performance-stage",
 				description: "seed",
@@ -553,16 +565,52 @@ for (const scenario of selected) {
 					case "load_more":
 					case "next_error": {
 						const triggerStart = performance.now();
-						await page
-							.getByRole("button", { name: "Load more" })
-							.scrollIntoViewIfNeeded();
-						await expect
-							.poll(() => nextMemoStart, { timeout: BUDGET_MS })
-							.not.toBeNull();
-						triggerWait = Math.round(
-							(nextMemoStart ?? triggerStart) - triggerStart,
-						);
-						start = nextMemoStart ?? triggerStart;
+						if (
+							scenario.action === "load_more" &&
+							scenario.size > PAGE_SIZE + 1
+						) {
+							let loaded = PAGE_SIZE;
+							while (loaded < scenario.size) {
+								const previousRequests = memoCount;
+								const loadMore = page.getByRole("button", {
+									name: "Load more",
+								});
+								await loadMore.scrollIntoViewIfNeeded();
+								try {
+									await expect
+										.poll(() => memoCount, { timeout: 1_000 })
+										.toBeGreaterThan(previousRequests);
+								} catch {
+									if (
+										memoCount === previousRequests &&
+										(await loadMore.isEnabled())
+									)
+										await loadMore.click();
+								}
+								await expect
+									.poll(() => memoCount, { timeout: BUDGET_MS })
+									.toBeGreaterThan(previousRequests);
+								if (loaded === PAGE_SIZE) {
+									triggerWait = Math.round(
+										(nextMemoStart ?? triggerStart) - triggerStart,
+									);
+									start = nextMemoStart ?? triggerStart;
+								}
+								loaded = Math.min(loaded + PAGE_SIZE, scenario.size);
+								await ready(page, loaded, "list", generation, () => generation);
+							}
+						} else {
+							await page
+								.getByRole("button", { name: "Load more" })
+								.scrollIntoViewIfNeeded();
+							await expect
+								.poll(() => nextMemoStart, { timeout: BUDGET_MS })
+								.not.toBeNull();
+							triggerWait = Math.round(
+								(nextMemoStart ?? triggerStart) - triggerStart,
+							);
+							start = nextMemoStart ?? triggerStart;
+						}
 						expected = scenario.size;
 						break;
 					}

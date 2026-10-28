@@ -58,6 +58,18 @@ MEMO_PERF_REUSE_PREVIEW=1 MEMO_PERF_SCENARIOS=all_hard_20 MEMO_PERF_REPETITIONS=
 MEMO_PERF_REUSE_PREVIEW=1 MEMO_PERF_SCENARIOS=all_hard_0,all_search_20,all_load_more_21,all_next_error_21,all_rapid_20,all_timeout_20 \
   pnpm -F e2e exec playwright test -c playwright.memo-performance.config.ts
 
+# 200/2000개 데이터의 첫 화면 20개 표시: 각 30회
+MEMO_PERF_REUSE_PREVIEW=1 MEMO_PERF_SCENARIOS=all_hard_200,all_hard_2000 MEMO_PERF_REPETITIONS=30 \
+  pnpm -F e2e exec playwright test -c playwright.memo-performance.config.ts
+
+# 200개를 끝까지 누적 표시하는 list 스트레스 측정: 3회
+MEMO_PERF_REUSE_PREVIEW=1 MEMO_PERF_SCENARIOS=all_load_more_200 MEMO_PERF_REPETITIONS=3 \
+  pnpm -F e2e exec playwright test -c playwright.memo-performance.config.ts
+
+# 2000개 누적 표시: 우선 1회, 테스트 제한 180초
+MEMO_PERF_REUSE_PREVIEW=1 MEMO_PERF_SCENARIOS=all_load_more_2000 \
+  pnpm -F e2e exec playwright test -c playwright.memo-performance.config.ts
+
 # 통계·허용 필드 출력 계약 검증
 pnpm exec vitest run e2e/probes/memo-performance/statistics.test.ts
 ```
@@ -72,6 +84,7 @@ pnpm exec vitest run e2e/probes/memo-performance/statistics.test.ts
 - normal은 제한 없음, slow는 latency 150ms·download 200000 bytes/s·upload 93750 bytes/s·CPU throttle 1입니다. 응답 delay 1500ms 실험과 실제 네트워크 제한을 혼동하지 않습니다.
 - 합성 0/20/21/200/2000건, 짧은/긴 본문, grid/list/domain, 정상/빈/오류/연속 입력/30초 타임아웃을 선택해 실행합니다. 전체 조합을 무조건 곱하지 않습니다.
 - 검색은 마지막 입력 직전, 필터/라우트 이동은 사용자 조작 직전, 추가 로딩은 다음 페이지 실제 요청 시작을 측정 시작점으로 삼습니다. 추가 로딩 트리거 대기는 요청 시간과 분리합니다.
+- `all_load_more_200/2000`은 첫 20개가 준비된 뒤 20개씩 추가 조회하며, 매번 DOM 개수와 배치 안정을 확인합니다. 첫 추가 요청 시작부터 목표 개수 전체의 배치 안정까지 측정하므로 중간 스크롤·트리거·검증 시간도 포함합니다. 순수 렌더 시간이나 한 페이지 응답 시간이 아닙니다. 트리거는 버튼으로 스크롤한 뒤 1초 내 요청이 없으면 클릭하며, 각 테스트 제한은 180초입니다. n=3 결과에는 백분위를 내지 않습니다.
 - 최신 조건에 맞는 결과를 확인합니다. 이전 검색의 늦은 응답은 최신 검색 성공으로 집계하지 않습니다. 캐시로 이미 표시된 결과는 요청이 없어도 유효합니다.
 - 정상 빈 결과는 `empty`, 첫/추가 페이지 응답 오류는 `error`, 다른 조작으로 대체된 논리 동작은 `cancelled`, 30초 예산 소진은 `timeout`입니다. cancelled를 실제 HTTP abort로 표현하지 않습니다.
 - 인증·빌드 준비 실패는 `blocked`입니다. 로그인 시간을 목록 표시 시간으로 계산하거나 인증 우회를 넣지 않습니다.
@@ -118,6 +131,24 @@ pnpm exec vitest run e2e/probes/memo-performance/statistics.test.ts
 위 실행은 `MEMO_PERF_SCENARIOS=all_hard_20 MEMO_PERF_REPETITIONS=30` 명령이며 로그인 setup을 포함해 31/31 PASS였습니다. p95는 n=30의 참고치이며 운영 목표로 쓰지 않습니다. 이 결과만으로 DB 병목·실사용 체감·성능 개선율을 확정하지 않습니다. 운영 표본 부재와 실제 DB 비용 미측정 때문에 서비스 최적화 목표는 정하지 않았습니다.
 
 로컬 원본은 git 제외 경로 `e2e/.memo-performance/baseline.json`에 보존했습니다. 조건별 표본을 합치지 않았으며 이 실행은 한 cell, success 지연 n=30입니다. 실제 최적화 후보를 만들면 같은 조건으로 기준선과 교차 실행해 비교합니다. 이번에는 제품 최적화를 적용하지 않아 전후 개선 수치는 없습니다.
+
+### 데이터량 확장 측정 — 2026-10-28
+
+동일 production build를 전용 포트 3116에서 실행했습니다. 다른 작업의 3000번 서버는 재사용하지 않았습니다. 초기 화면은 grid, 전체 누적은 list이므로 두 지표를 직접 비교하지 않습니다. 첫 화면의 20건 기준선은 별도 실행이며 크기별 실행은 교차 배치하지 않았습니다.
+
+| 합성 데이터 총량 | 실제 표시 대상 | 표본 | 결과 |
+| --- | --- | --- | --- |
+| 20개 | 첫 20개 | success 30 | p75 1176ms · 참고 p95 1239ms |
+| 200개 | 첫 20개 | success 30 | p75 1175ms · 참고 p95 1238ms |
+| 2000개 | 첫 20개 | success 30 | p75 1141ms · 참고 p95 1183ms |
+| 200개 | list 전체 200개 | success 3 | 3811 / 3702 / 3762ms, 백분위 미산출 |
+| 2000개 | list 전체 2000개 시도 | timeout 1 | 180초 제한 실행에서 178312ms 후 timeout 기록, 전체 표시 완료 미확인 |
+
+첫 화면은 크기별 error/cancelled/timeout 0, 확장 실행은 setup 포함 61/61 PASS입니다. 200개 누적은 각 9번의 추가 목록 요청과 68번의 보조 요청을 관측했습니다. 2000개 누적에서는 추가 목록 요청 76번·보조 요청 3011번을 관측했으며, 최종 DOM 개수는 보고서에 저장하지 않아 완료 개수를 역산하지 않습니다. 이 실패의 세부 사유는 안전 보고서에 `unexpected_result`로 분류됐으므로 실제 HTTP timeout이나 특정 렌더 병목으로 확정하지 않습니다.
+
+기존 21개 추가 로딩은 성공(109ms)했고, 200개 누적 예비 실행도 성공(3868ms)했습니다. 반복 도중 다른 검증을 실행한 200개 표본 3개(3752/4216/3777ms)는 위 최종 표본과 합치지 않았습니다. 첫 로그인 준비 실패 1건도 속도 표본에서 제외했습니다. 통계 단위 7 tests·E2E 타입 검사·변경 파일 Biome·diff 검사 통과. 2000개 누적 시나리오 1건은 실패 상태로 남습니다.
+
+로컬 원본은 `e2e/.memo-performance/`의 `manual-baseline-latest.json`, `manual-large-first-page.json`, `manual-large-cumulative-200.json`, `manual-large-cumulative-smoke.json`에 보존했습니다. 큰 데이터 실험은 `1c03ff4f1` 위에 누적 시나리오를 추가한 작업 트리에서 실행했습니다. 목의 필터·페이지 응답을 사용하므로 운영 DB에 2000개가 있을 때의 조회 성능은 미측정이며, 작은 표본 차이를 개선율로 해석하지 않습니다.
 
 ### 회귀·경계 검증
 

@@ -2,29 +2,72 @@
 import { describe, expect, it } from "vitest";
 import { summarizeClaudeExecution } from "./claude-diagnostics.mjs";
 
+const failure = (result: string) => [
+	{ type: "result", is_error: true, result },
+];
+
 describe("Claude 실패 진단", () => {
-	it("실패 결과와 사용량 제한 원인을 보존한다", () => {
-		const result = summarizeClaudeExecution([{ type: "result", subtype: "success", is_error: true, result: "You've hit your limit · resets 3pm (UTC)", num_turns: 1 }]);
-		expect(result).toEqual({ subtype: "success", isError: true, turns: 1, message: "You've hit your limit · resets 3pm (UTC)" });
+	it("실제 주간 한도 오류와 UTC 초기화 시각을 분류한다", () => {
+		expect(
+			summarizeClaudeExecution(
+				failure("You've hit your weekly limit · resets 2pm (UTC)"),
+			),
+		).toEqual({
+			isError: true,
+			message: "Claude weekly usage limit reached; resets 2pm (UTC)",
+		});
 	});
 
-	it("프롬프트와 도구 출력은 포함하지 않는다", () => {
-		const result = summarizeClaudeExecution([{ type: "user", message: "private prompt" }, { type: "assistant", message: { content: [{ type: "text", text: "private source" }] } }, { type: "result", subtype: "success", is_error: true, errors: ["API Error: 401 unauthorized"] }]);
-		expect(result.message).toBe("API Error: 401 unauthorized");
-		expect(JSON.stringify(result)).not.toContain("private");
+	it.each([
+		["You've hit your limit", "Claude usage limit reached"],
+		["API Error: 401 unauthorized", "Claude authentication failed"],
+		["429 too many requests", "Claude rate limit reached"],
+		["API overloaded 529", "Claude service unavailable"],
+	])("%s를 원문 없이 분류한다", (input, message) => {
+		expect(summarizeClaudeExecution(failure(input)).message).toBe(message);
 	});
 
-	it("오류에 섞인 시크릿과 토큰은 가린다", () => {
-		const result = summarizeClaudeExecution([{ type: "result", is_error: true, result: "failed secret-value sk-ant-oat01-abc123 gho_abcdef" }], ["secret-value"]);
-		expect(result.message).not.toMatch(/secret-value|sk-ant-oat01-abc123|gho_abcdef/);
+	it("프롬프트·도구 출력·임의 오류 원문·메타데이터는 출력하지 않는다", () => {
+		const result = summarizeClaudeExecution([
+			{ type: "user", message: "private prompt" },
+			{ type: "assistant", message: "private source" },
+			{
+				type: "result",
+				is_error: true,
+				subtype: "private metadata",
+				result: "unknown secret-value sk-ant-oat01-abc123 gho_abcdef",
+			},
+		]);
+		expect(result).toEqual({
+			isError: true,
+			message: "Claude error unclassified; raw response omitted",
+		});
 	});
 
-	it("마지막 결과만 사용하고 길이를 제한한다", () => {
-		const result = summarizeClaudeExecution([{ type: "result", result: "earlier" }, { type: "result", is_error: true, result: "x".repeat(10000) }]);
-		expect(result.message.length).toBeLessThanOrEqual(2000);
+	it("인증 오류에 섞인 자격 증명도 출력하지 않는다", () => {
+		expect(
+			summarizeClaudeExecution(
+				failure("401 unauthorized Bearer unknown-format-secret"),
+			).message,
+		).toBe("Claude authentication failed");
 	});
 
-	it("결과가 없으면 진단 불가를 명시한다", () => {
-		expect(summarizeClaudeExecution([]).message).toBe("Claude result unavailable");
+	it("errors 배열에서도 원문 없이 오류를 분류한다", () => {
+		expect(
+			summarizeClaudeExecution([
+				{ type: "result", errors: ["401 unauthorized"] },
+			]).message,
+		).toBe("Claude authentication failed");
+	});
+
+	it("정상 응답과 결과 없는 실행은 원문을 출력하지 않는다", () => {
+		expect(
+			summarizeClaudeExecution([
+				{ type: "result", is_error: false, result: "private response" },
+			]).message,
+		).toBe("Claude error unclassified; raw response omitted");
+		expect(summarizeClaudeExecution([]).message).toBe(
+			"Claude result unavailable",
+		);
 	});
 });

@@ -2,6 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { cn } from "@web-memo/ui";
 import { useReducedMotion } from "framer-motion";
 import {
@@ -63,6 +64,10 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 		setPlaying(false);
 		elapsedRef.current = 0;
 		if (progressRef.current) progressRef.current.style.width = "0%";
+		void analytics.trackEvent({
+			name: "introduce_demo_control",
+			params: { action: "select_step", stage: STAGES[index] },
+		});
 	};
 
 	useEffect(() => {
@@ -123,6 +128,15 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 			lastFrameRef.current = null;
 		};
 	}, [autoRunning, tick]);
+
+	const togglePlayback = () => {
+		const action = playing ? "pause" : "play";
+		setPlaying(!playing);
+		void analytics.trackEvent({
+			name: "introduce_demo_control",
+			params: { action, stage: STAGES[stageRef.current] },
+		});
+	};
 
 	const onBlur = (event: FocusEvent<HTMLElement>) => {
 		if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
@@ -328,7 +342,7 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 							aria-label={t(
 								`introduce.demo.flow.${playing ? "pause" : "play"}`,
 							)}
-							onClick={() => setPlaying((value) => !value)}
+							onClick={togglePlayback}
 							className="inline-flex min-h-9 items-center gap-2 rounded-full border border-border px-3 text-xs text-foreground hover:bg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-50"
 						>
 							{playing ? (

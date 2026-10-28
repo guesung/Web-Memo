@@ -138,4 +138,69 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 			.evaluate((button: HTMLElement) => button.blur());
 		await expect(scene).toHaveAttribute("data-stage", "3", { timeout: 4000 });
 	});
+	test("수동 단계 선택과 재생·정지만 데모 조작 이벤트로 기록한다", async ({
+		page,
+	}) => {
+		const loggedEvents: Array<Promise<{ action: string; stage: string }>> = [];
+		page.on("console", (message) => {
+			if (message.text().startsWith("[analytics] introduce_demo_control")) {
+				loggedEvents.push(
+					message
+						.args()[1]
+						.jsonValue()
+						.then((params: { action: string; stage: string }) => ({
+							action: params.action,
+							stage: params.stage,
+						})),
+				);
+			}
+		});
+		await page.addInitScript(() => {
+			const events: Array<{ action: string; stage: string }> = [];
+			Object.defineProperty(window, "__demoControlEvents", { value: events });
+			const capture = (
+				command: string,
+				name: string,
+				params: { action?: string; stage?: string },
+			) => {
+				if (command === "event" && name === "introduce_demo_control") {
+					events.push({
+						action: params.action ?? "",
+						stage: params.stage ?? "",
+					});
+				}
+			};
+			Object.defineProperty(window, "gtag", {
+				configurable: true,
+				get: () => capture,
+				set: () => undefined,
+			});
+		});
+		await page.emulateMedia({ reducedMotion: "no-preference" });
+		await page.goto(`/ko${PATHS.introduce}`);
+		const demo = page.locator("#demo");
+		await demo.getByRole("button", { name: "저장 완료" }).click();
+		await demo.getByRole("button", { name: "저장 완료" }).click();
+		await demo.getByRole("button", { name: "재생" }).click();
+		await demo.getByRole("button", { name: "정지" }).click();
+		await expect
+			.poll(async () => {
+				const consoleEvents = await Promise.all(loggedEvents);
+				if (consoleEvents.length > 0) return consoleEvents;
+				return page.evaluate(
+					() =>
+						(
+							window as Window & {
+								__demoControlEvents?: Array<{ action: string; stage: string }>;
+							}
+						).__demoControlEvents,
+				);
+			})
+			.toEqual([
+				{ action: "select_step", stage: "saved" },
+				{ action: "select_step", stage: "saved" },
+				{ action: "play", stage: "saved" },
+				{ action: "pause", stage: "saved" },
+			]);
+	});
 });

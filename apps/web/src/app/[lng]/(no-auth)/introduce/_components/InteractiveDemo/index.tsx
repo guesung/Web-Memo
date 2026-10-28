@@ -43,7 +43,6 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 	const reducedMotion = useReducedMotion();
 	const [stage, setStage] = useState(0);
 	const [playing, setPlaying] = useState(false);
-	const [hovered, setHovered] = useState(false);
 	const [focused, setFocused] = useState(false);
 	const [visible, setVisible] = useState(false);
 	const [pageVisible, setPageVisible] = useState(true);
@@ -56,7 +55,7 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 	const stageRef = useRef(stage);
 	const memoText = t("introduce.demo.flow.memo_text");
 	const autoRunning =
-		playing && !reducedMotion && !hovered && !focused && visible && pageVisible;
+		playing && !reducedMotion && !focused && visible && pageVisible;
 	let visibleMemoText = memoText;
 	if (stage < 3) {
 		visibleMemoText = t("introduce.demo.flow.memo_placeholder");
@@ -157,8 +156,6 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 			<section
 				aria-label={t("introduce.section.demo")}
 				className="overflow-hidden rounded-3xl border border-border bg-card"
-				onMouseEnter={() => setHovered(true)}
-				onMouseLeave={() => setHovered(false)}
 				onFocusCapture={() => setFocused(true)}
 				onBlurCapture={onBlur}
 			>

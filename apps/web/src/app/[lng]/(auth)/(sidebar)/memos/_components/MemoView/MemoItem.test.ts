@@ -84,10 +84,7 @@ describe("메모 목록 미리보기", () => {
 		(truncateMemoContent) => {
 			const html = renderMemo({
 				truncateMemoContent,
-				highlights: [
-					{ id: 1, exact_text: "첫 번째 인용문", color: "yellow" },
-					{ id: 2, exact_text: "두 번째 인용문", color: "yellow" },
-				] as Parameters<typeof MemoItem>[0]["highlights"],
+				highlightCount: 2,
 			});
 
 			expect(html).toContain("작성한 본문");
@@ -99,10 +96,10 @@ describe("메모 목록 미리보기", () => {
 			expect(html).toContain("memoSection.highlightCount:2");
 		},
 	);
-	it.each([undefined, []])(
+	it.each([undefined, 0])(
 		"하이라이트가 없거나 로딩 중이면 개수 영역을 만들지 않는다",
-		(highlights) => {
-			expect(renderMemo({ highlights })).not.toContain(
+		(highlightCount) => {
+			expect(renderMemo({ highlightCount })).not.toContain(
 				"memoSection.highlightCount",
 			);
 		},
@@ -110,9 +107,7 @@ describe("메모 목록 미리보기", () => {
 	it("휴지통에서는 본문과 보조 내용을 제한하지 않고 하이라이트를 숨긴다", () => {
 		const html = renderMemo({
 			isReadOnly: true,
-			highlights: [
-				{ id: 1, exact_text: "인용문", color: "yellow" },
-			] as Parameters<typeof MemoItem>[0]["highlights"],
+			highlightCount: 1,
 		});
 		expect(html).not.toContain("line-clamp");
 		expect(html).toContain("작성한 본문");
@@ -124,9 +119,7 @@ describe("메모 목록 미리보기", () => {
 	it("휴지통 커스텀 푸터를 전달하면 기본 푸터와 하이라이트 개수를 렌더링하지 않는다", () => {
 		const html = renderMemo({
 			isReadOnly: true,
-			highlights: [
-				{ id: 1, exact_text: "인용문", color: "yellow" },
-			] as Parameters<typeof MemoItem>[0]["highlights"],
+			highlightCount: 1,
 			footer: createElement("span", null, "trash footer"),
 		});
 		expect(html).toContain("trash footer");
@@ -147,11 +140,6 @@ describe("메모 목록 미리보기", () => {
 		expect(html).not.toContain("memoSection");
 	});
 });
-
-const TWO_HIGHLIGHTS = [
-	{ id: 1, exact_text: "첫 번째 인용문", color: "yellow" },
-	{ id: 2, exact_text: "두 번째 인용문", color: "yellow" },
-] as Parameters<typeof MemoItem>[0]["highlights"];
 
 const mountMemo = (props: Partial<Parameters<typeof MemoItem>[0]> = {}) => {
 	const container = document.createElement("div");
@@ -184,7 +172,7 @@ describe("메모 카드 펼치기", () => {
 
 	it("하이라이트와 관계없이 잘린 메모 내용만 펼치고 다시 접는다", () => {
 		CLAMP.value = true;
-		const container = mountMemo({ highlights: TWO_HIGHLIGHTS });
+		const container = mountMemo({ highlightCount: 2 });
 		const expandButton = container.querySelector("button");
 
 		expect(expandButton?.textContent).toBe("memoSection.expand");
@@ -204,7 +192,7 @@ describe("메모 카드 펼치기", () => {
 	it("메모 펼치기를 눌러도 상세를 열지 않는다", () => {
 		CLAMP.value = true;
 		setSearchParam.mockClear();
-		const container = mountMemo({ highlights: TWO_HIGHLIGHTS });
+		const container = mountMemo({ highlightCount: 2 });
 
 		act(() => container.querySelector("button")?.click());
 		expect(setSearchParam).not.toHaveBeenCalled();
@@ -212,7 +200,7 @@ describe("메모 카드 펼치기", () => {
 	});
 	it("카드를 누르면 기존과 같이 상세 메모 ID를 URL에 쓴다", () => {
 		setSearchParam.mockClear();
-		const container = mountMemo({ highlights: TWO_HIGHLIGHTS });
+		const container = mountMemo({ highlightCount: 2 });
 
 		act(() =>
 			container
@@ -222,12 +210,9 @@ describe("메모 카드 펼치기", () => {
 		expect(setSearchParam).toHaveBeenCalledWith("id", "1");
 	});
 	it.each([
-		["잘린 내용이 없으면", { highlights: TWO_HIGHLIGHTS }],
-		[
-			"말줄임이 꺼져 있으면",
-			{ truncateMemoContent: false, highlights: TWO_HIGHLIGHTS },
-		],
-		["휴지통이면", { isReadOnly: true, highlights: TWO_HIGHLIGHTS }],
+		["잘린 내용이 없으면", { highlightCount: 2 }],
+		["말줄임이 꺼져 있으면", { truncateMemoContent: false, highlightCount: 2 }],
+		["휴지통이면", { isReadOnly: true, highlightCount: 2 }],
 	])("%s 펼치기 버튼을 두지 않는다", (_, props) => {
 		const container = mountMemo(props);
 		expect(container.querySelector("button")).toBeNull();

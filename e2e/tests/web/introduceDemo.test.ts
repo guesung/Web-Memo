@@ -191,7 +191,6 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 		const demo = page.locator("#demo");
 		await demo.getByRole("button", { name: "저장 완료" }).click();
 		await demo.getByRole("button", { name: "저장 완료" }).click();
-		await demo.getByRole("button", { name: "재생" }).click();
 		await demo.getByRole("button", { name: "정지" }).click();
 		await demo.getByRole("button", { name: "재생" }).click();
 		await demo.getByRole("button", { name: "정지" }).click();

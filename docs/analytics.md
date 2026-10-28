@@ -66,7 +66,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `past_memo_show`(kind, source) · `past_memo_dismiss`(kind, source) ·
 `past_memo_expand`(kind=related, source=jev) ·
 `past_memo_view_start`(source) · `past_memo_view_result`(source, is_success, reason, action) ·
-`memo_offline_queued`(trigger) · `memo_offline_sync_result`(trigger, synced_count, conflict_count, has_other_error) ·
+`memo_offline_queued`(trigger, queue_contract_version?) · `memo_offline_sync_result`(trigger, synced_count, conflict_count, has_other_error, v2 수치 필드?) ·
 `shortcut_change_click`(is_success) · `blog_reading_page_move`(direction, page_number, sort)
 
 2026-09-27부터 카테고리 추천의 `show`는 Jev가 고른 기존 카테고리를 사용자에게 표시한 경우,
@@ -98,8 +98,56 @@ gtag 이벤트와 겹쳐 세지 않도록 이름을 따로 씁니다. `extension
 부르므로 `memo_write` 계열에 잡히지 않습니다. 대기열로 빠진 저장은 `memo_offline_queued`(trigger:
 offline·network_error·already_queued), 올린 결과는 `memo_offline_sync_result`(trigger: mount·
 online·retry_click·enqueue)로 셉니다. enqueue는 온라인 상태에서 대기 항목이 막 생겨(이미 대기
-중이거나 네트워크 오류 직후) online 전환 없이 곧바로 도는 flush입니다. 후자는 실제로 처리한
-항목이 있을 때만 찍혀 빈 대기열 flush로 부풀지 않습니다.
+중이거나 네트워크 오류 직후) online 전환 없이 곧바로 도는 flush입니다. 정상적인 빈 큐에는 결과를
+보내지 않습니다. DB-1255의 v2부터 서버 시도나 네트워크·저장소 오류가 있으면 성공 항목이 없어도
+결과를 보냅니다. 이전 버전과 비교할 때 `queue_contract_version=2`를 구분합니다.
+
+#### 오프라인 큐 계약 (DB-1255)
+
+이름과 기존 필수 필드는 유지하며 새 필드는 선택적으로 추가합니다. `memo_offline_queued`는
+`chrome.storage.local.set` 성공 응답 후에만 보냅니다. 큐 조회 오류를 빈 큐로 취급하거나,
+서버 응답만으로 로컬 ACK까지 끝났다고 판단하지 않습니다.
+
+| 필드 | v2 정의 |
+| --- | --- |
+| `attempted_count` | revision별 첫 서버 호출이 시작되면 1. GET 뒤 UPDATE/INSERT는 같은 시도이고, 동일 내용 GET(no-op)도 포함 |
+| `network_error_count` / `other_error_count` | 서버 호출을 시작한 revision의 최종 실패. 서버 성공 후 로컬 ACK 실패는 other. 서버 호출 전 저장소·잠금 실패는 두 수치 0, `has_other_error=true` |
+| `synced_count` | 서버 확인과 로컬 ACK 저장을 모두 마쳐 제거한 revision 수. 충돌 복사와 no-op 포함. 전송 중 더 최신 revision으로 대체된 항목은 제외 |
+| `conflict_count` / `no_op_count` | ACK 완료 중 충돌 복사 / 이미 같은 서버 내용 확인의 수. `synced_count`의 부분집합 |
+| `remaining_count` | 마지막 조회 시 현재 사용자에게 남은 보류 항목 수. 조회 실패면 생략하며 0으로 추정하지 않음 |
+| `ack_latency_sum_ms` / `ack_latency_count` | ACK로 제거한 revision의 `로컬 ACK 저장 완료 시각 - queuedAt` 합과 개수. queuedAt은 enqueue 스냅샷 시각이며 로컬 set 응답 시각은 아님 |
+
+관측 전송 실패 비율은 v2 수치가 있는 표본에서
+`(Σnetwork_error_count + Σother_error_count) / (Σattempted_count - Σno_op_count)`로 계산합니다.
+분모 0은 비율을 계산하지 않습니다. 서버 호출 전 오류는 이 비율에서 빠지므로 별도로
+`attempted_count=0 && has_other_error=true`인 결과를 관찰합니다. ACK 실패도 포함하는 동기화
+시도 실패 비율이며, 클라우드 write 실패율·사용자 유실률과는 다릅니다.
+
+같은 revision의 GET과 write는 한 번만 세고, 하나의 flush에서 같은 revision을 반복 시도하지
+않습니다. 명시 재시도·재연결로 실제 다시 시작한 시도는 별개입니다. 이벤트 생성은 flush당
+한 번이지만 GA 수집 누락·중복까지 막는 서버 dedup은 없으므로 정확한 운영 실패율이라고
+부르지 않습니다. 서버 전송 전 대체된 revision은 시도 분모에 추가하지 않습니다.
+
+ACK 지연 평균은 `Σack_latency_sum_ms / Σack_latency_count`입니다. 성공 표본만의 평균이며,
+실패·잔여 항목을 함께 봐야 합니다. 이 집계로 p95나 사용자 입력부터 클라우드 저장까지의 지연을
+복원할 수 없습니다. 종료·미응답은 성공으로 간주하지 않습니다.
+
+로컬 복구 진단은 관찰 시작의 보류 operation을 고정하고 24시간 동안 최종 최신 revision의
+서버 확인·ACK를 봅니다. 사용자+대상+큐 episode로 중복 제거하며 중간 superseded revision은
+분모를 늘리지 않습니다. 충돌·실패·종료로 관찰이 끊긴 표본은 따로 기록합니다. 24시간은
+진단 창이며 운영 TTL·삭제 정책이 아닙니다. 이 로컬 성공률을 GA의 큐 등록/동기화 이벤트 비로
+대신 계산하지 않습니다. 실제 운영 24시간 관찰은 이번 구현 검증에서 수행하지 않았습니다.
+
+큐 수정은 동일 일반 프로필의 확장 origin에서 짧은 Web Lock으로 직렬화하고, 사용자별 flush
+잠금은 서버 전송을 직렬화합니다. API 미지원·저장소 오류는 기존 실패 상태로 처리하며 잠금 없이
+쓰지 않습니다. 계정·대상·revision이 일치한 완료만 삭제합니다. 신규 insert 응답과 로컬 ID 연결이
+모두 성공하면 후속 입력은 같은 메모로 이어집니다. 서버 성공 뒤 응답 손실·로컬 ACK 실패에는
+중복/충돌 복사가 남을 수 있습니다. split incognito·강제 종료 전 미완료 입력의 내구성과 다른
+기기의 동시편집 원자성은 보장하지 않습니다.
+
+이 두 이벤트의 추가 속성에는 제목·본문·검색어·URL·인증정보·사용자/메모 ID·revision·오류 원문을
+보내지 않습니다. 기존 공통 analytics 식별자 처리는 바꾸지 않습니다. DB-1250의 공용 클라우드
+write 계측과 별도이며, 그 이벤트를 이 작업에서 중복 생성하지 않습니다.
 
 `summary_run`의 `source`는 요약을 실행한 자리입니다. 요약 탭 빈 화면의 버튼이면 `empty_state`,
 탭 옆 새로고침 아이콘이면 `tab_trigger`입니다. 같은 `source` 차원을 `memo_category_change`도

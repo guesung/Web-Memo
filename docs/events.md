@@ -41,8 +41,8 @@
 | memo_plan_change | 메모의 읽을 계획 날짜 배정·해제 성공 뒤. 웹 패치, 확장 upsert(값이 달라졌을 때·새 메모 첫 배정 포함) | `action`(set/clear), `days_ahead`(set일 때, 오늘 기준 일수) | 읽을 계획이 실제로 배정되는가, 며칠 앞까지 잡는가, 해제 비율은 | DB-1195 |
 | memo_category_change | 메모 카테고리 변경. 확장 upsert는 이전 값과 다를 때만 발생 | `action`: `set` \| `clear` (patch 경로만, `category_id`가 null이면 clear) · `source`: `button` \| `hash` \| `ai` (선택, 확장 upsert에서는 없음) | 사람들이 `#` 입력을 아는가 | DB-1158 |
 | memo_undo | 실행 취소 (추정) | `action` | 어떤 조작이 되돌려지는가 (추정) | — |
-| memo_offline_queued | 오프라인 대기열에 넣음 | `trigger` | 오프라인 저장이 얼마나 일어나는가 | — |
-| memo_offline_sync_result | 대기열 동기화 결과 | `trigger`, `synced_count`, `conflict_count`, `has_other_error` | 동기화가 충돌 없이 끝나는가 | — |
+| memo_offline_queued | 오프라인 대기열의 로컬 쓰기 성공 후 | `trigger`, `queue_contract_version?: 2` | 로컬 큐 보관이 실제 완료됐는가 | DB-1255 |
+| memo_offline_sync_result | 관측된 서버 시도 또는 오류가 있는 flush 종료. 네트워크 오류만 발생한 경우도 포함하고, 정상 빈 큐는 제외 | 기존 `trigger`, `synced_count`, `conflict_count`, `has_other_error`; v2 선택 필드 `queue_contract_version`, `attempted_count`, `network_error_count`, `other_error_count`, `remaining_count`, `ack_latency_sum_ms`, `ack_latency_count`, `no_op_count` | 관측된 전송 실패·ACK 완료·잔여 큐를 구분할 수 있는가. 분모·중복 제거·한계는 docs/analytics.md의 오프라인 큐 계약 참조 | DB-1255 |
 | category_create / category_update / category_delete | 카테고리 생성·수정·삭제 (추정) | — | 카테고리 기능이 쓰이는가 (추정) | — |
 | category_suggestion_show / _apply / _dismiss | 카테고리 추천 노출·적용·닫음 | `is_new_category`, `source`: `jev` \| `llm`. apply만 `trigger`: `click` \| `shortcut`(Cmd/Ctrl+Enter) | 추천이 받아들여지는가, 단축키로 수락하는 비율은 얼마인가 | — |
 | past_memo_show / _open / _dismiss / _expand | 과거 메모 종류별 노출·원문 열기·닫음·관련 목록 펼침. 노출과 첫 열기는 URL·종류당 한 번 집계하며, 중복·관련이 함께 있으면 종류별로 각각 노출·닫음을 기록 | `kind`: `duplicate` \| `related`, `source`: `rule` \| `jev` (`_expand`는 related/jev) | 과거 메모 안내를 보고 원문을 여는가 | — |

@@ -26,6 +26,7 @@ const preparePanel = async (
 	page: Page,
 	url: string,
 	store: MockSupabaseStore,
+	initialMemo = "server draft",
 ) => {
 	await setupSupabaseMocks(page, store);
 	await login(page);
@@ -33,7 +34,7 @@ const preparePanel = async (
 	await openSidePanel(page);
 	const panel = await findSidePanelPage(page);
 	await page.goto(url);
-	await expect(panel.locator("#memo-textarea")).toHaveValue("server draft");
+	await expect(panel.locator("#memo-textarea")).toHaveValue(initialMemo);
 	return panel;
 };
 
@@ -183,4 +184,65 @@ test("로컬 큐 쓰기 실패는 기존 실패 표시로 끝나고 재시도하
 		.poll(async () => (await readQueue(panel))[0]?.data.memo)
 		.toBe("recover this draft");
 	await expect(panel.locator('[data-save-status="offline"]')).toBeVisible();
+});
+
+test("신규 초안 전송 중 재입력하면 반환 ID로 한 번 수정하고 복구 수치를 기록한다", async ({
+	page,
+	context,
+}) => {
+	const url = "https://example.com/queue-new-inflight-edit";
+	const store = new MockSupabaseStore();
+	const panel = await preparePanel(page, url, store, "");
+	const results: Record<string, unknown>[] = [];
+	panel.on("console", async (message) => {
+		if (message.text().startsWith("[analytics] memo_offline_sync_result")) {
+			results.push(await message.args()[1].jsonValue());
+		}
+	});
+	let releaseInsert: () => void = () => {};
+	const insertGate = new Promise<void>((resolve) => {
+		releaseInsert = resolve;
+	});
+	const writes: string[] = [];
+	await context.route(`${SUPABASE.url}/rest/v1/memo**`, async (route) => {
+		const method = route.request().method();
+		if (method === "POST" || method === "PATCH") {
+			writes.push(`${method}:${route.request().postDataJSON().memo}`);
+			if (method === "POST") await insertGate;
+		}
+		await route.fallback();
+	});
+	try {
+		await context.setOffline(true);
+		await panel.locator("#memo-textarea").fill("new revision A");
+		await expect
+			.poll(async () => (await readQueue(panel))[0]?.data.memo)
+			.toBe("new revision A");
+		await context.setOffline(false);
+		await expect.poll(() => writes).toEqual(["POST:new revision A"]);
+		await panel.locator("#memo-textarea").fill("new revision B");
+		await expect
+			.poll(async () => (await readQueue(panel))[0]?.data.memo)
+			.toBe("new revision B");
+		releaseInsert();
+		await expect
+			.poll(() => store.getMemoByUrl(url)?.memo)
+			.toBe("new revision B");
+		await expect.poll(() => readQueue(panel)).toEqual([]);
+		expect(writes).toEqual(["POST:new revision A", "PATCH:new revision B"]);
+		expect(store.getAllMemos()).toHaveLength(1);
+		await expect
+			.poll(() => results.find((result) => result.attempted_count === 2))
+			.toMatchObject({
+				queue_contract_version: 2,
+				synced_count: 1,
+				conflict_count: 0,
+				network_error_count: 0,
+				other_error_count: 0,
+				remaining_count: 0,
+				ack_latency_count: 1,
+			});
+	} finally {
+		releaseInsert();
+	}
 });

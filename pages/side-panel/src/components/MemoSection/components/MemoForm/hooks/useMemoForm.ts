@@ -397,10 +397,14 @@ export default function useMemoForm({
 						},
 						queuedAt: Date.now(),
 					});
-					void analytics.trackEvent({
-						name: "memo_offline_queued",
-						params: { trigger },
-					});
+					void Promise.resolve()
+						.then(() =>
+							analytics.trackEvent({
+								name: "memo_offline_queued",
+								params: { trigger, queue_contract_version: 2 },
+							}),
+						)
+						.catch(() => {});
 
 					completeSaveAsSaved(resolveIsSaved);
 				} catch {

@@ -111,20 +111,34 @@ export default function useOfflineMemoSync({
 			}
 
 			const hasProcessedAnyItem =
+				result.attemptedCount > 0 ||
 				result.syncedCount > 0 ||
-				result.conflicts.length > 0 ||
 				result.hasOtherError ||
 				result.hasNetworkError;
 			if (hasProcessedAnyItem) {
-				void analytics.trackEvent({
-					name: "memo_offline_sync_result",
-					params: {
-						trigger,
-						synced_count: result.syncedCount,
-						conflict_count: result.conflicts.length,
-						has_other_error: result.hasOtherError,
-					},
-				});
+				void Promise.resolve()
+					.then(() =>
+						analytics.trackEvent({
+							name: "memo_offline_sync_result",
+							params: {
+								trigger,
+								synced_count: result.syncedCount,
+								conflict_count: result.acknowledgedConflictCount ?? 0,
+								has_other_error: result.hasOtherError,
+								queue_contract_version: 2,
+								attempted_count: result.attemptedCount ?? 0,
+								network_error_count: result.networkErrorCount ?? 0,
+								other_error_count: result.otherErrorCount ?? 0,
+								...(result.remainingCount === undefined
+									? {}
+									: { remaining_count: result.remainingCount }),
+								ack_latency_sum_ms: result.ackLatencySumMs ?? 0,
+								ack_latency_count: result.ackLatencyCount ?? 0,
+								no_op_count: result.noOpCount ?? 0,
+							},
+						}),
+					)
+					.catch(() => {});
 			}
 
 			setLastFlushHadNetworkError(result.hasNetworkError);
@@ -138,6 +152,26 @@ export default function useOfflineMemoSync({
 				latestPropsRef.current.epoch === currentEpoch
 			) {
 				setSyncStatus("syncFailed");
+				void Promise.resolve()
+					.then(() =>
+						analytics.trackEvent({
+							name: "memo_offline_sync_result",
+							params: {
+								trigger,
+								synced_count: 0,
+								conflict_count: 0,
+								has_other_error: true,
+								queue_contract_version: 2,
+								attempted_count: 0,
+								network_error_count: 0,
+								other_error_count: 1,
+								ack_latency_sum_ms: 0,
+								ack_latency_count: 0,
+								no_op_count: 0,
+							},
+						}),
+					)
+					.catch(() => {});
 			}
 			needsTrailingFlushRef.current = false;
 		} finally {

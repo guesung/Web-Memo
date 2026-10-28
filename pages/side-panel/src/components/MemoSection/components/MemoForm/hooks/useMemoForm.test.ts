@@ -627,7 +627,7 @@ it("오프라인이면 upsert 대신 대기열에 넣는다", async () => {
 	});
 	expect(mocks.trackEvent).toHaveBeenCalledWith({
 		name: "memo_offline_queued",
-		params: { trigger: "offline" },
+		params: { trigger: "offline", queue_contract_version: 2 },
 	});
 	expect(form.saveStatus).toBe("saved");
 });
@@ -643,7 +643,7 @@ it("현재 메모에 대기 항목이 있으면 온라인이어도 대기열에 
 	expect(mocks.enqueueOfflineMemo).toHaveBeenCalledTimes(1);
 	expect(mocks.trackEvent).toHaveBeenCalledWith({
 		name: "memo_offline_queued",
-		params: { trigger: "already_queued" },
+		params: { trigger: "already_queued", queue_contract_version: 2 },
 	});
 });
 
@@ -662,7 +662,7 @@ it("네트워크 오류로 실패하면 대기열에 넣고 저장 성공으로 
 	expect(mocks.enqueueOfflineMemo).toHaveBeenCalledTimes(1);
 	expect(mocks.trackEvent).toHaveBeenCalledWith({
 		name: "memo_offline_queued",
-		params: { trigger: "network_error" },
+		params: { trigger: "network_error", queue_contract_version: 2 },
 	});
 });
 
@@ -811,4 +811,20 @@ it("enqueue failure does not report saved and remains retryable", async () => {
 		expect(await form.saveMemo({ memo: "draft" })).toBe(true);
 	});
 	expect(mocks.enqueueOfflineMemo).toHaveBeenCalledTimes(2);
+});
+
+it("telemetry rejection does not reject a completed queue write", async () => {
+	mocks.isOnline = false;
+	mocks.trackEvent.mockRejectedValueOnce(new Error("analytics failed"));
+	await render();
+	await act(async () => {
+		expect(await form.saveMemo({ memo: "private draft" })).toBe(true);
+	});
+	expect(form.saveStatus).toBe("saved");
+	expect(
+		(mocks.trackEvent.mock.calls[0][0] as { params: unknown }).params,
+	).toEqual({
+		trigger: "offline",
+		queue_contract_version: 2,
+	});
 });

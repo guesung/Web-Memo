@@ -174,11 +174,14 @@ for (const scenario of [
 			release?.();
 			await expect(sidePanelPage.locator("#memo-textarea")).toBeVisible();
 		}
+		// 기본 쿼리 재시도 대기(1+2+4초)와 요청 시간을 포함해 최종 결과를 기다린다.
 		await expect
-			.poll(async () =>
-				(await Promise.all(events)).filter(
-					(event) => event.name === "past_memo_view_result",
-				),
+			.poll(
+				async () =>
+					(await Promise.all(events)).filter(
+						(event) => event.name === "past_memo_view_result",
+					),
+				{ timeout: 15_000 },
 			)
 			.toHaveLength(1);
 		expect(

@@ -126,8 +126,14 @@ function MemoDialogContent({
 	const { showImpression, showActionItem } = useSettingQuery();
 	const sources = useHighlightMemoLinks([memo.id], "memo");
 	const source = sources.data?.[0];
-	const { form, saveStatus, markEdited, changeTitle, flushDebounce } =
-		useMemoDialogEditor({ memo, latestMemo });
+	const {
+		form,
+		saveStatus,
+		markEdited,
+		changeTitle,
+		flushDebounce,
+		abortDebounce,
+	} = useMemoDialogEditor({ memo, latestMemo });
 	const { register, watch } = form;
 	// 본문 #과 푸터(배지·⋮)가 같은 팝업을 열도록 모달이 갖는다.
 	const categoryPopover = useMemoCategoryPopover({ lng, memo });
@@ -191,6 +197,11 @@ function MemoDialogContent({
 
 	function closeAndSave() {
 		flushDebounce();
+		onClose();
+	}
+
+	function closeAfterDelete() {
+		abortDebounce();
 		onClose();
 	}
 
@@ -333,6 +344,7 @@ function MemoDialogContent({
 					categoryPopover={categoryPopover}
 					showsAbsoluteTime
 					labelsActiveToggles
+					onDeleteSuccess={closeAfterDelete}
 					timeAccessory={
 						<SaveStatusIndicator status={saveStatus} lng={lng} showsLabel />
 					}

@@ -110,4 +110,93 @@ test.describe("메모 삭제 기능 (Mocked)", () => {
 		const restoredMemo = page.locator(".memo-item", { hasText: memoText });
 		await expect(restoredMemo).toBeVisible();
 	});
+
+	test("목록에서 연 메모를 삭제하면 다이얼로그가 닫히고 다른 메모를 열 수 있다.", async ({
+		page,
+	}) => {
+		const otherMemo = store.addMemo(
+			createMockMemo({ title: "Other memo", memo: "Other memo content" }),
+		);
+		await page.reload();
+		const memoItem = page.locator(".memo-item", { hasText: memoText });
+		await memoItem.click();
+		const dialog = page.getByRole("dialog");
+		await expect(dialog).toBeVisible();
+		await dialog.getByTestId("memo-option").click();
+		await holdToastOpen(page);
+		await page.getByTestId("memo-delete-button").click();
+
+		await expect(dialog).toBeHidden();
+		await expect
+			.poll(() => new URL(page.url()).searchParams.has("id"))
+			.toBe(false);
+		await expect(memoItem).toBeHidden();
+		await page.locator(`.memo-item[id="${otherMemo.id}"]`).click();
+		await expect(page.getByRole("dialog")).toContainText("Other memo");
+	});
+
+	test("URL로 직접 연 메모를 삭제하면 URL의 id가 지워지고 되돌릴 수 있다.", async ({
+		page,
+	}) => {
+		const memoId = store.getAllMemos()[0].id;
+		await gotoSafely({
+			page,
+			url: `${LANGUAGE}${PATHS.memos}?query=Test%20Memo&id=${memoId}`,
+			regexp: new RegExp(`${PATHS.memos}\\?query=Test%20Memo&id=${memoId}`),
+		});
+		const dialog = page.getByRole("dialog");
+		await expect(dialog).toBeVisible();
+		await dialog.getByTestId("memo-option").click();
+		await holdToastOpen(page);
+		await page.getByTestId("memo-delete-button").click();
+
+		await expect(dialog).toBeHidden();
+		await expect
+			.poll(() => new URL(page.url()).searchParams.has("id"))
+			.toBe(false);
+		expect(new URL(page.url()).searchParams.get("query")).toBe("Test Memo");
+		await expect(
+			page.locator(".memo-item", { hasText: memoText }),
+		).toBeHidden();
+		await page.getByText("Undo", { exact: true }).click();
+		await expect(
+			page.locator(".memo-item", { hasText: memoText }),
+		).toBeVisible();
+	});
+
+	test("삭제 요청이 실패하면 열린 다이얼로그를 유지한다.", async ({ page }) => {
+		await page.route("**/rest/v1/memo?*", async (route) => {
+			if (
+				route.request().method() === "PATCH" &&
+				route.request().postData()?.includes('"deleted_at"')
+			) {
+				await route.fulfill({
+					status: 500,
+					contentType: "application/json",
+					body: JSON.stringify({ message: "Failed" }),
+				});
+				return;
+			}
+			await route.fallback();
+		});
+		await page.locator(".memo-item", { hasText: memoText }).click();
+		const dialog = page.getByRole("dialog");
+		await dialog.getByTestId("memo-option").click();
+		const failedDelete = page.waitForResponse(
+			(response) =>
+				response.request().method() === "PATCH" &&
+				response.request().postData()?.includes('"deleted_at"') === true &&
+				response.status() === 500,
+		);
+		await page.getByTestId("memo-delete-button").click();
+		await failedDelete;
+
+		await expect(dialog).toBeVisible();
+		await expect(page.getByText("Memo deleted", { exact: true })).toHaveCount(
+			0,
+		);
+		await expect
+			.poll(() => new URL(page.url()).searchParams.has("id"))
+			.toBe(true);
+	});
 });

@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Web Memo — 사용 흐름 모션 시안</title>
+    <style>
+      @import url("../../../apps/web/src/fonts/output/PretendardVariable.css");
+
+      :root {
+        color-scheme: light;
+        --ink: #17191c;
+        --muted: #727780;
+        --line: #e7e8ea;
+        --soft: #f9f9fa;
+        --panel: #fff;
+        --ring: #202226;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #fff; color: var(--ink); font-family: Pretendard, Inter, system-ui, sans-serif; }
+      button { font: inherit; cursor: pointer; }
+      button:focus-visible, select:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+      svg { display: block; width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .page { width: min(100% - 40px, 1056px); margin: 50px auto 64px; }
+      .eyebrow { color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .11em; text-transform: uppercase; }
+      h1 { margin: 9px 0 22px; font-size: clamp(25px, 3.2vw, 36px); line-height: 1.25; letter-spacing: -.04em; }
+      .demo { overflow: hidden; border: 1px solid var(--line); border-radius: 24px; background: #fff; }
+      .scene { position: relative; height: clamp(430px, 56vw, 575px); overflow: hidden; background: #f7f7f8; }
+      .browser { position: absolute; inset: 31px 39px 31px; overflow: hidden; border: 1px solid #dedfe2; border-radius: 12px; background: #fff; box-shadow: 0 10px 38px #16192312; }
+      .chrome { height: 44px; display: flex; align-items: center; gap: 12px; padding: 0 15px; border-bottom: 1px solid #e8e9eb; background: #fcfcfd; }
+      .traffic { display: flex; gap: 5px; }
+      .traffic i { width: 7px; height: 7px; border-radius: 50%; background: #d5d7db; }
+      .nav-icon { color: #61666d; font-size: 15px; }
+      .address { display: flex; align-items: center; gap: 7px; width: min(480px, 60%); height: 27px; margin: auto; padding: 0 10px; border: 1px solid #ededee; border-radius: 6px; color: #61666d; background: #f6f7f8; font-size: 11px; white-space: nowrap; overflow: hidden; }
+      .address svg { width: 12px; height: 12px; flex: none; }
+      .browser-toolbar { display: flex; gap: 12px; align-items: center; color: #83878e; }
+      .extension-mark { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 6px; color: #fff; background: #1b1d21; font-size: 12px; font-weight: 700; }
+      .article-area { height: calc(100% - 44px); overflow: hidden; transition: padding-right .6s cubic-bezier(.2,.8,.2,1); }
+      .article { width: min(100% - 56px, 575px); margin: 45px auto; transition: width .6s cubic-bezier(.2,.8,.2,1), margin .6s cubic-bezier(.2,.8,.2,1); }
+      .article-kicker { color: #60656d; font-size: 11px; font-weight: 600; letter-spacing: .04em; }
+      .article h2 { margin: 13px 0 14px; font-size: clamp(24px, 3vw, 34px); line-height: 1.28; letter-spacing: -.04em; }
+      .article-meta { display: flex; align-items: center; gap: 7px; margin-bottom: 32px; color: #8b8f96; font-size: 11px; }
+      .article-meta::before { content: ""; width: 21px; height: 21px; border-radius: 50%; background: #e6e7e9; }
+      .article p { margin: 0 0 17px; color: #464a51; font-size: 14px; line-height: 1.85; word-break: keep-all; }
+      .article strong { color: #25282d; }
+      .article-rule { width: 100%; height: 1px; margin: 29px 0; background: #eee; }
+      .shortcut { position: absolute; z-index: 4; top: 42%; left: 50%; display: flex; align-items: center; gap: 9px; padding: 11px 15px; border: 1px solid #d7d9dc; border-radius: 10px; color: #fff; background: #22252a; box-shadow: 0 16px 36px #10121626; transform: translate(-50%, -42%) scale(.92); opacity: 0; pointer-events: none; transition: opacity .24s, transform .3s; }
+      .shortcut span { font-size: 12px; }
+      kbd { min-width: 24px; padding: 4px 6px; border: 1px solid #6c7077; border-radius: 5px; text-align: center; font-size: 12px; font-family: inherit; font-weight: 600; }
+      .panel { position: absolute; z-index: 3; top: 44px; right: 0; bottom: 0; display: flex; flex-direction: column; width: min(41%, 350px); padding: 16px 16px 13px; border-left: 1px solid #e3e4e6; background: var(--panel); transform: translateX(102%); transition: transform .64s cubic-bezier(.18,.8,.2,1); box-shadow: -6px 0 20px #0000000a; }
+      .panel-head { display: flex; align-items: center; gap: 8px; height: 31px; min-width: 0; font-size: 13px; font-weight: 600; }
+      .favicon { display: grid; place-items: center; flex: none; width: 20px; height: 20px; border-radius: 5px; color: #fff; background: #363940; font-family: Georgia, serif; font-size: 13px; }
+      .panel-page-title { overflow: hidden; flex: 1; text-overflow: ellipsis; white-space: nowrap; }
+      .icon-button { display: grid; place-items: center; flex: none; width: 29px; height: 29px; border: 1px solid #e1e2e4; border-radius: 6px; color: #545961; background: #fff; }
+      .disclosure { display: flex; align-items: center; gap: 8px; min-height: 40px; border-bottom: 1px solid var(--line); color: #60656d; font-size: 13px; font-weight: 500; }
+      .disclosure:first-of-type { margin-top: 10px; }
+      .disclosure .grow { flex: 1; }
+      .disclosure .count { font-size: 11px; }
+      .empty-highlight { padding: 8px 0 12px; border-bottom: 1px solid var(--line); color: #60656d; font-size: 11px; }
+      .memo-header { display: flex; align-items: center; gap: 7px; margin-top: 18px; font-size: 16px; font-weight: 700; }
+      .memo-header svg { color: #717680; }
+      .title-input { height: 34px; display: flex; align-items: center; margin-top: 7px; border-bottom: 1px solid #f1f1f2; font-size: 13px; font-weight: 700; }
+      .memo-box { position: relative; flex: 1; min-height: 90px; margin-top: 7px; padding: 10px 11px; border: 1px solid #e2e3e5; border-radius: 7px; color: #33373d; font-size: 13px; line-height: 1.65; white-space: pre-wrap; }
+      .memo-placeholder { color: #60656d; }
+      .caret { display: none; width: 1px; height: 16px; margin-left: 2px; vertical-align: -3px; background: #35383d; animation: blink .85s step-end infinite; }
+      .panel-footer { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding-top: 10px; }
+      .utility-group { display: flex; align-items: center; gap: 8px; color: #737780; }
+      .utility-group svg { width: 16px; height: 16px; }
+      .status { width: 16px; color: #868b92; opacity: 0; transition: opacity .2s; }
+      .status svg { width: 13px; height: 13px; }
+      .category { padding: 4px 9px; border: 1px dashed #d7d9dc; border-radius: 999px; color: #60656d; font-size: 11px; white-space: nowrap; }
+      .scene[data-stage="1"] .shortcut { opacity: 1; transform: translate(-50%, -42%) scale(1); }
+      .scene[data-stage="2"] .panel, .scene[data-stage="3"] .panel, .scene[data-stage="4"] .panel { transform: translateX(0); }
+      .scene[data-stage="2"] .article-area, .scene[data-stage="3"] .article-area, .scene[data-stage="4"] .article-area { padding-right: min(41%, 350px); }
+      .scene[data-stage="2"] .article, .scene[data-stage="3"] .article, .scene[data-stage="4"] .article { width: min(100% - 38px, 470px); margin-top: 32px; }
+      .scene[data-stage="3"] .caret { display: inline-block; }
+      .scene[data-stage="4"] .status { opacity: 1; }
+      .scene[data-stage="3"] .memo-box { border-color: #8b8f96; box-shadow: 0 0 0 1px #8b8f9638; }
+      .controls { padding: 18px 20px 19px; border-top: 1px solid var(--line); }
+      .control-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+      .caption { margin: 0; color: #585e66; font-size: 13px; line-height: 1.45; }
+      .language { border: 1px solid var(--line); border-radius: 7px; padding: 6px 9px; color: #535961; background: #fff; font: inherit; font-size: 12px; }
+      .control-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
+      .steps { display: flex; flex-wrap: wrap; gap: 4px; }
+      .step { position: relative; min-height: 34px; padding: 7px 12px 9px; border: 0; border-radius: 999px; color: #60656d; background: transparent; font-size: 12px; white-space: nowrap; }
+      .step[aria-current="step"] { color: #25282c; background: #f3f3f4; font-weight: 600; }
+      .step-progress { position: absolute; left: 12px; right: 12px; bottom: 5px; height: 2px; overflow: hidden; border-radius: 2px; background: #dfe0e2; opacity: 0; }
+      .step[aria-current="step"] .step-progress { opacity: 1; }
+      .step-progress span { display: block; height: 100%; width: 0; background: #555a61; }
+      .play { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 72px; min-height: 34px; padding: 7px 11px; border: 1px solid var(--line); border-radius: 999px; color: #454a51; background: #fff; font-size: 12px; white-space: nowrap; }
+      .play svg { width: 13px; height: 13px; }
+      .play:disabled { opacity: .45; cursor: not-allowed; }
+      .note { min-height: 18px; margin: 12px 2px 0; color: #60656d; font-size: 11px; }
+      @keyframes blink { 50% { opacity: 0; } }
+      @media (max-width: 700px) {
+        .page { width: min(100% - 24px, 520px); margin-top: 28px; }
+        .scene { height: 520px; }
+        .browser { inset: 16px 13px 16px; }
+        .chrome { padding: 0 10px; gap: 8px; }
+        .traffic { display: none; }
+        .address { width: auto; flex: 1; margin: 0; }
+        .browser-toolbar { gap: 6px; }
+        .article { width: min(100% - 34px, 440px); margin-top: 30px; }
+        .article h2 { font-size: 25px; }
+        .article p { font-size: 13px; }
+        .panel { width: min(77%, 345px); }
+        .scene[data-stage="2"] .article-area, .scene[data-stage="3"] .article-area, .scene[data-stage="4"] .article-area { padding-right: min(77%, 345px); }
+        .scene[data-stage="2"] .article, .scene[data-stage="3"] .article, .scene[data-stage="4"] .article { width: 290px; margin: 24px 0 0 16px; }
+        .control-bottom { align-items: flex-start; }
+        .steps { gap: 2px; }
+        .step { padding-inline: 9px; font-size: 11px; }
+        .step-progress { left: 9px; right: 9px; }
+      }
+      @media (max-width: 420px) {
+        .scene { height: 475px; }
+        .browser { inset: 11px 9px; }
+        .panel { padding: 13px 11px 10px; width: 82%; }
+        .scene[data-stage="2"] .article-area, .scene[data-stage="3"] .article-area, .scene[data-stage="4"] .article-area { padding-right: 82%; }
+        .control-bottom { display: block; }
+        .play { margin-top: 10px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"><defs>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+      <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.9 5.5L19 10l-5.1 1.5L12 17l-1.9-5.5L5 10l5.1-1.5L12 3ZM19 17l.5 1.5L21 19l-1.5.5L19 21l-.5-1.5L17 19l1.5-.5L19 17Z"/></symbol>
+      <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+      <symbol id="i-marker" viewBox="0 0 24 24"><path d="m10 4 10 10-6 6H4v-4L16 4l4 4"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 13.5v-3l2-1.5-2-3.4-2.3.8-2.6-1.5L13.7 2h-3.4l-.4 2.9L7.3 6.4 5 5.6 3 9l2 1.5v3L3 15l2 3.4 2.3-.8 2.6 1.5.4 2.9h3.4l.4-2.9 2.6-1.5 2.3.8 2-3.4-2-1.5Z"/></symbol>
+      <symbol id="i-link" viewBox="0 0 24 24"><path d="M14 4h6v6m0-6-9 9"/><path d="M20 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h6"/></symbol>
+      <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 8.5c0 4-8.8 10.2-8.8 10.2S3.2 12.5 3.2 8.5a4.4 4.4 0 0 1 8.8 0 4.4 4.4 0 0 1 8.8 0Z"/></symbol>
+      <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3.1 6.4 7 .9-5.1 5 .9 7L12 18l-5.9 3.3.9-7-5.1-5 7-.9L12 2Z"/></symbol>
+      <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6c-2.5-2-5.2-2-9-2v15c3.8 0 6.5 0 9 2 2.5-2 5.2-2 9-2V4c-3.8 0-6.5 0-9 2Zm0 0v15"/></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 2v6m10-6v6M3 10h18"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+      <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14m8-14v14"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7V5Z"/></symbol>
+    </defs></svg>
+    <main class="page">
+      <div class="eyebrow">Web Memo / Preview</div>
+      <h1 data-i18n="heading">읽던 페이지 옆에서, 바로 메모</h1>
+      <section class="demo" aria-label="사용 흐름 모션 시안">
+        <div id="scene" class="scene" data-stage="0" aria-hidden="true">
+          <div class="browser">
+            <div class="chrome">
+              <div class="traffic" aria-hidden="true"><i></i><i></i><i></i></div>
+              <span class="nav-icon" aria-hidden="true">‹　›</span>
+              <div class="address"><svg><use href="#i-lock" /></svg> daily.example.com/notes/reading-habit</div>
+              <div class="browser-toolbar"><span aria-hidden="true">☆</span><span class="extension-mark" aria-label="Web Memo">W</span></div>
+            </div>
+            <div class="article-area">
+              <article class="article">
+                <div class="article-kicker" data-i18n="articleKicker">라이프 · 에세이</div>
+                <h2 data-i18n="articleTitle">좋은 생각은 읽는 동안 떠오른다</h2>
+                <div class="article-meta" data-i18n="articleMeta">데일리 노트 · 5분 읽기</div>
+                <p data-i18n="articleP1">책이나 글을 읽다가 <strong>마음에 남는 문장</strong>을 만나면, 잠깐 멈춰 생각을 적어 보세요. 길게 정리하지 않아도 괜찮습니다.</p>
+                <p data-i18n="articleP2">읽던 맥락에서 벗어나지 않고 떠오른 생각을 남기는 작은 습관은, 나중에 그 글을 다시 만날 때 훨씬 선명한 기록이 됩니다.</p>
+                <div class="article-rule"></div>
+                <p data-i18n="articleP3">메모는 완성된 문장보다 지금 떠오른 한 줄에서 시작됩니다.</p>
+              </article>
+            </div>
+            <div class="shortcut" aria-hidden="true"><span data-i18n="shortcutLabel">단축키로 열기</span><kbd>Alt</kbd><span>+</span><kbd>S</kbd></div>
+            <aside class="panel" aria-label="Web Memo 사이드 패널 미리보기">
+              <div class="panel-head"><span class="favicon">d</span><span class="panel-page-title" data-i18n="articleTitle">좋은 생각은 읽는 동안 떠오른다</span><span class="icon-button"><svg><use href="#i-sun" /></svg></span><span class="icon-button"><svg><use href="#i-settings" /></svg></span></div>
+              <div class="disclosure"><svg><use href="#i-spark" /></svg><span class="grow" data-i18n="summary">요약 보기</span><svg><use href="#i-down" /></svg></div>
+              <div class="disclosure"><svg><use href="#i-marker" /></svg><span class="grow" data-i18n="highlights">이 페이지의 하이라이트</span><span class="count">0</span><svg><use href="#i-down" /></svg></div>
+              <div class="empty-highlight" data-i18n="emptyHighlight">이 페이지에 저장한 하이라이트가 없어요.</div>
+              <div class="memo-header"><span data-i18n="memo">메모</span><svg><use href="#i-link" /></svg></div>
+              <div class="title-input" data-i18n="articleTitle">좋은 생각은 읽는 동안 떠오른다</div>
+              <div class="memo-box"><span id="memo-content" class="memo-placeholder" data-i18n="memoPlaceholder">메모</span><span class="caret" aria-hidden="true"></span></div>
+              <div class="panel-footer"><div class="utility-group"><svg><use href="#i-heart" /></svg><svg><use href="#i-star" /></svg><svg><use href="#i-book" /></svg><svg><use href="#i-calendar" /></svg><span class="status"><svg><use href="#i-check" /></svg></span></div><span class="category" data-i18n="category">+ 카테고리</span></div>
+            </aside>
+          </div>
+        </div>
+        <div class="controls">
+          <div class="control-top"><p class="caption" id="stage-caption" aria-live="polite"></p><select class="language" id="language" aria-label="Language"><option value="ko">한국어</option><option value="en">English</option></select></div>
+          <div class="control-bottom"><div class="steps" id="steps" role="group" aria-label="데모 단계"></div><button class="play" id="play" type="button"></button></div>
+          <p class="note" id="motion-note"></p>
+        </div>
+      </section>
+    </main>
+    <script>
+      (() => {
+        const translations = {
+          ko: {
+            heading: "읽던 페이지 옆에서, 바로 메모", articleKicker: "라이프 · 에세이", articleTitle: "좋은 생각은 읽는 동안 떠오른다", articleMeta: "데일리 노트 · 5분 읽기", articleP1: "책이나 글을 읽다가 마음에 남는 문장을 만나면, 잠깐 멈춰 생각을 적어 보세요. 길게 정리하지 않아도 괜찮습니다.", articleP2: "읽던 맥락에서 벗어나지 않고 떠오른 생각을 남기는 작은 습관은, 나중에 그 글을 다시 만날 때 훨씬 선명한 기록이 됩니다.", articleP3: "메모는 완성된 문장보다 지금 떠오른 한 줄에서 시작됩니다.", shortcutLabel: "단축키로 열기", summary: "요약 보기", highlights: "이 페이지의 하이라이트", emptyHighlight: "이 페이지에 저장한 하이라이트가 없어요.", memo: "메모", memoPlaceholder: "메모", category: "+ 카테고리", memoText: "마음에 남는 문장을 바로 기록해 두자.\n나중에 다시 읽을 때 생각을 이어 갈 수 있도록.", steps: ["글 읽기", "Alt+S", "패널 열기", "메모 입력", "저장 완료"], captions: ["웹에서 글을 읽습니다.", "Alt+S를 눌러 Web Memo를 엽니다.", "읽던 글 옆에 사이드 패널이 나타납니다.", "떠오른 생각을 메모에 적습니다.", "입력 내용이 자동 저장됩니다."], play: "재생", pause: "정지", reduced: "동작 줄이기 설정이 켜져 있어 단계 버튼으로만 전환합니다." 
+          },
+          en: {
+            heading: "Take notes beside what you read", articleKicker: "LIFE · ESSAY", articleTitle: "Good ideas arrive while you read", articleMeta: "Daily Note · 5 min read", articleP1: "When a sentence stays with you, pause and jot down a thought. It does not have to be polished.", articleP2: "Keeping the thought next to what you are reading makes it easier to revisit the article and remember why it mattered.", articleP3: "A useful note can begin with a single line.", shortcutLabel: "Open with a shortcut", summary: "Show summary", highlights: "Highlights on this page", emptyHighlight: "No highlights saved on this page yet.", memo: "Memo", memoPlaceholder: "Memo", category: "+ Category", memoText: "Write down the sentence that stayed with me.\nI can pick up this thought when I read it again.", steps: ["Read", "Alt+S", "Open panel", "Write memo", "Saved"], captions: ["Read an article on the web.", "Press Alt+S to open Web Memo.", "The side panel opens next to the article.", "Write down the thought while it is fresh.", "Your memo is saved automatically."], play: "Play", pause: "Pause", reduced: "Reduced motion is on. Use the step buttons to move through the demo."
+          }
+        };
+        const durations = [2800, 1800, 2800, 3300, 3300];
+        const scene = document.getElementById("scene");
+        const steps = document.getElementById("steps");
+        const caption = document.getElementById("stage-caption");
+        const memoContent = document.getElementById("memo-content");
+        const play = document.getElementById("play");
+        const language = document.getElementById("language");
+        const motionNote = document.getElementById("motion-note");
+        const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
+        let stage = 0;
+        let lang = "ko";
+        let playing = !reduceMotion.matches;
+        let start = performance.now();
+        let elapsed = 0;
+        let frame;
+        function render() {
+          const t = translations[lang];
+          document.documentElement.lang = lang;
+          document.title = `Web Memo — ${lang === "ko" ? "사용 흐름 모션 시안" : "Flow motion preview"}`;
+          for (const element of document.querySelectorAll("[data-i18n]")) element.textContent = t[element.dataset.i18n];
+          scene.dataset.stage = String(stage);
+          caption.textContent = t.captions[stage];
+          steps.innerHTML = "";
+          t.steps.forEach((label, index) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "step";
+            button.setAttribute("aria-label", `${index + 1}. ${label}`);
+            if (index === stage) button.setAttribute("aria-current", "step");
+            button.textContent = label;
+            const progress = document.createElement("span");
+            progress.className = "step-progress";
+            progress.innerHTML = "<span></span>";
+            button.append(progress);
+            button.addEventListener("click", () => setStage(index));
+            steps.append(button);
+          });
+          play.disabled = reduceMotion.matches;
+          play.innerHTML = `<svg aria-hidden="true"><use href="#i-${playing ? "pause" : "play"}"></use></svg><span>${playing ? t.pause : t.play}</span>`;
+          motionNote.textContent = reduceMotion.matches ? t.reduced : "";
+          updateMemo();
+          updateProgress();
+        }
+        function updateMemo() {
+          const t = translations[lang];
+          const portion = stage === 3 && playing && !reduceMotion.matches ? Math.min(1, elapsed / durations[3] * 1.14) : 1;
+          const value = stage < 3 ? "" : stage === 3 ? t.memoText.slice(0, Math.round(t.memoText.length * portion)) : t.memoText;
+          memoContent.textContent = value || t.memoPlaceholder;
+          memoContent.classList.toggle("memo-placeholder", !value);
+        }
+        function updateProgress() {
+          const bar = steps.querySelector("[aria-current='step'] .step-progress span");
+          if (bar) bar.style.width = `${playing && !reduceMotion.matches ? Math.min(100, elapsed / durations[stage] * 100) : 0}%`;
+        }
+        function tick(now) {
+          if (!playing || reduceMotion.matches) return;
+          elapsed = now - start;
+          if (elapsed >= durations[stage]) {
+            stage = (stage + 1) % durations.length;
+            elapsed = 0;
+            start = now;
+            render();
+          } else {
+            updateMemo();
+            updateProgress();
+          }
+          frame = requestAnimationFrame(tick);
+        }
+        function setStage(index) {
+          if (!Number.isInteger(index) || index < 0 || index >= durations.length) throw new RangeError("Stage must be 0–4");
+          cancelAnimationFrame(frame);
+          stage = index;
+          playing = false;
+          elapsed = 0;
+          render();
+          return stage;
+        }
+        play.addEventListener("click", () => {
+          if (reduceMotion.matches) return;
+          playing = !playing;
+          if (playing) { start = performance.now() - elapsed; frame = requestAnimationFrame(tick); }
+          else cancelAnimationFrame(frame);
+          render();
+        });
+        language.addEventListener("change", () => { lang = language.value; render(); });
+        reduceMotion.addEventListener("change", () => {
+          if (reduceMotion.matches) { playing = false; cancelAnimationFrame(frame); }
+          render();
+        });
+        window.demoPreview = { setStage, getStage: () => stage };
+        render();
+        if (playing) frame = requestAnimationFrame(tick);
+      })();
+    </script>
+  </body>
+</html>

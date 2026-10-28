@@ -18,7 +18,7 @@ argument-hint: "<학습 키워드>"
 
 ## ① 후보 찾기
 
-**시작 전에 [notion-databases.md](~/.agents/docs/notion-databases.md)를 읽는다.** 개인 워크스페이스라 `notion-home` MCP로만 연다(`claude.ai Notion`으로 열면 404).
+**시작 전에 [notion-databases.md](~/.agents/docs/notion-databases.md)를 읽는다.** 개인 워크스페이스 접근은 [Notion 접근 규칙](../../notion-access.md)을 따른다.
 
 **키워드 변형**을 먼저 정한다. 약어·영문·한글 표기가 갈릴 만한 것은 함께 찾는다(예: `GA` → `GA` · `Google Analytics` · `구글 애널리틱스` · `gtag`). 변형은 3~4개까지.
 
@@ -92,7 +92,7 @@ argument-hint: "<학습 키워드>"
 | 조건 | 대응 |
 |---|---|
 | 키워드가 없음 | 묻는다 |
-| 두 DB 모두 접근 실패 | 에러와 함께 멈춘다. MCP를 `notion-home`으로 썼는지 먼저 확인 |
+| 두 DB 모두 접근 실패 | 에러와 함께 멈춘다. 선택한 연결이 대상 개인 DB에 접근 가능한지 먼저 확인 |
 | 후보 없음 | 시도한 변형을 보여주고 다른 키워드를 묻는다 |
 
 ## 하지 않는 것

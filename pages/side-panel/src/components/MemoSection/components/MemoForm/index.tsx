@@ -158,6 +158,7 @@ const MemoFormContent = ({
 		toggleMemoStatus,
 		setPlannedDate,
 	} = useMemoForm({ selectedMemo, isMemoLocked, isSyncing });
+	useAutoFocusMemo({ textareaRef, isMemoLocked });
 	const impressionField = register("impression", {
 		onChange: (event) => handleImpressionChange(event.target.value),
 	});
@@ -737,6 +738,37 @@ function useCollapsedSubFields({
 			showActionItem && (openedFieldKeys.has("actionItem") || !!actionItem),
 		openField,
 	};
+}
+
+/**
+ * 메모를 불러오면 메모 칸에 한 번 커서를 넣는다.
+ * @description 패널을 열고도 메모 칸을 한 번 더 눌러야 쓸 수 있었다. 잠금이 풀린 첫 순간에만 넣고,
+ * 그 전에 사용자가 다른 곳에 포커스를 뒀다면 빼앗지 않는다. 커서는 기존 내용 끝에 둔다.
+ */
+function useAutoFocusMemo({
+	textareaRef,
+	isMemoLocked,
+}: {
+	textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+	isMemoLocked: boolean;
+}) {
+	const hasAutoFocusedRef = useRef(false);
+
+	useEffect(
+		function focusMemoOnceUnlocked() {
+			if (hasAutoFocusedRef.current || isMemoLocked) return;
+			hasAutoFocusedRef.current = true;
+
+			const textarea = textareaRef.current;
+			const activeElement = document.activeElement;
+			if (!textarea) return;
+			if (activeElement && activeElement !== document.body) return;
+
+			textarea.focus();
+			textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+		},
+		[isMemoLocked, textareaRef],
+	);
 }
 
 /** 페이지별 폼 상태를 만들고 지속되는 입력 영역 비율을 편집기에 전달한다. */

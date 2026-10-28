@@ -248,6 +248,25 @@ export type TAnalyticsEvent =
 			name: "past_memo_dismiss";
 			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
 	  }
+	| { name: "past_memo_view_start"; params: { source: "rule" | "jev" } }
+	| {
+			name: "past_memo_view_result";
+			params: {
+				source: "rule" | "jev";
+				is_success: boolean;
+				reason:
+					| "displayed"
+					| "empty_content"
+					| "query_error"
+					| "not_found"
+					| "cancelled";
+				action: "existing" | "recent" | "unknown";
+			};
+	  }
+	| {
+			name: "past_memo_reuse";
+			params: { source: "rule" | "jev"; action: "source_open" };
+	  }
 	| {
 			name: "memo_offline_queued";
 			params: {
@@ -373,6 +392,9 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	past_memo_open: "core_action",
 	past_memo_expand: "engagement",
 	past_memo_dismiss: "engagement",
+	past_memo_view_start: "engagement",
+	past_memo_view_result: "engagement",
+	past_memo_reuse: "core_action",
 	memo_offline_queued: "engagement",
 	memo_offline_sync_result: "engagement",
 	shortcut_change_click: "engagement",

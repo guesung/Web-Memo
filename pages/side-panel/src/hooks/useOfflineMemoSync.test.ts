@@ -126,6 +126,13 @@ it("마운트 시 flush하고 성공하면 idle로 끝나며 결과를 기록한
 			synced_count: 1,
 			conflict_count: 0,
 			has_other_error: false,
+			queue_contract_version: 2,
+			attempted_count: 0,
+			network_error_count: 0,
+			other_error_count: 0,
+			ack_latency_sum_ms: 0,
+			ack_latency_count: 0,
+			no_op_count: 0,
 		},
 	});
 });
@@ -195,6 +202,13 @@ it("retrySync를 부르면 다시 flush하고 결과를 retry_click으로 기록
 			synced_count: 1,
 			conflict_count: 0,
 			has_other_error: false,
+			queue_contract_version: 2,
+			attempted_count: 0,
+			network_error_count: 0,
+			other_error_count: 0,
+			ack_latency_sum_ms: 0,
+			ack_latency_count: 0,
+			no_op_count: 0,
 		},
 	});
 });
@@ -222,6 +236,13 @@ it("온라인 상태에서 대기열이 바뀌면 곧바로 flush한다", async 
 			synced_count: 1,
 			conflict_count: 0,
 			has_other_error: false,
+			queue_contract_version: 2,
+			attempted_count: 0,
+			network_error_count: 0,
+			other_error_count: 0,
+			ack_latency_sum_ms: 0,
+			ack_latency_count: 0,
+			no_op_count: 0,
 		},
 	});
 });
@@ -248,4 +269,173 @@ it("local이 아닌 영역의 변경은 무시한다", async () => {
 	});
 
 	expect(mocks.flush).not.toHaveBeenCalled();
+});
+
+it("flush rejection becomes syncFailed and can be retried", async () => {
+	mocks.flush.mockRejectedValueOnce(new Error("storage failed"));
+	await render("user-1");
+	expect(hookResult.syncStatus).toBe("syncFailed");
+	await act(async () => {
+		await hookResult.retrySync();
+	});
+	expect(mocks.flush).toHaveBeenCalledTimes(2);
+	expect(hookResult.syncStatus).toBe("idle");
+});
+
+it("account switch suppresses old results and flushes the new account", async () => {
+	let release!: (value: unknown) => void;
+	mocks.flush.mockReturnValueOnce(
+		new Promise((resolve) => {
+			release = resolve;
+		}),
+	);
+	await render("user-a");
+	await render("user-b");
+	await act(async () =>
+		release({
+			conflicts: [{ oldMemoId: 1, newMemoId: 2, url: "https://example.com/a" }],
+			syncedCount: 1,
+			hasNetworkError: false,
+			hasOtherError: false,
+		}),
+	);
+	expect(onConflict).not.toHaveBeenCalled();
+	expect(mocks.flush.mock.calls.at(-1)?.[0]).toMatchObject({
+		userId: "user-b",
+	});
+});
+
+it("storage event during flush schedules one trailing pass", async () => {
+	let release!: (value: unknown) => void;
+	mocks.flush.mockReturnValueOnce(
+		new Promise((resolve) => {
+			release = resolve;
+		}),
+	);
+	vi.stubGlobal("navigator", { onLine: true });
+	await render("user-1");
+	await act(async () => {
+		fireStorageChange();
+		fireStorageChange();
+	});
+	expect(mocks.flush).toHaveBeenCalledTimes(1);
+	await act(async () =>
+		release({
+			conflicts: [],
+			syncedCount: 0,
+			hasNetworkError: false,
+			hasOtherError: false,
+		}),
+	);
+	expect(mocks.flush).toHaveBeenCalledTimes(2);
+});
+
+it("A→B→A does not authorize the old A flush snapshot", async () => {
+	let release!: (value: unknown) => void;
+	mocks.flush.mockReturnValueOnce(
+		new Promise((resolve) => {
+			release = resolve;
+		}),
+	);
+	await render("user-a");
+	const oldSnapshot = mocks.flush.mock.calls[0][0];
+	expect(oldSnapshot.shouldContinue()).toBe(true);
+	await render("user-b");
+	await render("user-a");
+	expect(oldSnapshot.shouldContinue()).toBe(false);
+	await act(async () =>
+		release({
+			conflicts: [],
+			syncedCount: 0,
+			hasNetworkError: false,
+			hasOtherError: false,
+		}),
+	);
+});
+
+it("unmount cancels the active flush scope", async () => {
+	mocks.flush.mockReturnValueOnce(new Promise(() => {}));
+	await render("user-a");
+	const oldSnapshot = mocks.flush.mock.calls[0][0];
+	await act(async () => root.unmount());
+	expect(oldSnapshot.shouldContinue()).toBe(false);
+	root = createRoot(document.createElement("div"));
+});
+
+it("v2 event counts attempts and acknowledged conflicts without private data", async () => {
+	mocks.flush.mockResolvedValue({
+		conflicts: [
+			{ oldMemoId: 17, newMemoId: 18, url: "https://private.example/a" },
+		],
+		syncedCount: 1,
+		hasNetworkError: true,
+		hasOtherError: false,
+		attemptedCount: 2,
+		networkErrorCount: 1,
+		otherErrorCount: 0,
+		remainingCount: 1,
+		ackLatencySumMs: 240,
+		ackLatencyCount: 1,
+		noOpCount: 1,
+		acknowledgedConflictCount: 0,
+	});
+	await render("private-user");
+	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "memo_offline_sync_result",
+		params: {
+			trigger: "mount",
+			synced_count: 1,
+			conflict_count: 0,
+			has_other_error: false,
+			queue_contract_version: 2,
+			attempted_count: 2,
+			network_error_count: 1,
+			other_error_count: 0,
+			remaining_count: 1,
+			ack_latency_sum_ms: 240,
+			ack_latency_count: 1,
+			no_op_count: 1,
+		},
+	});
+});
+
+it("preflight rejection emits other error without unknown remaining count", async () => {
+	mocks.flush.mockRejectedValueOnce(new Error("storage contains private data"));
+	await render("private-user");
+	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "memo_offline_sync_result",
+		params: {
+			trigger: "mount",
+			synced_count: 0,
+			conflict_count: 0,
+			has_other_error: true,
+			queue_contract_version: 2,
+			attempted_count: 0,
+			network_error_count: 0,
+			other_error_count: 1,
+			ack_latency_sum_ms: 0,
+			ack_latency_count: 0,
+			no_op_count: 0,
+		},
+	});
+});
+
+it("network-only attempt emits result and analytics rejection is contained", async () => {
+	mocks.trackEvent.mockRejectedValueOnce(new Error("telemetry failed"));
+	mocks.flush.mockResolvedValue({
+		conflicts: [],
+		syncedCount: 0,
+		hasNetworkError: true,
+		hasOtherError: false,
+		attemptedCount: 1,
+		networkErrorCount: 1,
+		otherErrorCount: 0,
+		ackLatencySumMs: 0,
+		ackLatencyCount: 0,
+		noOpCount: 0,
+		acknowledgedConflictCount: 0,
+	});
+	await render("user-1");
+	expect(hookResult.syncStatus).toBe("idle");
+	expect(mocks.trackEvent).toHaveBeenCalledTimes(1);
 });

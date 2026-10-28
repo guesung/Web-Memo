@@ -146,6 +146,7 @@ const MemoFormContent = ({
 		firstSavedMemoId,
 		saveStatus,
 		hasPendingOfflineItem,
+		pendingOfflineStatus,
 		handleSaveRetryClick,
 		isWritePending,
 		saveBeforeSwitch,
@@ -183,6 +184,7 @@ const MemoFormContent = ({
 		saveStatus,
 		isOffline,
 		hasPendingOfflineItem,
+		pendingOfflineStatus,
 		hasSyncNetworkError,
 		isSyncFailed,
 	});

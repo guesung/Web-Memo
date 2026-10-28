@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
 	type Attempt,
+	countCdpSamples,
 	nearestRank,
 	sanitizeAttempt,
 	summarize,
@@ -8,7 +9,7 @@ import {
 } from "./statistics";
 
 const attempt = (overrides: Partial<Attempt> = {}): Attempt => ({
-	measurement_version: 2,
+	measurement_version: 3,
 	scenario: "all_hard_20",
 	route: "all",
 	action: "hard",
@@ -33,6 +34,17 @@ const attempt = (overrides: Partial<Attempt> = {}): Attempt => ({
 	http_cache: "empty",
 	router_prefetch: "unknown",
 	observed_content_ready: true,
+	cdp_sample_complete: true,
+	cdp_sample_elapsed_ms: 100,
+	cdp_sample_item_count: 20,
+	layout_count: 2,
+	layout_duration_ms: 3,
+	recalc_style_count: 4,
+	recalc_style_duration_ms: 5,
+	script_duration_ms: 6,
+	task_duration_ms: 7,
+	end_nodes: 100,
+	end_js_heap_used_bytes: 4096,
 	...overrides,
 });
 
@@ -59,6 +71,7 @@ describe("memo performance export and statistics", () => {
 			{ request_count: 1.5 },
 			{ memo_request_count: 2 },
 			{ measurement_version: 1 },
+			{ measurement_version: 2 },
 			{ validation_ms: -1 },
 			{ validation_ms: "2" },
 			{ trigger_total_ms: Number.POSITIVE_INFINITY },
@@ -69,11 +82,53 @@ describe("memo performance export and statistics", () => {
 			{ pending_auxiliary_request_count: 0.5 },
 			{ auxiliary_settled: "true" },
 			{ outcome: "blocked" },
+			{ layout_count: -1 },
+			{ layout_count: 1.5 },
+			{ layout_duration_ms: Number.POSITIVE_INFINITY },
+			{ end_nodes: "100" },
+			{ end_js_heap_used_bytes: -1 },
+			{ cdp_sample_complete: "true" },
+			{ cdp_sample_elapsed_ms: -1 },
+			{ cdp_sample_item_count: 1.5 },
+			{ layout_count: null },
 		]) {
 			expect(sanitizeAttempt({ ...attempt(), ...overrides })).toBeNull();
 		}
 	});
-	it("keeps only finite nonnegative v2 measurements and request categories", () => {
+	it("preserves partial metrics and nulls when only the baseline exists", () => {
+		const partial = attempt({
+			outcome: "timeout",
+			cdp_sample_complete: false,
+			cdp_sample_elapsed_ms: 120000,
+			cdp_sample_item_count: 1800,
+		});
+		expect(sanitizeAttempt(partial)).toEqual(partial);
+		const noEndSample = {
+			...partial,
+			cdp_sample_elapsed_ms: 0,
+			cdp_sample_item_count: null,
+			layout_count: null,
+			layout_duration_ms: null,
+			recalc_style_count: null,
+			recalc_style_duration_ms: null,
+			script_duration_ms: null,
+			task_duration_ms: null,
+			end_nodes: null,
+			end_js_heap_used_bytes: null,
+		};
+		expect(sanitizeAttempt(noEndSample)).toEqual(noEndSample);
+	});
+	it("counts incomplete successful measurements separately from timeout partials", () => {
+		expect(
+			countCdpSamples([
+				attempt(),
+				attempt({ cdp_sample_complete: false }),
+				attempt({ outcome: "empty", cdp_sample_complete: false }),
+				attempt({ outcome: "timeout", cdp_sample_complete: false }),
+			]),
+		).toEqual({ partial: 3, failed: 2, timeout_partial: 1 });
+	});
+	it("keeps only finite nonnegative v3 measurements and request categories", () => {
 		const safe = sanitizeAttempt({
 			...attempt({
 				request_count: 5,
@@ -88,7 +143,10 @@ describe("memo performance export and statistics", () => {
 			memo_id: "PRIVATE",
 		});
 		expect(safe).toMatchObject({
-			measurement_version: 2,
+			measurement_version: 3,
+			layout_count: 2,
+			layout_duration_ms: 3,
+			end_nodes: 100,
 			validation_ms: 2,
 			trigger_total_ms: 4,
 			observed_item_count: 2000,
@@ -146,6 +204,20 @@ describe("memo performance export and statistics", () => {
 			attempt(),
 		]);
 		expect(cells.map((cell) => cell.attempts)).toEqual([2, 1, 1]);
+	});
+	it("keeps v3 browser metrics in each condition summary", () => {
+		const [cell] = summarizeByCondition([
+			attempt(),
+			attempt({ layout_count: 4, layout_duration_ms: 9 }),
+			attempt({ cdp_sample_complete: false, layout_count: 99 }),
+		]);
+		expect(cell.condition.measurement_version).toBe(3);
+		expect(cell.browser_metrics.layout_count).toEqual({
+			n: 2,
+			samples: [2, 4],
+			min: 2,
+			max: 4,
+		});
 	});
 	it("uses nearest rank without mutating samples and handles an empty denominator", () => {
 		const values = [4, 1, 3, 2];

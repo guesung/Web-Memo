@@ -9,6 +9,7 @@ import type {
 } from "@playwright/test/reporter";
 import {
 	type Attempt,
+	countCdpSamples,
 	sanitizeAttempt,
 	summarizeByCondition,
 } from "./statistics";
@@ -79,6 +80,8 @@ export default class SafeReporter implements Reporter {
 	onStdErr() {}
 
 	async onEnd(result: FullResult) {
+		const cdpSamples = countCdpSamples(this.attempts);
+		const measurementFailed = this.invalid > 0 || cdpSamples.failed > 0;
 		let revision = "unknown";
 		try {
 			const sha = execFileSync("git", ["rev-parse", "HEAD"], {
@@ -90,15 +93,22 @@ export default class SafeReporter implements Reporter {
 			/* Revision is optional when running outside a checkout. */
 		}
 		const report = {
-			schema_version: 2,
-			measurement_version: 2,
+			schema_version: 3,
+			measurement_version: 3,
+			measurement_window:
+				"CDP counters are sampled before the action, after each validated load-more page, and after DOM validation plus bounded auxiliary-request settling. A failed final read retains the last successful sample and sets cdp_sample_complete=false. Sample elapsed time and item count identify its endpoint; null metrics mean only the baseline was read. Rapid cancellation and its follow-up use separate counter windows. End node and heap gauges are sampled at the reported endpoint.",
+			timing_relationship:
+				"duration_ms, validation_ms, trigger_total_ms, settle_ms, request_wait_ms, and CDP durations overlap; they are not additive. All v3 cells use the same Performance.enable/getMetrics instrumentation. Cell browser_metrics include complete CDP samples only; partial samples remain in attempts.",
 			source: "mock",
 			revision,
-			status: this.invalid ? "failed" : result.status,
+			status: measurementFailed ? "failed" : result.status,
 			passed: this.passed,
 			failed: this.failed,
 			blocked: this.blocked,
 			invalid_annotations: this.invalid,
+			partial_cdp_samples: cdpSamples.partial,
+			failed_cdp_measurements: cdpSamples.failed,
+			timeout_partial_cdp_samples: cdpSamples.timeout_partial,
 			blocked_reason: this.blocked
 				? "authentication_or_dependency"
 				: this.runnerError
@@ -108,7 +118,9 @@ export default class SafeReporter implements Reporter {
 				? "scenario_assertion"
 				: this.invalid
 					? "invalid_annotation"
-					: null,
+					: cdpSamples.failed
+						? "incomplete_cdp_measurement"
+						: null,
 			failures: this.failures,
 			server_cache: "unknown",
 			content_metric: "observed_content_ready",
@@ -124,6 +136,6 @@ export default class SafeReporter implements Reporter {
 		process.stdout.write(
 			`memo performance probe: ${report.status}; passed=${this.passed}; failed=${this.failed}; blocked=${this.blocked}; invalid=${this.invalid}\n`,
 		);
-		return { status: this.invalid ? ("failed" as const) : result.status };
+		return { status: measurementFailed ? ("failed" as const) : result.status };
 	}
 }

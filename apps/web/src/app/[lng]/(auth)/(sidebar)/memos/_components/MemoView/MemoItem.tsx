@@ -5,7 +5,6 @@ import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type {
 	GetMemoResponse,
 	HighlightMemoLink,
-	HighlightRow,
 } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
 import { Card, CardContent } from "@web-memo/ui";
@@ -30,7 +29,7 @@ import { holdScrollPosition } from "./scrollPositionHold";
 /** 메모 카드 표시와 선택 속성. */
 interface IFMemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	memo: GetMemoResponse;
-	highlights?: HighlightRow[];
+	highlightCount?: number;
 	source?: HighlightMemoLink;
 	isSelectingMode?: boolean;
 	selectMemoItem?: (id: number) => void;
@@ -59,7 +58,7 @@ interface IFMemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 function MemoItem({
 	lng,
 	memo,
-	highlights,
+	highlightCount,
 	source,
 	selectMemoItem,
 	isSelectingMode,
@@ -274,8 +273,8 @@ function MemoItem({
 							memo={memo}
 							lng={lng}
 							highlightCount={
-								!isReadOnly && (highlights?.length ?? 0) > 0
-									? highlights?.length
+								!isReadOnly && (highlightCount ?? 0) > 0
+									? highlightCount
 									: undefined
 							}
 							isShowingOption={isMemoHovering && !isSelectingMode}

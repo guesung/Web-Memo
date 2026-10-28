@@ -91,7 +91,7 @@ const MemoGroup = ({
 						<MemoItem
 							lng={lng}
 							memo={memo}
-							highlights={highlightsByUrl.get(memo.url)}
+							highlightCount={highlightsByUrl.get(memo.url)?.length}
 							source={sourcesByMemo.get(memo.id)}
 							showImpression={showImpression}
 							showActionItem={showActionItem}

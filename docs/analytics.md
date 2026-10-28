@@ -25,13 +25,13 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 캠페인은 정기 `weekly_memo_report` / 테스트 `weekly_memo_report_test`, `utm_content`는 누른 자리
 (`organize` · `view_all` · `footer_web` · `footer_setting` · `empty_open`)입니다. 메모 원문 링크에는 붙이지 않습니다.
 
-## 이벤트 73종
+## 이벤트 81종
 
 `core_action`은 사용자가 이 서비스를 쓰는 행위, `engagement`는 그 주변의 이동·설정입니다.
 분류는 `EVENT_CATEGORY`가 `Record`로 강제하므로 이벤트를 추가하고 분류를 빠뜨리면 컴파일이
 실패합니다.
 
-### core_action (35종)
+### core_action (36종)
 
 `memo_write`(fields) · `memo_delete`(memo_count) · `memo_restore`(memo_count) ·
 `memo_delete_permanently`(memo_count) · `memo_open`(has_search_query, source?) · `memo_source_open` ·
@@ -41,7 +41,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `youtube_transcript_extract`(is_success) · `category_suggestion_apply`(is_new_category, source, trigger) ·
 `category_create` · `category_update` · `category_delete` ·
 `login`(method) · `sign_up`(method) · `feedback_submit` · `extension_install_click`(from, position) ·
-`memo_first_write`(source?) · `export_run`(format) · `highlight_create`(color, has_note) ·
+`memo_first_write`(source?) · `memo_content_saved`(source) · `export_run`(format) · `highlight_create`(color, has_note) ·
 `past_memo_open`(kind, source) · `blog_subscription_change`(blog_id, active) ·
 `blog_article_open`(blog_id, sort) · `blog_article_memo_click`(blog_id, action) ·
 `blog_sync_resume_request`(blog_id, result)
@@ -50,9 +50,12 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 
 현재 작성 동선은 페이지의 하이라이트를 사이드 패널에서 참고하는 방식입니다. 패널을 여는 동작은 메모 생성으로 기록하지 않습니다. 패널 인용을 선택해 원문 위치 검증과 스크롤에 성공한 경우에만 `highlight_source_jump`를 속성 없이 기록합니다. 기존 생성 RPC의 계측과 연결 메모 열기는 이전 연결 데이터와의 호환을 위해 유지합니다.
 
-### engagement (38종)
+### engagement (45종)
 
 `side_panel_open` · `side_panel_open_click` · `side_panel_login_click` ·
+`memo_editor_ready`(source) · `memo_save_result`(is_success, source, reason) ·
+`summary_panel_toggle`(action) · `extension_uninstall` · `install_guide_panel_open_click`(is_success) ·
+`memo_domain_filter_change`(action, source, domain_option_count?) · `highlight_bubble_dismiss` ·
 `header_login_click`(from) · `header_memos_click`(from) ·
 `page_view`(page_title, page_location) · `tab_change`(tab_name) · `view_change`(view, 메모 목록에서만 layout: grid/list/domain) ·
 `memo_filter`(search_target) · `memo_undo`(action) · `setting_change`(setting_keys) ·
@@ -257,7 +260,67 @@ BigQuery export를 별도로 연결해야 하며, 연결 전 데이터는 소급
 
 ## 조회 스크립트
 
-`.github/scripts/ga/`에 GA를 읽는 스크립트가 셋 있습니다. 커스텀 이벤트는 호스트 허용 목록과
+### 설치 후 첫 유효 메모 관측 (DB-1250)
+
+기존 `memo_first_write`는 insert마다 발생하고 `memo_write`에는 제목·공백·본문 삭제도
+포함될 수 있습니다. 둘을 생애 첫 유효 본문 작성으로 바꾸거나 과거 수치를 소급하지 않습니다.
+새 계측은 확장 메모 폼의 온라인 저장과 오프라인 대기열의 실제 클라우드 write만 봅니다.
+웹·앱 저장과 하이라이트 단독 생성은 이 지표의 범위 밖입니다.
+
+| 이벤트 | 의미 | 제외 |
+| --- | --- | --- |
+| `memo_editor_ready` | 인증·후보 조회 성공 후 실제 표시된 활성 본문 입력란. 사용자·탭·페이지 범위당 최초 1회 시도 | 로그인·로딩·조회 실패·잠금 |
+| `memo_content_saved` | 서버 성공 응답의 반환 행에서 memo/impression/actionItem 중 trim 후 비어 있지 않은 변경을 확인 | 자동 제목·URL·토글·카테고리만 변경, 앞뒤 공백만 수정, 본문 삭제, 로컬 대기열 적재, no-op |
+| `memo_save_result` | 실제 write가 응답/reject할 때 결과 1회. `is_success`, `source`, 고정 `reason`만 전송 | 사전 조회 실패, 큐 적재·삭제·동일 내용 no-op |
+
+저장 결과와 유효 저장의 `source`는 `side_panel`/`offline_sync`, `reason`은
+`none`/`network`/`server`/`unknown`입니다. 기존 등록 차원 source/is_success/reason과
+공통 build_env/extension_version을 재사용하므로 새 GA 차원을 등록할 필요가 없습니다.
+원문·제목·URL·메모 ID·상세 오류·새 사용자 식별자는 신규 payload에 넣지 않습니다.
+저장 당시 계정과 전송 시 계정이 다르면 새 계측을 생략하며 기존 운영자 제외를 따릅니다.
+
+로컬 큐 적재는 서버 성공이 아닙니다. 나중에 실제 sync write가 끝났을 때만 유효 기록을
+세므로 설치 7일 뒤 동기화한 기록은 7일 지표 밖입니다. 서버에 같은 내용이 이미 있는
+no-op flush는 새 write로 세지 않습니다. 큐 삭제 실패·재시도·네트워크 응답 유실 때문에
+서버 반영과 이벤트를 정확히 한 번 대응시킬 수는 없습니다.
+새 계측과 사이드 패널의 기존 작성 이벤트 전송은 저장 결과를 기다리게 하지 않습니다.
+
+**정식 지표명: 신규 설치 식별자 중 설치 후 7일 이내 유효 메모 본문 저장 관측률.**
+실제 사람의 신규 가입률·생애 최초 작성률과 다릅니다. 재설치·기기 변경·이벤트 유실이 있고,
+GA 사용자 식별은 설치 ID와 일대일임을 보장하지 않습니다.
+
+`.github/scripts/ga/measure-first-memo.mjs`는 다음을 읽기 전용 JSON으로 출력합니다.
+
+- 주 지표는 `extension_installed → memo_content_saved`의 닫힌 **2단계** 퍼널입니다.
+  후속은 설치부터 604800초 이내로 제한하며 로그인 버튼·가입 이벤트를 필수로 두지 않습니다.
+- 설치 단계만 코호트 기간 C로 제한하고 전체 조회는 C끝+7일까지 읽습니다.
+  마지막 설치일 전체+7일이 끝난 뒤 GA 처리 48시간을 더 기다립니다.
+- `--instrumented-on`은 실제 계측 게시일입니다. 부분 배포일을 피하기 위해 C는 그 다음
+  온전한 날짜부터 시작합니다. `--versions`는 실제 계측이 있는 버전을 명시해야 하며,
+  관찰 중 업그레이드한 후속 버전도 포함해야 합니다. 버전별 사용자 수를 합산하지 않습니다.
+- 진단용 패널/편집 준비는 각각 별도의 설치→목표 2단계 7일 퍼널입니다.
+  다단계 간 7일 조건을 전체 설치 후 7일로 해석하지 않습니다.
+- 보호 지표는 같은 대상 버전·조회 기간의 **전체 수집 write 결과**를 source별로 나눈
+  실패 eventCount / 전체 결과 eventCount입니다. 설치 코호트로 한정한 집계가 아니며,
+  실제 전체 저장 실패율로 부르지 않습니다. 미관측·분모 0은 비율 null입니다.
+- 표본 추출·임곗값 적용 대상·잘린 행·잘못된 헤더/집계는 `incomplete`와 이유를 출력하며
+  비율을 확정하지 않습니다. 퍼널 응답에는 threshold 필드가 없어 그 부재로 임계값 미적용을
+  확인할 수 없습니다. API 오류를 0건으로 바꾸지 않습니다.
+
+```bash
+# GA4_PROPERTY_ID, GA4_SERVICE_ACCOUNT_JSON은 기존 읽기 전용 인증을 사용합니다.
+# 아래 날짜와 버전은 예시입니다. 실제 계측 게시일·버전·관찰 완료일로 바꿉니다.
+node .github/scripts/ga/measure-first-memo.mjs \
+  --from 2026-11-02 --to 2026-11-29 \
+  --instrumented-on 2026-11-01 --versions 1.11.4,1.11.5
+```
+
+첫 기준선은 계측 게시 후부터만 측정합니다. 28일 설치 관찰과 마지막 설치자의 7일+48시간
+후 검토를 제안하되, 이는 예약 작업이나 A/B 실험 개시가 아닙니다. 이전 insert 3/70을 새 정의의
+기준선으로 대입하지 않습니다. 최신 UI는 소표본 관찰과 동의 기반 사용성 관찰로 후보를 좁히고,
+후속 화면 변경은 별도 시각 목업 승인 뒤에 진행합니다. 관찰만으로 인과 효과를 선언하지 않습니다.
+
+`.github/scripts/ga/`에 다음 GA 조회 스크립트가 있습니다. 커스텀 이벤트는 호스트 허용 목록과
 `build_env=production`을 함께 적용하고, 활성 사용자는 호스트 허용 목록만 적용합니다. 이벤트
 목록의 원본과 사람 수 집계는 `ga/ga4-client.mjs`·`ga/ga4-weekly.mjs`의 같은 조각을 함께 써서
 서로 다른 숫자를 내지 않습니다.
@@ -268,6 +331,7 @@ BigQuery export를 별도로 연결해야 하며, 연결 전 데이터는 소급
 | `report-weekly-ga.mjs` | 지난주에 무엇을 얼마나 썼고 어디서 새는가 | 매주 월요일 크론 |
 | `measure-feature-usage.mjs` | 이 기간에 이 기능을 몇 명이 몇 번 썼는가 | 손으로, 터미널 |
 | `measure-notice-return.mjs` | 공지 이후 후속 행동 또는 향후 공지별 D1–D7 관찰값은? | 손으로, 터미널 |
+| `measure-first-memo.mjs` | 계측 이후 신규 설치 식별자의 7일 내 유효 본문 저장 관측률과 저장 결과는? | 손으로, 터미널 |
 
 주간 퍼널은 순서 강제입니다(`runFunnelReport`). 그 주에 설치한 사람이 같은 사용자로 `설치 →
 사이드 패널 열기 → 로그인하러가기 클릭 → 로그인 버튼 클릭 → 가입 → 메모 작성`을 밟은 수를

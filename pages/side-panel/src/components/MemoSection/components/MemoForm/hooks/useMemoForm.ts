@@ -452,6 +452,8 @@ export default function useMemoForm({
 					{
 						id: memoId,
 						url: tabInfo.url,
+						analyticsSource: "side_panel",
+						analyticsUserId: saveUserId,
 						data: {
 							...tabInfo,
 							// 사용자가 고친 제목이 탭 제목보다 우선이다. 비어 있을 때만 탭 제목으로 되돌린다.

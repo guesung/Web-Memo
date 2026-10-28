@@ -63,6 +63,12 @@ export interface IFOfflineMemoFlushResult {
 }
 
 type ServerMemoIdentity = Pick<MemoRow, "id" | "updated_at">;
+type OfflineMemoSavedRow = ServerMemoIdentity &
+	Partial<Pick<MemoRow, "memo" | "impression" | "actionItem">>;
+type OfflineMemoWriteResult = {
+	data: OfflineMemoSavedRow[] | null;
+	error: unknown;
+};
 export interface TOfflineMemoQueueService {
 	getMemoById: (id: number) => Promise<{
 		data:
@@ -73,13 +79,11 @@ export interface TOfflineMemoQueueService {
 			| null;
 		error: unknown;
 	}>;
-	insertMemo: (
-		request: MemoTable["Insert"],
-	) => Promise<{ data: ServerMemoIdentity[] | null; error: unknown }>;
+	insertMemo: (request: MemoTable["Insert"]) => Promise<OfflineMemoWriteResult>;
 	updateMemo: (params: {
 		id: MemoRow["id"];
 		request: MemoTable["Update"];
-	}) => Promise<{ data: ServerMemoIdentity[] | null; error: unknown }>;
+	}) => Promise<OfflineMemoWriteResult>;
 }
 
 type QueueTarget = Pick<IFOfflineMemoQueueItem, "userId" | "memoId" | "url">;
@@ -176,6 +180,52 @@ const matchesQueuedContent = (
 	existing.impression === request.impression &&
 	existing.actionItem === request.actionItem;
 
+/** Record one actual DB write response; metrics never decide queue retry. */
+const writeAndTrackOfflineMemo = async ({
+	item,
+	before,
+	write,
+}: {
+	item: StoredOfflineMemo;
+	before?: Pick<MemoRow, "id" | "memo" | "impression" | "actionItem">;
+	write: () => Promise<OfflineMemoWriteResult>;
+}): Promise<OfflineMemoWriteResult> => {
+	const trackResult = (result: {
+		isSuccess: boolean;
+		after?: OfflineMemoSavedRow;
+		error?: unknown;
+	}) => {
+		try {
+			analytics.trackMemoSaveResult({
+				before,
+				after: result.after,
+				isSuccess: result.isSuccess,
+				source: "offline_sync",
+				error: result.error,
+				userId: item.userId,
+			});
+		} catch {
+			// Analytics must not turn a completed DB write into a retry.
+		}
+	};
+	try {
+		const result = await write();
+		const after = result.data?.[0];
+		const verified = !result.error && validServerMemo(after);
+		trackResult({
+			isSuccess: verified,
+			after: after ?? undefined,
+			error:
+				result.error ??
+				(verified ? result.error : new Error("Missing saved memo identity")),
+		});
+		return result;
+	} catch (error) {
+		trackResult({ isSuccess: false, error });
+		throw error;
+	}
+};
+
 const flushItem = async (
 	item: StoredOfflineMemo,
 	service: TOfflineMemoQueueService,
@@ -187,7 +237,10 @@ const flushItem = async (
 		if (item.memoId === undefined) {
 			if (!shouldContinue()) return { type: "cancelled" };
 			onAttempt();
-			const result = await service.insertMemo({ ...request, url: item.url });
+			const result = await writeAndTrackOfflineMemo({
+				item,
+				write: () => service.insertMemo({ ...request, url: item.url }),
+			});
 			if (result.error) throw result.error;
 			const serverMemo = result.data?.[0];
 			if (!validServerMemo(serverMemo))
@@ -196,14 +249,19 @@ const flushItem = async (
 			return { type: "success", serverMemo };
 		}
 
+		const memoId = item.memoId;
 		if (!shouldContinue()) return { type: "cancelled" };
 		onAttempt();
-		const existingResult = await service.getMemoById(item.memoId);
+		const existingResult = await service.getMemoById(memoId);
 		if (existingResult.error) throw existingResult.error;
 		const existing = existingResult.data?.[0];
 		if (existing?.updated_at === item.baseUpdatedAt) {
 			if (!shouldContinue()) return { type: "cancelled" };
-			const result = await service.updateMemo({ id: item.memoId, request });
+			const result = await writeAndTrackOfflineMemo({
+				item,
+				before: existing,
+				write: () => service.updateMemo({ id: memoId, request }),
+			});
 			if (result.error) throw result.error;
 			const serverMemo = result.data?.[0];
 			if (!validServerMemo(serverMemo))
@@ -216,7 +274,10 @@ const flushItem = async (
 			return { type: "noOp", serverMemo: existing };
 		}
 		if (!shouldContinue()) return { type: "cancelled" };
-		const result = await service.insertMemo({ ...request, url: item.url });
+		const result = await writeAndTrackOfflineMemo({
+			item,
+			write: () => service.insertMemo({ ...request, url: item.url }),
+		});
 		if (result.error) throw result.error;
 		const serverMemo = result.data?.[0];
 		if (!validServerMemo(serverMemo))

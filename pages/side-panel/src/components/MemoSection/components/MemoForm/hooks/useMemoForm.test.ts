@@ -828,3 +828,18 @@ it("telemetry rejection does not reject a completed queue write", async () => {
 		queue_contract_version: 2,
 	});
 });
+
+it("실제 온라인 upsert에는 사이드 패널 출처와 요청 사용자만 넘기고 UI 성공에서는 신규 이벤트를 보내지 않는다", async () => {
+	await render();
+	await act(async () => form.saveMemo({ memo: "유효 본문" }));
+	expect(mocks.upsert.mock.calls[0][0]).toMatchObject({
+		analyticsSource: "side_panel",
+		analyticsUserId: "user-1",
+		data: { memo: "유효 본문" },
+	});
+	expect(mocks.trackEvent).not.toHaveBeenCalledWith(
+		expect.objectContaining({
+			name: expect.stringMatching(/^memo_(content_saved|save_result)$/),
+		}),
+	);
+});

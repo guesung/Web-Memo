@@ -30,6 +30,7 @@ vi.mock("../../../modules/analytics", () => ({
 		trackMemoUpdate: vi.fn(),
 		trackMemoCreate: vi.fn(),
 		trackEvent: vi.fn(),
+		trackMemoSaveResult: vi.fn(),
 	},
 }));
 vi.mock("../../../utils", () => ({
@@ -48,6 +49,9 @@ describe("메모 upsert 저장 중 Supabase 오류", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		vi.mocked(analytics.trackEvent).mockResolvedValue(undefined);
+		vi.mocked(analytics.trackMemoCreate).mockResolvedValue(undefined);
+		vi.mocked(analytics.trackMemoUpdate).mockResolvedValue(undefined);
 		queryClient = new QueryClient();
 		getQueryClient.mockReturnValue(queryClient);
 	});
@@ -56,6 +60,8 @@ describe("메모 upsert 저장 중 Supabase 오류", () => {
 		id?: number;
 		url?: string;
 		data: Record<string, unknown>;
+		analyticsSource?: "side_panel";
+		analyticsUserId?: string;
 	}) => {
 		const options = useMemoUpsertMutation() as unknown as ConstructorParameters<
 			typeof MutationObserver
@@ -64,6 +70,85 @@ describe("메모 upsert 저장 중 Supabase 오류", () => {
 
 		return mutation.mutate(variables);
 	};
+
+	it("사이드 패널은 기존 작성 계측이 무응답이어도 서버 저장 완료를 반환한다", async () => {
+		insertMemo.mockResolvedValueOnce({
+			data: [{ id: 1, memo: "본문" }],
+			error: null,
+		});
+		vi.mocked(analytics.trackEvent).mockImplementationOnce(
+			() => new Promise(() => {}),
+		);
+		const result = await mutate({
+			data: { memo: "본문" },
+			analyticsSource: "side_panel",
+			analyticsUserId: "user-a",
+		});
+		expect(result).toMatchObject({ data: [{ id: 1, memo: "본문" }] });
+		expect(analytics.trackMemoSaveResult).toHaveBeenCalledTimes(1);
+	});
+
+	it("출처를 지정한 실제 write의 기존 행과 반환 행만 비동기로 계측한다", async () => {
+		const before = { id: 1, url: "https://example.com", memo: "이전" };
+		const after = { ...before, memo: "새 본문" };
+		getMemoById.mockResolvedValueOnce({ data: [before], error: null });
+		updateMemo.mockResolvedValueOnce({ data: [after], error: null });
+		vi.mocked(analytics.trackMemoSaveResult).mockReturnValue(undefined);
+
+		await mutate({
+			id: 1,
+			data: { memo: "새 본문" },
+			analyticsSource: "side_panel",
+			analyticsUserId: "user-a",
+		});
+
+		expect(analytics.trackMemoSaveResult).toHaveBeenCalledTimes(1);
+		expect(analytics.trackMemoSaveResult).toHaveBeenCalledWith({
+			before,
+			after,
+			isSuccess: true,
+			source: "side_panel",
+			userId: "user-a",
+		});
+	});
+
+	it("출처를 지정해도 기존 메모 조회 실패는 write 결과로 세지 않는다", async () => {
+		getMemoById.mockRejectedValueOnce(new Error("조회 실패"));
+		await expect(
+			mutate({
+				id: 1,
+				data: {},
+				analyticsSource: "side_panel",
+				analyticsUserId: "user-a",
+			}),
+		).rejects.toThrow("조회 실패");
+		expect(analytics.trackMemoSaveResult).not.toHaveBeenCalled();
+	});
+
+	it("출처 없는 웹/앱 저장에는 새 결과 이벤트를 추가하지 않는다", async () => {
+		insertMemo.mockResolvedValueOnce({ data: [{ id: 1 }], error: null });
+		await mutate({ data: { memo: "본문" } });
+		expect(analytics.trackMemoSaveResult).not.toHaveBeenCalled();
+	});
+
+	it("write reject는 실패 결과를 한 번 기록하고 기존 오류를 유지한다", async () => {
+		const error = new TypeError("Failed to fetch");
+		insertMemo.mockRejectedValueOnce(error);
+		await expect(
+			mutate({
+				data: { memo: "본문" },
+				analyticsSource: "side_panel",
+				analyticsUserId: "user-a",
+			}),
+		).rejects.toBe(error);
+		expect(analytics.trackMemoSaveResult).toHaveBeenCalledTimes(1);
+		expect(analytics.trackMemoSaveResult).toHaveBeenCalledWith({
+			isSuccess: false,
+			source: "side_panel",
+			userId: "user-a",
+			error,
+		});
+	});
 
 	it("id로 기존 메모를 조회하다 오류가 나면 성공으로 처리하지 않는다", async () => {
 		getMemoById.mockResolvedValueOnce({

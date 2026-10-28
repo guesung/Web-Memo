@@ -6,8 +6,8 @@
 
 - **코드 계약:** [type.ts](../packages/shared/src/modules/analytics/type.ts)의 `TAnalyticsEvent`와 `EVENT_CATEGORY`.
 - **발생 동작:** 아래 호출부 코드가 원천입니다. 타입에 이름이 있어도 실행 경로가 없을 수 있습니다.
-- **문서 검토 기준:** 2026-10-28, master `445ea702`. 등록된 81개 이름을 각각 기술했습니다.
-  문서화하면서 이벤트 이름·속성·전송·제품 동작은 바꾸지 않았습니다.
+- **문서 검토 기준:** 2026-10-28, master `445ea702`의 81종 명세에 PR #788의 신규 3종을 통합해 총 84개 이름을 기술했습니다.
+  기존 81종 문서화는 제품 동작을 바꾸지 않았으며, 신규 3종은 PR #788의 구현을 기준으로 기술했습니다.
   아래 한계는 AS-IS 기록이며, 오류 판정·개인정보 공백을 바람직한 동작으로 승인하는 것은 아닙니다.
 - **운영 확인과 구분:** 코드·테스트를 읽은 사실은 테스트 실행·배포·운영 수신의 증거가 아닙니다.
   `도입 버전·일자 미확인`은 추측하지 않았다는 뜻이며 현재 미배포라는 뜻이 아닙니다.
@@ -88,6 +88,33 @@
 - **단위·중복:** 신규 생성 처리당 1회. 사용자 생애 1회 제한 없음. 하이라이트 재시도로 기존 연결을 받은 경우 제외.
 - **근거·테스트:** [useMemoUpsertMutation.ts](../packages/shared/src/hooks/supabase/mutations/useMemoUpsertMutation.ts) · [highlightMemo.ts](../apps/chrome-extension/lib/background/highlightMemo.ts) · [useHighlightMemos.ts](../packages/shared/src/hooks/supabase/useHighlightMemos.ts); 테스트: [useMemoUpsertMutation.test.ts](../packages/shared/src/hooks/supabase/mutations/useMemoUpsertMutation.test.ts) · [highlightMemo.test.ts](../apps/chrome-extension/lib/background/highlightMemo.test.ts).
 - **한계·이력:** 이름과 달리 생애 첫 작성이 아니며 비공백 본문 조건도 없다. 오프라인 생성까지 포괄하는 완전한 insert 집계가 아니다. 도입 버전·일자 미확인.
+
+### `memo_editor_ready`
+
+- **질문:** 패널을 연 설치 식별자가 실제 작성 가능한 화면까지 도달하는가?
+- **발생·제외:** 인증·유효 탭·페이지 키와 메모/동일 경로 후보 조회 성공 후, 본문 textarea가 연결·표시되고 편집 가능할 때. 로그인·로딩·조회 오류·잠금·비활성 문서는 제외.
+- **속성:** 필수 `source: "side_panel"`.
+- **단위·중복:** 훅 인스턴스의 사용자·탭·페이지 범위마다 최초 1회 전송 시도. 리마운트 후 전역 중복 제거는 보장하지 않는다.
+- **근거·테스트:** [useMemoEditorReady.ts](../pages/side-panel/src/components/MemoSection/components/MemoForm/hooks/useMemoEditorReady.ts) · [단위 테스트](../pages/side-panel/src/components/MemoSection/components/MemoForm/hooks/useMemoEditorReady.test.ts) · [확장 E2E](../e2e/tests/extension/firstMemoTracking.test.ts).
+- **한계·이력:** 입력·서버 저장 완료가 아니다. DB-1250, [PR #788](https://github.com/guesung/Web-Memo/pull/788), 확장 버전 1.11.4에 포함 예정. 운영 보급·수신은 별도 확인한다.
+
+### `memo_content_saved`
+
+- **질문:** 설치 후 7일 안에 유효 본문 저장이 관측되는가?
+- **발생·제외:** 출처가 지정된 실제 서버 insert/update 성공 후 유효한 숫자 ID의 반환 행에서 memo/impression/actionItem 중 이전 값과 trim 비교해 달라진 비어 있지 않은 본문이 있을 때. 제목·토글·본문 삭제·공백만 변경·로컬 큐 적재·no-op은 제외.
+- **속성:** 필수 `source: "side_panel" | "offline_sync"`.
+- **단위·중복:** write 결과 해석당 최대 1회. UI에서 중복 집계하지 않으며 재시도 write는 별도다. 계정 불일치 시 전송을 제외하고 전송 완료를 저장이 기다리지 않는다.
+- **근거·테스트:** [memoSaveEvents.ts](../packages/shared/src/modules/analytics/memoSaveEvents.ts) · [단위 테스트](../packages/shared/src/modules/analytics/memoSaveEvents.test.ts) · [useMemoUpsertMutation.ts](../packages/shared/src/hooks/supabase/mutations/useMemoUpsertMutation.ts) · [offlineMemoQueue.ts](../pages/side-panel/src/utils/offlineMemoQueue.ts) · [Analytics.ts](../packages/shared/src/modules/analytics/Analytics.ts).
+- **한계·이력:** 사용자 생애 첫 작성·전체 플랫폼 저장을 뜻하지 않는다. DB-1250, PR #788, 확장 1.11.4에 포함 예정. 실제 배포·운영 수신과 성숙 코호트는 별도 확인한다.
+
+### `memo_save_result`
+
+- **질문:** 수집된 클라우드 write 결과의 실패 비율이 출처별로 다른가?
+- **발생·제외:** 출처가 지정된 확장 클라우드 write가 응답하거나 reject할 때. 사전 조회 실패·로컬 큐 적재·서버 no-op·큐 삭제는 제외. 성공 응답에 반환 행이 없어도 결과 이벤트와 유효 본문 판정은 구분한다.
+- **속성:** 필수 `is_success: boolean`, `source: "side_panel" | "offline_sync"`, `reason: "none" | "network" | "server" | "unknown"`. 성공은 none, 실패는 네트워크 판별 후 Error/message 객체이면 server, 나머지는 unknown.
+- **단위·중복:** 실제 write 시도당 1회 해석. 재시도는 별도 기록하며 UI·뮤테이션·큐에서 동일 write를 중복 집계하지 않는다. 계정 불일치 시 전송 제외.
+- **근거·테스트:** [memoSaveEvents.ts](../packages/shared/src/modules/analytics/memoSaveEvents.ts) · [단위 테스트](../packages/shared/src/modules/analytics/memoSaveEvents.test.ts) · [upsert 테스트](../packages/shared/src/hooks/supabase/mutations/useMemoUpsertMutation.test.ts) · [큐 테스트](../pages/side-panel/src/utils/offlineMemoQueue.test.ts) · [전송 테스트](../packages/shared/src/modules/analytics/Analytics.test.ts).
+- **한계·이력:** 미수집·무응답이 있어 실제 전체 저장 실패율이 아니며 원문 오류 메시지는 속성으로 보내지 않는다. DB-1250, PR #788, 확장 1.11.4에 포함 예정. 운영 보급·수신 미확인.
 
 ### `memo_delete`
 
@@ -809,9 +836,7 @@
 - 이 문서는 위 기준 SHA의 AS-IS입니다. 코드에서 확인한 누락·오류 판정 공백을 바람직한 동작으로
   승인하거나, 문서를 고친 것으로 제품 문제가 해결됐다고 취급하지 않습니다.
 - `past_memo_view_start/result/reuse`는 기준 SHA에 포함되지만 실제 운영 버전 보급·수신 확인은 별도입니다.
-- DB-1250의 `memo_editor_ready`·`memo_content_saved`·`memo_save_result`는 이 기준 SHA의 타입에 없습니다.
-  [PR #788](https://github.com/guesung/Web-Memo/pull/788)의 설계/구현을 현재 운영 이벤트와 섞지 않습니다.
-  병합되면 이 문서에 같은 6항목 명세와 실제 반영 이력을 추가해야 합니다.
+- DB-1250의 신규 3종은 PR #788 구현과 위 명세에 포함됩니다. 확장 1.11.4의 실제 스토어 보급·GA 수신·성숙 설치 코호트는 별도 확인하며 코드 반영과 혼동하지 않습니다.
 - DB-1255의 revision·attempt/ACK 확장 필드도 이 기준 SHA에 없습니다. 현재 queue/flush 명세로
   최종 저장 실패율·ACK 지연 백분위를 계산하지 않습니다.
 - 도입 일자가 미확인인 항목은 문서 작성일을 도입일로 채우지 않습니다. 과거 의미와 운영 버전은

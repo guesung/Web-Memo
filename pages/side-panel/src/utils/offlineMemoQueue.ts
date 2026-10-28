@@ -56,6 +56,14 @@ export interface IFOfflineMemoFlushResult {
 	hasOtherError: boolean;
 }
 
+type TOfflineMemoSavedRow = Pick<MemoRow, "id"> &
+	Partial<Pick<MemoRow, "memo" | "impression" | "actionItem">>;
+
+type TOfflineMemoWriteResult = {
+	data: TOfflineMemoSavedRow[] | null;
+	error: unknown;
+};
+
 /**
  * flush에 필요한 MemoService 메서드만 뽑은 타입.
  * @description MemoService 인스턴스는 이보다 많은 필드(count 등)를 돌려주지만 초과 필드는
@@ -73,11 +81,11 @@ export interface TOfflineMemoQueueService {
 	}>;
 	insertMemo: (
 		request: MemoTable["Insert"],
-	) => Promise<{ data: Pick<MemoRow, "id">[] | null; error: unknown }>;
+	) => Promise<TOfflineMemoWriteResult>;
 	updateMemo: (params: {
 		id: MemoRow["id"];
 		request: MemoTable["Update"];
-	}) => Promise<{ data: unknown; error: unknown }>;
+	}) => Promise<TOfflineMemoWriteResult>;
 }
 
 /** memoId가 있으면 memoId로, 없으면 url로 대기 항목을 구분한다. 항목당 최신 스냅샷 하나만 남긴다 */
@@ -183,6 +191,47 @@ const matchesQueuedContent = (
 	existingMemo.impression === queuedRequest.impression &&
 	existingMemo.actionItem === queuedRequest.actionItem;
 
+/** 실제 DB 쓰기 결과만 기록하고 계측 실패는 대기열 처리와 분리한다. */
+const writeAndTrackOfflineMemo = async ({
+	item,
+	before,
+	write,
+}: {
+	item: IFOfflineMemoQueueItem;
+	before?: TOfflineMemoSavedRow;
+	write: () => Promise<TOfflineMemoWriteResult>;
+}) => {
+	const trackResult = (
+		isSuccess: boolean,
+		after?: TOfflineMemoSavedRow | null,
+		error?: unknown,
+	) => {
+		try {
+			analytics.trackMemoSaveResult({
+				before,
+				after,
+				isSuccess,
+				source: "offline_sync",
+				error,
+				userId: item.userId,
+			});
+		} catch {
+			// 계측 오류 때문에 성공한 DB 쓰기를 재시도하지 않는다.
+		}
+	};
+
+	let result: TOfflineMemoWriteResult;
+	try {
+		result = await write();
+	} catch (error) {
+		trackResult(false, undefined, error);
+		throw error;
+	}
+
+	trackResult(!result.error, result.data?.[0], result.error);
+	return result;
+};
+
 /**
  * 대기 항목 하나를 서버에 반영한다.
  * @description memoId가 없으면 항상 insert한다. memoId가 있으면 서버 updated_at을 다시 읽어
@@ -201,9 +250,13 @@ const flushOfflineMemoItem = async ({
 		const queuedRequest = buildMemoRequest(item.data);
 
 		if (item.memoId === undefined) {
-			const insertResult = await memoService.insertMemo({
-				...queuedRequest,
-				url: item.url,
+			const insertResult = await writeAndTrackOfflineMemo({
+				item,
+				write: () =>
+					memoService.insertMemo({
+						...queuedRequest,
+						url: item.url,
+					}),
 			});
 			if (insertResult.error) {
 				throw insertResult.error;
@@ -215,7 +268,8 @@ const flushOfflineMemoItem = async ({
 			return { type: "success" };
 		}
 
-		const existingResult = await memoService.getMemoById(item.memoId);
+		const memoId = item.memoId;
+		const existingResult = await memoService.getMemoById(memoId);
 		if (existingResult.error) {
 			throw existingResult.error;
 		}
@@ -225,9 +279,14 @@ const flushOfflineMemoItem = async ({
 			!!existingMemo && existingMemo.updated_at === item.baseUpdatedAt;
 
 		if (isUnchanged) {
-			const updateResult = await memoService.updateMemo({
-				id: item.memoId,
-				request: queuedRequest,
+			const updateResult = await writeAndTrackOfflineMemo({
+				item,
+				before: existingMemo,
+				write: () =>
+					memoService.updateMemo({
+						id: memoId,
+						request: queuedRequest,
+					}),
 			});
 			if (updateResult.error) {
 				throw updateResult.error;
@@ -240,9 +299,13 @@ const flushOfflineMemoItem = async ({
 			return { type: "success" };
 		}
 
-		const insertResult = await memoService.insertMemo({
-			...queuedRequest,
-			url: item.url,
+		const insertResult = await writeAndTrackOfflineMemo({
+			item,
+			write: () =>
+				memoService.insertMemo({
+					...queuedRequest,
+					url: item.url,
+				}),
 		});
 		if (insertResult.error) {
 			throw insertResult.error;

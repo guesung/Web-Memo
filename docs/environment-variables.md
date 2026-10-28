@@ -131,9 +131,13 @@
 | `GITHUB_RUN_ATTEMPT` | GitHub Actions가 넣는다. E2E 실행 ID를 재시도마다 다르게 만든다 | `e2e/globalSetup.ts` |
 | `GITHUB_RUN_ID` | GitHub Actions가 넣는다. E2E 실행 ID의 앞부분으로 실DB 테스트 데이터를 실행별로 가른다 | `e2e/globalSetup.ts` |
 | `GITHUB_SHA` | GitHub Actions가 넣는다. Vercel 값이 없을 때의 폴백으로 읽는다 | `apps/web/src/app/api/version/route.ts` |
+| `MEMO_PERF_REPETITIONS` | 로컬 성능 프로브의 조건별 반복 횟수. 셸에서 1~100을 선택하며 기본 1회, 외부 서비스에 등록하지 않는다 | `e2e/probes/memo-performance.spec.ts` |
+| `MEMO_PERF_REUSE_PREVIEW` | 로컬 성능 프로브가 이미 실행 중인 production preview를 재사용할 때 셸에서 1로 넣는 선택 값. 외부 서비스에 등록하지 않는다 | `e2e/playwright.memo-performance.config.ts` |
+| `MEMO_PERF_SCENARIOS` | 로컬 성능 프로브에서 실행할 고정 시나리오를 셸의 쉼표 목록으로 선택한다. 없으면 네 경로 smoke만 실행하며 외부 서비스에 등록하지 않는다 | `e2e/probes/memo-performance.spec.ts` |
 | `NEXT_RUNTIME` | Next.js가 실행 런타임(nodejs, edge)을 넣는다 | `apps/web/src/instrumentation.ts` |
 | `NODE_ENV` | Next와 Vite 같은 툴체인이 자기 값으로 채운다. 환경 구분에는 쓰지 않고 BUILD_ENV를 쓴다 | `apps/chrome-extension/vite.config.mts` |
 | `PLAYWRIGHT_BASE_URL` | 독립 QA 서버의 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 localhost:3000을 본다. 확장 QA 빌드의 WEB_URL과 맞추며 외부 서비스에 등록하지 않는다 | `e2e/tests/fixtures/web.ts`, `e2e/tests/fixtures/extension.ts` |
+| `PLAYWRIGHT_NO_COPY_PROMPT` | 전용 성능 프로브 설정이 1로 지정해 Playwright 1.58.2의 실패 DOM snapshot 자동 저장을 차단한다. 외부 서비스에 등록하지 않는다 | `e2e/playwright.memo-performance.config.ts` |
 | `PROBE_BASE_URL` | 운영 프로브의 대상 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 운영 도메인을 본다. 등록하지 않는다 | `e2e/playwright.probe.config.ts` |
 | `PW_CHROMIUM_ATTACH_TO_OTHER` | Playwright가 넣는 내부 플래그 | `e2e/tests/fixtures/extension.ts` |
 | `SUPABASE_ANON_KEY` | Supabase가 Edge Function에 주입한다. 테스트 발송에서 사용자 토큰을 auth.getUser로 검증할 때만 쓴다 | `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |

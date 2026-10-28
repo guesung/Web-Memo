@@ -8,7 +8,11 @@ import {
 } from "@src/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY, type TMemoStatusKey } from "@web-memo/shared/constants";
-import { useSettingQuery, useSupabaseUserQuery } from "@web-memo/shared/hooks";
+import {
+	useSettingQuery,
+	useSupabaseUserQuery,
+	useTabQuery,
+} from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import type { Database, IFPastMemoDuplicate } from "@web-memo/shared/types";
@@ -49,6 +53,7 @@ import {
 	useMemoFieldResize,
 	useMemoForm,
 } from "./hooks";
+import useMemoEditorReady from "./hooks/useMemoEditorReady";
 
 const MemoFormContent = ({
 	fieldResizeState,
@@ -86,6 +91,14 @@ const MemoFormContent = ({
 	const setting = useSettingQuery();
 	const { showImpression, showActionItem } = setting;
 	const userId = user.data.user?.id;
+	const { data: tab } = useTabQuery();
+	useMemoEditorReady({
+		userId,
+		tab,
+		textareaRef,
+		isMemoLocked,
+		isMemoLoadFailed,
+	});
 
 	useEffect(() => {
 		const unsubscribeInternal = bridge.handle.SETTING_UPDATED((payload) => {

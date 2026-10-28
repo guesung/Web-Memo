@@ -30,6 +30,9 @@
 | memo_delete_permanently | 영구 삭제 (추정) | `memo_count` | 휴지통을 비우는 빈도 (추정) | — |
 | memo_open | 메모 열기 (하이라이트 연결 메모의 실제 상세 열기 포함, 휴지통 제외) | `has_search_query`, `source?: highlight` | 검색에서 열리는 비율 (추정) | — |
 | memo_source_open | 메모의 원문 페이지 열기 (추정) | — | 저장한 페이지로 되돌아가는가 (추정) | — |
+| past_memo_view_start | 중복 안내의 메모 버튼으로 패널 열람 시도를 시작할 때마다 1회. 기존 open 중복 제거와 독립이며 원문 새 탭 fallback은 제외 | `source`: `rule` \| `jev` | 중복 안내에서 패널 열람을 얼마나 시도하는가 | DB-1251 |
+| past_memo_view_result | 같은 시도의 비공백 기록이 활성 패널 DOM에 렌더되거나 최종 실패·취소가 확정됐을 때 최대 1회. 계정 전환은 전송 없이 로컬 무효화 | `source`, `is_success`, `reason`: `displayed` \| `empty_content` \| `query_error` \| `not_found` \| `cancelled`, `action`: `existing` \| `recent` \| `unknown` | 열기 의도가 실제 기록 렌더로 이어지는가. 실패·취소·미관측을 구분할 수 있는가 | DB-1251 |
+| past_memo_reuse | 같은 시도의 existing 기록 렌더 성공 후 기존 원문 버튼의 탭 생성이 성공했을 때 첫 1회. 탭 생성에 따른 scope 변경은 허용하되 계정 변경은 제외 | `source`, `action`: `source_open` | 표시한 기존 기록에서 원문으로 다시 이동하는가. 실제 읽음·효용은 증명하지 않음 | DB-1251 |
 | memo_search | 메모 검색 (추정) | `query_length` | 검색이 쓰이는가(원문은 넣지 않음) (추정) | — |
 | memo_filter | 메모 필터 (추정) | `search_target` | 어떤 대상으로 거르는가 (추정) | — |
 | memo_domain_filter_change | 웹 메모 목록에서 도메인을 고르거나 해제해 URL이 실제로 바뀐 직후(같은 값 재선택·이미 미선택인 해제는 제외) | `action`: `select` \| `clear`, `source`: `popover` \| `clear_button` \| `empty_state`, `domain_option_count`(빈 상태 해제에서는 없음) | 도메인 필터가 실제로 쓰이는가? 고른 뒤 바로 해제하는 비율은? 빈 상태의 해제 버튼이 탈출구로 쓰이는가? (도메인 원문은 넣지 않음) | DB-1081 |

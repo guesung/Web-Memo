@@ -75,6 +75,13 @@ export type TInstallClickPosition =
 export type TAnalyticsEvent =
 	| { name: "highlight_source_jump" }
 	| { name: "highlight_panel_open_result"; params: { is_success: boolean } }
+	| {
+			name: "introduce_demo_control";
+			params: {
+				action: "select_step" | "play" | "pause";
+				stage: "read" | "shortcut" | "panel" | "write" | "saved";
+			};
+	  }
 	| { name: "side_panel_open" }
 	| { name: "memo_editor_ready"; params: { source: "side_panel" } }
 	| { name: "memo_content_saved"; params: { source: TMemoSaveSource } }
@@ -348,6 +355,7 @@ export type TAnalyticsEventName = TAnalyticsEvent["name"];
 export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	highlight_source_jump: "core_action",
 	highlight_panel_open_result: "core_action",
+	introduce_demo_control: "engagement",
 	side_panel_open: "engagement",
 	page_view: "engagement",
 	memo_write: "core_action",

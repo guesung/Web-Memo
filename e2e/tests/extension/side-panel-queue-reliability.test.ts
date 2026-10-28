@@ -13,7 +13,7 @@ interface QueuedMemo {
 	memoId?: number;
 	url: string;
 	revision?: string;
-	data: { memo: string };
+	data: { title: string; memo: string };
 }
 
 const readQueue = (panel: Page): Promise<QueuedMemo[]> =>
@@ -51,6 +51,40 @@ test("두 확장 컨텍스트의 동기화 중 새 입력을 보존하고 같은
 	await page.bringToFront();
 	await expect(secondPanel.locator("#memo-textarea")).toBeVisible();
 	await expect(panel.locator("#memo-textarea")).toHaveValue("server draft");
+	await secondPanel.evaluate(() => {
+		const originalRequest = navigator.locks.request.bind(navigator.locks);
+		Object.defineProperty(navigator.locks, "request", {
+			value: (
+				name: string,
+				options: LockOptions,
+				callback: LockGrantedCallback,
+			) =>
+				originalRequest(name, options, async (lock) => {
+					if (!name.startsWith("web-memo:offline-memo-queue:flush:")) {
+						return callback(lock);
+					}
+					sessionStorage.setItem("queue-flush-active", "true");
+					try {
+						return await callback(lock);
+					} finally {
+						sessionStorage.removeItem("queue-flush-active");
+					}
+				}),
+		});
+		const originalGet = chrome.storage.local.get.bind(chrome.storage.local);
+		Object.defineProperty(chrome.storage.local, "get", {
+			value: async (key: string) => {
+				const result = await originalGet(key);
+				if (
+					key === "offlineMemoQueue" &&
+					sessionStorage.getItem("queue-flush-active")
+				) {
+					sessionStorage.setItem("queue-reread-under-flush", "true");
+				}
+				return result;
+			},
+		});
+	});
 
 	let releaseFirstWrite: () => void = () => {};
 	const firstWriteGate = new Promise<void>((resolve) => {
@@ -107,6 +141,13 @@ test("두 확장 컨텍스트의 동기화 중 새 입력을 보존하고 같은
 		await expect.poll(() => store.getMemo(memo.id)?.memo).toBe("revision B");
 		await expect.poll(() => readQueue(panel)).toEqual([]);
 		await expect.poll(() => readQueue(secondPanel)).toEqual([]);
+		await expect
+			.poll(() =>
+				secondPanel.evaluate(() =>
+					sessionStorage.getItem("queue-reread-under-flush"),
+				),
+			)
+			.toBe("true");
 		await expect
 			.poll(() =>
 				secondPanel.evaluate(async () => {
@@ -179,6 +220,12 @@ test("로컬 큐 쓰기 실패는 기존 실패 표시로 끝나고 재시도하
 	const store = new MockSupabaseStore();
 	store.addMemo(createMockMemo({ url, memo: "server draft" }));
 	const panel = await preparePanel(page, url, store);
+	const queuedEvents: unknown[] = [];
+	panel.on("console", async (message) => {
+		if (message.text().startsWith("[analytics] memo_offline_queued")) {
+			queuedEvents.push(await message.args()[1].jsonValue());
+		}
+	});
 	await panel.evaluate(() => {
 		const originalSet = chrome.storage.local.set.bind(chrome.storage.local);
 		sessionStorage.setItem("queue-write-failure", "true");
@@ -196,19 +243,52 @@ test("로컬 큐 쓰기 실패는 기존 실패 표시로 끝나고 재시도하
 		});
 	});
 	await context.setOffline(true);
+	await panel.locator("#memo-title-input").fill("recover this title");
 	await panel.locator("#memo-textarea").fill("recover this draft");
 	const failure = panel.locator('[data-save-status="failed"]');
 	await expect(failure).toBeVisible();
 	await expect(panel.locator("#memo-textarea")).toHaveValue(
 		"recover this draft",
 	);
+	await expect(panel.locator("#memo-title-input")).toHaveValue(
+		"recover this title",
+	);
 	expect(await readQueue(panel)).toEqual([]);
+	expect(queuedEvents).toEqual([]);
 	await panel.evaluate(() => sessionStorage.removeItem("queue-write-failure"));
 	await failure.getByRole("button", { name: /retry|다시 시도/i }).click();
 	await expect
 		.poll(async () => (await readQueue(panel))[0]?.data.memo)
 		.toBe("recover this draft");
 	await expect(panel.locator('[data-save-status="offline"]')).toBeVisible();
+	await expect.poll(() => queuedEvents.length).toBe(1);
+});
+
+test("로컬 보관한 제목과 본문은 패널을 닫고 다시 열어도 복원된다", async ({
+	page,
+	context,
+}) => {
+	const url = "https://example.com/queue-close-reopen";
+	const store = new MockSupabaseStore();
+	store.addMemo(createMockMemo({ url, memo: "server draft" }));
+	const panel = await preparePanel(page, url, store);
+	const panelUrl = panel.url();
+	await context.setOffline(true);
+	await panel.locator("#memo-title-input").fill("retained title");
+	await panel.locator("#memo-textarea").fill("retained body");
+	await expect
+		.poll(async () => (await readQueue(panel)).map((item) => item.data))
+		.toMatchObject([{ title: "retained title", memo: "retained body" }]);
+	await expect(panel.locator('[data-save-status="offline"]')).toBeVisible();
+	await panel.close();
+	await context.setOffline(false);
+	const reopened = await context.newPage();
+	await reopened.goto(panelUrl);
+	await page.bringToFront();
+	await expect(reopened.locator("#memo-textarea")).toHaveValue("retained body");
+	await expect(reopened.locator("#memo-title-input")).toHaveValue(
+		"retained title",
+	);
 });
 
 test("신규 초안 전송 중 재입력하면 반환 ID로 한 번 수정하고 복구 수치를 기록한다", async ({
@@ -243,12 +323,14 @@ test("신규 초안 전송 중 재입력하면 반환 ID로 한 번 수정하고
 		await expect
 			.poll(async () => (await readQueue(panel))[0]?.data.memo)
 			.toBe("new revision A");
+		expect(await readQueue(panel)).toHaveLength(1);
 		await context.setOffline(false);
 		await expect.poll(() => writes).toEqual(["POST:new revision A"]);
 		await panel.locator("#memo-textarea").fill("new revision B");
 		await expect
 			.poll(async () => (await readQueue(panel))[0]?.data.memo)
 			.toBe("new revision B");
+		expect(await readQueue(panel)).toHaveLength(1);
 		releaseInsert();
 		await expect
 			.poll(() => store.getMemoByUrl(url)?.memo)

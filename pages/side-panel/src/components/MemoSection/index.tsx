@@ -142,7 +142,10 @@ const MemoSectionContent = ({ tracking }: { tracking: PastMemoTracking }) => {
 				tabId={tab?.id}
 				url={tab?.url ?? ""}
 			/>
-			<AuthenticatedMemoSectionContent tracking={tracking} />
+			<AuthenticatedMemoSectionContent
+				key={user.data.user.id}
+				tracking={tracking}
+			/>
 		</>
 	);
 };

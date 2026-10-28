@@ -1,63 +1,95 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	getPendingOfflineMemo,
 	type IFOfflineMemoQueueItem,
 	OFFLINE_MEMO_QUEUE_STORAGE_KEY,
 } from "../utils/offlineMemoQueue";
 
-/** 확인할 대상 메모. memoId가 있으면 memoId로, 없으면 url로 대기열 항목을 찾는다 */
 interface UsePendingOfflineMemoProps {
+	userId?: string;
 	memoId?: number;
 	url: string;
 }
 
-/**
- * 지금 편집 중인 메모(memoId 또는 url)의 대기열 항목을 반응형으로 돌려준다. 없으면 undefined.
- * @description 마운트·대상이 바뀔 때 한 번 읽고, 이후로는 chrome.storage.onChanged로 대기열
- * 변경을 들어 다시 읽는다. 저장 표시줄이 '지금 대기 중인가'를 그대로 반영하고, 오프라인에서
- * 페이지를 오갈 때 폼이 대기 중인 본문을 다시 채울 수 있게 하기 위해서다.
- * 사용처: useMemoForm.ts
- */
+export type PendingOfflineMemoResult =
+	| { status: "loading"; item?: never }
+	| { status: "absent"; item?: never }
+	| { status: "present"; item: IFOfflineMemoQueueItem }
+	| { status: "error"; item?: never };
+
+/** The result belongs only to the current account and editing target. */
 export default function usePendingOfflineMemo({
+	userId,
 	memoId,
 	url,
 }: UsePendingOfflineMemoProps) {
-	const [pendingItem, setPendingItem] = useState<
-		IFOfflineMemoQueueItem | undefined
-	>(undefined);
+	const scope = `${userId ?? ""}|${memoId ?? ""}|${url}`;
+	const [resolved, setResolved] = useState<{
+		scope: string;
+		epoch: number;
+		result: PendingOfflineMemoResult;
+	} | null>(null);
+	const generationRef = useRef(0);
+	const scopeRef = useRef(scope);
+	const scopeEpochRef = useRef(0);
+	if (scopeRef.current !== scope) {
+		scopeRef.current = scope;
+		scopeEpochRef.current++;
+		generationRef.current++;
+	}
+	const epoch = scopeEpochRef.current;
+
+	const refresh = useCallback(async () => {
+		const generation = ++generationRef.current;
+		if (scopeRef.current === scope && scopeEpochRef.current === epoch) {
+			setResolved({ scope, epoch, result: { status: "loading" } });
+		}
+		if (!userId) return;
+		try {
+			const item = await getPendingOfflineMemo({ userId, memoId, url });
+			if (
+				scopeRef.current === scope &&
+				scopeEpochRef.current === epoch &&
+				generationRef.current === generation
+			) {
+				setResolved({
+					scope,
+					epoch,
+					result: item ? { status: "present", item } : { status: "absent" },
+				});
+			}
+		} catch {
+			if (
+				scopeRef.current === scope &&
+				scopeEpochRef.current === epoch &&
+				generationRef.current === generation
+			) {
+				setResolved({ scope, epoch, result: { status: "error" } });
+			}
+		}
+	}, [userId, memoId, url, scope, epoch]);
 
 	useEffect(() => {
-		let isCancelled = false;
-
-		const refresh = async () => {
-			const nextPendingItem = await getPendingOfflineMemo({ memoId, url });
-			if (!isCancelled) {
-				setPendingItem(nextPendingItem);
-			}
-		};
-
 		void refresh();
-
 		const handleStorageChange = (
 			changes: Record<string, chrome.storage.StorageChange>,
 			areaName: string,
 		) => {
-			if (
-				areaName !== "local" ||
-				!(OFFLINE_MEMO_QUEUE_STORAGE_KEY in changes)
-			) {
-				return;
+			if (areaName === "local" && OFFLINE_MEMO_QUEUE_STORAGE_KEY in changes) {
+				void refresh();
 			}
-
-			void refresh();
 		};
-
 		chrome.storage.onChanged.addListener(handleStorageChange);
 		return () => {
-			isCancelled = true;
+			generationRef.current++;
 			chrome.storage.onChanged.removeListener(handleStorageChange);
 		};
-	}, [memoId, url]);
+	}, [refresh]);
 
-	return pendingItem;
+	return {
+		...(resolved?.scope === scope && resolved.epoch === epoch
+			? resolved.result
+			: { status: "loading" as const }),
+		refresh,
+	};
 }

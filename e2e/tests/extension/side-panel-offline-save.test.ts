@@ -98,6 +98,12 @@ test("오프라인 중 서버 메모가 바뀌면 충돌로 새 메모에 저장
 	const sidePanelPage = await findSidePanelPage(page);
 
 	await page.goto(OFFLINE_CONFLICT_URL);
+	const syncResults: Record<string, unknown>[] = [];
+	sidePanelPage.on("console", async (message) => {
+		if (message.text().startsWith("[analytics] memo_offline_sync_result")) {
+			syncResults.push(await message.args()[1].jsonValue());
+		}
+	});
 	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(
 		"원래 내용",
 	);
@@ -140,6 +146,14 @@ test("오프라인 중 서버 메모가 바뀌면 충돌로 새 메모에 저장
 				candidate.memo === offlineText,
 		),
 	).toBe(true);
+	await expect
+		.poll(() => syncResults.find((result) => result.conflict_count === 1))
+		.toMatchObject({
+			queue_contract_version: 2,
+			synced_count: 1,
+			attempted_count: 1,
+			other_error_count: 0,
+		});
 });
 
 const OFFLINE_NAV_FROM_URL = "https://example.com/offline-nav-from";

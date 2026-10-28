@@ -237,7 +237,7 @@
 
 - **질문:** 어떤 계기로 오프라인 대기 저장이 발생하는가?
 - **발생·제외:** 로그인 사용자의 폼 변경을 enqueueOfflineMemo에 await한 뒤 발생. 사전 오프라인·같은 대상 대기 중·온라인 시도 후 네트워크 오류 경로가 있다. 사용자 없으면 failed로 끝나며 발화하지 않는다.
-- **속성:** 필수 `trigger: "offline"|"network_error"|"already_queued"`.
+- **속성:** 필수 `trigger: "offline"|"network_error"|"already_queued"`; 선택 `queue_contract_version: 2`.
 - **단위·중복:** enqueue 성공 호출당 1회. 같은 대상의 최신 입력이 큐 항목을 덮어써도 다시 발생하므로 이벤트 수≠고유 큐 항목 수.
 - **근거·테스트:** [useMemoForm.ts](../pages/side-panel/src/components/MemoSection/components/MemoForm/hooks/useMemoForm.ts) · [offlineMemoQueue.ts](../pages/side-panel/src/utils/offlineMemoQueue.ts); 테스트: [useMemoForm.test.ts](../pages/side-panel/src/components/MemoSection/components/MemoForm/hooks/useMemoForm.test.ts) · [offlineMemoQueue.test.ts](../pages/side-panel/src/utils/offlineMemoQueue.test.ts).
 - **한계·이력:** 클라우드 영속 저장 성공을 의미하지 않는다. 사용자/메모/논리 저장 식별자는 없고 입력 유실률 분모로 바로 사용 불가. 도입 버전·일자 미확인.
@@ -245,11 +245,11 @@
 ### `memo_offline_sync_result`
 
 - **질문:** 대기열 flush에서 몇 항목이 처리·충돌했는가?
-- **발생·제외:** flush 완료 후 syncedCount>0 또는 conflicts.length>0 또는 hasOtherError이면 발생. 사용자 없음/동일 훅 flush 진행 중은 제외. 빈 큐·처리0의 순수 네트워크 실패·throw로 종료한 flush는 결과 이벤트가 없을 수 있다.
-- **속성:** 필수 `trigger: "mount"|"online"|"retry_click"|"enqueue"`, `synced_count: number`, `conflict_count: number`, `has_other_error: boolean`.
-- **단위·중복:** 관측된 flush 결과당 1회. synced_count는 처리한 항목 수이며 충돌 새 복사와 이미 같은 내용 no-op 성공도 포함할 수 있다. 훅 내부 ref는 중첩 flush를 막지만 전역 attempt ID는 없다.
+- **발생·제외:** v2는 flush에 서버 시도·ACK 완료·네트워크/저장소/잠금 오류가 있으면 종료 시 발생. 사용자 없음·동일 훅 중첩 호출·정상 빈 큐는 제외한다. 네트워크 실패만 난 시도와 서버 호출 전 오류도 포함한다. 이전 버전은 순수 네트워크 실패·throw의 결과가 누락될 수 있다.
+- **속성:** 필수 `trigger: "mount"|"online"|"retry_click"|"enqueue"`, `synced_count: number`, `conflict_count: number`, `has_other_error: boolean`; 선택 `queue_contract_version: 2`, `attempted_count`, `network_error_count`, `other_error_count`, `remaining_count`, `ack_latency_sum_ms`, `ack_latency_count`, `no_op_count`. 잔여량을 읽지 못하면 remaining_count는 생략한다.
+- **단위·중복:** 관측된 flush 결과당 1회. synced_count는 서버 확인과 로컬 ACK 저장을 모두 마쳐 제거한 revision 수다. conflict_count/no_op_count는 그 부분집합이다. 실제 충돌 복사 알림과 ACK 완료 수는 다를 수 있다. 같은 사용자 flush는 확장 origin의 Web Lock으로 직렬화하지만 서버·GA 전역 exactly-once는 보장하지 않는다.
 - **근거·테스트:** [useOfflineMemoSync.ts](../pages/side-panel/src/hooks/useOfflineMemoSync.ts) · [offlineMemoQueue.ts](../pages/side-panel/src/utils/offlineMemoQueue.ts); 테스트: [useOfflineMemoSync.test.ts](../pages/side-panel/src/hooks/useOfflineMemoSync.test.ts) · [offlineMemoQueue.test.ts](../pages/side-panel/src/utils/offlineMemoQueue.test.ts).
-- **한계·이력:** queue 이벤트와 단위가 달라 단순 나눗셈으로 복구 성공률을 만들 수 없다. has_other_error=false가 네트워크 성공 전체를 뜻하지 않는다. 지연·잔여 항목·전체 시도는 미계측. 도입 버전·일자 미확인.
+- **한계·이력:** DB-1255의 v2 필터로 관측 전송 시도와 ACK 지연을 분석한다. queue 이벤트와 단위가 달라 단순 나눗셈으로 24시간 복구 성공률을 만들 수 없다. 전체 운영 유실률·p95·입력부터 클라우드 완료 지연을 뜻하지 않는다. 분모·중복 제거·시각 기준은 [오프라인 큐 계약](analytics.md#오프라인-큐-계약-db-1255) 참조. 실제 보급 버전·수신은 별도 관찰 대상이다.
 
 ### `past_memo_show`
 

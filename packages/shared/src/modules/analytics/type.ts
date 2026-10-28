@@ -285,6 +285,7 @@ export type TAnalyticsEvent =
 			params: {
 				/** 대기열에 넣은 이유. offline은 사전 판단, network_error는 시도 후 실패, already_queued는 같은 메모에 대기 항목이 이미 있던 경우 */
 				trigger: "offline" | "network_error" | "already_queued";
+				queue_contract_version?: 2;
 			};
 	  }
 	| {
@@ -298,6 +299,16 @@ export type TAnalyticsEvent =
 				synced_count: number;
 				conflict_count: number;
 				has_other_error: boolean;
+				queue_contract_version?: 2;
+				/** revision별 첫 서버 호출 수. 동일 내용 확인(no-op)도 포함한다. */
+				attempted_count?: number;
+				network_error_count?: number;
+				other_error_count?: number;
+				/** 마지막 큐 조회가 실패하면 생략한다. */
+				remaining_count?: number;
+				ack_latency_sum_ms?: number;
+				ack_latency_count?: number;
+				no_op_count?: number;
 			};
 	  }
 	| { name: "shortcut_change_click"; params: { is_success: boolean } }

@@ -7,6 +7,7 @@ interface IFGetSaveStatusParams {
 	isOffline: boolean;
 	/** 지금 편집 중인 메모가 오프라인 대기열에 있는지 */
 	hasPendingOfflineItem: boolean;
+	pendingOfflineStatus?: "loading" | "absent" | "present" | "error";
 	/** 마지막 flush 시도가 네트워크 오류로 중단됐는지 */
 	hasSyncNetworkError: boolean;
 	isSyncFailed: boolean;
@@ -24,9 +25,13 @@ export const getSaveStatus = ({
 	saveStatus,
 	isOffline,
 	hasPendingOfflineItem,
+	pendingOfflineStatus,
 	hasSyncNetworkError,
 	isSyncFailed,
 }: IFGetSaveStatusParams): TSaveStatus => {
+	if (pendingOfflineStatus === "error") return "failed";
+	if (pendingOfflineStatus === "loading") return "slow";
+	if (saveStatus === "failed" || saveStatus === "retrying") return saveStatus;
 	if (hasPendingOfflineItem) {
 		if (isOffline || hasSyncNetworkError) {
 			return "offline";

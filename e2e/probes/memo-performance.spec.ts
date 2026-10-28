@@ -8,6 +8,12 @@ import {
 	resetMockIds,
 	setupSupabaseMocks,
 } from "../tests/lib/mocks";
+import {
+	diffCdpMetrics,
+	readCdpMetrics,
+	retainCdpSample,
+	type Snapshot,
+} from "./memo-performance/cdpMetrics";
 import type {
 	Action,
 	Attempt,
@@ -527,6 +533,14 @@ for (const scenario of selected) {
 					() => generation,
 				);
 			}
+			const metricSession = await context.newCDPSession(page);
+			await metricSession.send("Performance.enable");
+			let metricStart = await readCdpMetrics(metricSession);
+			let latestMetricSample: {
+				snapshot: Snapshot | null;
+				elapsedMs: number;
+				itemCount: number | null;
+			} = { snapshot: null, elapsedMs: 0, itemCount: null };
 			requestCount = 0;
 			memoCount = 0;
 			highlightCount = 0;
@@ -574,6 +588,24 @@ for (const scenario of selected) {
 			let staleResponse: Promise<unknown> | null = null;
 			generation++;
 			const actionBegan = performance.now();
+			const capturePageMetricSample = async () => {
+				const sample = await retainCdpSample(
+					() => readCdpMetrics(metricSession),
+					latestMetricSample.snapshot,
+					metricStart,
+				);
+				if (sample.complete) {
+					latestMetricSample = {
+						snapshot: sample.snapshot,
+						elapsedMs: Math.round(performance.now() - actionBegan),
+						itemCount: observedItemCount,
+					};
+				}
+			};
+			test.info().annotations.push({
+				type: "memo-performance-stage",
+				description: "action",
+			});
 			try {
 				switch (scenario.action) {
 					case "reload":
@@ -652,6 +684,7 @@ for (const scenario of selected) {
 								}
 								loaded = Math.min(loaded + PAGE_SIZE, scenario.size);
 								await measuredReady(loaded, "list");
+								await capturePageMetricSample();
 							}
 						} else {
 							await page
@@ -688,8 +721,18 @@ for (const scenario of selected) {
 							input.fill("missing-probe"),
 						]);
 						generation++;
+						const cancelledMetrics = diffCdpMetrics(
+							metricStart,
+							await readCdpMetrics(metricSession),
+						);
 						const cancelled: Attempt = {
-							measurement_version: 2,
+							measurement_version: 3,
+							...cancelledMetrics,
+							cdp_sample_complete: true,
+							cdp_sample_elapsed_ms: Math.round(
+								performance.now() - actionBegan,
+							),
+							cdp_sample_item_count: observedItemCount,
 							scenario: scenario.name,
 							route: scenario.route,
 							action: "rapid",
@@ -732,6 +775,7 @@ for (const scenario of selected) {
 						nextMemoEnd = null;
 						trackedRequest = null;
 						start = performance.now();
+						metricStart = await readCdpMetrics(metricSession);
 						await input.fill("probe-needle");
 						expected = 1;
 						break;
@@ -854,12 +898,41 @@ for (const scenario of selected) {
 				settleMs = performance.now() - settleBegan;
 			}
 			auxiliarySettled = pendingAuxiliary.size === 0;
+			const finalSample = await retainCdpSample(
+				() => readCdpMetrics(metricSession),
+				latestMetricSample.snapshot,
+				metricStart,
+			);
+			const sampleComplete = finalSample.complete;
+			const sampleSnapshot = finalSample.snapshot;
+			let sampleElapsedMs = latestMetricSample.elapsedMs;
+			let sampleItemCount = latestMetricSample.itemCount;
+			if (sampleComplete) {
+				sampleElapsedMs = Math.round(performance.now() - actionBegan);
+				sampleItemCount = observedItemCount;
+			}
+			const browserMetrics = sampleSnapshot
+				? diffCdpMetrics(metricStart, sampleSnapshot)
+				: null;
 			test.info().annotations.push({
 				type: "memo-performance-stage",
 				description: "record",
 			});
 			const attempt: Attempt = {
-				measurement_version: 2,
+				measurement_version: 3,
+				...(browserMetrics ?? {
+					layout_count: null,
+					layout_duration_ms: null,
+					recalc_style_count: null,
+					recalc_style_duration_ms: null,
+					script_duration_ms: null,
+					task_duration_ms: null,
+					end_nodes: null,
+					end_js_heap_used_bytes: null,
+				}),
+				cdp_sample_complete: sampleComplete,
+				cdp_sample_elapsed_ms: sampleElapsedMs,
+				cdp_sample_item_count: sampleItemCount,
 				scenario: scenario.name,
 				route: scenario.route,
 				action: scenario.action,

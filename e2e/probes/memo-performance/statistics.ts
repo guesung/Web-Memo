@@ -25,7 +25,7 @@ export type Action =
 export type View = "grid" | "list" | "domain";
 
 export interface Attempt {
-	readonly measurement_version: 2;
+	readonly measurement_version: 3;
 	readonly scenario: string;
 	readonly route: RouteName;
 	readonly action: Action;
@@ -50,6 +50,17 @@ export interface Attempt {
 	readonly http_cache: "empty" | "reused" | "disabled_by_routing" | "unknown";
 	readonly router_prefetch: "observed" | "not_observed" | "unknown";
 	readonly observed_content_ready: boolean;
+	readonly cdp_sample_complete: boolean;
+	readonly cdp_sample_elapsed_ms: number;
+	readonly cdp_sample_item_count: number | null;
+	readonly layout_count: number | null;
+	readonly layout_duration_ms: number | null;
+	readonly recalc_style_count: number | null;
+	readonly recalc_style_duration_ms: number | null;
+	readonly script_duration_ms: number | null;
+	readonly task_duration_ms: number | null;
+	readonly end_nodes: number | null;
+	readonly end_js_heap_used_bytes: number | null;
 	readonly content_before_response?: boolean;
 	readonly navigation?: "hard_load" | "client_navigation";
 	readonly trigger_wait_ms?: number;
@@ -90,6 +101,10 @@ const isDuration = (value: unknown): value is number =>
 	typeof value === "number" && Number.isFinite(value) && value >= 0;
 const isCount = (value: unknown): value is number =>
 	isDuration(value) && Number.isSafeInteger(value);
+const isNullable = (
+	value: unknown,
+	check: (value: unknown) => value is number,
+): value is number | null => value === null || check(value);
 const isChoice = (
 	value: unknown,
 	choices: readonly string[],
@@ -99,7 +114,7 @@ const isChoice = (
 export function sanitizeAttempt(value: unknown): Attempt | null {
 	if (
 		!isRecord(value) ||
-		value.measurement_version !== 2 ||
+		value.measurement_version !== 3 ||
 		typeof value.scenario !== "string" ||
 		!SCENARIO.test(value.scenario) ||
 		!isChoice(value.route, ["all", "star", "wish", "reading"]) ||
@@ -136,11 +151,33 @@ export function sanitizeAttempt(value: unknown): Attempt | null {
 			"unknown",
 		]) ||
 		!isChoice(value.router_prefetch, ["observed", "not_observed", "unknown"]) ||
-		typeof value.observed_content_ready !== "boolean"
+		typeof value.observed_content_ready !== "boolean" ||
+		typeof value.cdp_sample_complete !== "boolean" ||
+		!isDuration(value.cdp_sample_elapsed_ms) ||
+		!isNullable(value.cdp_sample_item_count, isCount) ||
+		!isNullable(value.layout_count, isCount) ||
+		!isNullable(value.layout_duration_ms, isDuration) ||
+		!isNullable(value.recalc_style_count, isCount) ||
+		!isNullable(value.recalc_style_duration_ms, isDuration) ||
+		!isNullable(value.script_duration_ms, isDuration) ||
+		!isNullable(value.task_duration_ms, isDuration) ||
+		!isNullable(value.end_nodes, isCount) ||
+		!isNullable(value.end_js_heap_used_bytes, isCount) ||
+		(value.cdp_sample_complete &&
+			(value.cdp_sample_item_count === null || value.layout_count === null)) ||
+		[
+			value.layout_duration_ms,
+			value.recalc_style_count,
+			value.recalc_style_duration_ms,
+			value.script_duration_ms,
+			value.task_duration_ms,
+			value.end_nodes,
+			value.end_js_heap_used_bytes,
+		].some((metric) => (metric === null) !== (value.layout_count === null))
 	)
 		return null;
 	const safe: Attempt = {
-		measurement_version: 2,
+		measurement_version: 3,
 		scenario: value.scenario,
 		route: value.route as RouteName,
 		action: value.action as Action,
@@ -165,6 +202,17 @@ export function sanitizeAttempt(value: unknown): Attempt | null {
 		http_cache: value.http_cache as Attempt["http_cache"],
 		router_prefetch: value.router_prefetch as Attempt["router_prefetch"],
 		observed_content_ready: value.observed_content_ready,
+		cdp_sample_complete: value.cdp_sample_complete,
+		cdp_sample_elapsed_ms: value.cdp_sample_elapsed_ms,
+		cdp_sample_item_count: value.cdp_sample_item_count,
+		layout_count: value.layout_count,
+		layout_duration_ms: value.layout_duration_ms,
+		recalc_style_count: value.recalc_style_count,
+		recalc_style_duration_ms: value.recalc_style_duration_ms,
+		script_duration_ms: value.script_duration_ms,
+		task_duration_ms: value.task_duration_ms,
+		end_nodes: value.end_nodes,
+		end_js_heap_used_bytes: value.end_js_heap_used_bytes,
 		...(typeof value.content_before_response === "boolean"
 			? { content_before_response: value.content_before_response }
 			: {}),
@@ -214,6 +262,21 @@ export function nearestRank(
 	return sorted[Math.ceil(percentile * sorted.length) - 1];
 }
 
+export function countCdpSamples(attempts: readonly Attempt[]) {
+	return {
+		partial: attempts.filter((attempt) => !attempt.cdp_sample_complete).length,
+		failed: attempts.filter(
+			(attempt) =>
+				!attempt.cdp_sample_complete &&
+				(attempt.outcome === "success" || attempt.outcome === "empty"),
+		).length,
+		timeout_partial: attempts.filter(
+			(attempt) =>
+				!attempt.cdp_sample_complete && attempt.outcome === "timeout",
+		).length,
+	};
+}
+
 export function summarize(attempts: readonly Attempt[]) {
 	const counts = { success: 0, empty: 0, error: 0, cancelled: 0, timeout: 0 };
 	for (const attempt of attempts) counts[attempt.outcome]++;
@@ -243,6 +306,34 @@ export function summarize(attempts: readonly Attempt[]) {
 			]),
 		),
 		latency: { success: latency("success"), empty: latency("empty") },
+		browser_metrics: Object.fromEntries(
+			(
+				[
+					"layout_count",
+					"layout_duration_ms",
+					"recalc_style_count",
+					"recalc_style_duration_ms",
+					"script_duration_ms",
+					"task_duration_ms",
+					"end_nodes",
+					"end_js_heap_used_bytes",
+				] as const
+			).map((key) => {
+				const samples = attempts
+					.filter((attempt) => attempt.cdp_sample_complete)
+					.map((attempt) => attempt[key])
+					.filter((value): value is number => value !== null);
+				return [
+					key,
+					{
+						n: samples.length,
+						samples,
+						min: samples.length ? Math.min(...samples) : null,
+						max: samples.length ? Math.max(...samples) : null,
+					},
+				];
+			}),
+		),
 	};
 }
 

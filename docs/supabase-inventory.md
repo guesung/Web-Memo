@@ -122,6 +122,17 @@
 | `provider_id` | `text` |
 | `page_key` | `text` |
 
+#### 테이블 `memo.blog_digest_log`
+
+| 컬럼 | 타입 |
+| --- | --- |
+| `id` | `bigint` |
+| `user_id` | `uuid` |
+| `blog_id` | `text` |
+| `sent_on` | `date` |
+| `sent_at` | `timestamp with time zone` |
+| `article_count` | `integer` |
+
 #### 테이블 `memo.blog_subscription`
 
 | 컬럼 | 타입 |
@@ -342,7 +353,7 @@
 | `status` | `text` |
 | `created_at` | `timestamp with time zone` |
 
-#### DB 함수 (41개)
+#### DB 함수 (44개)
 
 | 함수 | 반환 타입 |
 | --- | --- |
@@ -369,6 +380,7 @@
 | `get_admin_feedbacks(search_query text, page_offset integer, page_limit integer)` | `json` |
 | `get_admin_stats(include_admin boolean)` | `json` |
 | `get_admin_users(search_query text)` | `json` |
+| `get_blog_digest_candidates(p_user_id uuid, p_blog_id text)` | `jsonb` |
 | `get_blog_reading_page(p_blog_id text, p_sort text, p_page_size integer, p_cursor jsonb, p_catalog_version timestamp with time zone)` | `jsonb` |
 | `get_blog_reading_summary()` | `jsonb` |
 | `get_highlight_counts(target_urls text[])` | `TABLE(url text, count integer)` |
@@ -379,6 +391,7 @@
 | `has_blog_memo_text(p_text text)` | `boolean` |
 | `ingest_blog_batch(p_blog_id text, p_generation bigint, p_lease_token uuid, p_items jsonb)` | `jsonb` |
 | `invalidate_page_key_after_url_change()` | `trigger` |
+| `is_feed_blog(p_blog_id text)` | `boolean` |
 | `is_supported_blog(p_blog_id text)` | `boolean` |
 | `legacy_page_key_from_normalized_url(p_url text)` | `text` |
 | `request_blog_sync(p_blog_id text)` | `jsonb` |
@@ -387,6 +400,7 @@
 | `set_blog_subscription(p_blog_id text, p_active boolean)` | `jsonb` |
 | `update_profile_updated_at()` | `trigger` |
 | `update_shared_at()` | `trigger` |
+| `weekly_creation_retention(p_week_start date, p_weeks integer)` | `TABLE(cohort_week date, cohort_size integer, week_offset integer, active_users integer)` |
 
 ### `public`
 
@@ -1230,8 +1244,8 @@ Supabase가 만들고 관리하는 스키마입니다. 플랫폼 업데이트로
 
 | 함수 | 배포 버전 |
 | --- | --- |
-| `blog-catalog-ingest` | 3 |
-| `daily-article-reminder` | 9 |
+| `blog-catalog-ingest` | 4 |
+| `daily-article-reminder` | 10 |
 | `get-categories-with-count` | 13 |
 | `kakao-auth` | 9 |
 | `send-feedback` | 7 |

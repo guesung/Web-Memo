@@ -176,8 +176,8 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 									<span key={dot} className="h-2 w-2 rounded-full bg-border" />
 								))}
 							</div>
-							<span className="text-muted-foreground">‹　›</span>
-							<div className="mx-auto flex h-7 min-w-0 flex-1 items-center gap-2 overflow-hidden rounded-md border border-border bg-muted px-2 text-[11px] text-muted-foreground sm:max-w-[480px]">
+							<span className="text-foreground/70">‹　›</span>
+							<div className="mx-auto flex h-7 min-w-0 flex-1 items-center gap-2 overflow-hidden rounded-md border border-border bg-muted px-2 text-[11px] text-foreground/70 sm:max-w-[480px]">
 								<LockKeyhole className="h-3 w-3 shrink-0" />
 								daily.example.com/notes/reading-habit
 							</div>
@@ -198,23 +198,23 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 										"ml-4 w-[290px] sm:mx-auto sm:w-[calc(100%-38px)]",
 								)}
 							>
-								<p className="text-[11px] font-semibold tracking-wide text-muted-foreground">
+								<p className="text-[11px] font-semibold tracking-wide text-foreground/70">
 									{t("introduce.demo.flow.article_kicker")}
 								</p>
 								<h3 className="my-3 text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
 									{t("introduce.demo.flow.article_title")}
 								</h3>
-								<p className="mb-7 text-[11px] text-muted-foreground">
+								<p className="mb-7 text-[11px] text-foreground/70">
 									{t("introduce.demo.flow.article_meta")}
 								</p>
-								<p className="mb-4 text-sm leading-7 text-muted-foreground">
+								<p className="mb-4 text-sm leading-7 text-foreground/70">
 									{t("introduce.demo.flow.article_p1")}
 								</p>
-								<p className="mb-4 text-sm leading-7 text-muted-foreground">
+								<p className="mb-4 text-sm leading-7 text-foreground/70">
 									{t("introduce.demo.flow.article_p2")}
 								</p>
 								<div className="my-7 border-t border-border" />
-								<p className="text-sm leading-7 text-muted-foreground">
+								<p className="text-sm leading-7 text-foreground/70">
 									{t("introduce.demo.flow.article_p3")}
 								</p>
 							</article>
@@ -247,29 +247,29 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 								<span className="min-w-0 flex-1 truncate">
 									{t("introduce.demo.flow.article_title")}
 								</span>
-								<Moon className="h-4 w-4 text-muted-foreground" />
-								<Settings2 className="h-4 w-4 text-muted-foreground" />
+								<Moon className="h-4 w-4 text-foreground/70" />
+								<Settings2 className="h-4 w-4 text-foreground/70" />
 							</div>
-							<div className="mt-4 flex h-10 items-center gap-2 border-b border-border text-xs text-muted-foreground">
+							<div className="mt-4 flex h-10 items-center gap-2 border-b border-border text-xs text-foreground/70">
 								<Sparkles className="h-4 w-4" />
 								<span className="flex-1">
 									{t("introduce.demo.flow.summary")}
 								</span>
 								<ChevronDown className="h-4 w-4" />
 							</div>
-							<div className="flex h-10 items-center gap-2 border-b border-border text-xs text-muted-foreground">
+							<div className="flex h-10 items-center gap-2 border-b border-border text-xs text-foreground/70">
 								<Highlighter className="h-4 w-4" />
 								<span className="flex-1">
 									{t("introduce.demo.flow.highlights")}
 								</span>
 								0<ChevronDown className="h-4 w-4" />
 							</div>
-							<p className="border-b border-border py-3 text-[11px] text-muted-foreground">
+							<p className="border-b border-border py-3 text-[11px] text-foreground/70">
 								{t("introduce.demo.flow.empty_highlight")}
 							</p>
 							<div className="mt-4 flex items-center gap-2 font-bold">
 								<span>{t("introduce.demo.flow.memo")}</span>
-								<ExternalLink className="h-4 w-4 text-muted-foreground" />
+								<ExternalLink className="h-4 w-4 text-foreground/70" />
 							</div>
 							<div className="mt-2 truncate border-b border-border py-2 text-xs font-semibold">
 								{t("introduce.demo.flow.article_title")}
@@ -285,7 +285,7 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 									data-testid="demo-memo-text"
 									key={`${lng}-${stage}`}
 									className={
-										stage < 3 ? "text-muted-foreground" : "text-foreground"
+										stage < 3 ? "text-foreground/70" : "text-foreground"
 									}
 								>
 									{visibleMemoText}
@@ -294,7 +294,7 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 									<span className="ml-0.5 inline-block h-4 w-px bg-foreground align-middle motion-safe:animate-pulse" />
 								)}
 							</div>
-							<div className="mt-3 flex items-center gap-2 text-muted-foreground">
+							<div className="mt-3 flex items-center gap-2 text-foreground/70">
 								<Heart className="h-4 w-4" />
 								<Star className="h-4 w-4" />
 								<BookOpen className="h-4 w-4" />
@@ -310,7 +310,7 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 					</div>
 				</div>
 				<div className="border-t border-border p-4 sm:p-5">
-					<p aria-live="polite" className="text-sm text-muted-foreground">
+					<p aria-live="polite" className="text-sm text-foreground/70">
 						{t(`introduce.demo.flow.caption_${STAGES[stage]}`)}
 					</p>
 					<div className="mt-4 flex flex-wrap items-center justify-between gap-3">
@@ -325,7 +325,7 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 									aria-current={stage === index ? "step" : undefined}
 									onClick={() => chooseStage(index)}
 									className={cn(
-										"relative min-h-9 rounded-full px-3 pb-2.5 pt-2 text-xs text-muted-foreground hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring",
+										"relative min-h-9 rounded-full px-3 pb-2.5 pt-2 text-xs text-foreground/70 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring",
 										stage === index &&
 											"bg-secondary font-semibold text-foreground",
 									)}
@@ -360,7 +360,7 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 						</button>
 					</div>
 					{reducedMotion && (
-						<p className="mt-3 text-xs text-muted-foreground">
+						<p className="mt-3 text-xs text-foreground/70">
 							{t("introduce.demo.flow.reduced")}
 						</p>
 					)}

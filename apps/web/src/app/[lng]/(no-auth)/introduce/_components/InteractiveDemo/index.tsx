@@ -57,6 +57,15 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 	const memoText = t("introduce.demo.flow.memo_text");
 	const autoRunning =
 		playing && !reducedMotion && !hovered && !focused && visible && pageVisible;
+	let visibleMemoText = memoText;
+	if (stage < 3) {
+		visibleMemoText = t("introduce.demo.flow.memo_placeholder");
+	} else if (stage === 3 && (playing || elapsedRef.current > 0)) {
+		const typedCount = Math.round(
+			(elapsedRef.current / STAGE_DURATIONS[3]) * memoText.length,
+		);
+		visibleMemoText = memoText.slice(0, typedCount);
+	}
 
 	const chooseStage = (index: number) => {
 		stageRef.current = index;
@@ -273,16 +282,13 @@ const InteractiveDemo = ({ lng, background }: IFInteractiveDemoProps) => {
 							>
 								<span
 									ref={memoRef}
+									data-testid="demo-memo-text"
 									key={`${lng}-${stage}`}
 									className={
 										stage < 3 ? "text-muted-foreground" : "text-foreground"
 									}
 								>
-									{stage < 3
-										? t("introduce.demo.flow.memo_placeholder")
-										: stage === 3 && autoRunning
-											? ""
-											: memoText}
+									{visibleMemoText}
 								</span>
 								{stage === 3 && (
 									<span className="ml-0.5 inline-block h-4 w-px bg-foreground align-middle motion-safe:animate-pulse" />

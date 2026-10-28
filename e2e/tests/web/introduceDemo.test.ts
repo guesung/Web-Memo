@@ -203,4 +203,37 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 				{ action: "pause", stage: "saved" },
 			]);
 	});
+	test("메모 타이핑은 hover와 focus 동안 현재 분량을 보존하고 재개한다", async ({
+		page,
+	}) => {
+		await page.emulateMedia({ reducedMotion: "no-preference" });
+		await page.goto(`/ko${PATHS.introduce}`);
+		const demo = page.locator("#demo");
+		const memo = demo.getByTestId("demo-memo-text");
+		const writeStep = demo.getByRole("button", { name: "메모 입력" });
+		await writeStep.click();
+		await expect(memo).toHaveText(
+			"마음에 남는 문장을 바로 기록해 두자.\n나중에 다시 읽을 때 생각을 이어 갈 수 있도록.",
+		);
+		await demo.getByRole("button", { name: "재생" }).click();
+		await demo
+			.getByRole("button", { name: "정지" })
+			.evaluate((button: HTMLElement) => button.blur());
+		await page.mouse.move(0, 0);
+		await expect
+			.poll(async () => (await memo.textContent())?.length ?? 0)
+			.toBeGreaterThan(5);
+		await demo.hover();
+		const pausedText = await memo.textContent();
+		await page.waitForTimeout(500);
+		await expect(memo).toHaveText(pausedText ?? "");
+		await writeStep.focus();
+		await page.mouse.move(0, 0);
+		await page.waitForTimeout(500);
+		await expect(memo).toHaveText(pausedText ?? "");
+		await writeStep.evaluate((button: HTMLElement) => button.blur());
+		await expect
+			.poll(async () => (await memo.textContent())?.length ?? 0)
+			.toBeGreaterThan((pausedText ?? "").length);
+	});
 });

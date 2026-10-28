@@ -28,7 +28,7 @@ argument-hint: '<아이디어 한 줄~몇 문단 | 개인 업무 로그 페이�
 
 ## 노션 접근
 
-**시작 전에 [notion-databases.md](~/.agents/docs/notion-databases.md#개인-업무-로그)를 읽는다.** 식별자·속성·본문 골격이 거기 있다. 개인 DB는 **`notion-home` MCP**로만 읽고 쓴다.
+**시작 전에 [notion-databases.md](~/.agents/docs/notion-databases.md#개인-업무-로그)를 읽는다.** 식별자·속성·본문 골격이 거기 있다. 개인 DB는 [Notion 접근 규칙](../../notion-access.md)에 따라 읽고 쓴다.
 
 **본문은 `# AI 작성` 아래만 고친다.** `# 인간 작성` 아래는 읽기만 한다 — [AI 작성 경계](~/.agents/docs/notion-databases.md#ai-작성-경계).
 

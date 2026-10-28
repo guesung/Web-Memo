@@ -25,6 +25,9 @@
 | page_view | 페이지 조회 | `page_title`, `page_location` | 어느 페이지가 얼마나 보이는가 (추정) | — |
 | memo_write | 메모의 제목·본문·인상·할 일을 씀. 기존 메모 수정은 이전 값과 다른 필드에만, 새 메모 저장(사이드 패널·웹 블로그 화면·오프라인 대기열 동기화)은 내용이 있는 필드가 하나라도 있을 때, 하이라이트 메모는 새로 만들었을 때만(저장 재시도 제외) 발생. 오프라인 대기열의 수정 반영은 바뀐 필드를 알 수 없어 세지 않음 | `fields`: 쓴 필드 이름, `is_new`: 새 메모 저장인가, `source?`: `highlight` | 메모를 쓰는 사람이 얼마나 되고 어떤 내용을 쓰는가. 2026-10 이전에는 수정만 셌으므로 그 전후 사용자 수를 바로 비교하지 않는다 | DB-1158, DB-1230 |
 | memo_first_write | 새 메모 insert 성공 시마다 발생 (하이라이트 RPC는 created=true만, 사용자 생애 첫 작성만 뜻하지 않음) | `source?: highlight` | 새 메모를 만든 사용자가 얼마나 되는가 | — |
+| memo_editor_ready | 인증·유효 탭·후보 조회 성공 후 실제 표시되고 활성화된 본문 입력란. 사용자·탭·페이지 범위마다 최초 1회 시도하며 로그인·로딩·오류·잠금에서는 제외 | `source: side_panel` | 패널을 연 설치 식별자가 실제 작성 가능한 화면까지 도달하는가 | DB-1250 |
+| memo_content_saved | 확장의 실제 서버 insert/update 성공과 반환 행을 확인한 뒤, memo/impression/actionItem 중 이전 값과 trim 비교해 달라진 비어 있지 않은 본문이 있을 때. 제목·토글·본문 삭제·로컬 대기열 적재·no-op 제외 | `source: side_panel \| offline_sync` | 설치 후 7일 안에 유효 본문 저장이 관측되는가. 생애 첫 작성 이벤트는 아님 | DB-1250 |
+| memo_save_result | 출처가 지정된 확장 클라우드 write가 결과를 반환/reject할 때 시도당 1회. 사전 조회 실패·로컬 큐·no-op·큐 삭제는 제외 | `is_success: boolean`, `source: side_panel \| offline_sync`, `reason: none \| network \| server \| unknown` | 수집된 저장 결과 중 실패 비율이 출처별로 다른가. 실제 전체 실패율은 아님 | DB-1250 |
 | memo_delete | 메모 삭제 (추정) | `memo_count` | 지우는 메모가 얼마나 되는가 (추정) | — |
 | memo_restore | 휴지통에서 복원 (추정) | `memo_count` | 삭제 후 되살리는 비율 (추정) | — |
 | memo_delete_permanently | 영구 삭제 (추정) | `memo_count` | 휴지통을 비우는 빈도 (추정) | — |

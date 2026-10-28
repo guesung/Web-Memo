@@ -16,6 +16,9 @@ declare global {
 /** 이벤트 분류. GA4의 event_category로 전송됩니다. */
 export type TEventCategory = "engagement" | "core_action";
 
+/** 실제 클라우드 저장을 시도한 확장 경로. */
+export type TMemoSaveSource = "side_panel" | "offline_sync";
+
 /**
  * GA4로 실제 전송되는 파라미터.
  * @description 호출부가 넘긴 이벤트별 파라미터에 전송 계층이 공통 파라미터를 얹은 결과입니다.
@@ -73,6 +76,16 @@ export type TAnalyticsEvent =
 	| { name: "highlight_source_jump" }
 	| { name: "highlight_panel_open_result"; params: { is_success: boolean } }
 	| { name: "side_panel_open" }
+	| { name: "memo_editor_ready"; params: { source: "side_panel" } }
+	| { name: "memo_content_saved"; params: { source: TMemoSaveSource } }
+	| {
+			name: "memo_save_result";
+			params: {
+				is_success: boolean;
+				source: TMemoSaveSource;
+				reason: "none" | "network" | "server" | "unknown";
+			};
+	  }
 	| { name: "page_view"; params: { page_title: string; page_location: string } }
 	| {
 			name: "memo_write";
@@ -308,6 +321,9 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	side_panel_open: "engagement",
 	page_view: "engagement",
 	memo_write: "core_action",
+	memo_editor_ready: "engagement",
+	memo_content_saved: "core_action",
+	memo_save_result: "engagement",
 	memo_delete: "core_action",
 	summary_run: "core_action",
 	summary_panel_toggle: "engagement",

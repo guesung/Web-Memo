@@ -7,6 +7,7 @@ import {
 	getOrCreateClientId,
 	sendEvent,
 } from "./analyticsTransport";
+import { buildMemoSaveEvents, type IFMemoSaveResult } from "./memoSaveEvents";
 import {
 	buildMemoCreateEvents,
 	buildMemoUpdateEvents,
@@ -143,19 +144,42 @@ class Analytics {
 		return CONFIG.buildEnv === "staging";
 	}
 
-	async trackEvent(event: TAnalyticsEvent): Promise<void> {
+	async trackEvent(
+		event: TAnalyticsEvent,
+		expectedUserId?: string,
+	): Promise<void> {
 		const parameters = this.buildParameters(event);
+		const userId = await this.resolveUserId();
+		if (expectedUserId !== undefined && expectedUserId !== userId) {
+			return;
+		}
 
 		if (this.shouldLogToConsole()) {
 			console.info(`[analytics] ${event.name}`, parameters);
 		}
 
-		const userId = await this.resolveUserId();
 		if (!this.shouldSend(userId)) {
 			return;
 		}
 
 		await sendEvent({ eventName: event.name, parameters, userId });
+	}
+
+	/** 계측이 실패하거나 끝나지 않아도 저장과 대기열 처리를 기다리게 하지 않는다. */
+	public trackMemoSaveResult(result: IFMemoSaveResult): void {
+		if (!result.userId) return;
+		const warn = () => {
+			console.warn("[analytics] 메모 저장 결과를 전송하지 못했습니다.");
+		};
+		try {
+			void Promise.all(
+				buildMemoSaveEvents(result).map((event) =>
+					this.trackEvent(event, result.userId),
+				),
+			).catch(warn);
+		} catch {
+			warn();
+		}
 	}
 
 	/**

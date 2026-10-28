@@ -5,6 +5,68 @@ import { MockSupabaseStore, setupSupabaseMocks } from "../lib/mocks";
 const TEST_TEXT = "First selectable passage and second selectable passage.";
 const TOOLBAR = "#WEB_MEMO_HIGHLIGHT_TOOLTIP";
 
+test("첫 안내를 X로 닫으면 완료 저장하고 다음 선택에는 버블만 표시한다", async ({
+	page,
+}) => {
+	await setupSupabaseMocks(page, new MockSupabaseStore());
+	await login(page);
+	await skipGuide(page);
+	await openSidePanel(page);
+	const sidePanelPage = await findSidePanelPage(page);
+	await sidePanelPage.evaluate(async () => {
+		await chrome.storage.sync.set({
+			highlightBubbleEnabled: true,
+			highlightIntroSeen: false,
+			highlightDisabledSites: [],
+		});
+	});
+	const labels = await sidePanelPage.evaluate(() => ({
+		create: chrome.i18n.getMessage("highlight_create"),
+		dismiss: chrome.i18n.getMessage("highlight_bubble_dismiss"),
+		intro: chrome.i18n.getMessage("highlight_intro_message"),
+	}));
+	await page.evaluate((text) => {
+		const passage = document.createElement("p");
+		passage.id = "e2e-highlight-passage";
+		passage.textContent = text;
+		document.body.append(passage);
+	}, TEST_TEXT);
+	const toolbar = page
+		.locator(TOOLBAR)
+		.getByRole("toolbar", { name: labels.create });
+	const intro = toolbar.getByRole("note");
+	await selectPassage(page, 0, 24);
+	await expect(toolbar).toBeVisible();
+	await expect(intro).toBeVisible();
+	await expect(intro).toContainText(labels.intro);
+	await toolbar.getByRole("button", { name: labels.dismiss }).click();
+	await expect(toolbar).toBeHidden();
+	await expect
+		.poll(() => page.evaluate(() => document.getSelection()?.toString()))
+		.toBe(TEST_TEXT.slice(0, 24));
+	await expect
+		.poll(() =>
+			sidePanelPage.evaluate(
+				async () =>
+					(await chrome.storage.sync.get("highlightIntroSeen"))
+						.highlightIntroSeen,
+			),
+		)
+		.toBe(true);
+
+	await selectPassage(page, 29, 54);
+	await expect(toolbar).toBeVisible();
+	await expect(intro).toBeHidden();
+	expect(
+		await sidePanelPage.evaluate(async () =>
+			chrome.storage.sync.get([
+				"highlightBubbleEnabled",
+				"highlightDisabledSites",
+			]),
+		),
+	).toEqual({ highlightBubbleEnabled: true, highlightDisabledSites: [] });
+});
+
 test("선택을 마치면 버블이 뜨고 X는 현재 선택만 닫으며 설정은 톱니에서 연다", async ({
 	page,
 }) => {

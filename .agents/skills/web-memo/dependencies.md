@@ -23,6 +23,7 @@
 | `/web-memo:idea` ② | `/web-memo:interview` | 기획서 초안 + `--items` (planner의 `결정 필요`) | 확정 결정 4표 → 기획서에 반영 |
 | `/web-memo:design` ⑤ | `/web-memo:interview` | 기획서·설계서 초안 + `--items` (`## 논의 필요`) | 확정 결정 4표 → 설계서·디자인에 반영 |
 | `/web-memo:implement-loop` §0-5 · ② | `/web-memo:self-qa` | 설계서 (`--checklist-only` / `--run`) | QA 항목 생성·판정 결과 |
+| `/web-memo:improve-loop` | `/web-memo:commit`, `/web-memo:pr` | 효과 입증·회귀 검증을 통과한 변경과 공개 증거 | 커밋과 master 대상 일반 PR |
 
 `/web-memo:interview`와 `/web-memo:self-qa`는 **아무것도 고치지 않고 반환만 한다.** 문서에 쓰는 것은 부른 쪽 책임이다 — 같은 섹션을 둘이 쓰면 어느 쪽이 마지막인지 알 수 없다.
 
@@ -47,6 +48,8 @@
 에이전트는 **읽기만** 한다. 문서를 쓰는 건 위 스킬 몫이고, 승인 없이 쓰는 대신 자동 작성 사실을 항상 노출한다(`/web-memo:discuss`는 사람과 합의해 쓴다).
 
 ## MCP 의존
+
+`/web-memo:improve-loop`는 구현 전에 `notion-home`으로 업무 로그 카드/ID를 확보한다(없으면 생성). 접근 불가 시 `blocked`로 끝내며, 기존 PR 스킬의 카드 게이트를 우회하지 않는다. GitHub는 `gh`, 시간 측정은 Node 표준 라이브러리 도구를 쓴다. 독립 검증은 native `verifier`를 사용하고, 사용할 수 없으면 분리 검증임을 밝힌다. OMX Team·goal 런타임이나 전역 스킬은 필요하지 않다. Codex 진입점 `.codex/skills/web-memo-improve-loop`는 원본 스킬을 가리키는 심링크다.
 
 | MCP           | 쓰이는 곳                                                                        | 용도                                                      |
 | ------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------- |

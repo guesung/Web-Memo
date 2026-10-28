@@ -1,5 +1,3 @@
-import { formatRelativeDate } from "@src/utils/formatRelativeDate";
-import { getHostname } from "@src/utils/getHostname";
 import { useQuery } from "@tanstack/react-query";
 import { DEFAULT_CATEGORY_COLOR } from "@web-memo/shared/constants";
 import {
@@ -10,7 +8,14 @@ import {
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import { Badge, Button, Skeleton } from "@web-memo/ui";
 import { ChevronLeftIcon, ExternalLinkIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
+import { formatRelativeDate } from "../../../utils/formatRelativeDate";
+import { getHostname } from "../../../utils/getHostname";
+import {
+	classifyPastMemoAge,
+	type PastMemoAttempt,
+	type PastMemoTracking,
+} from "../utils/pastMemoTracking";
 
 /**
  * 과거 메모(같은 글 알림에서 연 메모)를 사이드 패널 안에서 읽기 전용으로 보여 준다.
@@ -20,13 +25,68 @@ import type { ReactNode } from "react";
 const PastMemoView = (props: IFPastMemoViewProps) => {
 	const { data: supabaseClient } = useSupabaseClientQuery();
 	const { showImpression, showActionItem } = useSettingQuery();
-	const { data, isPending } = useQuery(
-		memoQueryOptions({ supabaseClient, id: props.memoId }),
-	);
-	const memo = data?.data?.[0];
+	const options = memoQueryOptions({ supabaseClient, id: props.memoId });
+	const { data, isPending, isError } = useQuery({
+		...options,
+		queryKey: [
+			...options.queryKey,
+			"past-memo-view",
+			props.attempt.userId,
+			String(props.attempt.account),
+		],
+		enabled: props.tracking.isCurrent(props.attempt),
+	});
+	const candidate = data?.data?.[0];
+	const memo =
+		props.tracking.isCurrent(props.attempt) &&
+		candidate?.user_id === props.attempt.userId &&
+		candidate.id === props.memoId &&
+		!candidate.deleted_at
+			? candidate
+			: undefined;
+
+	useEffect(() => {
+		const report = () => {
+			if (!props.tracking.isCurrent(props.attempt)) return;
+			if (memo) {
+				const action = classifyPastMemoAge(
+					memo.created_at,
+					props.attempt.startedAt,
+				);
+				const hasContent = [
+					memo.memo,
+					showImpression && memo.impression,
+					showActionItem && memo.actionItem,
+				].some(
+					(content) => typeof content === "string" && content.trim().length > 0,
+				);
+				if (!hasContent)
+					props.tracking.finish(props.attempt, "empty_content", action);
+				else if (document.visibilityState === "visible")
+					props.tracking.finish(props.attempt, "displayed", action);
+			} else if (isError || data?.error)
+				props.tracking.finish(props.attempt, "query_error");
+			else if (!isPending) props.tracking.finish(props.attempt, "not_found");
+		};
+		report();
+		document.addEventListener("visibilitychange", report);
+		return () => document.removeEventListener("visibilitychange", report);
+	}, [
+		memo,
+		isError,
+		isPending,
+		data,
+		props.attempt,
+		props.tracking,
+		showImpression,
+		showActionItem,
+	]);
 
 	const handleOpenOriginalClick = () => {
-		void Tab.create({ url: props.url });
+		const reportReuse = props.tracking.captureReuse(props.attempt);
+		void Tab.create({ url: props.url })
+			.then(reportReuse)
+			.catch(() => {});
 	};
 
 	return (
@@ -128,6 +188,8 @@ const PastMemoViewSkeleton = () => (
 
 /** PastMemoView props */
 interface IFPastMemoViewProps {
+	attempt: PastMemoAttempt;
+	tracking: PastMemoTracking;
 	/** 보여 줄 과거 메모 id */
 	memoId: number;
 	/** 알림이 알려 준 메모 제목. 조회 결과에 제목이 없을 때 대신 쓴다 */

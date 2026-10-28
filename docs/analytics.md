@@ -26,13 +26,13 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 캠페인은 정기 `weekly_memo_report` / 테스트 `weekly_memo_report_test`, `utm_content`는 누른 자리
 (`organize` · `view_all` · `footer_web` · `footer_setting` · `empty_open`)입니다. 메모 원문 링크에는 붙이지 않습니다.
 
-## 이벤트 81종
+## 이벤트 목록
 
 `core_action`은 사용자가 이 서비스를 쓰는 행위, `engagement`는 그 주변의 이동·설정입니다.
 분류는 `EVENT_CATEGORY`가 `Record`로 강제하므로 이벤트를 추가하고 분류를 빠뜨리면 컴파일이
 실패합니다.
 
-### core_action (36종)
+### core_action
 
 `memo_write`(fields) · `memo_delete`(memo_count) · `memo_restore`(memo_count) ·
 `memo_delete_permanently`(memo_count) · `memo_open`(has_search_query, source?) · `memo_source_open` ·
@@ -43,7 +43,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `category_create` · `category_update` · `category_delete` ·
 `login`(method) · `sign_up`(method) · `feedback_submit` · `extension_install_click`(from, position) ·
 `memo_first_write`(source?) · `memo_content_saved`(source) · `export_run`(format) · `highlight_create`(color, has_note) ·
-`past_memo_open`(kind, source) · `blog_subscription_change`(blog_id, active) ·
+`past_memo_open`(kind, source) · `past_memo_reuse`(source, action) · `blog_subscription_change`(blog_id, active) ·
 `blog_article_open`(blog_id, sort) · `blog_article_memo_click`(blog_id, action) ·
 `blog_sync_resume_request`(blog_id, result)
 
@@ -51,7 +51,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 
 현재 작성 동선은 페이지의 하이라이트를 사이드 패널에서 참고하는 방식입니다. 패널을 여는 동작은 메모 생성으로 기록하지 않습니다. 패널 인용을 선택해 원문 위치 검증과 스크롤에 성공한 경우에만 `highlight_source_jump`를 속성 없이 기록합니다. 기존 생성 RPC의 계측과 연결 메모 열기는 이전 연결 데이터와의 호환을 위해 유지합니다.
 
-### engagement (45종)
+### engagement
 
 `side_panel_open` · `side_panel_open_click` · `side_panel_login_click` ·
 `memo_editor_ready`(source) · `memo_save_result`(is_success, source, reason) ·
@@ -69,6 +69,7 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 `notice_dismiss`(notice_id) · `notice_return`(notice_id, days_since_view) ·
 `past_memo_show`(kind, source) · `past_memo_dismiss`(kind, source) ·
 `past_memo_expand`(kind=related, source=jev) ·
+`past_memo_view_start`(source) · `past_memo_view_result`(source, is_success, reason, action) ·
 `memo_offline_queued`(trigger) · `memo_offline_sync_result`(trigger, synced_count, conflict_count, has_other_error) ·
 `shortcut_change_click`(is_success) · `blog_reading_page_move`(direction, page_number, sort)
 
@@ -165,6 +166,39 @@ develop push로 Play 내부 테스트에 올라간 빌드도 섞입니다.
 `past_memo_*` 이벤트는 `kind`를 전송하지만, `kind`는 아직 이벤트 범위 맞춤 측정기준으로
 등록되지 않았습니다. 등록 전에는 Data API에서 중복·관련 종류별 열기 비율을 조회할 수 없으며,
 등록 이전 값도 소급해 조회할 수 없습니다. 등록 확인 전에는 종류별 개선을 판정하지 않습니다.
+
+### 과거 메모 패널 열람 계측 (DB-1251)
+
+기존 `past_memo_open`은 조회 전에 찍히는 클릭 의도입니다. 중복 안내는 확장 1.11.0부터
+패널 메모 보기, 관련 추천은 원문 탭 이동이므로 하나의 재열람 성공 지표로 묶지 않습니다.
+`past_memo_show/open`은 URL·kind 기준의 중복 제거를 사용하지만 신규 `view_start/result`는
+직접 클릭으로 만든 로컬 시도 단위입니다. 두 이벤트 집합의 건수를 같은 분모로 나누지 않습니다.
+
+신규 `past_memo_view_result`의 성공은 비공백 기록이 활성 문서 DOM에 렌더된 것을 뜻합니다.
+현재 설정에서 숨긴 느낀 점·액션 아이템이나 제목만 있는 메모는 내용으로 세지 않습니다.
+스크롤 영역 안의 본문 전체 가시성·정독·효용을 증명하지 않습니다. 시도 시작보다 24시간 이상 전에
+생성된 기록은 `action=existing`, 그 이후부터 시작 시각까지는 `recent`, 시각 불명·미래·미조회는
+`unknown`입니다. 나이는 클라이언트에서 분류하며 원시 생성 시각은 보내지 않습니다.
+
+주 지표는 신규 버전 production의 `result(is_success=true, action=existing)` 건수·고유 사용자
+수입니다. 보조는 관측된 결과의 성공비, `start` 대비 `result` 완료 관찰비, 실패·취소 사유별
+건수와 `past_memo_reuse`(기존 기록 렌더 후 원문 탭 생성 성공)입니다. 계정 전환·프로세스 종료·
+전송 누락은 start와 result의 차이를 만들 수 있습니다. 전체 기존 기록 보유자 재열람률이나
+같은 사용자의 순차 전환율로 해석하지 않습니다. 공통 `engagement_time_msec`도 실제 읽기 시간이 아닙니다.
+
+신규 이벤트 속성은 이미 등록된 `source/action/is_success/reason`의 열거값만 사용합니다.
+메모 ID·시도 토큰·제목·본문·URL·검색어·사용자 ID를 신규 params에 넣지 않습니다.
+기존 전송층의 인증 식별 정책은 유지합니다. 계정 전환을 인지한 뒤에는 과거 시도의 전송 호출을
+생략하지만, 호출 이후 공통 전송층의 비동기 사용자 해석까지 개인별 귀속을 보장하지는 않습니다.
+전송 성공 응답도 GA 보고서 반영의 보장은 아닙니다.
+
+신규 버전 출시 후 4주를 최초 기준선으로 모으고, 마지막 날 종료 후 처리 시간 48시간을 기다립니다.
+`existing` 성공 사용자가 5명 미만이거나 관측 완료 시도가 20회 미만이면 판단을 보류합니다.
+최대 8주 후에도 부족하면 효과 미확인으로 종료합니다. 이는 운영상 표본 확보 기준이며 통계적
+유의성 기준이 아닙니다. 반복 시도를 독립 표본으로 간주하거나 인과 효과를 확정하지 않습니다.
+운영 호스트 허용 목록과 `build_env=production`, 해당 계측이 포함된 확장 버전을 함께 필터링하고,
+샘플링·임곗값·other 손실·잘림 메타데이터를 보존합니다. 단계별 사용자 수를 따로 조회해 나눈 값을
+정확한 코호트 전환율로 표기하지 않습니다.
 
 ### 등록된 커스텀 측정항목 (3종 × 3형태)
 

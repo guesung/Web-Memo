@@ -54,6 +54,8 @@ export default function MemoOption({
 	const [isOpen, setIsOpen] = useState(false);
 	const triggerRef = useRef<HTMLButtonElement>(null);
 	const isCategoryPopupRequestedRef = useRef(false);
+	const isMenuCloseCompleteRef = useRef(true);
+	const isDeleteClosePendingRef = useRef(false);
 	const { categories } = useCategoryQuery();
 	const queryClient = useQueryClient();
 	const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
@@ -90,7 +92,10 @@ export default function MemoOption({
 
 		setIsOpen(false);
 		closeMemoOption?.();
-		onDeleteSuccess?.();
+		if (onDeleteSuccess) {
+			if (isMenuCloseCompleteRef.current) onDeleteSuccess();
+			else isDeleteClosePendingRef.current = true;
+		}
 	};
 
 	const handleCategoryChange = async (categoryId: string) => {
@@ -143,8 +148,15 @@ export default function MemoOption({
 		isCategoryPopupRequestedRef.current = true;
 	};
 
-	// 메뉴가 완전히 닫힌 뒤에 팝업을 열어야 메뉴의 포커스 복귀와 부딪히지 않는다.
+	// 메뉴가 닫힌 뒤에 팝업을 열거나 다이얼로그를 닫아야 포커스·포인터 잠금이 풀린다.
 	const handleMenuCloseAutoFocus = (event: Event) => {
+		isMenuCloseCompleteRef.current = true;
+		if (isDeleteClosePendingRef.current) {
+			isDeleteClosePendingRef.current = false;
+			event.preventDefault();
+			onDeleteSuccess?.();
+			return;
+		}
 		if (!isCategoryPopupRequestedRef.current) return;
 
 		isCategoryPopupRequestedRef.current = false;
@@ -155,6 +167,7 @@ export default function MemoOption({
 	};
 
 	const handleOpenChange = (open: boolean) => {
+		if (open) isMenuCloseCompleteRef.current = false;
 		setIsOpen(open);
 		onOpenChange?.(open);
 	};

@@ -50,11 +50,11 @@
 
 | MCP           | 쓰이는 곳                                                                        | 용도                                                      |
 | ------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `notion-home` | `/web-memo:idea`, `/web-memo:design`, `/web-memo:implement-loop`, `/web-memo:self-qa`, `/common:problem-log`, `/web-memo:blog-material` | 개인 업무 로그·QA 항목·개발 위키 DB(문제 해결 기록) 읽기·쓰기 (guesung) |
+| 개인 Notion 연결 ([접근 규칙](notion-access.md)) | `/web-memo:idea`, `/web-memo:design`, `/web-memo:implement-loop`, `/web-memo:self-qa`, `/common:problem-log`, `/web-memo:blog-material` | 개인 업무 로그·QA 항목·개발 위키 DB(문제 해결 기록) 읽기·쓰기 (guesung) |
 | `playwright`  | `/web-memo:self-qa` ② — `web-memo:qa-verifier`가 사용                                        | 브라우저 구동·DOM/스크린샷/콘솔/네트워크 관측             |
 
-`/web-memo:document`는 ChatGPT 앱의 **개인 Notion 연결** 또는 `notion-home`으로 프로젝트 문서를 기록한다. 업무 로그·QA 파이프라인을 호출하지 않는다. 대상과 뷰 필터는 `~/.agents/docs/notion-databases.md`의 `웹 메모 프로젝트 문서` 절을 따른다.
+`/web-memo:document`는 [Notion 접근 규칙](notion-access.md)에 따른 개인 Notion 연결로 프로젝트 문서를 기록한다. 업무 로그·QA 파이프라인을 호출하지 않는다. 대상과 뷰 필터는 `~/.agents/docs/notion-databases.md`의 `웹 메모 프로젝트 문서` 절을 따른다.
 
 회사판이 쓰던 `claude.ai Notion`(팀 DB)·`slack` 플러그인은 쓰지 않는다.
 
-DB 식별자·속성·접근 규칙은 [notion-databases.md](~/.agents/docs/notion-databases.md)가 SSOT다. 스킬 본문에는 ID를 두지 않는다.
+도구 선택은 [Notion 접근 규칙](notion-access.md)을 따른다. DB 식별자·속성·본문 규약은 [notion-databases.md](~/.agents/docs/notion-databases.md)가 SSOT다. 스킬 본문에는 ID를 두지 않는다.

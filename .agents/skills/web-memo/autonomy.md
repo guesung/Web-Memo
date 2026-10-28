@@ -63,7 +63,7 @@
 | 로그인이 필요 없는 브라우저 조작 · QA 판정 | `playwright` MCP |
 | 배포 상태 · 배포 URL · 빌드 로그 · 런타임 에러 | `vercel` MCP (`get_deployment`, `list_deployments`, `get_deployment_build_logs`) |
 | 환경변수 값 | 레포의 `.env*` 파일을 로컬에서 직접 읽는다. 값을 에이전트 프롬프트나 노션·PR 본문에 옮기지 않는다 |
-| 노션 페이지·DB | `notion-home` MCP (개인 DB) |
+| 노션 페이지·DB | [Notion 접근 규칙](notion-access.md)에 따른 개인 Notion 연결 |
 | GitHub PR·이슈 | `gh` CLI |
 
 원칙 셋:

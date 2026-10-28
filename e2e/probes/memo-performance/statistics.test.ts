@@ -8,6 +8,7 @@ import {
 } from "./statistics";
 
 const attempt = (overrides: Partial<Attempt> = {}): Attempt => ({
+	measurement_version: 2,
 	scenario: "all_hard_20",
 	route: "all",
 	action: "hard",
@@ -19,6 +20,15 @@ const attempt = (overrides: Partial<Attempt> = {}): Attempt => ({
 	request_count: 1,
 	memo_request_count: 1,
 	auxiliary_request_count: 0,
+	highlight_request_count: 0,
+	source_request_count: 0,
+	other_request_count: 0,
+	validation_ms: 2,
+	trigger_total_ms: 4,
+	observed_item_count: 20,
+	auxiliary_settled: true,
+	settle_ms: 0,
+	pending_auxiliary_request_count: 0,
 	query_cache: "empty",
 	http_cache: "empty",
 	router_prefetch: "unknown",
@@ -48,10 +58,45 @@ describe("memo performance export and statistics", () => {
 			{ duration_ms: -1 },
 			{ request_count: 1.5 },
 			{ memo_request_count: 2 },
+			{ measurement_version: 1 },
+			{ validation_ms: -1 },
+			{ validation_ms: "2" },
+			{ trigger_total_ms: Number.POSITIVE_INFINITY },
+			{ observed_item_count: 1.2 },
+			{ highlight_request_count: 1 },
+			{ source_request_count: -1 },
+			{ settle_ms: -1 },
+			{ pending_auxiliary_request_count: 0.5 },
+			{ auxiliary_settled: "true" },
 			{ outcome: "blocked" },
 		]) {
 			expect(sanitizeAttempt({ ...attempt(), ...overrides })).toBeNull();
 		}
+	});
+	it("keeps only finite nonnegative v2 measurements and request categories", () => {
+		const safe = sanitizeAttempt({
+			...attempt({
+				request_count: 5,
+				memo_request_count: 2,
+				auxiliary_request_count: 3,
+				highlight_request_count: 1,
+				source_request_count: 1,
+				other_request_count: 1,
+				observed_item_count: 2000,
+			}),
+			request_url: "PRIVATE",
+			memo_id: "PRIVATE",
+		});
+		expect(safe).toMatchObject({
+			measurement_version: 2,
+			validation_ms: 2,
+			trigger_total_ms: 4,
+			observed_item_count: 2000,
+			highlight_request_count: 1,
+			source_request_count: 1,
+			other_request_count: 1,
+		});
+		expect(JSON.stringify(safe)).not.toContain("PRIVATE");
 	});
 	it("does not infer percentiles from fewer than 30 completed success samples", () => {
 		const result = summarize(Array.from({ length: 29 }, () => attempt()));

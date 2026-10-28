@@ -90,7 +90,8 @@ export default class SafeReporter implements Reporter {
 			/* Revision is optional when running outside a checkout. */
 		}
 		const report = {
-			schema_version: 1,
+			schema_version: 2,
+			measurement_version: 2,
 			source: "mock",
 			revision,
 			status: this.invalid ? "failed" : result.status,

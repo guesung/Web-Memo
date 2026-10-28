@@ -25,6 +25,7 @@ export type Action =
 export type View = "grid" | "list" | "domain";
 
 export interface Attempt {
+	readonly measurement_version: 2;
 	readonly scenario: string;
 	readonly route: RouteName;
 	readonly action: Action;
@@ -36,6 +37,15 @@ export interface Attempt {
 	readonly request_count: number;
 	readonly memo_request_count: number;
 	readonly auxiliary_request_count: number;
+	readonly highlight_request_count: number;
+	readonly source_request_count: number;
+	readonly other_request_count: number;
+	readonly validation_ms: number;
+	readonly trigger_total_ms: number;
+	readonly observed_item_count: number;
+	readonly auxiliary_settled: boolean;
+	readonly settle_ms: number;
+	readonly pending_auxiliary_request_count: number;
 	readonly query_cache: "empty" | "reused" | "cleared" | "unknown";
 	readonly http_cache: "empty" | "reused" | "disabled_by_routing" | "unknown";
 	readonly router_prefetch: "observed" | "not_observed" | "unknown";
@@ -89,6 +99,7 @@ const isChoice = (
 export function sanitizeAttempt(value: unknown): Attempt | null {
 	if (
 		!isRecord(value) ||
+		value.measurement_version !== 2 ||
 		typeof value.scenario !== "string" ||
 		!SCENARIO.test(value.scenario) ||
 		!isChoice(value.route, ["all", "star", "wish", "reading"]) ||
@@ -102,8 +113,21 @@ export function sanitizeAttempt(value: unknown): Attempt | null {
 		!isCount(value.request_count) ||
 		!isCount(value.memo_request_count) ||
 		!isCount(value.auxiliary_request_count) ||
+		!isCount(value.highlight_request_count) ||
+		!isCount(value.source_request_count) ||
+		!isCount(value.other_request_count) ||
+		!isDuration(value.validation_ms) ||
+		!isDuration(value.trigger_total_ms) ||
+		!isCount(value.observed_item_count) ||
+		typeof value.auxiliary_settled !== "boolean" ||
+		!isDuration(value.settle_ms) ||
+		!isCount(value.pending_auxiliary_request_count) ||
 		value.request_count !==
 			value.memo_request_count + value.auxiliary_request_count ||
+		value.auxiliary_request_count !==
+			value.highlight_request_count +
+				value.source_request_count +
+				value.other_request_count ||
 		!isChoice(value.query_cache, ["empty", "reused", "cleared", "unknown"]) ||
 		!isChoice(value.http_cache, [
 			"empty",
@@ -116,6 +140,7 @@ export function sanitizeAttempt(value: unknown): Attempt | null {
 	)
 		return null;
 	const safe: Attempt = {
+		measurement_version: 2,
 		scenario: value.scenario,
 		route: value.route as RouteName,
 		action: value.action as Action,
@@ -127,6 +152,15 @@ export function sanitizeAttempt(value: unknown): Attempt | null {
 		request_count: value.request_count,
 		memo_request_count: value.memo_request_count,
 		auxiliary_request_count: value.auxiliary_request_count,
+		highlight_request_count: value.highlight_request_count,
+		source_request_count: value.source_request_count,
+		other_request_count: value.other_request_count,
+		validation_ms: value.validation_ms,
+		trigger_total_ms: value.trigger_total_ms,
+		observed_item_count: value.observed_item_count,
+		auxiliary_settled: value.auxiliary_settled,
+		settle_ms: value.settle_ms,
+		pending_auxiliary_request_count: value.pending_auxiliary_request_count,
 		query_cache: value.query_cache as Attempt["query_cache"],
 		http_cache: value.http_cache as Attempt["http_cache"],
 		router_prefetch: value.router_prefetch as Attempt["router_prefetch"],
@@ -217,6 +251,7 @@ export function summarizeByCondition(attempts: readonly Attempt[]) {
 	const groups = new Map<string, Attempt[]>();
 	for (const attempt of attempts) {
 		const key = JSON.stringify([
+			attempt.measurement_version,
 			attempt.scenario,
 			attempt.route,
 			attempt.action,
@@ -235,6 +270,7 @@ export function summarizeByCondition(attempts: readonly Attempt[]) {
 	}
 	return [...groups.values()].map((group) => ({
 		condition: {
+			measurement_version: group[0].measurement_version,
 			scenario: group[0].scenario,
 			route: group[0].route,
 			action: group[0].action,

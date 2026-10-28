@@ -268,15 +268,24 @@ async function ready(
 	view: View,
 	active: number,
 	current: () => number,
+	onCount?: (count: number) => void,
 ) {
 	const items =
 		view === "grid"
 			? page.locator(".memo-item")
 			: page.getByTestId("memo-list-item");
 	await expect
-		.poll(async () => (active === current() ? items.count() : -1), {
-			timeout: BUDGET_MS,
-		})
+		.poll(
+			async () => {
+				const count = active === current() ? await items.count() : -1;
+				if (count >= 0) onCount?.(count);
+				return count;
+			},
+			{
+				timeout: BUDGET_MS,
+				intervals: [100, 200, 400],
+			},
+		)
 		.toBe(expected);
 	if (active !== current()) throw new Error("superseded generation");
 	if (expected === 0) {
@@ -300,14 +309,10 @@ async function ready(
 	let previous = "";
 	while (stable < 2) {
 		if (active !== current()) throw new Error("superseded generation");
-		const signature = await items.evaluateAll((elements) =>
-			elements
-				.map((element) => {
-					const box = element.getBoundingClientRect();
-					return `${element.textContent?.slice(0, 32)}:${box.x}:${box.y}:${box.width}:${box.height}`;
-				})
-				.join("|"),
-		);
+		const signature = await items.last().evaluate((element) => {
+			const box = element.getBoundingClientRect();
+			return `${element.textContent?.slice(0, 32)}:${box.x}:${box.y}:${box.width}:${box.height}`;
+		});
 		stable = signature === previous ? stable + 1 : 0;
 		previous = signature;
 		await page.evaluate(
@@ -339,6 +344,10 @@ for (const scenario of selected) {
 			let generation = 0;
 			let requestCount = 0;
 			let memoCount = 0;
+			let highlightCount = 0;
+			let sourceCount = 0;
+			let otherCount = 0;
+			const pendingAuxiliary = new Set<Request>();
 			let memoFailed = false;
 			let delayCacheRevalidation = false;
 			let firstErrorAt: number | null = null;
@@ -363,6 +372,16 @@ for (const scenario of selected) {
 						trackedRequest = request;
 						nextMemoStart = performance.now();
 					}
+				} else {
+					pendingAuxiliary.add(request);
+					const pathname = new URL(request.url()).pathname;
+					if (
+						pathname === "/rest/v1/rpc/get_highlight_counts" ||
+						pathname === "/rest/v1/highlight"
+					)
+						highlightCount++;
+					else if (pathname === "/rest/v1/highlight_memo_source") sourceCount++;
+					else otherCount++;
 				}
 			});
 			page.on("response", (response) => {
@@ -373,6 +392,7 @@ for (const scenario of selected) {
 				}
 			});
 			page.on("requestfinished", (request) => {
+				pendingAuxiliary.delete(request);
 				if (
 					request === trackedRequest &&
 					requestGenerations.get(request) === generation
@@ -380,6 +400,7 @@ for (const scenario of selected) {
 					nextMemoEnd = performance.now();
 			});
 			page.on("requestfailed", (request) => {
+				pendingAuxiliary.delete(request);
 				if (requestGenerations.get(request) === generation) {
 					memoFailed = true;
 					firstErrorAt ??= performance.now();
@@ -508,6 +529,10 @@ for (const scenario of selected) {
 			}
 			requestCount = 0;
 			memoCount = 0;
+			highlightCount = 0;
+			sourceCount = 0;
+			otherCount = 0;
+			pendingAuxiliary.clear();
 			nextMemoStart = null;
 			nextMemoEnd = null;
 			trackedRequest = null;
@@ -519,12 +544,36 @@ for (const scenario of selected) {
 			let observed = false;
 			let expected = Math.min(scenario.size, PAGE_SIZE);
 			let triggerWait: number | undefined;
+			let triggerTotal = 0;
+			let validationMs = 0;
+			let observedItemCount = 0;
+			let auxiliarySettled = false;
+			let settleMs = 0;
+			const observeCount = (count: number) => {
+				observedItemCount = count;
+			};
+			const measuredReady = async (count: number, view: View) => {
+				const began = performance.now();
+				try {
+					await ready(
+						page,
+						count,
+						view,
+						generation,
+						() => generation,
+						observeCount,
+					);
+				} finally {
+					validationMs += performance.now() - began;
+				}
+			};
 			let requestWait: number | undefined;
 			let failureReason: Attempt["failure_reason"] = "none";
 			let contentBeforeResponse: boolean | undefined;
 			let endedAt: number | null = null;
 			let staleResponse: Promise<unknown> | null = null;
 			generation++;
+			const actionBegan = performance.now();
 			try {
 				switch (scenario.action) {
 					case "reload":
@@ -575,21 +624,26 @@ for (const scenario of selected) {
 								const loadMore = page.getByRole("button", {
 									name: "Load more",
 								});
-								await loadMore.scrollIntoViewIfNeeded();
+								const pageTriggerStart = performance.now();
 								try {
+									await loadMore.scrollIntoViewIfNeeded();
+									try {
+										await expect
+											.poll(() => memoCount, { timeout: 1_000 })
+											.toBeGreaterThan(previousRequests);
+									} catch {
+										if (
+											memoCount === previousRequests &&
+											(await loadMore.isEnabled())
+										)
+											await loadMore.click();
+									}
 									await expect
-										.poll(() => memoCount, { timeout: 1_000 })
+										.poll(() => memoCount, { timeout: BUDGET_MS })
 										.toBeGreaterThan(previousRequests);
-								} catch {
-									if (
-										memoCount === previousRequests &&
-										(await loadMore.isEnabled())
-									)
-										await loadMore.click();
+								} finally {
+									triggerTotal += performance.now() - pageTriggerStart;
 								}
-								await expect
-									.poll(() => memoCount, { timeout: BUDGET_MS })
-									.toBeGreaterThan(previousRequests);
 								if (loaded === PAGE_SIZE) {
 									triggerWait = Math.round(
 										(nextMemoStart ?? triggerStart) - triggerStart,
@@ -597,7 +651,7 @@ for (const scenario of selected) {
 									start = nextMemoStart ?? triggerStart;
 								}
 								loaded = Math.min(loaded + PAGE_SIZE, scenario.size);
-								await ready(page, loaded, "list", generation, () => generation);
+								await measuredReady(loaded, "list");
 							}
 						} else {
 							await page
@@ -635,6 +689,7 @@ for (const scenario of selected) {
 						]);
 						generation++;
 						const cancelled: Attempt = {
+							measurement_version: 2,
 							scenario: scenario.name,
 							route: scenario.route,
 							action: "rapid",
@@ -647,6 +702,15 @@ for (const scenario of selected) {
 							request_count: requestCount,
 							memo_request_count: memoCount,
 							auxiliary_request_count: requestCount - memoCount,
+							highlight_request_count: highlightCount,
+							source_request_count: sourceCount,
+							other_request_count: otherCount,
+							validation_ms: Math.round(validationMs),
+							trigger_total_ms: Math.round(performance.now() - actionBegan),
+							observed_item_count: observedItemCount,
+							auxiliary_settled: pendingAuxiliary.size === 0,
+							settle_ms: 0,
+							pending_auxiliary_request_count: pendingAuxiliary.size,
 							query_cache: "unknown",
 							http_cache: "disabled_by_routing",
 							router_prefetch: routerPrefetch ? "observed" : "not_observed",
@@ -660,6 +724,10 @@ for (const scenario of selected) {
 						});
 						requestCount = 0;
 						memoCount = 0;
+						highlightCount = 0;
+						sourceCount = 0;
+						otherCount = 0;
+						pendingAuxiliary.clear();
 						nextMemoStart = null;
 						nextMemoEnd = null;
 						trackedRequest = null;
@@ -675,6 +743,8 @@ for (const scenario of selected) {
 					default:
 						await page.goto(url, { waitUntil: "commit" });
 				}
+				if (scenario.action !== "load_more" || scenario.size <= PAGE_SIZE + 1)
+					triggerTotal = performance.now() - actionBegan;
 				test.info().annotations.push({
 					type: "memo-performance-stage",
 					description: "ready",
@@ -691,12 +761,9 @@ for (const scenario of selected) {
 						.poll(() => memoFailed, { timeout: BUDGET_MS })
 						.toBe(true);
 				} else {
-					await ready(
-						page,
+					await measuredReady(
 						expected,
 						scenario.action === "load_more" ? "list" : scenario.view,
-						generation,
-						() => generation,
 					);
 					observed = true;
 					outcome = expected ? "success" : "empty";
@@ -715,29 +782,30 @@ for (const scenario of selected) {
 						)?.[0];
 						const response = await pending?.response();
 						await response?.finished();
-						await ready(
-							page,
-							expected,
-							scenario.view,
-							generation,
-							() => generation,
-						);
+						await measuredReady(expected, scenario.view);
 					}
 					if (staleResponse) {
 						await staleResponse;
-						await ready(
-							page,
-							expected,
-							scenario.view,
-							generation,
-							() => generation,
-						);
+						await measuredReady(expected, scenario.view);
 					}
 				}
 			} catch {
 				outcome = "timeout";
 				failureReason = "unexpected_result";
+				observedItemCount = await (scenario.action === "load_more" ||
+				scenario.action === "next_error" ||
+				scenario.view === "list"
+					? page.getByTestId("memo-list-item")
+					: page.locator(".memo-item")
+				)
+					.count()
+					.catch(() => observedItemCount);
 			}
+			if (
+				triggerTotal === 0 &&
+				(scenario.action !== "load_more" || scenario.size <= PAGE_SIZE + 1)
+			)
+				triggerTotal = performance.now() - actionBegan;
 			endedAt ??= performance.now();
 			if (
 				scenario.action === "timeout" &&
@@ -771,11 +839,27 @@ for (const scenario of selected) {
 							: null;
 					})
 				: null;
+			if (observed) {
+				const settleBegan = performance.now();
+				try {
+					await expect
+						.poll(() => pendingAuxiliary.size, {
+							timeout: 1_500,
+							intervals: [50, 100, 200],
+						})
+						.toBe(0);
+				} catch {
+					// The bounded observation window leaves pending requests as a numeric result.
+				}
+				settleMs = performance.now() - settleBegan;
+			}
+			auxiliarySettled = pendingAuxiliary.size === 0;
 			test.info().annotations.push({
 				type: "memo-performance-stage",
 				description: "record",
 			});
 			const attempt: Attempt = {
+				measurement_version: 2,
 				scenario: scenario.name,
 				route: scenario.route,
 				action: scenario.action,
@@ -791,6 +875,15 @@ for (const scenario of selected) {
 				request_count: requestCount,
 				memo_request_count: memoCount,
 				auxiliary_request_count: requestCount - memoCount,
+				highlight_request_count: highlightCount,
+				source_request_count: sourceCount,
+				other_request_count: otherCount,
+				validation_ms: Math.round(validationMs),
+				trigger_total_ms: Math.max(0, Math.round(triggerTotal)),
+				observed_item_count: observedItemCount,
+				auxiliary_settled: auxiliarySettled,
+				settle_ms: Math.round(settleMs),
+				pending_auxiliary_request_count: pendingAuxiliary.size,
 				query_cache:
 					scenario.action === "reload"
 						? "cleared"

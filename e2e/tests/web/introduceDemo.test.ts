@@ -82,13 +82,20 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 			await page.goto(`/${language}${PATHS.introduce}`);
 			const demo = page.locator("#demo");
 			await expect(demo.getByText(title).first()).toBeVisible();
-			await demo.getByRole("button", { name: step }).click();
+			const stepButton = demo.getByRole("button", { name: step });
+			await stepButton.click();
+			await expect(stepButton).toBeFocused();
 			await expect(demo.getByTestId("demo-scene")).toHaveAttribute(
 				"data-stage",
 				"4",
 			);
 			await expect(demo.getByText(caption)).toBeVisible();
 			await expect(demo.getByTestId("demo-saved")).toBeAttached();
+			await expect(demo.getByTestId("demo-scene")).toHaveAttribute(
+				"data-stage",
+				"0",
+				{ timeout: 5000 },
+			);
 		});
 	}
 
@@ -109,6 +116,11 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 			"data-stage",
 			"3",
 		);
+		await page.waitForTimeout(3500);
+		await expect(demo.getByTestId("demo-scene")).toHaveAttribute(
+			"data-stage",
+			"3",
+		);
 	});
 
 	test("사용자가 정지하면 포인터와 포커스가 떠나도 장면이 유지된다", async ({
@@ -118,7 +130,6 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 		await page.goto(`/ko${PATHS.introduce}`);
 		const demo = page.locator("#demo");
 		await demo.getByRole("button", { name: "패널 열기" }).click();
-		await demo.getByRole("button", { name: "재생" }).click();
 		await demo.getByRole("button", { name: "정지" }).click();
 		await page.mouse.move(0, 0);
 		await page.keyboard.press("Tab");
@@ -126,6 +137,12 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 		await expect(demo.getByTestId("demo-scene")).toHaveAttribute(
 			"data-stage",
 			"2",
+		);
+		await demo.getByRole("button", { name: "재생" }).click();
+		await expect(demo.getByTestId("demo-scene")).toHaveAttribute(
+			"data-stage",
+			"3",
+			{ timeout: 4000 },
 		);
 	});
 	test("마우스를 올려도 진행하고 focus 동안 멈췄다가 이어진다", async ({
@@ -136,11 +153,6 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 		const demo = page.locator("#demo");
 		const scene = demo.getByTestId("demo-scene");
 		await demo.getByRole("button", { name: "글 읽기" }).click();
-		await demo.getByRole("button", { name: "재생" }).click();
-		await demo
-			.getByRole("button", { name: "정지" })
-			.evaluate((button: HTMLElement) => button.blur());
-		await page.mouse.move(0, 0);
 		await expect(scene).toHaveAttribute("data-stage", "1", { timeout: 5000 });
 		await demo.hover();
 		await expect(scene).toHaveAttribute("data-stage", "2", { timeout: 4000 });
@@ -196,6 +208,7 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 		const demo = page.locator("#demo");
 		await demo.getByRole("button", { name: "저장 완료" }).click();
 		await demo.getByRole("button", { name: "저장 완료" }).click();
+		await demo.getByRole("button", { name: "정지" }).click();
 		await demo.getByRole("button", { name: "재생" }).click();
 		await demo.getByRole("button", { name: "정지" }).click();
 		await expect
@@ -214,6 +227,7 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 			.toEqual([
 				{ action: "select_step", stage: "saved" },
 				{ action: "select_step", stage: "saved" },
+				{ action: "pause", stage: "saved" },
 				{ action: "play", stage: "saved" },
 				{ action: "pause", stage: "saved" },
 			]);
@@ -227,14 +241,15 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 		const memo = demo.getByTestId("demo-memo-text");
 		const writeStep = demo.getByRole("button", { name: "메모 입력" });
 		await writeStep.click();
-		await expect(memo).toHaveText(
-			"마음에 남는 문장을 바로 기록해 두자.\n나중에 다시 읽을 때 생각을 이어 갈 수 있도록.",
-		);
-		await demo.getByRole("button", { name: "재생" }).click();
-		await demo
-			.getByRole("button", { name: "정지" })
-			.evaluate((button: HTMLElement) => button.blur());
-		await page.mouse.move(0, 0);
+		await expect(writeStep).toBeFocused();
+		await expect
+			.poll(async () => (await memo.textContent())?.length ?? 0)
+			.toBeGreaterThan(5);
+		const beforeRestartLength = (await memo.textContent())?.length ?? 0;
+		await writeStep.click();
+		await expect
+			.poll(async () => (await memo.textContent())?.length ?? 0)
+			.toBeLessThan(beforeRestartLength);
 		await expect
 			.poll(async () => (await memo.textContent())?.length ?? 0)
 			.toBeGreaterThan(5);
@@ -243,12 +258,14 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 		await expect
 			.poll(async () => (await memo.textContent())?.length ?? 0)
 			.toBeGreaterThan(beforeHoverLength);
-		await writeStep.focus();
+		await demo.getByRole("button", { name: "저장 완료" }).focus();
 		const pausedText = await memo.textContent();
 		await page.mouse.move(0, 0);
 		await page.waitForTimeout(500);
 		await expect(memo).toHaveText(pausedText ?? "");
-		await writeStep.evaluate((button: HTMLElement) => button.blur());
+		await demo
+			.getByRole("button", { name: "저장 완료" })
+			.evaluate((button: HTMLElement) => button.blur());
 		await expect
 			.poll(async () => (await memo.textContent())?.length ?? 0)
 			.toBeGreaterThan((pausedText ?? "").length);

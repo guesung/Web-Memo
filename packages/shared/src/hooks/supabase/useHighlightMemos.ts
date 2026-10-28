@@ -1,8 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "../../constants/QueryKey";
 import { analytics } from "../../modules/analytics";
 import { HighlightMemoService } from "../../utils/supabase/highlightMemoService";
 import { useSupabaseClientQuery, useSupabaseUserQuery } from "./queries";
+import { useStableBatches } from "./stableBatches";
 
 /** 메모 변경 무효화와 함께 갱신되는 계정별 명시적 연결 조회. */
 export function useHighlightMemoLinks(
@@ -13,16 +14,38 @@ export function useHighlightMemoLinks(
 	const { user } = useSupabaseUserQuery();
 	const userId = user.data.user?.id;
 	const sortedIds = [...new Set(ids)].sort((a, b) => a - b);
-	return useQuery({
-		queryKey: ["memos", "highlightSources", userId, by, sortedIds],
-		enabled: !!userId && sortedIds.length > 0,
-		queryFn: () => {
-			const service = new HighlightMemoService(client);
-			return by === "memo"
-				? service.getByMemoIds(sortedIds)
-				: service.getByHighlightIds(sortedIds);
-		},
+	const batches = useStableBatches(sortedIds, `${userId}:${by}`);
+	const queries = useQueries({
+		queries: batches.map((batch) => ({
+			queryKey: ["memos", "highlightSources", userId, by, batch],
+			enabled: !!userId,
+			queryFn: () => {
+				const service = new HighlightMemoService(client);
+				return by === "memo"
+					? service.getByMemoIds(batch)
+					: service.getByHighlightIds(batch);
+			},
+		})),
 	});
+	const activeIds = new Set(sortedIds);
+	const hasLoadError = queries.some((query) => query.isError);
+	return {
+		data: queries
+			.flatMap((query) => query.data ?? [])
+			.filter((link) =>
+				by === "memo"
+					? activeIds.has(link.memo_id)
+					: link.highlight_id !== null && activeIds.has(link.highlight_id),
+			),
+		isError: hasLoadError,
+		isPending: queries.length === 0 || queries.some((query) => query.isPending),
+		refetch: async () =>
+			Promise.all(
+				queries
+					.filter((query) => !hasLoadError || query.isError)
+					.map((query) => query.refetch()),
+			),
+	};
 }
 
 /** 실제 메모와 인용문을 하나의 트랜잭션으로 저장한다. */

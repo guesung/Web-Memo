@@ -4,65 +4,51 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import usePendingOfflineMemo from "./usePendingOfflineMemo";
 
-const mocks = vi.hoisted(() => ({
-	getPendingOfflineMemo: vi.fn(
-		async (_target: unknown): Promise<unknown> => undefined,
-	),
-}));
+const mocks = vi.hoisted(() => ({ getPendingOfflineMemo: vi.fn() }));
 vi.mock("../utils/offlineMemoQueue", () => ({
-	getPendingOfflineMemo: (target: unknown) =>
-		mocks.getPendingOfflineMemo(target),
+	getPendingOfflineMemo: (...args: unknown[]) =>
+		mocks.getPendingOfflineMemo(...args),
 	OFFLINE_MEMO_QUEUE_STORAGE_KEY: "offlineMemoQueue",
 }));
 
-const PENDING_ITEM = {
-	url: "https://example.com/a",
-	data: { memo: "대기 본문" },
-};
 let root: Root;
-let storageChangeListeners: Array<
-	(changes: Record<string, unknown>, areaName: string) => void
-> = [];
-const fireStorageChange = (areaName = "local") => {
-	for (const listener of storageChangeListeners) {
-		listener({ offlineMemoQueue: {} }, areaName);
-	}
-};
-
-let hookResult: unknown;
-const TestHook = ({ memoId, url }: { memoId?: number; url: string }) => {
-	hookResult = usePendingOfflineMemo({ memoId, url });
+let result: ReturnType<typeof usePendingOfflineMemo>;
+let listeners: Array<(changes: Record<string, unknown>, area: string) => void>;
+const Hook = (props: { userId?: string; memoId?: number; url: string }) => {
+	result = usePendingOfflineMemo(props);
 	return null;
 };
-
-const render = async (props: { memoId?: number; url: string }) => {
-	await act(async () => root.render(createElement(TestHook, props)));
+const render = async (props: {
+	userId?: string;
+	memoId?: number;
+	url: string;
+}) => {
+	await act(async () => root.render(createElement(Hook, props)));
+};
+const deferred = () => {
+	let resolve!: (value: unknown) => void;
+	let reject!: (reason: unknown) => void;
+	const promise = new Promise((res, rej) => {
+		resolve = res;
+		reject = rej;
+	});
+	return { promise, resolve, reject };
 };
 
 beforeEach(() => {
-	mocks.getPendingOfflineMemo.mockReset().mockResolvedValue(undefined);
-	storageChangeListeners = [];
 	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+	mocks.getPendingOfflineMemo.mockReset().mockResolvedValue(undefined);
+	listeners = [];
 	vi.stubGlobal("chrome", {
 		storage: {
 			onChanged: {
 				addListener: (
-					listener: (
-						changes: Record<string, unknown>,
-						areaName: string,
-					) => void,
-				) => {
-					storageChangeListeners.push(listener);
-				},
+					listener: (changes: Record<string, unknown>, area: string) => void,
+				) => listeners.push(listener),
 				removeListener: (
-					listener: (
-						changes: Record<string, unknown>,
-						areaName: string,
-					) => void,
+					listener: (changes: Record<string, unknown>, area: string) => void,
 				) => {
-					storageChangeListeners = storageChangeListeners.filter(
-						(existing) => existing !== listener,
-					);
+					listeners = listeners.filter((value) => value !== listener);
 				},
 			},
 		},
@@ -70,55 +56,73 @@ beforeEach(() => {
 	document.body.innerHTML = "<div id='root'></div>";
 	root = createRoot(document.getElementById("root") as HTMLElement);
 });
-
 afterEach(async () => {
 	await act(async () => root.unmount());
 	vi.unstubAllGlobals();
 });
 
-it("마운트 시 대상의 대기 항목을 읽는다", async () => {
-	mocks.getPendingOfflineMemo.mockResolvedValue(PENDING_ITEM);
-	await render({ memoId: 1, url: "https://example.com/a" });
-
-	expect(hookResult).toBe(PENDING_ITEM);
+it("requires a user and distinguishes absent from loading", async () => {
+	await render({ url: "https://example.com/a" });
+	expect(result.status).toBe("loading");
+	expect(mocks.getPendingOfflineMemo).not.toHaveBeenCalled();
+	await render({ userId: "a", url: "https://example.com/a" });
+	expect(result.status).toBe("absent");
 	expect(mocks.getPendingOfflineMemo).toHaveBeenCalledWith({
-		memoId: 1,
+		userId: "a",
 		url: "https://example.com/a",
 	});
 });
 
-it("대기열이 바뀌면 다시 읽는다", async () => {
-	await render({ memoId: 1, url: "https://example.com/a" });
-	expect(hookResult).toBeUndefined();
-
-	mocks.getPendingOfflineMemo.mockResolvedValue(PENDING_ITEM);
-	await act(async () => {
-		fireStorageChange();
-	});
-
-	expect(hookResult).toBe(PENDING_ITEM);
+it("hides a previous account immediately and ignores its late result", async () => {
+	const old = deferred();
+	const next = deferred();
+	mocks.getPendingOfflineMemo
+		.mockReturnValueOnce(old.promise)
+		.mockReturnValueOnce(next.promise);
+	await render({ userId: "a", url: "https://example.com/a" });
+	await render({ userId: "b", url: "https://example.com/a" });
+	expect(result.status).toBe("loading");
+	await act(async () => old.resolve({ userId: "a", data: { memo: "secret" } }));
+	expect(result.status).toBe("loading");
+	await act(async () => next.resolve(undefined));
+	expect(result.status).toBe("absent");
 });
 
-it("local이 아닌 영역의 변경은 무시한다", async () => {
-	await render({ memoId: 1, url: "https://example.com/a" });
-	mocks.getPendingOfflineMemo.mockClear();
-
-	await act(async () => {
-		fireStorageChange("sync");
-	});
-
-	expect(mocks.getPendingOfflineMemo).not.toHaveBeenCalled();
+it("keeps the newest same-scope refresh result", async () => {
+	const old = deferred();
+	mocks.getPendingOfflineMemo
+		.mockReturnValueOnce(old.promise)
+		.mockResolvedValueOnce(undefined);
+	await render({ userId: "a", url: "https://example.com/a" });
+	await act(async () => listeners[0]({ offlineMemoQueue: {} }, "local"));
+	expect(result.status).toBe("absent");
+	await act(async () => old.resolve({ userId: "a", data: { memo: "stale" } }));
+	expect(result.status).toBe("absent");
 });
 
-it("대상(memoId·url)이 바뀌면 새 대상으로 다시 읽는다", async () => {
-	await render({ memoId: 1, url: "https://example.com/a" });
-	mocks.getPendingOfflineMemo.mockClear().mockResolvedValue(PENDING_ITEM);
-
-	await render({ memoId: 2, url: "https://example.com/b" });
-
-	expect(mocks.getPendingOfflineMemo).toHaveBeenCalledWith({
-		memoId: 2,
-		url: "https://example.com/b",
+it("reports lookup failure and exposes retry", async () => {
+	mocks.getPendingOfflineMemo
+		.mockRejectedValueOnce(new Error("storage failed"))
+		.mockResolvedValueOnce(undefined);
+	await render({ userId: "a", url: "https://example.com/a" });
+	expect(result.status).toBe("error");
+	await act(async () => {
+		await result.refresh();
 	});
-	expect(hookResult).toBe(PENDING_ITEM);
+	expect(result.status).toBe("absent");
+});
+
+it("does not reuse a result when returning to a previous scope", async () => {
+	const again = deferred();
+	mocks.getPendingOfflineMemo
+		.mockResolvedValueOnce({ userId: "a", data: { memo: "old" } })
+		.mockResolvedValueOnce(undefined)
+		.mockReturnValueOnce(again.promise);
+	await render({ userId: "a", url: "https://example.com/a" });
+	expect(result.status).toBe("present");
+	await render({ userId: "b", url: "https://example.com/a" });
+	await render({ userId: "a", url: "https://example.com/a" });
+	expect(result.status).toBe("loading");
+	await act(async () => again.resolve(undefined));
+	expect(result.status).toBe("absent");
 });

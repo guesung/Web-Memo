@@ -1,22 +1,22 @@
 import { analytics } from "@web-memo/shared/modules/analytics";
 import type { MemoRow, MemoTable } from "@web-memo/shared/types";
 import { isNetworkError } from "@web-memo/shared/utils";
+import {
+	assertValidOfflineMemo,
+	changeOfflineMemoQueue,
+	OFFLINE_MEMO_QUEUE_STORAGE_KEY,
+	readOfflineMemoQueue,
+	type StoredOfflineMemo,
+} from "./offlineMemoQueueStorage";
 
-/**
- * chrome.storage.local에 대기열을 저장하는 키.
- * @description 대기 항목이 생기고 없어지는 것을 storage.onChanged로 지켜보려는 화면(저장 표시줄,
- * 온라인 전환 시 flush 트리거)이 이 키를 걸러 듣는다.
- */
-export const OFFLINE_MEMO_QUEUE_STORAGE_KEY = "offlineMemoQueue";
+export { OFFLINE_MEMO_QUEUE_STORAGE_KEY };
 
-/** 대기 항목이 들고 있는 탭 정보 */
 export interface IFOfflineMemoQueueTabInfo {
 	title: string;
 	favIconUrl?: string;
 	url: string;
 }
 
-/** 대기 항목이 들고 있는 메모 본문 */
 export interface IFOfflineMemoQueueData {
 	title: string;
 	memo: string;
@@ -25,42 +25,44 @@ export interface IFOfflineMemoQueueData {
 	tabInfo: IFOfflineMemoQueueTabInfo;
 }
 
-/** 오프라인 대기열에 쌓인 메모 저장 요청 하나 */
 export interface IFOfflineMemoQueueItem {
-	/** 저장을 요청한 사용자. flush 시 로그인 사용자와 다르면 건너뛴다 */
 	userId: string;
-	/** 기존 메모 수정이면 그 메모 id, 새 메모면 없음 */
 	memoId?: number;
 	url: string;
-	/** memoId가 있을 때만 쓰는, 대기열에 넣을 당시 서버의 updated_at */
 	baseUpdatedAt?: string | null;
 	data: IFOfflineMemoQueueData;
 	queuedAt: number;
+	/** Persisted generation; new enqueue calls receive a fresh value. */
+	revision?: string;
+	/** An unsaved draft keeps its lookup identity after its first insert. */
+	originUrl?: string;
+	/** A conflict copy keeps accepting edits from the still-open original editor. */
+	originMemoId?: number;
 }
 
-/** flush 도중 다른 메모로 새로 저장된(충돌) 항목 */
 export interface IFOfflineMemoConflict {
 	oldMemoId?: number;
 	newMemoId: number;
 	url: string;
 }
 
-/** flush 전체 결과 */
 export interface IFOfflineMemoFlushResult {
 	conflicts: IFOfflineMemoConflict[];
-	/** 이번 flush로 서버에 반영해 대기열에서 지운 항목 수(충돌 포함) */
 	syncedCount: number;
-	/** 네트워크 오류를 만나 중단했는지. 대기열은 그대로 남는다 */
 	hasNetworkError: boolean;
-	/** 네트워크 오류가 아닌 실패 항목이 있었는지. 그 항목은 대기열에 남는다 */
 	hasOtherError: boolean;
+	attemptedCount: number;
+	networkErrorCount: number;
+	otherErrorCount: number;
+	remainingCount?: number;
+	ackLatencySumMs: number;
+	ackLatencyCount: number;
+	noOpCount: number;
+	/** Conflict lineage whose latest revision was actually removed by ACK. */
+	acknowledgedConflictCount: number;
 }
 
-/**
- * flush에 필요한 MemoService 메서드만 뽑은 타입.
- * @description MemoService 인스턴스는 이보다 많은 필드(count 등)를 돌려주지만 초과 필드는
- * 문제되지 않는다. 테스트에서는 이 모양의 값만 돌려주는 목으로 대체한다.
- */
+type ServerMemoIdentity = Pick<MemoRow, "id" | "updated_at">;
 export interface TOfflineMemoQueueService {
 	getMemoById: (id: number) => Promise<{
 		data:
@@ -73,86 +75,76 @@ export interface TOfflineMemoQueueService {
 	}>;
 	insertMemo: (
 		request: MemoTable["Insert"],
-	) => Promise<{ data: Pick<MemoRow, "id">[] | null; error: unknown }>;
+	) => Promise<{ data: ServerMemoIdentity[] | null; error: unknown }>;
 	updateMemo: (params: {
 		id: MemoRow["id"];
 		request: MemoTable["Update"];
-	}) => Promise<{ data: unknown; error: unknown }>;
+	}) => Promise<{ data: ServerMemoIdentity[] | null; error: unknown }>;
 }
 
-/** memoId가 있으면 memoId로, 없으면 url로 대기 항목을 구분한다. 항목당 최신 스냅샷 하나만 남긴다 */
-const getQueueItemKey = (
-	item: Pick<IFOfflineMemoQueueItem, "memoId" | "url">,
-) => (item.memoId !== undefined ? `id:${item.memoId}` : `url:${item.url}`);
+type QueueTarget = Pick<IFOfflineMemoQueueItem, "userId" | "memoId" | "url">;
+const sameTarget = (item: IFOfflineMemoQueueItem, target: QueueTarget) =>
+	item.userId === target.userId &&
+	(target.memoId !== undefined
+		? item.memoId === target.memoId || item.originMemoId === target.memoId
+		: (item.memoId === undefined && item.url === target.url) ||
+			item.originUrl === target.url);
 
-/** 대기열에 쌓인 항목을 모두 읽는다. 저장소를 읽지 못하면 빈 배열을 돌려준다 */
-export const getPendingOfflineMemos = async (): Promise<
-	IFOfflineMemoQueueItem[]
-> => {
-	try {
-		const stored = await chrome.storage.local.get(
-			OFFLINE_MEMO_QUEUE_STORAGE_KEY,
-		);
-		const storedItems: unknown = stored[OFFLINE_MEMO_QUEUE_STORAGE_KEY];
+const findTargetIndex = (items: StoredOfflineMemo[], target: QueueTarget) =>
+	items.findIndex((item) => sameTarget(item, target));
 
-		if (!Array.isArray(storedItems)) {
-			return [];
-		}
+export const getPendingOfflineMemos = readOfflineMemoQueue;
 
-		return storedItems;
-	} catch {
-		return [];
-	}
-};
+export const getPendingOfflineMemo = async (target: QueueTarget) =>
+	(await readOfflineMemoQueue()).find((item) => sameTarget(item, target));
 
-/**
- * 대기열에 항목을 넣는다.
- * @description 같은 메모(memoId 또는 url)의 이전 스냅샷은 지우고 최신 스냅샷 하나만 남긴다.
- */
-export const enqueueOfflineMemo = async (item: IFOfflineMemoQueueItem) => {
-	const items = await getPendingOfflineMemos();
-	const key = getQueueItemKey(item);
-	const nextItems = [
-		...items.filter((existing) => getQueueItemKey(existing) !== key),
-		item,
-	];
+export const hasPendingOfflineMemo = async (target: QueueTarget) =>
+	(await getPendingOfflineMemo(target)) !== undefined;
 
-	await chrome.storage.local.set({
-		[OFFLINE_MEMO_QUEUE_STORAGE_KEY]: nextItems,
+export const enqueueOfflineMemo = async (item: IFOfflineMemoQueueItem) =>
+	changeOfflineMemoQueue((items) => {
+		assertValidOfflineMemo(item);
+		const index = findTargetIndex(items, item);
+		const existing = index < 0 ? undefined : items[index];
+		const continuesConflict =
+			item.memoId !== undefined && existing?.originMemoId === item.memoId;
+		const next: StoredOfflineMemo = {
+			...item,
+			memoId: continuesConflict
+				? existing.memoId
+				: (item.memoId ?? existing?.memoId),
+			baseUpdatedAt:
+				(item.memoId === undefined || continuesConflict) &&
+				existing?.memoId !== undefined
+					? existing.baseUpdatedAt
+					: item.baseUpdatedAt,
+			originUrl: existing?.originUrl,
+			originMemoId: existing?.originMemoId,
+			revision: crypto.randomUUID(),
+		};
+		return {
+			items: [...items.filter((_, position) => position !== index), next],
+			result: next,
+			changed: true,
+		};
 	});
-};
 
-/** 대기열에서 항목 하나를 지운다 */
+/** Conditional ACK only. The caller must provide the persisted revision. */
 export const removeOfflineMemo = async (
-	item: Pick<IFOfflineMemoQueueItem, "memoId" | "url">,
-) => {
-	const items = await getPendingOfflineMemos();
-	const key = getQueueItemKey(item);
-	const nextItems = items.filter(
-		(existing) => getQueueItemKey(existing) !== key,
-	);
-
-	await chrome.storage.local.set({
-		[OFFLINE_MEMO_QUEUE_STORAGE_KEY]: nextItems,
+	target: QueueTarget & { revision: string },
+) =>
+	changeOfflineMemoQueue((items) => {
+		const index = findTargetIndex(items, target);
+		if (index < 0 || items[index].revision !== target.revision) {
+			return { items, result: false, changed: false };
+		}
+		return {
+			items: items.filter((_, position) => position !== index),
+			result: true,
+			changed: true,
+		};
 	});
-};
 
-/** 대기열에서 이 메모(memoId 또는 url)의 항목을 찾는다. 없으면 undefined */
-export const getPendingOfflineMemo = async (
-	target: Pick<IFOfflineMemoQueueItem, "memoId" | "url">,
-) => {
-	const items = await getPendingOfflineMemos();
-	const key = getQueueItemKey(target);
-
-	return items.find((item) => getQueueItemKey(item) === key);
-};
-
-/** 대기열에 이 메모(memoId 또는 url)에 대한 항목이 있는지 확인한다 */
-export const hasPendingOfflineMemo = async (
-	target: Pick<IFOfflineMemoQueueItem, "memoId" | "url">,
-) => (await getPendingOfflineMemo(target)) !== undefined;
-
-/** 대기 항목의 본문을 upsert 요청 모양으로 바꾼다. 제목이 비어 있으면 탭 제목으로 되돌린다 */
 const buildMemoRequest = (data: IFOfflineMemoQueueData) => ({
 	...data.tabInfo,
 	title: data.title.trim() || data.tabInfo.title,
@@ -161,155 +153,237 @@ const buildMemoRequest = (data: IFOfflineMemoQueueData) => ({
 	actionItem: data.actionItem,
 });
 
-/** 대기 항목 하나를 서버에 반영한 결과 */
-type TFlushItemOutcome =
-	| { type: "success" }
-	| { type: "conflict"; newMemoId: number }
+type FlushOutcome =
+	| { type: "success"; serverMemo: ServerMemoIdentity }
+	| { type: "conflict"; serverMemo: ServerMemoIdentity }
+	| { type: "noOp"; serverMemo: ServerMemoIdentity }
 	| { type: "networkError" }
-	| { type: "otherError" };
+	| { type: "otherError" }
+	| { type: "cancelled" };
 
-/**
- * 서버 행의 텍스트 필드가 대기 항목이 쓰려던 내용과 완전히 같은지 본다.
- * @description flush 도중 재마운트되면 같은 항목이 다시 flush될 수 있다. 첫 시도가 이미 서버에
- * 반영된 뒤(대기열에서 지우기 전) 두 번째 시도가 돌면, updated_at은 달라졌어도 내용은 이미
- * 우리가 쓰려던 것과 같다 — 이때는 충돌이 아니라 중복 실행이므로 다시 쓰지 않는다.
- */
+const validServerMemo = (value: unknown): value is ServerMemoIdentity => {
+	if (typeof value !== "object" || value === null) return false;
+	const memo = value as ServerMemoIdentity;
+	return (
+		typeof memo.id === "number" &&
+		typeof memo.updated_at === "string" &&
+		memo.updated_at.length > 0
+	);
+};
+
 const matchesQueuedContent = (
-	existingMemo: Pick<MemoRow, "title" | "memo" | "impression" | "actionItem">,
-	queuedRequest: ReturnType<typeof buildMemoRequest>,
+	existing: Pick<MemoRow, "title" | "memo" | "impression" | "actionItem">,
+	request: ReturnType<typeof buildMemoRequest>,
 ) =>
-	existingMemo.title === queuedRequest.title &&
-	existingMemo.memo === queuedRequest.memo &&
-	existingMemo.impression === queuedRequest.impression &&
-	existingMemo.actionItem === queuedRequest.actionItem;
+	existing.title === request.title &&
+	existing.memo === request.memo &&
+	existing.impression === request.impression &&
+	existing.actionItem === request.actionItem;
 
-/**
- * 대기 항목 하나를 서버에 반영한다.
- * @description memoId가 없으면 항상 insert한다. memoId가 있으면 서버 updated_at을 다시 읽어
- * baseUpdatedAt과 같을 때만 update한다. 다르더라도 서버 내용이 이미 우리가 쓰려던 것과 같으면
- * (중복 flush로 먼저 반영된 경우) 다시 쓰지 않고 성공으로 처리한다. 그 외(진짜 다른 곳에서
- * 바뀌었거나 메모가 삭제됨)에는 같은 url로 insert해 새 메모를 만들고 충돌로 알린다.
- */
-const flushOfflineMemoItem = async ({
-	item,
-	memoService,
-}: {
-	item: IFOfflineMemoQueueItem;
-	memoService: TOfflineMemoQueueService;
-}): Promise<TFlushItemOutcome> => {
+const flushItem = async (
+	item: StoredOfflineMemo,
+	service: TOfflineMemoQueueService,
+	shouldContinue: () => boolean,
+	onAttempt: () => void,
+): Promise<FlushOutcome> => {
 	try {
-		const queuedRequest = buildMemoRequest(item.data);
-
+		const request = buildMemoRequest(item.data);
 		if (item.memoId === undefined) {
-			const insertResult = await memoService.insertMemo({
-				...queuedRequest,
-				url: item.url,
-			});
-			if (insertResult.error) {
-				throw insertResult.error;
-			}
-			// 온라인 저장과 같은 기준으로 새 메모 작성을 센다. 대기열 수정 반영은 바뀐 필드를
-			// 알 수 없어(대기 항목은 전체 값을 든다) 세지 않는다.
-			void analytics.trackMemoCreate(queuedRequest);
-
-			return { type: "success" };
+			if (!shouldContinue()) return { type: "cancelled" };
+			onAttempt();
+			const result = await service.insertMemo({ ...request, url: item.url });
+			if (result.error) throw result.error;
+			const serverMemo = result.data?.[0];
+			if (!validServerMemo(serverMemo))
+				throw new Error("Missing inserted memo identity");
+			void analytics.trackMemoCreate(request);
+			return { type: "success", serverMemo };
 		}
 
-		const existingResult = await memoService.getMemoById(item.memoId);
-		if (existingResult.error) {
-			throw existingResult.error;
+		if (!shouldContinue()) return { type: "cancelled" };
+		onAttempt();
+		const existingResult = await service.getMemoById(item.memoId);
+		if (existingResult.error) throw existingResult.error;
+		const existing = existingResult.data?.[0];
+		if (existing?.updated_at === item.baseUpdatedAt) {
+			if (!shouldContinue()) return { type: "cancelled" };
+			const result = await service.updateMemo({ id: item.memoId, request });
+			if (result.error) throw result.error;
+			const serverMemo = result.data?.[0];
+			if (!validServerMemo(serverMemo))
+				throw new Error("Missing updated memo identity");
+			return { type: "success", serverMemo };
 		}
-
-		const existingMemo = existingResult.data?.[0];
-		const isUnchanged =
-			!!existingMemo && existingMemo.updated_at === item.baseUpdatedAt;
-
-		if (isUnchanged) {
-			const updateResult = await memoService.updateMemo({
-				id: item.memoId,
-				request: queuedRequest,
-			});
-			if (updateResult.error) {
-				throw updateResult.error;
-			}
-
-			return { type: "success" };
+		if (existing && matchesQueuedContent(existing, request)) {
+			if (!validServerMemo(existing))
+				throw new Error("Missing current memo identity");
+			return { type: "noOp", serverMemo: existing };
 		}
-
-		if (existingMemo && matchesQueuedContent(existingMemo, queuedRequest)) {
-			return { type: "success" };
-		}
-
-		const insertResult = await memoService.insertMemo({
-			...queuedRequest,
-			url: item.url,
-		});
-		if (insertResult.error) {
-			throw insertResult.error;
-		}
-
-		const newMemo = insertResult.data?.[0];
-		if (!newMemo) {
-			throw new Error("새 메모를 만들지 못했습니다.");
-		}
-		void analytics.trackMemoCreate(queuedRequest);
-
-		return { type: "conflict", newMemoId: newMemo.id };
+		if (!shouldContinue()) return { type: "cancelled" };
+		const result = await service.insertMemo({ ...request, url: item.url });
+		if (result.error) throw result.error;
+		const serverMemo = result.data?.[0];
+		if (!validServerMemo(serverMemo))
+			throw new Error("Missing conflict memo identity");
+		void analytics.trackMemoCreate(request);
+		return { type: "conflict", serverMemo };
 	} catch (error) {
-		if (isNetworkError(error)) {
-			return { type: "networkError" };
-		}
-
-		return { type: "otherError" };
+		return { type: isNetworkError(error) ? "networkError" : "otherError" };
 	}
 };
 
-/**
- * 같은 userId의 대기 항목을 순서대로 서버에 반영한다.
- * @description 다른 사용자의 항목은 건드리지 않고 남긴다. 네트워크 오류를 만나면 그 자리에서
- * 멈추고 남은 항목은 대기열에 그대로 둔다. 그 외 오류인 항목만 대기열에 남기고 다음 항목으로
- * 넘어간다. 성공하거나 충돌(새 메모로 저장)한 항목은 대기열에서 지운다. 동시에 한 번만 불러야 한다.
- */
+/** ACK and rebase the next generation in one storage transaction. */
+const acknowledge = (
+	sent: StoredOfflineMemo,
+	serverMemo: ServerMemoIdentity,
+	wasConflict: boolean,
+) =>
+	changeOfflineMemoQueue((items) => {
+		const index = findTargetIndex(items, sent);
+		if (index < 0) return { items, result: "none" as const, changed: false };
+		const current = items[index];
+		if (current.revision === sent.revision) {
+			return {
+				items: items.filter((_, position) => position !== index),
+				result: "removed" as const,
+				changed: true,
+			};
+		}
+		const followsSent =
+			current.userId === sent.userId &&
+			current.url === sent.url &&
+			current.memoId === sent.memoId &&
+			current.baseUpdatedAt === sent.baseUpdatedAt;
+		if (!followsSent) return { items, result: "none" as const, changed: false };
+		const next = [...items];
+		next[index] = {
+			...current,
+			memoId: serverMemo.id,
+			baseUpdatedAt: serverMemo.updated_at,
+			originUrl: sent.memoId === undefined ? sent.url : current.originUrl,
+			originMemoId: wasConflict
+				? (sent.originMemoId ?? sent.memoId)
+				: current.originMemoId,
+		};
+		return { items: next, result: "rebased" as const, changed: true };
+	});
+
+const withFlushLock = async <T>(
+	userId: string,
+	callback: () => Promise<T>,
+): Promise<T> => {
+	if (!navigator.locks?.request) throw new Error("Web Locks unavailable");
+	return navigator.locks.request(
+		`web-memo:offline-memo-queue:flush:${userId}`,
+		{ mode: "exclusive" },
+		callback,
+	);
+};
+
 export const flushOfflineMemoQueue = async ({
 	userId,
 	memoService,
+	shouldContinue = () => true,
 }: {
 	userId: string;
 	memoService: TOfflineMemoQueueService;
+	shouldContinue?: () => boolean;
 }): Promise<IFOfflineMemoFlushResult> => {
-	const items = await getPendingOfflineMemos();
-	const ownItems = items.filter((item) => item.userId === userId);
 	const result: IFOfflineMemoFlushResult = {
 		conflicts: [],
 		syncedCount: 0,
 		hasNetworkError: false,
 		hasOtherError: false,
+		attemptedCount: 0,
+		networkErrorCount: 0,
+		otherErrorCount: 0,
+		ackLatencySumMs: 0,
+		ackLatencyCount: 0,
+		noOpCount: 0,
+		acknowledgedConflictCount: 0,
 	};
-
-	for (const item of ownItems) {
-		const outcome = await flushOfflineMemoItem({ item, memoService });
-
-		if (outcome.type === "networkError") {
-			result.hasNetworkError = true;
-			break;
-		}
-
-		if (outcome.type === "otherError") {
-			result.hasOtherError = true;
-			continue;
-		}
-
-		if (outcome.type === "conflict") {
-			result.conflicts.push({
-				oldMemoId: item.memoId,
-				newMemoId: outcome.newMemoId,
-				url: item.url,
-			});
-		}
-
-		await removeOfflineMemo(item);
-		result.syncedCount += 1;
+	try {
+		return await withFlushLock(userId, async () => {
+			const attempted = new Set<string>();
+			while (shouldContinue()) {
+				let items: StoredOfflineMemo[];
+				try {
+					items = await readOfflineMemoQueue();
+				} catch {
+					result.hasOtherError = true;
+					break;
+				}
+				const item = items.find(
+					(candidate) =>
+						candidate.userId === userId && !attempted.has(candidate.revision),
+				);
+				if (!item) break;
+				attempted.add(item.revision);
+				let wasAttempted = false;
+				const outcome = await flushItem(
+					item,
+					memoService,
+					shouldContinue,
+					() => {
+						if (wasAttempted) return;
+						wasAttempted = true;
+						result.attemptedCount += 1;
+					},
+				);
+				if (outcome.type === "cancelled") break;
+				if (outcome.type === "networkError") {
+					result.hasNetworkError = true;
+					result.networkErrorCount += 1;
+					break;
+				}
+				if (outcome.type === "otherError") {
+					result.hasOtherError = true;
+					result.otherErrorCount += 1;
+					continue;
+				}
+				if (!shouldContinue()) break;
+				try {
+					const acknowledged = await acknowledge(
+						item,
+						outcome.serverMemo,
+						outcome.type === "conflict",
+					);
+					if (outcome.type === "conflict" && acknowledged !== "none") {
+						result.conflicts.push({
+							oldMemoId: item.originMemoId ?? item.memoId,
+							newMemoId: outcome.serverMemo.id,
+							url: item.url,
+						});
+					}
+					if (acknowledged === "removed") {
+						result.syncedCount += 1;
+						if (
+							outcome.type === "conflict" ||
+							item.originMemoId !== undefined
+						) {
+							result.acknowledgedConflictCount += 1;
+						}
+						result.ackLatencyCount += 1;
+						result.ackLatencySumMs += Math.max(0, Date.now() - item.queuedAt);
+						if (outcome.type === "noOp") result.noOpCount += 1;
+					}
+				} catch {
+					result.hasOtherError = true;
+					result.otherErrorCount += 1;
+					break;
+				}
+			}
+			try {
+				result.remainingCount = (await readOfflineMemoQueue()).filter(
+					(item) => item.userId === userId,
+				).length;
+			} catch {
+				result.hasOtherError = true;
+			}
+			return result;
+		});
+	} catch {
+		result.hasOtherError = true;
+		return result;
 	}
-
-	return result;
 };

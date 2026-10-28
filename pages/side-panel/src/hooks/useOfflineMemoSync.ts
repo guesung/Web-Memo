@@ -40,17 +40,33 @@ export default function useOfflineMemoSync({
 	// 요청이 네트워크 오류로 실패하는 경우(예: 캡티브 포털)를 오프라인과 구분해 표시줄에 쓴다.
 	const [lastFlushHadNetworkError, setLastFlushHadNetworkError] =
 		useState(false);
+	const isMountedRef = useRef(true);
+	useEffect(() => {
+		isMountedRef.current = true;
+		return () => {
+			isMountedRef.current = false;
+		};
+	}, []);
 	const isFlushingRef = useRef(false);
+	const needsTrailingFlushRef = useRef(false);
+	const wasOnlineRef = useRef(isOnline);
 	// mount·online 이펙트는 한 번만 걸리므로, 그 뒤에 바뀌는 userId·onConflict를
 	// 놓치지 않도록 최신 값을 ref로 들고 flush 안에서 읽는다.
-	const latestPropsRef = useRef({ userId, onConflict });
-	latestPropsRef.current = { userId, onConflict };
+	const latestPropsRef = useRef({ userId, onConflict, epoch: 0 });
+	const authEpoch =
+		latestPropsRef.current.userId === userId
+			? latestPropsRef.current.epoch
+			: latestPropsRef.current.epoch + 1;
+	latestPropsRef.current = { userId, onConflict, epoch: authEpoch };
 
 	const flush = async (
 		trigger: "mount" | "online" | "retry_click" | "enqueue",
 	) => {
-		const { userId: currentUserId, onConflict: currentOnConflict } =
-			latestPropsRef.current;
+		const {
+			userId: currentUserId,
+			onConflict: currentOnConflict,
+			epoch: currentEpoch,
+		} = latestPropsRef.current;
 
 		if (!currentUserId || isFlushingRef.current) {
 			return;
@@ -64,7 +80,15 @@ export default function useOfflineMemoSync({
 			const result = await flushOfflineMemoQueue({
 				userId: currentUserId,
 				memoService,
+				shouldContinue: () =>
+					isMountedRef.current && latestPropsRef.current.epoch === currentEpoch,
 			});
+
+			if (
+				!isMountedRef.current ||
+				latestPropsRef.current.epoch !== currentEpoch
+			)
+				return;
 
 			if (result.syncedCount > 0) {
 				await queryClient.invalidateQueries({
@@ -76,6 +100,12 @@ export default function useOfflineMemoSync({
 				await queryClient.invalidateQueries({ queryKey: ["memo"] });
 			}
 
+			if (
+				!isMountedRef.current ||
+				latestPropsRef.current.epoch !== currentEpoch
+			)
+				return;
+
 			for (const conflict of result.conflicts) {
 				currentOnConflict?.(conflict);
 			}
@@ -83,7 +113,8 @@ export default function useOfflineMemoSync({
 			const hasProcessedAnyItem =
 				result.syncedCount > 0 ||
 				result.conflicts.length > 0 ||
-				result.hasOtherError;
+				result.hasOtherError ||
+				result.hasNetworkError;
 			if (hasProcessedAnyItem) {
 				void analytics.trackEvent({
 					name: "memo_offline_sync_result",
@@ -98,23 +129,37 @@ export default function useOfflineMemoSync({
 
 			setLastFlushHadNetworkError(result.hasNetworkError);
 			setSyncStatus(result.hasOtherError ? "syncFailed" : "idle");
+			if (result.hasOtherError || result.hasNetworkError) {
+				needsTrailingFlushRef.current = false;
+			}
+		} catch {
+			if (
+				isMountedRef.current &&
+				latestPropsRef.current.epoch === currentEpoch
+			) {
+				setSyncStatus("syncFailed");
+			}
+			needsTrailingFlushRef.current = false;
 		} finally {
 			isFlushingRef.current = false;
+			if (
+				!isMountedRef.current ||
+				latestPropsRef.current.epoch !== currentEpoch
+			) {
+				needsTrailingFlushRef.current = false;
+				void flush("mount");
+			} else if (needsTrailingFlushRef.current && isMountedRef.current) {
+				needsTrailingFlushRef.current = false;
+				void flush("enqueue");
+			}
 		}
 	};
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: 마운트 시 한 번만 flush한다
-	useEffect(() => {
-		void flush("mount");
-	}, []);
-
 	// biome-ignore lint/correctness/useExhaustiveDependencies: 온라인으로 바뀔 때만 flush한다
 	useEffect(() => {
-		if (!isOnline) {
-			return;
-		}
-
-		void flush("online");
+		const becameOnline = !wasOnlineRef.current && isOnline;
+		wasOnlineRef.current = isOnline;
+		if (becameOnline) void flush("online");
 	}, [isOnline]);
 
 	/**
@@ -138,12 +183,22 @@ export default function useOfflineMemoSync({
 				return;
 			}
 
-			void flush("enqueue");
+			if (isFlushingRef.current) {
+				needsTrailingFlushRef.current = true;
+			} else {
+				void flush("enqueue");
+			}
 		};
 
 		chrome.storage.onChanged.addListener(handleStorageChange);
 		return () => chrome.storage.onChanged.removeListener(handleStorageChange);
 	}, []);
+
+	// Auth may resolve after mount, or switch while a previous account is flushing.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: only auth scope changes should start a mount flush
+	useEffect(() => {
+		if (userId) void flush("mount");
+	}, [userId]);
 
 	return {
 		syncStatus,

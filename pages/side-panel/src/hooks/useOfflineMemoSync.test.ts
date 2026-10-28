@@ -249,3 +249,94 @@ it("local이 아닌 영역의 변경은 무시한다", async () => {
 
 	expect(mocks.flush).not.toHaveBeenCalled();
 });
+
+it("flush rejection becomes syncFailed and can be retried", async () => {
+	mocks.flush.mockRejectedValueOnce(new Error("storage failed"));
+	await render("user-1");
+	expect(hookResult.syncStatus).toBe("syncFailed");
+	await act(async () => {
+		await hookResult.retrySync();
+	});
+	expect(mocks.flush).toHaveBeenCalledTimes(2);
+	expect(hookResult.syncStatus).toBe("idle");
+});
+
+it("account switch suppresses old results and flushes the new account", async () => {
+	let release!: (value: unknown) => void;
+	mocks.flush.mockReturnValueOnce(
+		new Promise((resolve) => {
+			release = resolve;
+		}),
+	);
+	await render("user-a");
+	await render("user-b");
+	await act(async () =>
+		release({
+			conflicts: [{ oldMemoId: 1, newMemoId: 2, url: "https://example.com/a" }],
+			syncedCount: 1,
+			hasNetworkError: false,
+			hasOtherError: false,
+		}),
+	);
+	expect(onConflict).not.toHaveBeenCalled();
+	expect(mocks.flush.mock.calls.at(-1)?.[0]).toMatchObject({
+		userId: "user-b",
+	});
+});
+
+it("storage event during flush schedules one trailing pass", async () => {
+	let release!: (value: unknown) => void;
+	mocks.flush.mockReturnValueOnce(
+		new Promise((resolve) => {
+			release = resolve;
+		}),
+	);
+	vi.stubGlobal("navigator", { onLine: true });
+	await render("user-1");
+	await act(async () => {
+		fireStorageChange();
+		fireStorageChange();
+	});
+	expect(mocks.flush).toHaveBeenCalledTimes(1);
+	await act(async () =>
+		release({
+			conflicts: [],
+			syncedCount: 0,
+			hasNetworkError: false,
+			hasOtherError: false,
+		}),
+	);
+	expect(mocks.flush).toHaveBeenCalledTimes(2);
+});
+
+it("A→B→A does not authorize the old A flush snapshot", async () => {
+	let release!: (value: unknown) => void;
+	mocks.flush.mockReturnValueOnce(
+		new Promise((resolve) => {
+			release = resolve;
+		}),
+	);
+	await render("user-a");
+	const oldSnapshot = mocks.flush.mock.calls[0][0];
+	expect(oldSnapshot.shouldContinue()).toBe(true);
+	await render("user-b");
+	await render("user-a");
+	expect(oldSnapshot.shouldContinue()).toBe(false);
+	await act(async () =>
+		release({
+			conflicts: [],
+			syncedCount: 0,
+			hasNetworkError: false,
+			hasOtherError: false,
+		}),
+	);
+});
+
+it("unmount cancels the active flush scope", async () => {
+	mocks.flush.mockReturnValueOnce(new Promise(() => {}));
+	await render("user-a");
+	const oldSnapshot = mocks.flush.mock.calls[0][0];
+	await act(async () => root.unmount());
+	expect(oldSnapshot.shouldContinue()).toBe(false);
+	root = createRoot(document.createElement("div"));
+});

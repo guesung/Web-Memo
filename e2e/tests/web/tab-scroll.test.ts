@@ -136,7 +136,8 @@ test.describe("탭 이동과 스크롤 (Mocked)", () => {
 		page,
 	}) => {
 		await waitForScrollableDocument(page);
-		await page.evaluate(() => window.scrollTo(0, 600));
+		await page.mouse.move(640, 400);
+		await page.mouse.wheel(0, 600);
 		await expect
 			.poll(() => page.evaluate(() => window.scrollY))
 			.toBeGreaterThan(0);
@@ -151,7 +152,8 @@ test.describe("탭 이동과 스크롤 (Mocked)", () => {
 		page,
 	}) => {
 		await waitForScrollableDocument(page);
-		await page.evaluate(() => window.scrollTo(0, 600));
+		await page.mouse.move(640, 400);
+		await page.mouse.wheel(0, 600);
 		// 스크롤이 실제로 내려간 뒤에 떠나야, 맨 위 복귀 단언이 의미를 갖는다.
 		await expect
 			.poll(() => page.evaluate(() => window.scrollY))

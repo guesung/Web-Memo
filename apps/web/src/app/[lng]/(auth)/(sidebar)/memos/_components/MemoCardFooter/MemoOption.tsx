@@ -31,6 +31,7 @@ import { useRef, useState } from "react";
 interface MemoOptionProps extends LanguageType {
 	memos: GetMemoResponse[];
 	closeMemoOption?: () => void;
+	onDeleteSuccess?: () => void;
 	onOpenChange?: (isOpen: boolean) => void;
 	/**
 	 * 메모 한 개일 때 "카테고리 변경하기"가 서브메뉴 대신 이 팝업을 연다. ⋮ 버튼을 앵커로 넘긴다.
@@ -43,6 +44,7 @@ export default function MemoOption({
 	lng,
 	memos,
 	closeMemoOption,
+	onDeleteSuccess,
 	onOpenChange,
 	onCategoryPopupOpen,
 }: MemoOptionProps) {
@@ -52,15 +54,22 @@ export default function MemoOption({
 	const [isOpen, setIsOpen] = useState(false);
 	const triggerRef = useRef<HTMLButtonElement>(null);
 	const isCategoryPopupRequestedRef = useRef(false);
+	const isMenuCloseCompleteRef = useRef(true);
+	const isDeleteClosePendingRef = useRef(false);
 	const { categories } = useCategoryQuery();
 	const queryClient = useQueryClient();
 	const { mutate: mutateUpsertMemo } = useMemosUpsertMutation();
-	const { mutate: mutateDeleteMemo } = useDeleteMemosMutation();
+	const { mutateAsync: mutateDeleteMemo } = useDeleteMemosMutation();
 
 	const handleDeleteMemo = async (event?: MouseEvent<HTMLDivElement>) => {
 		event?.stopPropagation();
 
-		mutateDeleteMemo(memos.map((memo) => memo.id));
+		try {
+			const result = await mutateDeleteMemo(memos.map((memo) => memo.id));
+			if (result.error) return;
+		} catch {
+			return;
+		}
 
 		const handleToastActionClick = async () => {
 			analytics.trackEvent({ name: "memo_undo", params: { action: "delete" } });
@@ -83,6 +92,10 @@ export default function MemoOption({
 
 		setIsOpen(false);
 		closeMemoOption?.();
+		if (onDeleteSuccess) {
+			if (isMenuCloseCompleteRef.current) onDeleteSuccess();
+			else isDeleteClosePendingRef.current = true;
+		}
 	};
 
 	const handleCategoryChange = async (categoryId: string) => {
@@ -135,8 +148,15 @@ export default function MemoOption({
 		isCategoryPopupRequestedRef.current = true;
 	};
 
-	// 메뉴가 완전히 닫힌 뒤에 팝업을 열어야 메뉴의 포커스 복귀와 부딪히지 않는다.
+	// 메뉴가 닫힌 뒤에 팝업을 열거나 다이얼로그를 닫아야 포커스·포인터 잠금이 풀린다.
 	const handleMenuCloseAutoFocus = (event: Event) => {
+		isMenuCloseCompleteRef.current = true;
+		if (isDeleteClosePendingRef.current) {
+			isDeleteClosePendingRef.current = false;
+			event.preventDefault();
+			onDeleteSuccess?.();
+			return;
+		}
 		if (!isCategoryPopupRequestedRef.current) return;
 
 		isCategoryPopupRequestedRef.current = false;
@@ -147,6 +167,7 @@ export default function MemoOption({
 	};
 
 	const handleOpenChange = (open: boolean) => {
+		if (open) isMenuCloseCompleteRef.current = false;
 		setIsOpen(open);
 		onOpenChange?.(open);
 	};

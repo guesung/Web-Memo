@@ -82,6 +82,13 @@ jobs:
             --allowedTools "Read,Grep,Glob"
             --json-schema '{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string","enum":["gap","none"]},"reason":{"type":"string"},"events":{"type":"array","items":{"type":"object","additionalProperties":false,"properties":{"name":{"type":"string"},"category":{"type":"string","enum":["engagement","core_action"]},"trigger":{"type":"string"},"question":{"type":"string"},"properties":{"type":"array","items":{"type":"string","pattern":"^[a-z][a-z0-9_]*$"}},"files":{"type":"array","items":{"type":"string"}}},"required":["name","category","trigger","question","properties","files"]}}},"required":["status","reason","events"]}'
 
+      - name: Diagnose Claude analyze failure
+        if: always() && steps.analyze.outcome == 'failure'
+        env:
+          CLAUDE_EXECUTION_FILE: ${{ steps.analyze.outputs.execution_file }}
+          CLAUDE_STAGE: analyze
+        run: node .github/scripts/ga-events/claude-diagnostics.mjs
+
       - name: Validate analysis result
         id: candidate
         if: steps.precheck.outputs.proceed == 'true'
@@ -107,6 +114,13 @@ jobs:
             --model claude-sonnet-4-6
             --max-turns 40
             --allowedTools "Read,Grep,Glob,Edit"
+
+      - name: Diagnose Claude write_events failure
+        if: always() && steps.write_events.outcome == 'failure'
+        env:
+          CLAUDE_EXECUTION_FILE: ${{ steps.write_events.outputs.execution_file }}
+          CLAUDE_STAGE: write_events
+        run: node .github/scripts/ga-events/claude-diagnostics.mjs
 
       - name: Check generated changes
         id: changes
@@ -158,6 +172,13 @@ jobs:
             --model claude-sonnet-4-6
             --max-turns 30
             --allowedTools "Read,Grep,Glob,Edit"
+
+      - name: Diagnose Claude fix_events failure
+        if: always() && steps.fix_events.outcome == 'failure'
+        env:
+          CLAUDE_EXECUTION_FILE: ${{ steps.fix_events.outputs.execution_file }}
+          CLAUDE_STAGE: fix_events
+        run: node .github/scripts/ga-events/claude-diagnostics.mjs
 
       - name: Restore Node after correction
         if: steps.fix_events.outcome == 'success'

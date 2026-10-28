@@ -84,3 +84,22 @@ describe("GA 이벤트 자동 수정 경로", () => {
 		expect(verify).toContain("pnpm type-check");
 	});
 });
+
+describe("Claude 실패 진단 경로", () => {
+	it.each(["analyze", "write_events", "fix_events"])(
+		"%s 실패 직후 안전한 요약만 남긴다",
+		(id) => {
+			const diagnostic = steps[steps.indexOf(step(id)) + 1];
+			expect(diagnostic.if).toBe(
+				`always() && steps.${id}.outcome == 'failure'`,
+			);
+			expect(diagnostic.env.CLAUDE_EXECUTION_FILE).toBe(
+				"${{ steps." + id + ".outputs.execution_file }}",
+			);
+			expect(diagnostic.run).toBe(
+				"node .github/scripts/ga-events/claude-diagnostics.mjs",
+			);
+			expect(step(id).with.show_full_output).not.toBe(true);
+		},
+	);
+});

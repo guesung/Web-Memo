@@ -203,6 +203,100 @@ describe("enqueueOfflineMemo · getPendingOfflineMemos · removeOfflineMemo", ()
 });
 
 describe("flushOfflineMemoQueue", () => {
+	it("A 뒤 재기준화된 B 전송 중 오래된 기준의 C가 와도 같은 ID를 업데이트한다", async () => {
+		const base = "2026-01-01";
+		await enqueueOfflineMemo(
+			createItem({
+				memoId: 1,
+				baseUpdatedAt: base,
+				data: { ...createItem().data, memo: "A" },
+			}),
+		);
+		let releaseA!: () => void;
+		const gateA = new Promise<void>((resolve) => {
+			releaseA = resolve;
+		});
+		let startedA!: () => void;
+		const startA = new Promise<void>((resolve) => {
+			startedA = resolve;
+		});
+		let releaseB!: () => void;
+		const gateB = new Promise<void>((resolve) => {
+			releaseB = resolve;
+		});
+		let startedB!: () => void;
+		const startB = new Promise<void>((resolve) => {
+			startedB = resolve;
+		});
+		let serverUpdatedAt = base;
+		const updateMemo = vi.fn(
+			async ({ request }: { id: number; request: { memo?: string } }) => {
+				if (request.memo === "A") {
+					startedA();
+					await gateA;
+					serverUpdatedAt = "2026-01-02";
+				}
+				if (request.memo === "B") {
+					startedB();
+					await gateB;
+					serverUpdatedAt = "2026-01-03";
+				}
+				if (request.memo === "C") serverUpdatedAt = "2026-01-04";
+				return { data: [{ id: 1, updated_at: serverUpdatedAt }], error: null };
+			},
+		);
+		const insertMemo = vi.fn(async () => ({
+			data: [{ id: 2, updated_at: "2026-01-04" }],
+			error: null,
+		}));
+		const service: TOfflineMemoQueueService = {
+			getMemoById: vi.fn(async () => ({
+				data: [
+					{
+						id: 1,
+						updated_at: serverUpdatedAt,
+						title: "old",
+						memo: "old",
+						impression: "",
+						actionItem: "",
+					},
+				],
+				error: null,
+			})),
+			insertMemo,
+			updateMemo,
+		};
+		const flushing = flushOfflineMemoQueue({
+			userId: "user-1",
+			memoService: service,
+		});
+		await startA;
+		await enqueueOfflineMemo(
+			createItem({
+				memoId: 1,
+				baseUpdatedAt: base,
+				data: { ...createItem().data, memo: "B" },
+			}),
+		);
+		releaseA();
+		await startB;
+		await enqueueOfflineMemo(
+			createItem({
+				memoId: 1,
+				baseUpdatedAt: base,
+				data: { ...createItem().data, memo: "C" },
+			}),
+		);
+		releaseB();
+		const result = await flushing;
+		expect(
+			updateMemo.mock.calls.map(([params]) => params.request.memo),
+		).toEqual(["A", "B", "C"]);
+		expect(insertMemo).not.toHaveBeenCalled();
+		expect(result.conflicts).toEqual([]);
+		expect(await getPendingOfflineMemos()).toEqual([]);
+	});
+
 	it("충돌 복사 중 B와 뒤이은 원본 ID 편집을 새 ID에 연결한다", async () => {
 		await enqueueOfflineMemo(createItem({ memoId: 1 }));
 		let releaseInsert!: () => void;

@@ -113,11 +113,7 @@ export const enqueueOfflineMemo = async (item: IFOfflineMemoQueueItem) =>
 			memoId: continuesConflict
 				? existing.memoId
 				: (item.memoId ?? existing?.memoId),
-			baseUpdatedAt:
-				(item.memoId === undefined || continuesConflict) &&
-				existing?.memoId !== undefined
-					? existing.baseUpdatedAt
-					: item.baseUpdatedAt,
+			baseUpdatedAt: existing ? existing.baseUpdatedAt : item.baseUpdatedAt,
 			originUrl: existing?.originUrl,
 			originMemoId: existing?.originMemoId,
 			revision: crypto.randomUUID(),

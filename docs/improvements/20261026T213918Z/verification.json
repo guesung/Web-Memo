@@ -1,0 +1,21 @@
+{
+  "baselineSha": "4a0710bbfbc3b3112ffd5d6ab24e1e7f71a313ca",
+  "implementationSha": "c915bad800975662d3b47f84070bb4e9f3471f3f",
+  "nodeVersion": "24.14.0",
+  "pnpmVersion": "10.23.0",
+  "attemptsUsed": 3,
+  "independentVerification": "PASS",
+  "checks": [
+    { "command": "pnpm exec vitest run apps/chrome-extension/lib/background/tabUpdates.test.ts", "version": "baseline with identical final test", "exitCode": 1, "expected": true, "reason": "expected 0 messages, received 100; positive event assertions passed first" },
+    { "command": "pnpm exec vitest run apps/chrome-extension/lib/background/tabUpdates.test.ts", "version": "candidate", "exitCode": 0 },
+    { "command": "pnpm exec vitest run apps/chrome-extension/lib/background packages/shared/src/utils/extension/module/Tab.test.ts packages/shared/src/modules/extension-bridge/createBridge.test.ts", "exitCode": 0, "testFiles": 13, "testsPassed": 161 },
+    { "command": "pnpm check", "exitCode": 0, "warnings": 10 },
+    { "command": "pnpm lint", "exitCode": 0, "warnings": 10 },
+    { "command": "pnpm type-check", "exitCode": 0, "tasksSuccessful": 15 },
+    { "command": "pnpm build:extension", "exitCode": 0, "tasksSuccessful": 8 },
+    { "command": "node <evidence>/browserSmoke.mjs <new-output.json>", "version": "baseline", "exitCode": 1, "expected": true, "reason": "expected 0 messages, received 1" },
+    { "command": "node <evidence>/browserSmoke.mjs <new-output.json>", "version": "candidate", "exitCode": 0 }
+  ],
+  "measurementBoundary": "UPDATE_SIDE_PANEL bridge call count only; browser smoke uses actual tab listeners and native Chromium events with a mock bridge, not the full extension",
+  "stagingMerge": "not required: no apps/web, apps/app or packages changes"
+}

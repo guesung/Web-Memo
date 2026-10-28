@@ -70,8 +70,13 @@ test.describe("메모 카드 펼치기 (Mocked)", () => {
 	test("스크롤한 상태에서 카드를 펼치고 접어도 보던 자리를 유지한다.", async ({
 		page,
 	}) => {
-		await page.evaluate(() => window.scrollTo(0, 400));
+		await page.mouse.move(640, 400);
+		await page.mouse.wheel(0, 400);
+		await expect
+			.poll(() => page.evaluate(() => window.scrollY))
+			.toBeGreaterThan(0);
 		const startScrollY = await readScrollYAfterLayout(page);
+		expect(startScrollY).toBeGreaterThan(0);
 		const visibleMemo = page.locator(".memo-item").nth(4);
 
 		await visibleMemo.getByRole("button", { name: "Show more" }).click();

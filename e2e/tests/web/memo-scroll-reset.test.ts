@@ -22,7 +22,8 @@ async function scrollIntoMemoList(page: Page) {
 			}),
 		)
 		.toBeGreaterThan(700);
-	await page.evaluate(() => window.scrollTo(0, 600));
+	await page.mouse.move(640, 400);
+	await page.mouse.wheel(0, 600);
 	await expect
 		.poll(() => page.evaluate(() => window.scrollY))
 		.toBeGreaterThan(300);

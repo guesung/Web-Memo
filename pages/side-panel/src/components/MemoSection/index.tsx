@@ -23,7 +23,7 @@ import type { Database, IFPastMemoDuplicate } from "@web-memo/shared/types";
 import { getPageKey } from "@web-memo/shared/utils";
 import { I18n } from "@web-memo/shared/utils/extension";
 import { cn, ErrorBoundary, ToastAction, toast } from "@web-memo/ui";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import LoginSection from "../LoginSection";
 import NoticeBanner from "../NoticeBanner";
 import MemoCandidateList from "./components/MemoCandidateList";
@@ -34,10 +34,19 @@ import MemoHeader from "./components/MemoHeader";
 import PageHighlights from "./components/PageHighlights";
 import PastMemoView from "./components/PastMemoView";
 import useMemoCandidatesQuery from "./hooks/useMemoCandidatesQuery";
+import {
+	type PastMemoAttempt,
+	PastMemoTracking,
+} from "./utils/pastMemoTracking";
 
 /** 사이드 패널의 현재 페이지 메모와 후보 선택을 표시한다. */
 export default function MemoSection({ memoHeight }: MemoSectionProps) {
 	const loginBoundaryRef = useRef<ErrorBoundary>(null);
+	const tracking = useRef(new PastMemoTracking()).current;
+	const LoginFallback = useCallback(() => {
+		tracking.updateContext(undefined, "");
+		return <LoginSection />;
+	}, [tracking]);
 	const queryClient = useQueryClient();
 	const { data: tab } = useTabQuery();
 
@@ -103,18 +112,21 @@ export default function MemoSection({ memoHeight }: MemoSectionProps) {
 			className="flex flex-col overflow-hidden px-0.5"
 			style={{ height: `${memoHeight}%` }}
 		>
-			<ErrorBoundary ref={loginBoundaryRef} FallbackComponent={LoginSection}>
+			<ErrorBoundary ref={loginBoundaryRef} FallbackComponent={LoginFallback}>
 				<Suspense fallback={<MemoFormSkeleton />}>
-					<MemoSectionContent />
+					<MemoSectionContent tracking={tracking} />
 				</Suspense>
 			</ErrorBoundary>
 		</section>
 	);
 }
 
-const MemoSectionContent = () => {
+const MemoSectionContent = ({ tracking }: { tracking: PastMemoTracking }) => {
 	const { user } = useSupabaseUserQuery();
 	const { data: tab } = useTabQuery();
+	const scope = `${tab?.id}:${tab?.url ? getPageKey(tab.url) : ""}`;
+	tracking.updateContext(user?.data.user?.id, scope);
+	useEffect(() => tracking.cancelOutsideScope(scope), [tracking, scope]);
 
 	if (!user?.data.user) {
 		return <LoginSection />;
@@ -130,12 +142,16 @@ const MemoSectionContent = () => {
 				tabId={tab?.id}
 				url={tab?.url ?? ""}
 			/>
-			<AuthenticatedMemoSectionContent />
+			<AuthenticatedMemoSectionContent tracking={tracking} />
 		</>
 	);
 };
 
-const AuthenticatedMemoSectionContent = () => {
+const AuthenticatedMemoSectionContent = ({
+	tracking,
+}: {
+	tracking: PastMemoTracking;
+}) => {
 	const fieldResizeState = useMemoFieldRatios();
 	const { data: tab } = useTabQuery();
 	const { user } = useSupabaseUserQuery();
@@ -183,9 +199,13 @@ const AuthenticatedMemoSectionContent = () => {
 		memoId: number;
 		url: string;
 		title: string;
+		attempt: PastMemoAttempt;
 	} | null>(null);
 	const currentOpenedPastMemo =
-		openedPastMemo?.scope === editorScope ? openedPastMemo : null;
+		openedPastMemo?.scope === editorScope &&
+		tracking.isCurrent(openedPastMemo.attempt)
+			? openedPastMemo
+			: null;
 	const currentSelection = selection?.scope === editorScope ? selection : null;
 	const currentDraft =
 		preservedDraft?.scope === editorScope ? preservedDraft.value : null;
@@ -347,7 +367,10 @@ const AuthenticatedMemoSectionContent = () => {
 	};
 
 	const handlePastMemoOpen = (duplicate: IFPastMemoDuplicate) => {
+		const attempt = tracking.start(duplicate.source);
+		if (!attempt) return;
 		setOpenedPastMemo({
+			attempt,
 			scope: editorScope,
 			memoId: duplicate.id,
 			url: duplicate.url,
@@ -391,7 +414,12 @@ const AuthenticatedMemoSectionContent = () => {
 					memoId={currentOpenedPastMemo.memoId}
 					title={currentOpenedPastMemo.title}
 					url={currentOpenedPastMemo.url}
-					onBackClick={() => setOpenedPastMemo(null)}
+					attempt={currentOpenedPastMemo.attempt}
+					tracking={tracking}
+					onBackClick={() => {
+						tracking.finish(currentOpenedPastMemo.attempt, "cancelled");
+						setOpenedPastMemo(null);
+					}}
 				/>
 			)}
 			{/* 작성 중 내용과 자동 저장 상태를 지키려고 폼을 언마운트하지 않고 숨긴다. */}

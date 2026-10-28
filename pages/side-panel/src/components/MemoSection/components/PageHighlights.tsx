@@ -30,7 +30,7 @@ export default function PageHighlights({ userId, tabId, url }: Props) {
 		queryFn: async () => {
 			const result = await new HighlightService(
 				supabaseClient,
-			).getHighlightsByUrl(pageKey);
+			).getHighlightsByUrl(url);
 			if (result.error) throw result.error;
 			return (result.data ?? []).sort(
 				(left, right) =>

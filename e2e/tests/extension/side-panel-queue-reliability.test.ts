@@ -80,6 +80,19 @@ test("두 확장 컨텍스트의 동기화 중 새 입력을 보존하고 같은
 			.toBe("revision A");
 		await context.setOffline(false);
 		await expect.poll(() => writes).toEqual(["revision A"]);
+		await expect
+			.poll(() =>
+				secondPanel.evaluate(async () => {
+					const locks = await navigator.locks.query();
+					const isFlushLock = (lock: LockInfo) =>
+						lock.name?.startsWith("web-memo:offline-memo-queue:flush:");
+					return {
+						held: locks.held?.some(isFlushLock),
+						waiting: locks.pending?.some(isFlushLock),
+					};
+				}),
+			)
+			.toEqual({ held: true, waiting: true });
 
 		await panel.locator("#memo-textarea").fill("revision B");
 		await expect
@@ -93,6 +106,18 @@ test("두 확장 컨텍스트의 동기화 중 새 입력을 보존하고 같은
 
 		await expect.poll(() => store.getMemo(memo.id)?.memo).toBe("revision B");
 		await expect.poll(() => readQueue(panel)).toEqual([]);
+		await expect.poll(() => readQueue(secondPanel)).toEqual([]);
+		await expect
+			.poll(() =>
+				secondPanel.evaluate(async () => {
+					const locks = await navigator.locks.query();
+					return [...(locks.held ?? []), ...(locks.pending ?? [])].some(
+						(lock) =>
+							lock.name?.startsWith("web-memo:offline-memo-queue:flush:"),
+					);
+				}),
+			)
+			.toBe(false);
 		await expect(panel.locator("#memo-textarea")).toHaveValue("revision B");
 		await expect(panel.locator('[data-save-status="saved"]')).toBeVisible();
 		expect(writes).toEqual(["revision A", "revision B"]);

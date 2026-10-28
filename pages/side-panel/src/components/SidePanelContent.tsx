@@ -37,14 +37,23 @@ function SidePanelBody() {
 	);
 	const [summaryState, setSummaryState] = useState({ pageKey, isOpen: false });
 	const [selectedTab, setSelectedTab] = useState<TTabName>("chat");
+	const [isSummaryEntering, setIsSummaryEntering] = useState(false);
 	const isSummaryOpen =
 		showSummary && summaryState.pageKey === pageKey && summaryState.isOpen;
 	const isAvailable = !isLoading && !error && Boolean(content.trim());
 	const isSummaryActive =
 		isSummaryOpen && (!showAiChat || selectedTab === "summary");
 	const hasAiTab = isSummaryOpen || showAiChat;
-	const { tabHeight, memoHeight, isResizing, handleMouseDown, containerRef } =
+	const { tabHeight, isResizing, handleMouseDown, containerRef } =
 		useResizablePanel(isSummaryActive);
+	const animateHeight = !isResizing;
+	const displayedTabHeight = isSummaryEntering ? 0 : tabHeight;
+
+	useEffect(() => {
+		if (!isSummaryEntering) return;
+		const frame = requestAnimationFrame(() => setIsSummaryEntering(false));
+		return () => cancelAnimationFrame(frame);
+	}, [isSummaryEntering]);
 
 	useEffect(() => {
 		setPendingOpenPageKey(null);
@@ -97,6 +106,11 @@ function SidePanelBody() {
 
 	const handleSummaryToggle = () => {
 		if (!showSummary) return;
+		setIsSummaryEntering(
+			!isSummaryOpen &&
+				!showAiChat &&
+				!window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+		);
 		const action = isSummaryOpen ? "close" : "open";
 		analytics.trackEvent({ name: "summary_panel_toggle", params: { action } });
 		setSummaryState({ pageKey, isOpen: !isSummaryOpen });
@@ -130,7 +144,8 @@ function SidePanelBody() {
 				{hasAiTab && (
 					<>
 						<TabSection
-							tabHeight={tabHeight}
+							tabHeight={displayedTabHeight}
+							animateHeight={animateHeight}
 							isSummaryOpen={isSummaryOpen}
 							isChatEnabled={showAiChat}
 							selectedTab={selectedTab}
@@ -141,8 +156,8 @@ function SidePanelBody() {
 							}
 						/>
 						<div
-							className="absolute inset-x-0 z-10 -translate-y-1/2"
-							style={{ top: `${tabHeight}%` }}
+							className={`absolute inset-x-0 z-10 -translate-y-1/2 ${animateHeight ? "transition-[top] duration-[180ms] ease-out motion-reduce:transition-none" : ""}`}
+							style={{ top: `${displayedTabHeight}%` }}
 						>
 							<ResizeHandle
 								upperSectionRatio={tabHeight}
@@ -152,7 +167,10 @@ function SidePanelBody() {
 						</div>
 					</>
 				)}
-				<MemoSection memoHeight={hasAiTab ? memoHeight : 100} />
+				<MemoSection
+					memoHeight={hasAiTab ? 100 - displayedTabHeight : 100}
+					animateHeight={animateHeight}
+				/>
 			</div>
 		</main>
 	);

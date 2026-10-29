@@ -122,7 +122,13 @@ test.describe("메모 카드 펼치기 (Mocked)", () => {
 		});
 		const card = page.locator(".memo-item", { hasText: "전환할 긴 메모" });
 		await card.getByRole("button", { name: "Show more" }).click();
-		await page.evaluate(() => window.scrollBy(0, 180));
+		await readScrollYAfterLayout(page);
+		await card.evaluate((element) => {
+			window.scrollBy(0, element.getBoundingClientRect().top + 180);
+		});
+		await expect
+			.poll(async () => (await card.boundingBox())?.y ?? 0)
+			.toBeLessThan(0);
 		const cardRect = await card.boundingBox();
 		expect(cardRect?.height).toBeGreaterThan(800);
 		expect(cardRect?.y).toBeLessThan(0);

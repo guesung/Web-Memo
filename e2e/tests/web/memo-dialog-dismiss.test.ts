@@ -123,6 +123,15 @@ test.describe("MemoDialog dismiss 동작 (Mocked)", () => {
 
 		const dialog = page.getByRole("dialog");
 		await expect(dialog).toHaveAttribute("data-memo-motion", "card");
+		await expect
+			.poll(() =>
+				page.evaluate(
+					() =>
+						(window as typeof window & { memoMotionFrames: Keyframe[][] })
+							.memoMotionFrames.length,
+				),
+			)
+			.toBeGreaterThan(0);
 		const openFrames = await page.evaluate(
 			() =>
 				(window as typeof window & { memoMotionFrames: Keyframe[][] })

@@ -22,7 +22,13 @@ import {
 	Textarea,
 } from "@web-memo/ui";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from "react";
 import { useWatch } from "react-hook-form";
 import { isTypingTarget } from "../../_utils";
 import MemoCardFooter from "../MemoCardFooter";
@@ -165,6 +171,13 @@ function MemoDialogContent({
 	const impressionRef = useRef<HTMLTextAreaElement | null>(null);
 	const actionItemRef = useRef<HTMLTextAreaElement | null>(null);
 	const dialogRef = useRef<HTMLDivElement | null>(null);
+	const [dialogElement, setDialogElement] = useState<HTMLDivElement | null>(
+		null,
+	);
+	const attachDialog = useCallback((element: HTMLDivElement | null) => {
+		dialogRef.current = element;
+		if (element) setDialogElement(element);
+	}, []);
 	const closingRef = useRef(false);
 	const closingAnimationRef = useRef<Animation | null>(null);
 	const mountedRef = useRef(true);
@@ -195,26 +208,25 @@ function MemoDialogContent({
 	});
 
 	useLayoutEffect(() => {
+		if (!dialogElement) return;
 		clearMemoCardOpen(memo.id);
-		const dialog = dialogRef.current;
 		if (
-			!dialog ||
 			!openingCardRect ||
 			!visibleMemoCardRect(memo.id) ||
 			window.matchMedia("(prefers-reduced-motion: reduce)").matches
 		)
 			return;
 		const frames = cardMotionFrames(
-			dialog.getBoundingClientRect(),
+			dialogElement.getBoundingClientRect(),
 			openingCardRect,
 		);
 		if (!frames) return;
-		const animation = dialog.animate(frames, {
+		const animation = dialogElement.animate(frames, {
 			duration: MEMO_CARD_MOTION_MS,
 			easing: "cubic-bezier(0.22, 1, 0.36, 1)",
 		});
 		return () => animation.cancel();
-	}, [memo.id, openingCardRect]);
+	}, [dialogElement, memo.id, openingCardRect]);
 
 	useEffect(() => {
 		mountedRef.current = true;
@@ -313,7 +325,7 @@ function MemoDialogContent({
 	return (
 		<Dialog open>
 			<DialogContent
-				ref={dialogRef}
+				ref={attachDialog}
 				className={cn(
 					"max-h-[90dvh] max-w-[720px] gap-0 overflow-y-auto bg-card p-0 sm:rounded-xl",
 					canAnimateCard && "!animate-none",

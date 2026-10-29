@@ -17,9 +17,11 @@ name: Sentry triage
 # 안전장치
 #   - 입력은 전부 env 로만 넘기고 run 본문에 ${{ inputs.* }} 를 보간하지 않습니다.
 #   - guard: 열린 sentry-fix/<issue_id> PR 이 있거나, 같은 이슈를 오늘 이미 성공했거나, 일일 상한이면 건너뜁니다.
-#   - analyze: Claude 에게 Read·Grep·Glob·Edit·Write 만 줍니다(Bash 없음). 쓰기 자격증명도 없습니다.
-#     Sentry 데이터는 정제한 JSON 으로만 넘기고 비신뢰 데이터로 표시합니다.
-#   - 패치는 결정적 스크립트가 금지 경로·5개 파일·200줄을 검사하고 pnpm check · type-check · test:jest 를 통과해야 합니다.
+#   - analyze: Claude 에게 Read·Grep·Glob·Edit·Write 만 줍니다(Bash 없음). Claude 가 쓴 코드는 이 잡에서 실행하지 않습니다.
+#     Sentry 데이터는 정제한 JSON 으로만 넘기고 비신뢰 데이터로 표시합니다. 금지 경로·5개 파일·200줄을 검사해 패치를 artifact 로 넘깁니다.
+#     (이 잡은 OIDC 토큰 교환용 id-token: write 가 있어, 생성 코드를 돌리면 토큰이 새므로 실행을 verify 로 뺐습니다.)
+#   - verify: 생성된 패치를 실제로 실행하는 유일한 잡입니다. permissions 는 contents: read 뿐이고 id-token·시크릿이 없습니다.
+#     패치를 다시 검사한 뒤 pnpm check · type-check · test:jest 를 모두 통과해야 합니다.
 #   - publish: 쓰기 자격증명(App 토큰)은 여기에만 있고, Claude·생성 코드를 실행하지 않습니다(패치 apply 와 git 만).
 #   - PR 은 draft 가 아니지만 자동 머지·배포·Sentry resolve 는 하지 않습니다. 사람 리뷰가 필수입니다.
 #
@@ -127,7 +129,6 @@ jobs:
       id-token: write
     outputs:
       patch_status: ${{ steps.patch.outputs.patch_status }}
-      publishable: ${{ steps.verify_result.outputs.publishable }}
     env:
       ISSUE_ID: ${{ inputs.issue_id }}
       SHORT_ID: ${{ inputs.short_id }}
@@ -142,12 +143,9 @@ jobs:
           ref: master
           persist-credentials: false
 
-      - uses: pnpm/action-setup@v5
-
       - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
-          cache: "pnpm"
 
       # 컨텍스트 폴더가 패치 diff 에 섞이지 않게 합니다.
       - name: Exclude triage workdir from git
@@ -212,49 +210,10 @@ jobs:
           mkdir -p .sentry-triage
           printf '%s' "$ANALYSIS_JSON" > .sentry-triage/analysis.json
 
-      # 여기부터는 시크릿이 없는 결정적 단계입니다. 변경 범위를 검사하고 어기면 패치를 폐기합니다.
+      # 변경 범위를 검사하고 어기면 패치를 폐기합니다. 생성 코드는 여기서 실행하지 않습니다(verify 잡이 맡습니다).
       - name: Check patch scope
         id: patch
         run: node .github/scripts/sentry/check-triage-patch.mjs
-
-      - name: Install dependencies
-        if: ${{ steps.patch.outputs.patch_status == 'ready' }}
-        run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: Verify (pnpm check)
-        id: v_check
-        if: ${{ steps.patch.outputs.patch_status == 'ready' }}
-        continue-on-error: true
-        run: pnpm check
-
-      - name: Verify (pnpm type-check)
-        id: v_types
-        if: ${{ steps.patch.outputs.patch_status == 'ready' }}
-        continue-on-error: true
-        run: pnpm type-check
-
-      - name: Verify (pnpm test:jest)
-        id: v_test
-        if: ${{ steps.patch.outputs.patch_status == 'ready' }}
-        continue-on-error: true
-        run: pnpm test:jest --run
-
-      - name: Record verification
-        id: verify_result
-        if: ${{ always() && steps.patch.outcome == 'success' }}
-        env:
-          PATCH_STATUS: ${{ steps.patch.outputs.patch_status }}
-          V_CHECK: ${{ steps.v_check.outcome }}
-          V_TYPES: ${{ steps.v_types.outcome }}
-          V_TEST: ${{ steps.v_test.outcome }}
-        run: |
-          printf '{"check":"%s","typeCheck":"%s","test":"%s"}\n' "$V_CHECK" "$V_TYPES" "$V_TEST" > .sentry-triage/verify.json
-          cat .sentry-triage/verify.json
-          if [ "$PATCH_STATUS" = "ready" ] && [ "$V_CHECK" = "success" ] && [ "$V_TYPES" = "success" ] && [ "$V_TEST" = "success" ]; then
-            echo "publishable=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "publishable=false" >> "$GITHUB_OUTPUT"
-          fi
 
       - name: Upload triage result
         if: ${{ always() }}
@@ -266,10 +225,105 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  # 생성된 코드를 실행하는 유일한 잡입니다. id-token·시크릿·쓰기 권한이 없고 checkout 자격증명도 남기지 않습니다.
+  verify:
+    name: 패치 검증
+    needs: analyze
+    if: ${{ needs.analyze.outputs.patch_status == 'ready' }}
+    runs-on: ubuntu-26.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    outputs:
+      publishable: ${{ steps.record.outputs.publishable }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: master
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Exclude triage workdir from git
+        run: echo ".sentry-triage/" >> .git/info/exclude
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: sentry-triage-${{ github.run_id }}
+          path: .sentry-triage
+
+      # 분석 잡의 검사를 믿지 않고 적용 후 같은 검사를 한 번 더 합니다.
+      - name: Apply patch and re-check scope
+        id: apply
+        continue-on-error: true
+        run: |
+          git apply --index --whitespace=nowarn .sentry-triage/patch.diff
+          node .github/scripts/sentry/check-triage-patch.mjs
+          status=$(node -e "console.log(JSON.parse(require('fs').readFileSync('.sentry-triage/patch-check.json','utf8')).status)")
+          [ "$status" = "ready" ]
+
+      - name: Install dependencies
+        id: install
+        if: ${{ steps.apply.outcome == 'success' }}
+        continue-on-error: true
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Verify (pnpm check)
+        id: v_check
+        if: ${{ steps.install.outcome == 'success' }}
+        continue-on-error: true
+        run: pnpm check
+
+      - name: Verify (pnpm type-check)
+        id: v_types
+        if: ${{ steps.install.outcome == 'success' }}
+        continue-on-error: true
+        run: pnpm type-check
+
+      - name: Verify (pnpm test:jest)
+        id: v_test
+        if: ${{ steps.install.outcome == 'success' }}
+        continue-on-error: true
+        run: pnpm test:jest --run
+
+      # 실패해도 잡은 성공으로 끝내 publish 가 사유를 Slack 에 보고하게 합니다.
+      - name: Record verification
+        id: record
+        if: ${{ always() }}
+        env:
+          APPLY: ${{ steps.apply.outcome }}
+          V_CHECK: ${{ steps.v_check.outcome }}
+          V_TYPES: ${{ steps.v_types.outcome }}
+          V_TEST: ${{ steps.v_test.outcome }}
+        run: |
+          if [ "$APPLY" = "success" ] && [ "$V_CHECK" = "success" ] && [ "$V_TYPES" = "success" ] && [ "$V_TEST" = "success" ]; then
+            status=passed
+          else
+            status=failed
+          fi
+          printf '{"status":"%s","apply":"%s","check":"%s","typeCheck":"%s","test":"%s"}\n' "$status" "$APPLY" "$V_CHECK" "$V_TYPES" "$V_TEST" > verify.json
+          cat verify.json
+          echo "publishable=$([ "$status" = passed ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload verification result
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: sentry-triage-verify-${{ github.run_id }}
+          path: verify.json
+          if-no-files-found: warn
+          retention-days: 14
+
   publish:
     name: PR 생성과 Slack 보고
-    needs: [guard, analyze]
-    if: ${{ needs.analyze.result == 'success' }}
+    needs: [guard, analyze, verify]
+    # verify 가 건너뛰어진 것(패치 없음·거부)은 정상이고, 실패(인프라 오류)만 notify-failure 로 보냅니다.
+    if: ${{ !cancelled() && needs.analyze.result == 'success' && needs.verify.result != 'failure' }}
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     # 쓰기 자격증명(App 토큰, Slack 봇 토큰)은 이 잡에만 있습니다. Claude·생성 코드는 실행하지 않습니다.
@@ -286,7 +340,7 @@ jobs:
     steps:
       - uses: actions/create-github-app-token@v3
         id: app-token
-        if: ${{ needs.analyze.outputs.publishable == 'true' && inputs.dry_run != true }}
+        if: ${{ needs.verify.outputs.publishable == 'true' && inputs.dry_run != true }}
         with:
           client-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
@@ -303,16 +357,18 @@ jobs:
       - name: Exclude triage workdir from git
         run: echo ".sentry-triage/" >> .git/info/exclude
 
+      # 분석 결과(sentry-triage-<run>)와 검증 결과(sentry-triage-verify-<run>)를 한 폴더로 합칩니다.
       - uses: actions/download-artifact@v7
         with:
-          name: sentry-triage-${{ github.run_id }}
+          pattern: sentry-triage-*
+          merge-multiple: true
           path: .sentry-triage
 
       # 패치를 적용만 합니다. pnpm install·테스트는 하지 않습니다.
       # 분석 잡의 검사를 믿지 않고 같은 검사를 한 번 더 합니다(금지 경로가 App 토큰으로 push 되면 안 됩니다).
       - name: Apply patch and re-check scope
         id: apply
-        if: ${{ needs.analyze.outputs.publishable == 'true' && inputs.dry_run != true }}
+        if: ${{ needs.verify.outputs.publishable == 'true' && inputs.dry_run != true }}
         run: |
           git apply --index --whitespace=nowarn .sentry-triage/patch.diff
           node .github/scripts/sentry/check-triage-patch.mjs
@@ -358,7 +414,7 @@ jobs:
   # 구독 한도 소진·토큰 만료(CLAUDE_CODE_OAUTH_TOKEN)로도 실패할 수 있어, 알림이 없는 것과 분석이 깨진 것을 구분하기 위함입니다.
   notify-failure:
     name: 실패 알림
-    needs: [guard, analyze, publish]
+    needs: [guard, analyze, verify, publish]
     if: ${{ failure() }}
     runs-on: ubuntu-26.04
     timeout-minutes: 5

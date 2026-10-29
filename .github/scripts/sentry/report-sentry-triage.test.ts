@@ -19,7 +19,7 @@ const rawAnalysis = {
 	tests_added: ["a.test.ts"],
 };
 const analysis = normalizeAnalysis(rawAnalysis);
-const verify = { check: "success", typeCheck: "success", test: "success" };
+const verify = { status: "passed", check: "success", typeCheck: "success", test: "success" };
 
 describe("escapeSlack", () => {
 	it("멘션·링크 문법과 길이를 무력화한다", () => {
@@ -63,11 +63,16 @@ describe("buildResultText", () => {
 	it("검증 실패면 PR 을 만들지 않았다고 알린다", () => {
 		const text = buildResultText({
 			...common,
-			verify: { ...verify, test: "failure" },
+			verify: { ...verify, status: "failed", test: "failure" },
 			patchCheck: { status: "ready" },
 			prUrl: "",
 		});
 		expect(text).toContain("검증에 실패");
+	});
+
+	it("검증이 건너뛰어졌으면 그 사유를 알린다", () => {
+		const text = buildResultText({ ...common, verify: null, patchCheck: { status: "ready" }, prUrl: "" });
+		expect(text).toContain("검증을 실행하지 못해");
 	});
 
 	it("수정 없음은 사유를 싣고, 분석을 못 읽으면 안내한다", () => {

@@ -80,11 +80,12 @@ export const describeFix = ({ analysis, patchCheck, verify, prUrl }) => {
 		return `수정: 패치 거부 — ${escapeSlack((patchCheck.reasons ?? []).slice(0, 3).join("; "))}`;
 	}
 	if (patchCheck?.status === "ready") {
-		const failed = verify && [verify.check, verify.typeCheck, verify.test].includes("failure");
+		if (!verify) return "수정: 패치는 통과했지만 검증을 실행하지 못해 PR 을 만들지 않았습니다";
+		if (verify.status !== "passed") {
+			return "수정: 패치는 만들었지만 적용·검증에 실패해 PR 을 만들지 않았습니다";
+		}
 
-		return failed
-			? "수정: 패치는 만들었지만 검증에 실패해 PR 을 만들지 않았습니다"
-			: "수정: 패치는 통과했지만 PR 생성에 실패했습니다(실행 로그 확인)";
+		return "수정: 패치는 통과했지만 PR 생성에 실패했습니다(실행 로그 확인)";
 	}
 
 	return `수정 없음${analysis?.fixSummary ? ` — ${escapeSlack(analysis.fixSummary)}` : analysis?.uncertainty ? ` — ${escapeSlack(analysis.uncertainty)}` : ""}`;

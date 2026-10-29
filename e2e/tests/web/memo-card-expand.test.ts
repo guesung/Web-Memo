@@ -123,16 +123,17 @@ test.describe("메모 카드 펼치기 (Mocked)", () => {
 		const card = page.locator(".memo-item", { hasText: "전환할 긴 메모" });
 		await card.getByRole("button", { name: "Show more" }).click();
 		await readScrollYAfterLayout(page);
-		await card.evaluate((element) => {
-			window.scrollBy(0, element.getBoundingClientRect().top + 180);
-		});
+		const beforeScroll = await card.boundingBox();
+		await page.mouse.move(640, 400);
+		await page.mouse.wheel(0, Math.ceil(beforeScroll?.y ?? 0) + 180);
 		await expect
 			.poll(async () => (await card.boundingBox())?.y ?? 0)
 			.toBeLessThan(0);
 		const cardRect = await card.boundingBox();
 		expect(cardRect?.height).toBeGreaterThan(800);
 		expect(cardRect?.y).toBeLessThan(0);
-		await card.click({ position: { x: 120, y: 200 } });
+		expect((cardRect?.y ?? 0) + (cardRect?.height ?? 0)).toBeGreaterThan(200);
+		await page.mouse.click((cardRect?.x ?? 0) + 150, 200);
 		const dialog = page.getByRole("dialog");
 		await expect(dialog).toHaveAttribute("data-memo-motion", "card");
 		await expect

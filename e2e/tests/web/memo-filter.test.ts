@@ -143,4 +143,52 @@ test.describe("메모 검색·필터 (Mocked)", () => {
 			page.locator(".memo-item", { hasText: "주말 등산 코스" }),
 		).toBeVisible();
 	});
+
+	test("카테고리 변경 시 남은 카드가 이전 위치에서 새 위치로 이동한다.", async ({
+		page,
+	}) => {
+		await expect(page.locator(".memo-item")).toHaveCount(3);
+		await page.evaluate(() => {
+			const originalAnimate = Element.prototype.animate;
+			Element.prototype.animate = function (keyframes, options) {
+				if (
+					this.classList.contains("memo-item") &&
+					Array.isArray(keyframes) &&
+					"translate" in keyframes[0]
+				) {
+					requestAnimationFrame(() => {
+						const initialX = this.getBoundingClientRect().x;
+						window.setTimeout(() => {
+							const middleX = this.getBoundingClientRect().x;
+							window.setTimeout(() => {
+								const finalX = this.getBoundingClientRect().x;
+								document.body.dataset.memoReflow = JSON.stringify({
+									initialX,
+									middleX,
+									finalX,
+								});
+							}, 180);
+						}, 110);
+					});
+				}
+				return originalAnimate.call(this, keyframes, options);
+			};
+		});
+
+		await page
+			.locator(".memo-item", { hasText: "회고 작성" })
+			.getByText("Work")
+			.click();
+		await expect(page.locator(".memo-item")).toHaveCount(2);
+		await expect
+			.poll(() => page.locator("body").getAttribute("data-memo-reflow"))
+			.not.toBeNull();
+		const sample = await page
+			.locator("body")
+			.evaluate((body) => JSON.parse(body.dataset.memoReflow ?? "{}"));
+		expect(Math.abs(sample.initialX - sample.finalX)).toBeGreaterThan(20);
+		expect(Math.abs(sample.middleX - sample.finalX)).toBeLessThan(
+			Math.abs(sample.initialX - sample.finalX),
+		);
+	});
 });

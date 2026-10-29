@@ -77,6 +77,7 @@ const MemoFormContent = ({
 	hasSyncNetworkError = false,
 	onRetrySync,
 	onPastMemoOpen,
+	onServerSaveSuccess,
 }: IFMemoFormProps) => {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const impressionRef = useRef<HTMLTextAreaElement | null>(null);
@@ -179,7 +180,12 @@ const MemoFormContent = ({
 		updateCategory,
 		toggleMemoStatus,
 		setPlannedDate,
-	} = useMemoForm({ selectedMemo, isMemoLocked, isSyncing });
+	} = useMemoForm({
+		selectedMemo,
+		isMemoLocked,
+		isSyncing,
+		onServerSaveSuccess,
+	});
 	const impressionField = register("impression", {
 		onChange: (event) => handleImpressionChange(event.target.value),
 	});
@@ -815,6 +821,7 @@ const MemoForm = ({
 	hasSyncNetworkError,
 	onRetrySync,
 	onPastMemoOpen,
+	onServerSaveSuccess,
 }: IFMemoFormProps) => {
 	const form = useForm<MemoInput>({
 		shouldUnregister: false,
@@ -846,6 +853,7 @@ const MemoForm = ({
 				hasSyncNetworkError={hasSyncNetworkError}
 				onRetrySync={onRetrySync}
 				onPastMemoOpen={onPastMemoOpen}
+				onServerSaveSuccess={onServerSaveSuccess}
 			/>
 		</FormProvider>
 	);
@@ -878,6 +886,8 @@ interface IFMemoFormProps {
 	onRetrySync?: () => void;
 	/** 과거 메모 알림에서 같은 글의 열기를 눌렀을 때. 사이드 패널 안에서 읽기 전용으로 보여 주는 쪽이 처리한다 */
 	onPastMemoOpen?: (duplicate: IFPastMemoDuplicate) => void;
+	/** 서버가 메모 저장을 받아들였을 때. 오프라인 대기열 저장은 해당하지 않는다 */
+	onServerSaveSuccess?: () => void;
 }
 
 interface IFMemoStatusToggleProps {

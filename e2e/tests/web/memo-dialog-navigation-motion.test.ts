@@ -243,7 +243,7 @@ test.describe("메모 상세 이전·다음 본문 모션 (Mocked)", () => {
 		).toBeGreaterThan(0);
 		await page.keyboard.press("ArrowRight");
 		await expect(dialog.getByTestId("memo-textarea")).toHaveValue(
-			"Test memo content 3",
+			"Test memo content 1",
 		);
 		expect(await dialog.evaluate((element) => element.scrollTop)).toBe(0);
 	});

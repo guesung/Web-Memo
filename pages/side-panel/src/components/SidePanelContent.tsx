@@ -223,6 +223,7 @@ function SidePanelBody() {
 				<MemoSection
 					memoHeight={hasAiTab ? 100 - displayedTabHeight : 100}
 					animateHeight={animateHeight}
+					isAiTabOpen={hasAiTab}
 				/>
 			</div>
 		</main>

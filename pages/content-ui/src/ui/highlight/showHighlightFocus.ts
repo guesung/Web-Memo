@@ -1,3 +1,5 @@
+import { HIGHLIGHT_COLOR_STYLE } from "@web-memo/shared/constants";
+
 const FOCUS_DURATION_MS = 1000;
 const FADE_DURATION_MS = 250;
 const SCROLL_SETTLE_LIMIT_MS = 900;
@@ -17,6 +19,11 @@ export const showHighlightFocus = (range: Range, reducedMotion: boolean) => {
 	let stableFrames = 0;
 	const startedAt = performance.now();
 	let stopped = false;
+	const startContainer = range.startContainer;
+	const endContainer = range.endContainer;
+	const color = HIGHLIGHT_COLOR_STYLE.yellow;
+	const isAnchorConnected = () =>
+		startContainer.isConnected && endContainer.isConnected;
 
 	const cleanup = () => {
 		stopped = true;
@@ -30,17 +37,29 @@ export const showHighlightFocus = (range: Range, reducedMotion: boolean) => {
 
 	const draw = () => {
 		if (stopped) return;
+		if (!isAnchorConnected()) {
+			cleanup();
+			return;
+		}
 		shadow.replaceChildren();
-		for (const rect of range.getClientRects()) {
-			if (rect.width <= 0 || rect.height <= 0) continue;
-			const outline = document.createElement("span");
-			outline.style.cssText =
-				"position:absolute;box-sizing:border-box;border:2px solid #f59e0b;border-radius:3px;background:rgba(245,158,11,.16);box-shadow:0 0 0 3px rgba(245,158,11,.2);";
-			outline.style.left = `${rect.left}px`;
-			outline.style.top = `${rect.top}px`;
-			outline.style.width = `${rect.width}px`;
-			outline.style.height = `${rect.height}px`;
-			shadow.append(outline);
+		try {
+			for (const rect of range.getClientRects()) {
+				if (rect.width <= 0 || rect.height <= 0) continue;
+				const outline = document.createElement("span");
+				outline.style.cssText =
+					"position:absolute;box-sizing:border-box;border:2px solid;border-radius:3px;";
+				outline.style.borderColor = color.bar;
+				outline.style.backgroundColor = color.background;
+				outline.style.boxShadow = `0 0 0 3px ${color.background}`;
+				outline.style.left = `${rect.left}px`;
+				outline.style.top = `${rect.top}px`;
+				outline.style.width = `${rect.width}px`;
+				outline.style.height = `${rect.height}px`;
+				shadow.append(outline);
+			}
+		} catch {
+			cleanup();
+			return;
 		}
 		if (!shadow.childElementCount) {
 			cleanup();
@@ -68,7 +87,17 @@ export const showHighlightFocus = (range: Range, reducedMotion: boolean) => {
 
 	const waitForScroll = (now: number) => {
 		if (stopped) return;
-		const top = range.getBoundingClientRect().top;
+		if (!isAnchorConnected()) {
+			cleanup();
+			return;
+		}
+		let top: number;
+		try {
+			top = range.getBoundingClientRect().top;
+		} catch {
+			cleanup();
+			return;
+		}
 		stableFrames = Math.abs(top - previousTop) < 1 ? stableFrames + 1 : 0;
 		previousTop = top;
 		if (stableFrames >= 2 || now - startedAt >= SCROLL_SETTLE_LIMIT_MS) {

@@ -166,6 +166,9 @@ function MemoDialogContent({
 	const actionItemRef = useRef<HTMLTextAreaElement | null>(null);
 	const dialogRef = useRef<HTMLDivElement | null>(null);
 	const closingRef = useRef(false);
+	const closingAnimationRef = useRef<Animation | null>(null);
+	const mountedRef = useRef(true);
+	const [isClosing, setIsClosing] = useState(false);
 	const [openingCardRect] = useState(() => peekMemoCardOpen(memo.id));
 	const canAnimateCard = Boolean(openingCardRect);
 	const title = watch("title");
@@ -213,6 +216,14 @@ function MemoDialogContent({
 		return () => animation.cancel();
 	}, [memo.id, openingCardRect]);
 
+	useEffect(() => {
+		mountedRef.current = true;
+		return () => {
+			mountedRef.current = false;
+			closingAnimationRef.current?.cancel();
+		};
+	}, []);
+
 	useLayoutEffect(
 		function focusOpenedField() {
 			if (!focusField) return;
@@ -233,6 +244,13 @@ function MemoDialogContent({
 		closingRef.current = true;
 		flushDebounce();
 		const dialog = dialogRef.current;
+		if (dialog) {
+			dialog.setAttribute("inert", "");
+			if (dialog.contains(document.activeElement)) {
+				(document.activeElement as HTMLElement).blur();
+			}
+		}
+		setIsClosing(true);
 		const card = canAnimateCard && visibleMemoCardRect(memo.id);
 		if (
 			!dialog ||
@@ -247,13 +265,23 @@ function MemoDialogContent({
 			onClose();
 			return;
 		}
-		dialog
-			.animate([...frames].reverse(), {
-				duration: MEMO_CARD_MOTION_MS,
-				easing: "cubic-bezier(0.4, 0, 1, 1)",
-				fill: "forwards",
-			})
-			.finished.then(onClose, onClose);
+		const animation = dialog.animate([...frames].reverse(), {
+			duration: MEMO_CARD_MOTION_MS,
+			easing: "cubic-bezier(0.4, 0, 1, 1)",
+			fill: "forwards",
+		});
+		closingAnimationRef.current = animation;
+		const finishClose = () => {
+			if (
+				mountedRef.current &&
+				closingAnimationRef.current === animation &&
+				new URLSearchParams(window.location.search).get("id") ===
+					String(memo.id)
+			) {
+				onClose();
+			}
+		};
+		animation.finished.then(finishClose, finishClose);
 	}
 
 	function closeAfterDelete() {
@@ -262,13 +290,14 @@ function MemoDialogContent({
 	}
 
 	function navigateTo(memoId?: number) {
-		if (memoId === undefined) return;
+		if (memoId === undefined || closingRef.current) return;
 		flushDebounce();
 		onNavigate(memoId);
 	}
 
 	useEffect(function navigateWithArrowKeys() {
 		const handleKeyDown = (event: KeyboardEvent) => {
+			if (closingRef.current) return;
 			if (event.defaultPrevented || event.isComposing) return;
 			if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
 				return;
@@ -292,6 +321,7 @@ function MemoDialogContent({
 				onClose={closeAndSave}
 				aria-describedby={undefined}
 				data-memo-motion={canAnimateCard ? "card" : "fallback"}
+				inert={isClosing}
 			>
 				<DialogTitle className="sr-only">{title}</DialogTitle>
 				<MemoCardHeader

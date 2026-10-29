@@ -74,6 +74,59 @@ describe("web QueryProvider mutation synchronization", () => {
 	});
 });
 
+describe("web QueryProvider query error reporting", () => {
+	it("does not report network failures thrown or returned by queries", async () => {
+		const { fetchQuery, unmount } = await renderClient();
+		await fetchQuery(async () => {
+			throw new TypeError("Failed to fetch (example.supabase.co)");
+		}).catch(() => {});
+		await fetchQuery(async () => ({
+			data: null,
+			error: { message: "TypeError: Failed to fetch (example.supabase.co)" },
+		}));
+
+		expect(mocks.captureException).not.toHaveBeenCalled();
+		await unmount();
+	});
+
+	it("still reports non-network query failures", async () => {
+		const { fetchQuery, unmount } = await renderClient();
+		await fetchQuery(async () => ({
+			data: null,
+			error: { message: "permission denied for table memo" },
+		}));
+
+		expect(mocks.captureException).toHaveBeenCalledOnce();
+		await unmount();
+	});
+});
+
+async function renderClient() {
+	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+	let queryClient: ReturnType<typeof useQueryClient>;
+	function CaptureClient() {
+		queryClient = useQueryClient();
+		return null;
+	}
+	const root = createRoot(document.createElement("div"));
+	await act(async () => {
+		root.render(
+			createElement(QueryProvider, { lng: "en" }, createElement(CaptureClient)),
+		);
+	});
+	let key = 0;
+
+	return {
+		fetchQuery: (queryFn: () => Promise<unknown>) =>
+			queryClient.fetchQuery({
+				queryKey: ["test", key++],
+				queryFn,
+				retry: false,
+			}),
+		unmount: async () => act(async () => root.unmount()),
+	};
+}
+
 async function renderMutation(onSuccess?: ReturnType<typeof vi.fn>) {
 	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
 	let queryClient: ReturnType<typeof useQueryClient>;

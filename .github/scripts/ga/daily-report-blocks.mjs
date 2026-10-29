@@ -14,10 +14,15 @@ import { CORE_EVENTS, TRAFFIC_EVENTS, readEventStat } from "./ga4-data.mjs";
  * 전환율을 찍지 않습니다. side_panel_open 은 사이드 패널 전용(확장 Measurement
  * Protocol)이고 memo_write 는 packages/shared 훅에서 나가 웹·확장 양쪽에서
  * 발화합니다. 모집단이 달라 나누면 100%를 넘습니다.
+ *
+ * memo_first_write 는 memo_write 중 새 메모를 만든 사람만 따로 봅니다. 사이드 패널
+ * 저장과 하이라이트 생성에서만 발화하고 웹 블로그 화면·오프라인 대기열에서 만든 새
+ * 메모는 빠지므로, 실제 신규 작성자보다 적게 나옵니다.
  */
 const FUNNEL_STEPS = [
 	{ eventName: "side_panel_open", label: "사이드 패널 열기" },
 	{ eventName: "memo_write", label: "메모 작성" },
+	{ eventName: "memo_first_write", label: "신규 메모 작성" },
 ];
 
 /**

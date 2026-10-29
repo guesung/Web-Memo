@@ -25,6 +25,20 @@ const MEMO_DOMAIN_MAX_BATCHES = 5;
 /** 읽을 계획 탭이 한 번에 불러오는 최대 메모 수. */
 const PLANNED_MEMOS_LIMIT = 500;
 
+/**
+ * 문자열 값에서 NUL(U+0000)을 지운다.
+ * @description Postgres 문자열 컬럼은 NUL을 담지 못해 PostgREST가 22P05 "unsupported Unicode escape sequence"로
+ * 저장 전체를 거절한다. 인코딩이 깨진 PDF 제목이나 PDF에서 붙여넣은 본문에 섞여 들어오며, 보이지 않는 문자라 지워도
+ * 사용자가 보는 내용은 같다.
+ */
+const removeNullCharacters = <T extends object>(row: T): T =>
+	Object.fromEntries(
+		Object.entries(row).map(([key, value]) => [
+			key,
+			typeof value === "string" ? value.replaceAll("\u0000", "") : value,
+		]),
+	) as T;
+
 /** 날짜 정렬에서 같은 시각의 메모까지 이어 읽는 복합 커서. */
 export interface IFMemoPageCursor {
 	value: string | null;
@@ -39,12 +53,14 @@ export class MemoService {
 		this.supabaseClient = supabaseClient;
 	}
 
-	insertMemo = async (request: MemoTable["Insert"]) =>
-		this.supabaseClient
+	insertMemo = async (request: MemoTable["Insert"]) => {
+		const row = removeNullCharacters(request);
+		return this.supabaseClient
 			.schema(SUPABASE.table.memo)
 			.from(SUPABASE.table.memo)
-			.insert({ ...request, page_key: getPageKey(request.url) })
+			.insert({ ...row, page_key: getPageKey(row.url) })
 			.select();
+	};
 
 	/**
 	 * 같은 페이지의 메모 후보를 최근 수정 순으로 모두 조회한다.
@@ -148,10 +164,12 @@ export class MemoService {
 			.eq("id", id);
 
 	upsertMemos = async (request: GetMemoResponse[]) => {
-		const requestMapped = request.map(({ category, ...rest }) => ({
-			...rest,
-			category_id: category?.id ?? rest.category_id,
-		}));
+		const requestMapped = request.map(({ category, ...rest }) =>
+			removeNullCharacters({
+				...rest,
+				category_id: category?.id ?? rest.category_id,
+			}),
+		);
 		return this.supabaseClient
 			.schema(SUPABASE.table.memo)
 			.from(SUPABASE.table.memo)
@@ -401,7 +419,7 @@ export class MemoService {
 		this.supabaseClient
 			.schema(SUPABASE.table.memo)
 			.from(SUPABASE.table.memo)
-			.update(request)
+			.update(removeNullCharacters(request))
 			.eq("id", id)
 			.select();
 

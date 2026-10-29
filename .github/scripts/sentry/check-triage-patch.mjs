@@ -133,8 +133,11 @@ const writeOutput = (status) => {
 
 const main = () => {
 	mkdirSync(OUT_DIR, { recursive: true });
-	// 새 파일(회귀 테스트)도 diff 에 잡히도록 인덱스에 올립니다. 컨텍스트 폴더는 제외합니다.
-	git("add", "-A", "--", ".", `:(exclude)${OUT_DIR}`);
+	// 새 파일(회귀 테스트)도 diff 에 잡히도록 인덱스에 올리고, 컨텍스트 폴더는 다시 내립니다.
+	// 워크플로가 .git/info/exclude 에 넣은 폴더를 pathspec 으로 지목하면 git add 가 exit 1 로 끝나므로
+	// `:(exclude)` 대신 전체를 올린 뒤 reset 으로 뺍니다.
+	git("add", "-A");
+	git("reset", "--quiet", "--", OUT_DIR);
 
 	const raw = parseRawZ(git("diff", "--cached", "--raw", "-z", "--no-renames"));
 	const numstat = parseNumstatZ(git("diff", "--cached", "--numstat", "-z", "--no-renames"));

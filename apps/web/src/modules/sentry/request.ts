@@ -11,14 +11,37 @@ import { verifySentryWebhook } from "./verifyWebhook";
 export interface IFSentryIssueWebhookPayload {
 	action: string;
 	data?: {
-		issue?: {
-			title?: string;
-			culprit?: string;
-			permalink?: string;
-			shortId?: string;
-			tags?: [string, string][];
-		};
+		issue?: IFSentryWebhookIssue;
 	};
+}
+
+/**
+ * issue 웹훅이 싣는 이슈 필드. 플랜·SDK에 따라 빠질 수 있어 전부 선택값이다.
+ * 공식 문서(integrations/integration-platform/webhooks/issues)의 예시 페이로드 기준이며,
+ * `count`는 문자열로 오기도 한다.
+ */
+export interface IFSentryWebhookIssue {
+	id?: string;
+	shortId?: string;
+	title?: string;
+	culprit?: string;
+	permalink?: string;
+	level?: string;
+	status?: string;
+	substatus?: string;
+	platform?: string;
+	count?: string | number;
+	userCount?: number;
+	firstSeen?: string;
+	lastSeen?: string;
+	project?: { id?: string; slug?: string; name?: string };
+	metadata?: {
+		type?: string;
+		value?: string;
+		filename?: string;
+		function?: string;
+	};
+	tags?: [string, string][];
 }
 
 /**

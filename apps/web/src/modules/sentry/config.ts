@@ -1,4 +1,4 @@
-import { requireServerEnv } from "@src/utils/serverEnv";
+import { readServerEnv, requireServerEnv } from "@src/utils/serverEnv";
 
 /**
  * Sentry 웹훅 릴레이에 필요한 서버 전용 설정.
@@ -16,3 +16,10 @@ export const getSentryWebhookSecret = (): string =>
 /** Sentry 알림을 릴레이할 Slack 채널(ID 또는 이름). */
 export const getSentryAlertSlackChannel = (): string =>
 	requireServerEnv("SLACK_SENTRY_ALERT_CHANNEL");
+
+/**
+ * 이슈의 대표 이벤트를 조회하는 Sentry API 토큰(`event:read`).
+ * 없으면 이벤트 조회를 건너뛰고 웹훅 필드만으로 알림을 보냅니다.
+ */
+export const getSentryApiToken = (): string | undefined =>
+	readServerEnv("SENTRY_API_TOKEN");

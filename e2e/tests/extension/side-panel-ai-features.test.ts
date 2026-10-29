@@ -55,6 +55,118 @@ test.describe("사이드 패널 AI 기능", () => {
 		expect(store.getSetting()).toBeNull();
 	});
 
+	test("요약 첫 열기에서 높이가 움직이고 메모 입력과 커서를 유지한다", async ({
+		page,
+	}) => {
+		await openSidePanel(page);
+		const sidePanelPage = await findSidePanelPage(page);
+		await page.goto("https://example.com/ai-feature-toggle");
+		const showLabel = await getExtensionMessage(
+			sidePanelPage,
+			"summary_show_label",
+		);
+		const memo = sidePanelPage.locator("#memo-textarea");
+		await memo.fill("Draft stays in place");
+		await memo.focus();
+		await memo.evaluate((element: HTMLTextAreaElement) =>
+			element.setSelectionRange(5, 5),
+		);
+		const heights = await sidePanelPage.evaluate(async (label) => {
+			const toggle = Array.from(document.querySelectorAll("button")).find(
+				(button) => button.textContent?.trim() === label,
+			);
+			toggle?.click();
+			const panelHeight = () =>
+				document
+					.querySelector('[data-testid="ai-panel"]')
+					?.getBoundingClientRect().height ?? 0;
+			const samples: number[] = [];
+			for (let frame = 0; frame < 12; frame++) {
+				await new Promise(requestAnimationFrame);
+				samples.push(panelHeight());
+			}
+			await new Promise((resolve) => setTimeout(resolve, 220));
+			return {
+				samples,
+				final: panelHeight(),
+			};
+		}, showLabel);
+		expect(
+			heights.samples.some((height) => height > 0 && height < heights.final),
+			JSON.stringify(heights),
+		).toBe(true);
+		await expect(memo).toHaveValue("Draft stays in place");
+		await expect(memo).toBeFocused();
+		expect(
+			await memo.evaluate(
+				(element: HTMLTextAreaElement) => element.selectionStart,
+			),
+		).toBe(5);
+		const hideLabel = await getExtensionMessage(
+			sidePanelPage,
+			"summary_hide_label",
+		);
+		const closing = await sidePanelPage.evaluate(async (label) => {
+			const panelHeight = () =>
+				document
+					.querySelector('[data-testid="ai-panel"]')
+					?.getBoundingClientRect().height ?? 0;
+			const start = panelHeight();
+			const toggle = Array.from(document.querySelectorAll("button")).find(
+				(button) => button.textContent?.trim() === label,
+			);
+			toggle?.click();
+			const samples: number[] = [];
+			let inactive = false;
+			for (let frame = 0; frame < 12; frame++) {
+				await new Promise(requestAnimationFrame);
+				samples.push(panelHeight());
+				if (frame === 0) {
+					const panel = document.querySelector('[data-testid="ai-panel"]');
+					inactive =
+						panel?.hasAttribute("inert") === true &&
+						panel.getAttribute("aria-hidden") === "true";
+				}
+			}
+			return {
+				start,
+				samples,
+				inactive,
+				duplicateId:
+					document.querySelectorAll("#side-panel-summary").length > 1,
+			};
+		}, hideLabel);
+		expect(
+			closing.samples.some((height) => height > 0 && height < closing.start),
+			JSON.stringify(closing),
+		).toBe(true);
+		expect(closing.inactive).toBe(true);
+		expect(closing.duplicateId).toBe(false);
+		await expect(sidePanelPage.getByTestId("ai-panel")).toHaveCount(0);
+		await sidePanelPage.emulateMedia({ reducedMotion: "reduce" });
+		await sidePanelPage
+			.getByRole("button", { name: showLabel, exact: true })
+			.click();
+		await expect(sidePanelPage.getByTestId("ai-panel")).toBeVisible();
+		expect(
+			await sidePanelPage.getByTestId("ai-panel").evaluate((element) =>
+				getComputedStyle(element)
+					.transitionDuration.split(",")
+					.every((duration) => parseFloat(duration) < 0.001),
+			),
+		).toBe(true);
+		await sidePanelPage.emulateMedia({ reducedMotion: "no-preference" });
+		await page.goto("https://example.com/ai-feature-toggle-next");
+		await expect(sidePanelPage.getByTestId("ai-panel")).toHaveCount(0);
+		expect(
+			await sidePanelPage.getByTestId("memo-panel").evaluate((element) =>
+				getComputedStyle(element)
+					.transitionDuration.split(",")
+					.every((duration) => parseFloat(duration) < 0.001),
+			),
+		).toBe(true);
+	});
+
 	test("첫 설정 저장은 요약 기본 ON을 보존한다", async ({ page }) => {
 		const optionsPage = await page.context().newPage();
 		await optionsPage.goto(getExtensionUrl("options/index.html"));

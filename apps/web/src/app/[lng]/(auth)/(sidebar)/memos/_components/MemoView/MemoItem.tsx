@@ -23,6 +23,7 @@ import MemoCardFooter from "../MemoCardFooter";
 import MemoCardHeader from "../MemoCardHeader";
 import type { SearchFormValues } from "../MemoSearchFormProvider";
 import useIsContentClamped from "./_hooks/useIsContentClamped";
+import { captureMemoCardOpen } from "./_utils/memoCardMotion";
 import { MemoSourceQuote } from "./MemoSourceQuote";
 import { holdScrollPosition } from "./scrollPositionHold";
 
@@ -111,6 +112,7 @@ function MemoItem({
 		if (isSelectingMode) {
 			selectMemoItem?.(Number(id));
 		} else {
+			captureMemoCardOpen(memo.id, event.currentTarget);
 			// 메모를 다시 꺼내 보는 동작입니다. 저장(memo_write)만 재면 쌓이기만 하는지
 			// 실제로 쓰이는지 구분할 수 없어, 읽기 쪽도 같이 남깁니다.
 			analytics.trackEvent({
@@ -157,6 +159,7 @@ function MemoItem({
 			{...props}
 			ref={containerRef}
 			id={String(memo.id)}
+			data-memo-card-id={isReadOnly ? undefined : memo.id}
 			className={cn(
 				"memo-item select-none transition-all duration-300 [transform:translateZ(0)]",
 				// tabIndex 는 있는데 포커스 표시가 없어, 키보드로 훑으면 지금 어디인지 안 보였다

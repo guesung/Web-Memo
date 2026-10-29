@@ -17,12 +17,13 @@ import { CORE_EVENTS, TRAFFIC_EVENTS, readEventStat } from "./ga4-data.mjs";
  *
  * memo_first_write 는 memo_write 중 새 메모를 만든 사람만 따로 봅니다. 사이드 패널
  * 저장과 하이라이트 생성에서만 발화하고 웹 블로그 화면·오프라인 대기열에서 만든 새
- * 메모는 빠지므로, 실제 신규 작성자보다 적게 나옵니다.
+ * 메모는 빠지므로, 실제 신규 작성자보다 적게 나옵니다. 새 메모 하나에 한 번 발화하므로
+ * 건수가 곧 새로 만든 메모 수라 withCount 로 함께 적습니다.
  */
 const FUNNEL_STEPS = [
 	{ eventName: "side_panel_open", label: "사이드 패널 열기" },
 	{ eventName: "memo_write", label: "메모 작성" },
-	{ eventName: "memo_first_write", label: "신규 메모 작성" },
+	{ eventName: "memo_first_write", label: "신규 메모 작성", withCount: true },
 ];
 
 /**
@@ -88,9 +89,24 @@ const describeStat = ({ label, value, unit, average7 }) => {
 	return `${label}  *${formatCount(value)}${unit}*  (${detail})`;
 };
 
+/** 사람 수와 건수를 함께. 증감률은 사람 수 기준이라 퍼널의 다른 줄과 같은 축으로 읽힙니다. */
+const describeUsersWithCount = ({ label, users, count }) => {
+	const change = formatChange(users.yesterday, users.average7);
+	const detail = [
+		`7일 평균 ${formatAverage(users.average7)}명 · ${formatAverage(count.average7)}건`,
+		change,
+	]
+		.filter(Boolean)
+		.join(" · ");
+
+	return `${label}  *${formatCount(users.yesterday)}명 · ${formatCount(count.yesterday)}건*  (${detail})`;
+};
+
 const buildFunnelBlock = (events) => {
-	const lines = FUNNEL_STEPS.map(({ eventName, label }) => {
-		const { users } = readEventStat(events, eventName);
+	const lines = FUNNEL_STEPS.map(({ eventName, label, withCount }) => {
+		const { users, count } = readEventStat(events, eventName);
+
+		if (withCount) return describeUsersWithCount({ label, users, count });
 
 		return describeStat({
 			label,

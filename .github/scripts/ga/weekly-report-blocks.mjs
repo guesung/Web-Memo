@@ -117,6 +117,18 @@ const buildFeatureBlock = (features) => {
 
 		return `${label}  *${formatCount(users)}명*  (${detail})`;
 	};
+	// 새 메모 하나에 한 번 발화하므로 건수가 곧 새로 만든 메모 수입니다. 증감률은 사람 수 기준입니다.
+	const describeNewMemo = ({ users, previousUsers, count, previousCount }) => {
+		const change = formatChange(users, previousUsers);
+		const detail = [
+			`전주 ${formatCount(previousUsers)}명 · ${formatCount(previousCount)}건`,
+			change,
+		]
+			.filter(Boolean)
+			.join(" · ");
+
+		return `${NEW_MEMO_LABEL}  *${formatCount(users)}명 · ${formatCount(count)}건*  (${detail})`;
+	};
 	const newMemo = features.find(
 		({ eventName }) => eventName === NEW_MEMO_EVENT,
 	);
@@ -125,9 +137,7 @@ const buildFeatureBlock = (features) => {
 			!FUNNEL_EVENTS.includes(eventName) && eventName !== NEW_MEMO_EVENT,
 	);
 	const lines = [
-		newMemo
-			? describeFeature({ label: NEW_MEMO_LABEL, ...newMemo })
-			: `${NEW_MEMO_LABEL}  *0명*`,
+		newMemo ? describeNewMemo(newMemo) : `${NEW_MEMO_LABEL}  *0명 · 0건*`,
 		...rest
 			.slice(0, FEATURE_PREVIEW)
 			.map((feature) =>

@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { ConsoleMessage, Page } from "@playwright/test";
 import { EXTERNAL_LINK, SUPABASE } from "@web-memo/shared/constants";
 import { expect, test } from "../fixtures/extension";
 import { findSidePanelPage, login, openSidePanel, skipGuide } from "../lib";
@@ -226,4 +226,40 @@ test("오프라인 대기열에 저장될 때는 배너가 뜨지 않는다", as
 
 	await expect(banner).toHaveCount(0);
 	expect(getMemoCountRequestCount()).toBe(0);
+});
+
+test("배너 노출과 리뷰 쓰기 클릭이 shown_count와 함께 기록된다", async ({
+	page,
+	context,
+}) => {
+	const events: { name: string; params: Record<string, unknown> }[] = [];
+	const captureAnalytics = async (message: ConsoleMessage) => {
+		const name = message
+			.text()
+			.match(/^\[analytics\] (review_prompt_view|review_prompt_open)\b/)?.[1];
+		if (!name) return;
+		const params = await message.args()[1]?.jsonValue();
+		events.push({ name, params });
+	};
+	const watchPage = (target: Page) =>
+		target.on("console", (message) => void captureAnalytics(message));
+	context.pages().forEach(watchPage);
+	context.on("page", watchPage);
+	// 개발 빌드는 콘솔만 사용한다. 환경 설정이 달라도 테스트 이벤트가 GA로 전송되지 않게 막는다.
+	await context.route(/https:\/\/[^/]*google-analytics\.com\//, (route) =>
+		route.fulfill({ status: 204 }),
+	);
+	const { banner } = await showBanner(page);
+
+	await expect
+		.poll(() => events.filter((event) => event.name === "review_prompt_view"))
+		.toEqual([{ name: "review_prompt_view", params: { shown_count: 1 } }]);
+
+	const reviewTabPromise = context.waitForEvent("page");
+	await banner.getByRole("button", { name: OPEN_REVIEW_PATTERN }).click();
+	await reviewTabPromise;
+
+	await expect
+		.poll(() => events.filter((event) => event.name === "review_prompt_open"))
+		.toEqual([{ name: "review_prompt_open", params: { shown_count: 1 } }]);
 });

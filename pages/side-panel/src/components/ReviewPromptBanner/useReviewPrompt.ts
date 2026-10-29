@@ -1,5 +1,6 @@
 import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import { useSupabaseClientQuery } from "@web-memo/shared/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import {
 	ChromeSyncStorage,
 	STORAGE_KEYS,
@@ -50,6 +51,8 @@ export default function useReviewPrompt({
 	const [isVisible, setIsVisible] = useState(false);
 	const isVisibleRef = useRef(false);
 	const isCheckingRef = useRef(false);
+	// 이번 노출을 포함한 노출 횟수. 이벤트 속성으로만 쓰므로 저장소를 다시 읽지 않는다.
+	const shownCountRef = useRef(0);
 	// notifySaved를 저장 콜백에 넘기므로 값이 바뀌어도 함수 정체성은 유지한다.
 	const isAiTabOpenRef = useRef(isAiTabOpen);
 	isAiTabOpenRef.current = isAiTabOpen;
@@ -90,13 +93,19 @@ export default function useReviewPrompt({
 			}
 
 			// 노출 횟수를 먼저 남긴다. 기록하지 못하면 횟수 제한을 지킬 수 없으니 보여 주지 않는다.
+			const shownCount = state.shownCount + 1;
 			await ChromeSyncStorage.set(STORAGE_KEYS.reviewPrompt, {
 				...state,
-				shownCount: state.shownCount + 1,
+				shownCount,
 				lastShownAt: Date.now(),
 			} satisfies IFReviewPromptState);
+			shownCountRef.current = shownCount;
 			isVisibleRef.current = true;
 			setIsVisible(true);
+			analytics.trackEvent({
+				name: "review_prompt_view",
+				params: { shown_count: shownCount },
+			});
 		} catch (error) {
 			reportSidePanelError({
 				error,
@@ -113,15 +122,27 @@ export default function useReviewPrompt({
 	/** 이 패널에서만 배너를 닫는다. 저장소는 건드리지 않는다. */
 	const handleClose = () => {
 		hideBanner();
+		analytics.trackEvent({
+			name: "review_prompt_close",
+			params: { shown_count: shownCountRef.current },
+		});
 	};
 
 	const handleNeverShow = async () => {
 		hideBanner();
+		analytics.trackEvent({
+			name: "review_prompt_never",
+			params: { shown_count: shownCountRef.current },
+		});
 		await dismissForever("never_show");
 	};
 
 	const handleOpenReview = async () => {
 		hideBanner();
+		analytics.trackEvent({
+			name: "review_prompt_open",
+			params: { shown_count: shownCountRef.current },
+		});
 		void Tab.create({ url: EXTERNAL_LINK.chromeWebStoreReviews });
 		await dismissForever("open_review");
 	};

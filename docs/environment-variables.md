@@ -125,6 +125,7 @@
 | --- | --- | --- |
 | `__DEV__` | 확장 개발 모드 스위치. packages/vite-config가 넣는다 | `packages/vite-config/lib/env.mjs` |
 | `__FIREFOX__` | Firefox 빌드 스크립트가 넣는 분기 스위치 | `apps/chrome-extension/utils/plugins/make-manifest-plugin.ts` |
+| `CATEGORY_STREAMING_BASE_URL` | 카테고리 streaming 회귀 프로브의 로컬 production 서버 주소. 선택 값이며 외부 서비스에 등록하지 않는다 | `e2e/playwright.category-streaming.config.ts` |
 | `CI` | GitHub Actions가 자동으로 넣는다. Playwright의 test.only 금지·워커 수·서버 재사용 정책을 가른다 | `e2e/playwright.config.ts` |
 | `E2E_RUN_ID` | E2E 실행 ID. globalSetup이 한 번 정해 워커·teardown이 같은 값으로 자기 실행 데이터를 찾는다. 등록할 곳 없음 | `e2e/globalSetup.ts`, `e2e/tests/lib/namespace.ts` |
 | `GITHUB_REF_NAME` | GitHub Actions가 넣는다. Vercel 값이 없을 때의 폴백으로 읽는다 | `apps/web/src/app/api/version/route.ts` |
@@ -137,7 +138,7 @@
 | `NEXT_RUNTIME` | Next.js가 실행 런타임(nodejs, edge)을 넣는다 | `apps/web/src/instrumentation.ts` |
 | `NODE_ENV` | Next와 Vite 같은 툴체인이 자기 값으로 채운다. 환경 구분에는 쓰지 않고 BUILD_ENV를 쓴다 | `apps/chrome-extension/vite.config.mts` |
 | `PLAYWRIGHT_BASE_URL` | 독립 QA 서버의 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 localhost:3000을 본다. 확장 QA 빌드의 WEB_URL과 맞추며 외부 서비스에 등록하지 않는다 | `e2e/tests/fixtures/web.ts`, `e2e/tests/fixtures/extension.ts` |
-| `PLAYWRIGHT_NO_COPY_PROMPT` | 전용 성능 프로브 설정이 1로 지정해 Playwright 1.58.2의 실패 DOM snapshot 자동 저장을 차단한다. 외부 서비스에 등록하지 않는다 | `e2e/playwright.memo-performance.config.ts` |
+| `PLAYWRIGHT_NO_COPY_PROMPT` | 전용 성능 프로브 설정이 1로 지정해 Playwright 1.58.2의 실패 DOM snapshot 자동 저장을 차단한다. 외부 서비스에 등록하지 않는다 | `e2e/playwright.memo-performance.config.ts`, `e2e/playwright.category-streaming.config.ts` |
 | `PROBE_BASE_URL` | 운영 프로브의 대상 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 운영 도메인을 본다. 등록하지 않는다 | `e2e/playwright.probe.config.ts` |
 | `PW_CHROMIUM_ATTACH_TO_OTHER` | Playwright가 넣는 내부 플래그 | `e2e/tests/fixtures/extension.ts` |
 | `SUPABASE_ANON_KEY` | Supabase가 Edge Function에 주입한다. 테스트 발송에서 사용자 토큰을 auth.getUser로 검증할 때만 쓴다 | `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
@@ -147,6 +148,8 @@
 | `VERCEL_ENV` | Vercel이 배포 환경(production, preview, development)을 넣는다 | `apps/web/src/app/api/version/route.ts` |
 | `VERCEL_GIT_COMMIT_REF` | Vercel이 넣는다 | `apps/web/src/app/api/version/route.ts` |
 | `VERCEL_GIT_COMMIT_SHA` | Vercel이 넣는다 | `apps/web/src/app/api/version/route.ts` |
+| `WM_DIAG_CATEGORY_FIXTURE` | 서버 지연 주입 진단에서 사용하는 합성 category 응답 조건(success/empty). 프로브와 진단 서버에 같은 값을 지정하며 외부 서비스에 등록하지 않는다 | `e2e/probes/category-streaming.spec.ts`, `e2e/probes/category-streaming/serverFetch.mjs` |
+| `WM_DIAG_DELAY_CATEGORY_MS` | 로컬 진단 서버의 category 고정 지연 조건(3000/5000ms). 프로브가 동일 조건인지 검증하며 외부 서비스에 등록하지 않는다 | `e2e/probes/category-streaming.spec.ts`, `e2e/probes/category-streaming/serverFetch.mjs` |
 
 <!-- env-manifest:end -->
 

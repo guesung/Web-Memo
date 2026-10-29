@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>메모 목록 · 카테고리 대기 분리 시안</title><style>
+:root{
+		--background: 0 0% 99%;
+		--foreground: 0 0% 4%;
+		--card: 0 0% 96%;
+		--card-foreground: 0 0% 4%;
+		--popover: 0 0% 96%;
+		--popover-foreground: 0 0% 4%;
+		--primary: 221.2121 83.1933% 53.3333%;
+		--primary-foreground: 0 0% 99%;
+		--secondary: 0 0% 96%;
+		--secondary-foreground: 0 0% 4%;
+		--muted: 0 0% 96%;
+		--muted-foreground: 0 0% 39%;
+		--accent: 0 0% 93%;
+		--accent-foreground: 0 0% 4%;
+		--highlight-yellow: 51.54 97.5% 84.31%;
+		--highlight-yellow-foreground: 46 57.69% 10.2%;
+		--destructive: 0 72.2222% 50.5882%;
+		--destructive-foreground: 0 0% 99%;
+		--border: 0 0% 89%;
+		--input: 0 0% 85%;
+		--ring: 221.2121 83.1933% 53.3333%;
+		--chart-1: 221.2121 83.1933% 53.3333%;
+		--chart-2: 161.3793 93.5484% 30.3922%;
+		--chart-3: 20.5405 90.2439% 48.2353%;
+		--chart-4: 262.1229 83.2558% 57.8431%;
+		--chart-5: 333.3333 71.4286% 50.5882%;
+		--sidebar: 0 0% 97%;
+		--sidebar-foreground: 0 0% 39%;
+		--sidebar-primary: 221.2121 83.1933% 53.3333%;
+		--sidebar-primary-foreground: 0 0% 99%;
+		--sidebar-accent: 0 0% 93%;
+		--sidebar-accent-foreground: 0 0% 4%;
+		--sidebar-border: 0 0% 89%;
+		--sidebar-ring: 221.2121 83.1933% 53.3333%;
+		--font-sans: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+		--font-serif: Lora, Georgia, Cambria, serif;
+		--font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+		--radius: 0.625rem;
+		--shadow-2xs: 0 1px 2px 0 hsl(0 0% 0% / 0.04);
+		--shadow-xs: 0 1px 3px 0 hsl(0 0% 0% / 0.05), 0 1px 2px -1px hsl(0 0% 0% / 0.05);
+		--shadow-sm: 0 2px 4px -1px hsl(0 0% 0% / 0.06), 0 1px 2px -1px hsl(0 0% 0% / 0.04);
+		--shadow: 0 4px 8px -2px hsl(0 0% 0% / 0.07), 0 2px 4px -2px hsl(0 0% 0% / 0.04);
+		--shadow-md: 0 8px 16px -4px hsl(0 0% 0% / 0.08), 0 4px 6px -4px hsl(0 0% 0% / 0.04);
+		--shadow-lg: 0 16px 32px -8px hsl(0 0% 0% / 0.10), 0 6px 12px -6px hsl(0 0% 0% / 0.05);
+		--shadow-xl: 0 24px 48px -12px hsl(0 0% 0% / 0.13), 0 8px 16px -8px hsl(0 0% 0% / 0.06);
+		--shadow-2xl: 0 32px 64px -16px hsl(0 0% 0% / 0.18);
+		--tracking-normal: 0rem;
+		/* 모션 — 지속시간과 이징을 한 곳에서 정한다.
+		   지금까지 전환 40곳 중 이징이 지정된 건 5곳뿐이었고 나머지는 전부
+		   Tailwind 기본값이라, 어디를 만져도 "기본값처럼" 움직였다.
+		   테마와 무관한 값이라 .dark 에는 두지 않는다. */
+		--duration-fast: 150ms;
+		--duration-base: 220ms;
+		--duration-slow: 320ms;
+		/* 등장은 빠르게 나와 천천히 멎고(out), 퇴장은 반대로 붙었다 떨어진다(in) */
+		--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+		--ease-in: cubic-bezier(0.64, 0, 0.78, 0);
+		--ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);}.dark{
+		--background: 0 0% 8%;
+		--foreground: 0 0% 95%;
+		--card: 0 0% 11%;
+		--card-foreground: 0 0% 95%;
+		--popover: 0 0% 11%;
+		--popover-foreground: 0 0% 95%;
+		--primary: 217.2193 91.2195% 59.8039%;
+		--primary-foreground: 0 0% 8%;
+		--secondary: 0 0% 11%;
+		--secondary-foreground: 0 0% 95%;
+		--muted: 0 0% 11%;
+		--muted-foreground: 0 0% 53%;
+		--accent: 0 0% 17%;
+		--accent-foreground: 0 0% 95%;
+		--highlight-yellow: 49.2 54.35% 18.04%;
+		--highlight-yellow-foreground: 47.8 100% 88.43%;
+		--destructive: 0 84.2365% 60.1961%;
+		--destructive-foreground: 0 0% 95%;
+		--border: 0 0% 20%;
+		--input: 0 0% 26%;
+		--ring: 217.2193 91.2195% 59.8039%;
+		--chart-1: 217.2193 91.2195% 59.8039%;
+		--chart-2: 160.1183 84.0796% 39.4118%;
+		--chart-3: 24.5815 94.9791% 53.1373%;
+		--chart-4: 258.3117 89.5349% 66.2745%;
+		--chart-5: 330.3659 81.1881% 60.3922%;
+		--sidebar: 0 0% 10%;
+		--sidebar-foreground: 0 0% 53%;
+		--sidebar-primary: 217.2193 91.2195% 59.8039%;
+		--sidebar-primary-foreground: 0 0% 8%;
+		--sidebar-accent: 0 0% 17%;
+		--sidebar-accent-foreground: 0 0% 95%;
+		--sidebar-border: 0 0% 20%;
+		--sidebar-ring: 217.2193 91.2195% 59.8039%;
+		--shadow-2xs: 0 1px 2px 0 hsl(0 0% 0% / 0.20);
+		--shadow-xs: 0 1px 3px 0 hsl(0 0% 0% / 0.24), 0 1px 2px -1px hsl(0 0% 0% / 0.24);
+		--shadow-sm: 0 2px 4px -1px hsl(0 0% 0% / 0.28), 0 1px 2px -1px hsl(0 0% 0% / 0.20);
+		--shadow: 0 4px 8px -2px hsl(0 0% 0% / 0.32), 0 2px 4px -2px hsl(0 0% 0% / 0.22);
+		--shadow-md: 0 8px 16px -4px hsl(0 0% 0% / 0.36), 0 4px 6px -4px hsl(0 0% 0% / 0.24);
+		--shadow-lg: 0 16px 32px -8px hsl(0 0% 0% / 0.42), 0 6px 12px -6px hsl(0 0% 0% / 0.28);
+		--shadow-xl: 0 24px 48px -12px hsl(0 0% 0% / 0.50), 0 8px 16px -8px hsl(0 0% 0% / 0.32);
+		--shadow-2xl: 0 32px 64px -16px hsl(0 0% 0% / 0.62);}
+*{box-sizing:border-box}body{margin:0;background:hsl(var(--background));color:hsl(var(--foreground));font-family:var(--font-sans);font-size:14px}button{font:inherit;color:inherit;cursor:pointer}button:focus-visible{outline:2px solid hsl(var(--ring));outline-offset:3px}.page{max-width:1800px;margin:auto;padding:32px}h1{font-size:28px;line-height:1.3;margin:8px 0 12px;letter-spacing:-.04em}.eyebrow{font-size:12px;font-weight:600;color:hsl(var(--primary))}.intro{color:hsl(var(--muted-foreground));margin:0;line-height:1.7;max-width:900px}.toolbar{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:24px 0}.control{display:flex;gap:4px;padding:4px;border:1px solid hsl(var(--border));border-radius:10px;background:hsl(var(--card))}.control button,.theme{border:0;background:transparent;padding:8px 12px;border-radius:6px;font-size:13px}.control button[aria-pressed=true]{background:hsl(var(--primary));color:hsl(var(--primary-foreground))}.theme{margin-left:auto;border:1px solid hsl(var(--border))}.comparison{display:grid;grid-template-columns:1fr 1fr;gap:24px}.panel{min-width:0}.label{display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:16px;font-weight:600}.tag{font-size:11px;border-radius:4px;background:hsl(var(--muted));padding:4px 8px;color:hsl(var(--muted-foreground))}.after .tag{color:hsl(var(--primary));background:hsl(var(--primary)/.1)}.viewport{border:1px solid hsl(var(--border));border-radius:10px;overflow:hidden;background:hsl(var(--background));height:calc(820px * var(--scale));position:relative}.screen{width:1200px;height:820px;transform:scale(var(--scale));transform-origin:top left;position:relative;overflow:hidden;background:hsl(var(--background));font-size:14px}.app-header{height:48px;border-bottom:1px solid hsl(var(--border));display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:hsl(var(--background));position:relative;z-index:3}.logo{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}.brand-icon{width:24px;height:24px;display:grid;place-items:center;color:hsl(var(--primary))}.header-tools{display:flex;gap:16px;align-items:center;color:hsl(var(--muted-foreground))}.avatar{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:hsl(var(--accent));font-size:11px}.sidebar{position:absolute;top:48px;bottom:0;left:0;width:192px;background:hsl(var(--sidebar));border-right:1px solid hsl(var(--border));display:flex;flex-direction:column;z-index:2}.navrow{height:48px;padding:0 12px;display:flex;align-items:center;gap:12px;font-weight:500}.navrow.active{background:hsl(var(--primary)/.1);color:hsl(var(--primary));border-left:2px solid hsl(var(--primary));padding-left:10px}.iconchip{display:grid;place-items:center;width:32px;height:32px;border-radius:8px;background:hsl(var(--primary)/.1);color:hsl(var(--primary));flex-shrink:0}.iconchip svg{width:16px;height:16px}.divider{height:1px;background:hsl(var(--border));margin:0}.category{padding:0 8px}.cat-title{height:32px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;font-size:12px;font-weight:600;color:hsl(var(--muted-foreground))}.add{height:48px;display:flex;align-items:center;padding:0 12px;gap:12px;color:hsl(var(--muted-foreground))}.catrow{height:32px;display:flex;align-items:center;gap:12px;padding:0 12px;color:hsl(var(--muted-foreground))}.dot{height:8px;width:8px;border-radius:50%;background:hsl(var(--primary))}.count{margin-left:auto;background:hsl(var(--muted));border-radius:12px;padding:2px 8px;font-size:12px}.sidebar-footer{height:48px;border-top:1px solid hsl(var(--border));background:hsl(var(--sidebar-accent));display:grid;place-items:center;margin-top:auto}.main{margin-left:192px;padding:16px 24px}.search{display:flex;gap:12px;max-width:896px;margin:auto}.select,.input{height:48px;border:2px solid hsl(var(--border));border-radius:12px;background:hsl(var(--card));display:flex;align-items:center;padding:0 16px;gap:12px}.select{width:130px}.input{flex:1;color:hsl(var(--muted-foreground));font-size:16px}.input kbd{margin-left:auto;font-size:12px;border:1px solid hsl(var(--border));padding:2px 6px;border-radius:4px;background:hsl(var(--muted))}.memo-tools{height:72px;display:flex;align-items:center;justify-content:space-between;color:hsl(var(--muted-foreground))}.toggles{display:flex;align-items:center;gap:16px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{height:244px;border:1px solid hsl(var(--border));background:hsl(var(--card));padding:16px;border-radius:8px}.card h3{font-size:15px;margin:0 0 12px;font-weight:600}.card p{font-size:14px;line-height:1.7;color:hsl(var(--muted-foreground));margin:20px 0 36px}.card-footer{border-top:1px solid hsl(var(--border));padding-top:12px;display:flex;justify-content:space-between;color:hsl(var(--muted-foreground));font-size:12px}.sk{background:hsl(var(--foreground)/.05);height:12px;border-radius:6px;display:block}.sk.header{width:88px;height:16px}.sk.line{width:100%;margin-bottom:12px}.sk.medium{width:72%}.sk.short{width:44%}.skeleton-card .sk:first-child{height:20px;margin-bottom:16px}.skeleton-card .sk:nth-child(2){height:12px;width:60%;margin-bottom:24px}.skeleton-card .sk:last-child{margin-top:32px;height:16px;width:32%}.category.pending .cat-title .sk{height:12px;width:64px}.category.pending .add .sk{width:112px;height:16px}.category.pending .catrow .sk{width:96px;height:12px}.category.pending .catrow:nth-last-child(2) .sk{width:112px}.waiting{position:absolute;inset:0;display:grid;place-items:center;color:hsl(var(--muted-foreground))}.waiting span{font-size:14px;border:1px dashed hsl(var(--border));border-radius:8px;padding:16px 24px}.caption{margin:12px 0 0;color:hsl(var(--muted-foreground));font-size:13px;line-height:1.7;min-height:44px}.notes{display:grid;grid-template-columns:1fr 1fr;gap:24px;border-top:1px solid hsl(var(--border));margin-top:24px;padding-top:20px}.notes p{margin:0;color:hsl(var(--muted-foreground));font-size:13px;line-height:1.8}.notes strong{color:hsl(var(--foreground))}.mobile .screen{width:390px;height:844px}.mobile .viewport{height:calc(844px * var(--scale));max-width:390px;margin:auto}.mobile .sidebar{display:none}.mobile .main{margin-left:0;padding:16px}.mobile .grid{grid-template-columns:1fr;max-width:300px;margin:auto}.mobile .select{width:110px;padding:0 12px}.mobile .input{min-width:0;font-size:14px;padding:0 12px}.mobile .input kbd{display:none}.mobile .app-header{padding:0 16px}.mobile .toggles{gap:8px;font-size:12px}.mobile .sheet-open .sidebar{display:flex;width:288px;z-index:5;top:0}.overlay{display:none}.mobile .sheet-open .overlay{display:block;position:absolute;inset:0;background:hsl(0 0% 0%/.5);z-index:4}.mobile .sheet-open .sidebar-footer{min-height:48px}.menu-trigger{display:none}.mobile .menu-trigger{display:inline}.mobile .header-tools{gap:12px}.mobile .notes{grid-template-columns:1fr}.screen svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}@media(max-width:1000px){.page{padding:20px}.comparison{grid-template-columns:1fr}.notes{grid-template-columns:1fr}.theme{margin-left:0}}@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style></head><body><main class="page"><div class="eyebrow">WEB MEMO · DB-1256 · 시각 목업</div><h1>카테고리 대기가 화면 전체를 막지 않도록</h1><p class="intro">기본 메뉴와 검색창은 먼저 표시하고, 카테고리 영역만 자리표시자로 기다립니다. 아래 화면은 합성 데이터로 만든 구조 시안입니다. 현재 서비스 스크린샷이나 성능 개선 결과가 아닙니다.</p><div class="toolbar"><div class="control" id="states" aria-label="상태 선택"><button data-state="pending" aria-pressed="true">로딩 중</button><button data-state="ready" aria-pressed="false">정상 완료</button><button data-state="empty" aria-pressed="false">빈 카테고리</button><button data-state="error" aria-pressed="false">오류 결과</button></div><div class="control" id="views" aria-label="기기 선택"><button data-view="desktop" aria-pressed="true">데스크톱</button><button data-view="mobile" aria-pressed="false">모바일</button><button data-view="sheet" aria-pressed="false">모바일 메뉴</button></div><button class="theme" id="theme" aria-pressed="false">다크 모드</button></div><section class="comparison"><article class="panel before"><div class="label">변경 전 <span class="tag">카테고리 완료 후 진행</span></div><div class="viewport"><div class="screen" id="before"></div></div><p class="caption" id="before-caption"></p></article><article class="panel after"><div class="label">변경 후 <span class="tag">화면 준비와 조회를 겹쳐 진행</span></div><div class="viewport"><div class="screen" id="after"></div></div><p class="caption" id="after-caption"></p></article></section><section class="notes"><p><strong>바뀌는 상태</strong><br>카테고리를 기다리는 동안 메뉴·검색·목록 스켈레톤을 표시합니다. 카테고리 추가·선택은 데이터 준비 후 노출합니다. 카드가 카테고리 데이터를 기다리는 기존 동작은 유지합니다.</p><p><strong>검증 기준</strong><br>카테고리가 느려도 초기 화면과 메모 요청이 먼저 시작되는지, 서버·브라우저의 중복 카테고리 조회가 없는지 확인합니다. 정상 완료 후 배치·메뉴·편집 동작은 현재 화면과 같아야 합니다.</p></section></main><script>
+const paths={home:'<path d="m3 10 9-7 9 7v11h-6v-7H9v7H3z"/>',heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/>',calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/>',star:'<path d="m12 3 2.8 5.7L21 9.6 16.5 14l1.1 6.2-5.6-3-5.6 3L7.5 14 3 9.6l6.2-.9z"/>',book:'<path d="M12 5v16M3 3c4-1 7 0 9 2 2-2 5-3 9-2v16c-4-1-7 0-9 2-2-2-5-3-9-2Z"/>',library:'<path d="M4 3v18M9 3v18m4-18 7 17M3 20h18"/>',highlight:'<path d="m9 11 7-8 5 5-8 7M7 13l4 4-4 4H3v-4z"/>',bookmark:'<path d="M5 3h14v18l-7-4-7 4z"/>',trash:'<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/>',settings:'<circle cx="12" cy="12" r="3"/><path d="m9 3-1 3-3 1 1 3-2 2 2 2-1 3 3 1 1 3h6l1-3 3-1-1-3 2-2-2-2 1-3-3-1-1-3Z"/>',search:'<circle cx="10" cy="10" r="7"/><path d="m15 15 6 6"/>',menu:'<path d="M3 6h18M3 12h18M3 18h18"/>',grid:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>'};
+const icon=n=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+paths[n]+'</svg>';
+const nav=[['home','전체 메모'],['heart','위시리스트'],['calendar','읽을 계획'],['star','중요 메모'],['book','읽는 중'],['library','블로그 정주행'],['highlight','하이라이트'],['bookmark','즐겨찾기']];
+let state='pending',view='desktop';
+function shell(){const pending=state==='pending';return '<header class="app-header"><div class="logo"><span class="menu-trigger">'+icon('menu')+'</span><span class="brand-icon">'+icon('book')+'</span>Web Memo</div><div class="header-tools"><span>한국어</span><span>☼</span><span class="avatar">예시</span></div></header><div class="overlay"></div><aside class="sidebar"><nav>'+nav.map(([i,t],n)=>'<div class="navrow '+(n===0?'active':'')+'"><span class="iconchip">'+icon(i)+'</span>'+t+'</div>').join('')+'</nav><div class="divider"></div><div class="navrow"><span class="iconchip">'+icon('trash')+'</span>휴지통</div><div class="divider"></div><div class="category '+(pending?'pending':'')+'" '+(pending?'aria-busy="true"':'')+'>'+category()+'</div><div class="sidebar-footer">'+icon('settings')+'</div></aside><div class="main"><div class="search"><div class="select">전체　⌄</div><div class="input">'+icon('search')+'메모 찾기<kbd>/</kbd></div></div><div class="memo-tools"><span>'+(pending?'<span class="sk header"></span>':'전체 메모 3개')+'</span><div class="toggles"><span>내용 줄이기 ◉</span>'+icon('grid')+icon('calendar')+'</div></div><div class="grid">'+cards(pending)+'</div></div>';}
+function category(){if(state==='pending')return '<div class="cat-title"><span class="sk" aria-hidden="true"></span></div><div class="add"><span class="sk" aria-hidden="true"></span></div>'+Array.from({length:3},()=>'<div class="catrow"><span class="sk" aria-hidden="true"></span></div>').join('');return '<div class="cat-title">카테고리'+icon('settings')+'</div><div class="add">＋　카테고리 추가</div>'+(state==='ready'?['개발','읽을거리','아이디어'].map((t,i)=>'<div class="catrow"><span class="dot"></span>'+t+'<span class="count">'+[2,1,0][i]+'</span></div>').join(''):'');}
+function cards(pending){if(pending)return Array.from({length:12},()=>'<div class="card skeleton-card" aria-hidden="true"><span class="sk"></span><span class="sk"></span><span class="sk line"></span><span class="sk line medium"></span><span class="sk line"></span><span class="sk short"></span></div>').join('');return ['다시 찾아볼 개발 메모','읽고 싶은 글 모음','브라우징 중 떠오른 생각'].map((t,i)=>'<article class="card"><h3>'+t+'</h3><span style="color:hsl(var(--muted-foreground));font-size:12px">example.com · 시안용 합성 데이터</span><p>목록과 카테고리 데이터가 준비되면<br>기존 메모 카드가 표시됩니다.</p><div class="card-footer"><span>'+['개발','읽을거리','미분류'][i]+'</span><span>예시 날짜</span></div></article>').join('');}
+function render(){document.querySelector('.comparison').classList.toggle('mobile',view!=='desktop');for(const name of ['before','after']){const el=document.getElementById(name);el.classList.toggle('sheet-open',view==='sheet');el.innerHTML=name==='before'&&state==='pending'?'<div class="waiting"><span>초기 HTML 응답 대기 · 설명용 표시</span></div>':shell();}document.getElementById('before-caption').textContent=state==='pending'?'카테고리의 서버 조회가 끝나기 전에는 초기 HTML 응답이 진행되지 않는 현재 구조를 표현했습니다.':'준비 완료 후의 화면 구조는 변경하지 않습니다. 카테고리명과 메모는 시안용 예시입니다.';document.getElementById('after-caption').textContent=state==='pending'?'기본 메뉴·검색창·목록 스켈레톤을 먼저 표시합니다. 카테고리 자리표시자는 클릭할 수 없습니다.':state==='empty'?'정상 빈 결과: 기존 카테고리 제목·설정·추가 버튼만 표시합니다.':state==='error'?'Supabase가 오류를 값으로 반환하는 기존 상태를 표현했습니다. 새 오류 문구를 추가하지 않습니다. 실제 reject는 기존 오류 경계로 전달합니다.':'서버 조회 결과가 준비되면 같은 위치에 기존 카테고리와 카드가 표시됩니다.';resize();}
+function resize(){document.querySelectorAll('.panel').forEach(p=>{const w=view==='desktop'?1200:390;p.style.setProperty('--scale',Math.min(1,(p.querySelector('.viewport').clientWidth)/w));});}
+document.querySelectorAll('[data-state]').forEach(b=>b.onclick=()=>{state=b.dataset.state;document.querySelectorAll('[data-state]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));render();});document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{view=b.dataset.view;document.querySelectorAll('[data-view]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));render();});document.getElementById('theme').onclick=()=>{const dark=document.documentElement.classList.toggle('dark');document.getElementById('theme').textContent=dark?'라이트 모드':'다크 모드';document.getElementById('theme').setAttribute('aria-pressed',String(dark));};window.addEventListener('resize',resize);render();
+</script></body></html>

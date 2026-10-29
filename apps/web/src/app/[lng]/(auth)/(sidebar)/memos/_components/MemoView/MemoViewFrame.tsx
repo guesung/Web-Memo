@@ -123,7 +123,6 @@ const MemoViewFrame = ({
 			{dialogMemoId && (
 				<Suspense fallback={<Loading />}>
 					<MemoDialog
-						key={dialogMemoId}
 						lng={lng}
 						memoId={dialogMemoId}
 						initialMemo={memos.find((memo) => memo.id === dialogMemoId)}

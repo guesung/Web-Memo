@@ -16,6 +16,7 @@ import {
  * 카드를 펼치거나 툴바 토글을 누른 뒤 scrollY가 그대로인지 본다.
  */
 test.describe("메모 카드 펼치기 (Mocked)", () => {
+	let store: MockSupabaseStore;
 	const LONG_MEMO = Array.from(
 		{ length: 12 },
 		(_, line) => `긴 본문 ${line + 1}번째 줄`,
@@ -23,7 +24,7 @@ test.describe("메모 카드 펼치기 (Mocked)", () => {
 
 	test.beforeEach(async ({ page }) => {
 		resetMockIds();
-		const store = new MockSupabaseStore();
+		store = new MockSupabaseStore();
 		store.setSetting(createMockSetting({ truncate_memo_content: true }));
 		for (let index = 0; index < 20; index++) {
 			store.addMemo(
@@ -94,5 +95,72 @@ test.describe("메모 카드 펼치기 (Mocked)", () => {
 		).toHaveAttribute("aria-pressed", "false");
 		await expect(page.locator(".memo-item .line-clamp-3")).toHaveCount(0);
 		expect(await readScrollYAfterLayout(page)).toBe(0);
+	});
+
+	test("화면보다 길게 펼친 카드도 상세로 열고 닫을 때 이어진다", async ({
+		page,
+	}) => {
+		const longText = Array.from(
+			{ length: 90 },
+			(_, index) => `긴 줄 ${index}`,
+		).join("\n");
+		store.addMemo(createMockMemo({ title: "전환할 긴 메모", memo: longText }));
+		await page.reload();
+		await page.emulateMedia({ reducedMotion: "no-preference" });
+		await page.evaluate(() => {
+			const originalAnimate = Element.prototype.animate;
+			const motionWindow = window as typeof window & {
+				memoMotionFrames: Keyframe[][];
+			};
+			motionWindow.memoMotionFrames = [];
+			Element.prototype.animate = function (...args) {
+				if (this.getAttribute("role") === "dialog" && Array.isArray(args[0])) {
+					motionWindow.memoMotionFrames.push(args[0]);
+				}
+				return originalAnimate.apply(this, args);
+			};
+		});
+		const card = page.locator(".memo-item", { hasText: "전환할 긴 메모" });
+		await card.getByRole("button", { name: "Show more" }).click();
+		await page.evaluate(() => window.scrollBy(0, 180));
+		const cardRect = await card.boundingBox();
+		expect(cardRect?.height).toBeGreaterThan(800);
+		expect(cardRect?.y).toBeLessThan(0);
+		await card.click({ position: { x: 120, y: 200 } });
+		const dialog = page.getByRole("dialog");
+		await expect(dialog).toHaveAttribute("data-memo-motion", "card");
+		await expect
+			.poll(() =>
+				page.evaluate(
+					() =>
+						(window as typeof window & { memoMotionFrames: Keyframe[][] })
+							.memoMotionFrames.length,
+				),
+			)
+			.toBeGreaterThan(0);
+		const dialogRect = await dialog.boundingBox();
+		expect(cardRect?.height).toBeGreaterThan(dialogRect?.height ?? 0);
+		const openAnimationCount = await page.evaluate(
+			() =>
+				(window as typeof window & { memoMotionFrames: Keyframe[][] })
+					.memoMotionFrames.length,
+		);
+		await dialog.getByTestId("memo-close-button").click();
+		await expect
+			.poll(() =>
+				page.evaluate(
+					() =>
+						(window as typeof window & { memoMotionFrames: Keyframe[][] })
+							.memoMotionFrames.length,
+				),
+			)
+			.toBeGreaterThan(openAnimationCount);
+		const closeFrames = await page.evaluate(() =>
+			(
+				window as typeof window & { memoMotionFrames: Keyframe[][] }
+			).memoMotionFrames.at(-1),
+		);
+		expect(closeFrames?.[0].translate).toBe("0px 0px");
+		await expect(dialog).toBeHidden();
 	});
 });

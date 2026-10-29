@@ -459,6 +459,48 @@
   note: "운영 프로브의 대상 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 운영 도메인을 본다. 등록하지 않는다"
   required: false
 
+- name: MEMO_PERF_REUSE_PREVIEW
+  kind: platform
+  consumers: [e2e/playwright.memo-performance.config.ts]
+  note: "로컬 성능 프로브가 이미 실행 중인 production preview를 재사용할 때 셸에서 1로 넣는 선택 값. 외부 서비스에 등록하지 않는다"
+  required: false
+
+- name: MEMO_PERF_SCENARIOS
+  kind: platform
+  consumers: [e2e/probes/memo-performance.spec.ts]
+  note: "로컬 성능 프로브에서 실행할 고정 시나리오를 셸의 쉼표 목록으로 선택한다. 없으면 네 경로 smoke만 실행하며 외부 서비스에 등록하지 않는다"
+  required: false
+
+- name: MEMO_PERF_REPETITIONS
+  kind: platform
+  consumers: [e2e/probes/memo-performance.spec.ts]
+  note: "로컬 성능 프로브의 조건별 반복 횟수. 셸에서 1~100을 선택하며 기본 1회, 외부 서비스에 등록하지 않는다"
+  required: false
+
+- name: CATEGORY_STREAMING_BASE_URL
+  kind: platform
+  consumers: [e2e/playwright.category-streaming.config.ts]
+  note: "카테고리 streaming 회귀 프로브의 로컬 production 서버 주소. 선택 값이며 외부 서비스에 등록하지 않는다"
+  required: false
+
+- name: WM_DIAG_CATEGORY_FIXTURE
+  kind: platform
+  consumers: [e2e/probes/category-streaming.spec.ts, e2e/probes/category-streaming/serverFetch.mjs]
+  note: "서버 지연 주입 진단에서 사용하는 합성 category 응답 조건(success/empty). 프로브와 진단 서버에 같은 값을 지정하며 외부 서비스에 등록하지 않는다"
+  required: false
+
+- name: WM_DIAG_DELAY_CATEGORY_MS
+  kind: platform
+  consumers: [e2e/probes/category-streaming.spec.ts, e2e/probes/category-streaming/serverFetch.mjs]
+  note: "로컬 진단 서버의 category 고정 지연 조건(3000/5000ms). 프로브가 동일 조건인지 검증하며 외부 서비스에 등록하지 않는다"
+  required: false
+
+- name: PLAYWRIGHT_NO_COPY_PROMPT
+  kind: platform
+  consumers: [e2e/playwright.memo-performance.config.ts, e2e/playwright.category-streaming.config.ts]
+  note: "전용 성능 프로브 설정이 1로 지정해 Playwright 1.58.2의 실패 DOM snapshot 자동 저장을 차단한다. 외부 서비스에 등록하지 않는다"
+  required: false
+
 - name: PLAYWRIGHT_BASE_URL
   kind: platform
   consumers: [e2e/tests/fixtures/web.ts, e2e/tests/fixtures/extension.ts]

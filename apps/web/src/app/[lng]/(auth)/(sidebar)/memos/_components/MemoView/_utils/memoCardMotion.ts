@@ -16,21 +16,14 @@ let pendingCardOpen: PendingCardOpen | undefined;
 export const MEMO_CARD_MOTION_MS = 280;
 
 export function captureMemoCardOpen(memoId: number, card: HTMLElement) {
-	const { left, top, width, height } = card.getBoundingClientRect();
-	if (
-		width <= 0 ||
-		height <= 0 ||
-		left >= window.innerWidth ||
-		top >= window.innerHeight ||
-		left + width <= 0 ||
-		top + height <= 0
-	) {
+	const rect = visibleCardPortion(card.getBoundingClientRect());
+	if (!rect) {
 		pendingCardOpen = undefined;
 		return;
 	}
 	pendingCardOpen = {
 		memoId,
-		rect: { left, top, width, height },
+		rect,
 		createdAt: performance.now(),
 	};
 }
@@ -54,24 +47,23 @@ export function visibleMemoCardRect(memoId: number): CardRect | undefined {
 		`[data-memo-card-id="${memoId}"]`,
 	);
 	if (!card) return undefined;
-	const { left, top, width, height } = card.getBoundingClientRect();
-	if (
-		width <= 0 ||
-		height <= 0 ||
-		left >= window.innerWidth ||
-		top >= window.innerHeight ||
-		left + width <= 0 ||
-		top + height <= 0
-	) {
-		return undefined;
-	}
+	return visibleCardPortion(card.getBoundingClientRect());
+}
+
+function visibleCardPortion(card: CardRect): CardRect | undefined {
+	const left = Math.max(0, card.left);
+	const top = Math.max(0, card.top);
+	const width = Math.min(window.innerWidth, card.left + card.width) - left;
+	const height = Math.min(window.innerHeight, card.top + card.height) - top;
+	if (width <= 0 || height <= 0) return undefined;
 	return { left, top, width, height };
 }
 
 export function cardMotionFrames(dialog: DOMRect, card: CardRect) {
-	const horizontalInset = (dialog.width - card.width) / 2;
-	const verticalInset = (dialog.height - card.height) / 2;
-	if (horizontalInset < 0 || verticalInset < 0) return undefined;
+	const visibleWidth = Math.min(card.width, dialog.width);
+	const visibleHeight = Math.min(card.height, dialog.height);
+	const horizontalInset = (dialog.width - visibleWidth) / 2;
+	const verticalInset = (dialog.height - visibleHeight) / 2;
 	const cardCenterX = card.left + card.width / 2;
 	const cardCenterY = card.top + card.height / 2;
 	const dialogCenterX = dialog.left + dialog.width / 2;

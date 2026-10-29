@@ -24,6 +24,10 @@ const FUNNEL_LABELS = {
 	memo_write: "메모 작성",
 };
 
+/** 기능별 섹션 맨 위에 고정하는 신규 메모 작성자 줄. */
+const NEW_MEMO_EVENT = "memo_first_write";
+const NEW_MEMO_LABEL = "신규 메모 작성";
+
 /**
  * 기능별 섹션에 펼칠 이벤트 수.
  *
@@ -98,21 +102,48 @@ const buildActiveUsersBlock = ({ activeUsers, start, end }) => {
  * 수)로 보여주고 있어, 남겨 두면 한 메시지에 같은 줄이 두 번 나옵니다. 빠진 게 아니라
  * 옮겨간 것입니다 — 데일리가 CORE_EVENTS 에서 퍼널 2종을 뺀 것과 같은 이유입니다.
  * 다만 퍼널 쪽 숫자는 순서 강제라 여기의 이벤트별 사용자 수와 같지 않습니다.
+ *
+ * 신규 메모 작성(memo_first_write)은 순위와 상관없이 맨 위에 고정합니다. 매주 같은
+ * 자리에서 비교되어야 해서, 0명인 주에도 줄을 남깁니다(features 가 0명을 걸러 전주
+ * 값을 알 수 없으므로 수만 적습니다). 웹 블로그 화면·오프라인 대기열에서 만든 새
+ * 메모는 이 이벤트를 보내지 않아 실제보다 적게 나옵니다.
  */
 const buildFeatureBlock = (features) => {
-	const rest = features.filter(
-		({ eventName }) => !FUNNEL_EVENTS.includes(eventName),
-	);
-	const lines = rest
-		.slice(0, FEATURE_PREVIEW)
-		.map(({ eventName, users, previousUsers }) => {
-			const change = formatChange(users, previousUsers);
-			const detail = [`전주 ${formatCount(previousUsers)}명`, change]
-				.filter(Boolean)
-				.join(" · ");
+	const describeFeature = ({ label, users, previousUsers }) => {
+		const change = formatChange(users, previousUsers);
+		const detail = [`전주 ${formatCount(previousUsers)}명`, change]
+			.filter(Boolean)
+			.join(" · ");
 
-			return `\`${eventName}\`  *${formatCount(users)}명*  (${detail})`;
-		});
+		return `${label}  *${formatCount(users)}명*  (${detail})`;
+	};
+	// 새 메모 하나에 한 번 발화하므로 건수가 곧 새로 만든 메모 수입니다. 증감률은 사람 수 기준입니다.
+	const describeNewMemo = ({ users, previousUsers, count, previousCount }) => {
+		const change = formatChange(users, previousUsers);
+		const detail = [
+			`전주 ${formatCount(previousUsers)}명 · ${formatCount(previousCount)}건`,
+			change,
+		]
+			.filter(Boolean)
+			.join(" · ");
+
+		return `${NEW_MEMO_LABEL}  *${formatCount(users)}명 · ${formatCount(count)}건*  (${detail})`;
+	};
+	const newMemo = features.find(
+		({ eventName }) => eventName === NEW_MEMO_EVENT,
+	);
+	const rest = features.filter(
+		({ eventName }) =>
+			!FUNNEL_EVENTS.includes(eventName) && eventName !== NEW_MEMO_EVENT,
+	);
+	const lines = [
+		newMemo ? describeNewMemo(newMemo) : `${NEW_MEMO_LABEL}  *0명 · 0건*`,
+		...rest
+			.slice(0, FEATURE_PREVIEW)
+			.map((feature) =>
+				describeFeature({ label: `\`${feature.eventName}\``, ...feature }),
+			),
+	];
 	const hidden = rest.length - FEATURE_PREVIEW;
 
 	if (hidden > 0) {

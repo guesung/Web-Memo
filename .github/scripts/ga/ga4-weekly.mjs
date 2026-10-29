@@ -325,6 +325,15 @@ const readUserTotals = (report) =>
 		]),
 	);
 
+/** 이벤트 이름 → 발생 건수. readEventUsers 의 두 번째 지표(eventCount)입니다. */
+const readCountTotals = (report) =>
+	Object.fromEntries(
+		readRows(report).map(({ dimensions, metrics }) => [
+			dimensions[0],
+			metrics[1] ?? 0,
+		]),
+	);
+
 /** 지표가 한 칸뿐인 응답에서 그 값만 꺼냅니다. 행이 없으면 0 입니다. */
 const readSingleMetric = (report) => readRows(report)[0]?.metrics[0] ?? 0;
 
@@ -546,7 +555,8 @@ export const fetchWeeklyGa4Report = async ({
 			body: {
 				dateRanges: [{ startDate, endDate }],
 				dimensions: [{ name: "eventName" }],
-				metrics: [{ name: "totalUsers" }],
+				// 건수는 신규 메모 작성 줄(새 메모 수)에서만 씁니다. 사람 수가 기준이라 첫 지표로 둡니다.
+				metrics: [{ name: "totalUsers" }, { name: "eventCount" }],
 				dimensionFilter: PRODUCTION_EVENT_FILTER,
 				limit: REPORT_ROW_LIMIT,
 			},
@@ -597,6 +607,8 @@ export const fetchWeeklyGa4Report = async ({
 
 	const userTotals = readUserTotals(current);
 	const previousTotals = readUserTotals(previous);
+	const countTotals = readCountTotals(current);
+	const previousCountTotals = readCountTotals(previous);
 	const activeUsers = readSingleMetric(currentUsers);
 	const observedBefore = new Set(
 		readRows(priorObservation).map(({ dimensions }) => dimensions[0]),
@@ -618,6 +630,8 @@ export const fetchWeeklyGa4Report = async ({
 				eventName,
 				users: userTotals[eventName] ?? 0,
 				previousUsers: previousTotals[eventName] ?? 0,
+				count: countTotals[eventName] ?? 0,
+				previousCount: previousCountTotals[eventName] ?? 0,
 			}))
 			.filter(({ users }) => users > 0)
 			.sort((a, b) => b.users - a.users),

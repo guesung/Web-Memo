@@ -23,3 +23,10 @@ export const getSentryAlertSlackChannel = (): string =>
  */
 export const getSentryApiToken = (): string | undefined =>
 	readServerEnv("SENTRY_API_TOKEN");
+
+/**
+ * AI 분석 워크플로 디스패치 킬 스위치. 정확히 "true"일 때만 켜집니다.
+ * 기본은 꺼짐이며, 끄면 Slack 알림은 그대로 가고 디스패치만 멈춥니다.
+ */
+export const isSentryAiTriageEnabled = (): boolean =>
+	readServerEnv("SENTRY_AI_TRIAGE_ENABLED") === "true";

@@ -1,4 +1,5 @@
 import {
+	dispatchSentryTriage,
 	extractEventContext,
 	fetchSentryRecommendedEvent,
 	formatSentryAlertText,
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
 	return NextResponse.json({ ok: true });
 }
 
-/** 대표 이벤트를 조회해 Slack으로 보냅니다. */
+/** 대표 이벤트를 조회해 Slack으로 보내고, 켜져 있으면 AI 분석 워크플로를 실행합니다. */
 const relayToSlack = async (payload: IFSentryIssueWebhookPayload) => {
 	const issue = payload.data?.issue;
 	const event = issue?.id ? await fetchSentryRecommendedEvent(issue.id) : null;
@@ -61,8 +62,10 @@ const relayToSlack = async (payload: IFSentryIssueWebhookPayload) => {
 		? extractEventContext({ event, projectSlug: issue?.project?.slug })
 		: null;
 
+	let slack: { channel: string; ts: string };
+
 	try {
-		await postSlackMessage({
+		slack = await postSlackMessage({
 			channel: getSentryAlertSlackChannel(),
 			text: formatSentryAlertText(payload, eventContext),
 		});
@@ -71,4 +74,6 @@ const relayToSlack = async (payload: IFSentryIssueWebhookPayload) => {
 
 		return;
 	}
+
+	await dispatchSentryTriage({ payload, slack });
 };

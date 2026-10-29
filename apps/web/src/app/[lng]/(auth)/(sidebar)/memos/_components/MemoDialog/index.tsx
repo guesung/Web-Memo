@@ -29,6 +29,13 @@ import MemoCardFooter from "../MemoCardFooter";
 import CategoryPopover from "../MemoCardFooter/CategoryPopover";
 import useMemoCategoryPopover from "../MemoCardFooter/useMemoCategoryPopover";
 import MemoCardHeader from "../MemoCardHeader";
+import {
+	cardMotionFrames,
+	clearMemoCardOpen,
+	MEMO_CARD_MOTION_MS,
+	peekMemoCardOpen,
+	visibleMemoCardRect,
+} from "../MemoView/_utils/memoCardMotion";
 import { MemoSourceQuote } from "../MemoView/MemoSourceQuote";
 import { MemoDialogHighlights } from "./MemoDialogHighlights";
 import SaveStatusIndicator from "./SaveStatusIndicator";
@@ -157,6 +164,10 @@ function MemoDialogContent({
 	const memoRef = useRef<HTMLTextAreaElement | null>(null);
 	const impressionRef = useRef<HTMLTextAreaElement | null>(null);
 	const actionItemRef = useRef<HTMLTextAreaElement | null>(null);
+	const dialogRef = useRef<HTMLDivElement | null>(null);
+	const closingRef = useRef(false);
+	const [openingCardRect] = useState(() => peekMemoCardOpen(memo.id));
+	const canAnimateCard = Boolean(openingCardRect);
 	const title = watch("title");
 	const memoField = register("memo", { onChange: () => markEdited("memo") });
 	const impressionField = register("impression", {
@@ -180,6 +191,28 @@ function MemoDialogContent({
 		}
 	});
 
+	useLayoutEffect(() => {
+		clearMemoCardOpen(memo.id);
+		const dialog = dialogRef.current;
+		if (
+			!dialog ||
+			!openingCardRect ||
+			!visibleMemoCardRect(memo.id) ||
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches
+		)
+			return;
+		const frames = cardMotionFrames(
+			dialog.getBoundingClientRect(),
+			openingCardRect,
+		);
+		if (!frames) return;
+		const animation = dialog.animate(frames, {
+			duration: MEMO_CARD_MOTION_MS,
+			easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+		});
+		return () => animation.cancel();
+	}, [memo.id, openingCardRect]);
+
 	useLayoutEffect(
 		function focusOpenedField() {
 			if (!focusField) return;
@@ -196,8 +229,31 @@ function MemoDialogContent({
 	}
 
 	function closeAndSave() {
+		if (closingRef.current) return;
+		closingRef.current = true;
 		flushDebounce();
-		onClose();
+		const dialog = dialogRef.current;
+		const card = canAnimateCard && visibleMemoCardRect(memo.id);
+		if (
+			!dialog ||
+			!card ||
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches
+		) {
+			onClose();
+			return;
+		}
+		const frames = cardMotionFrames(dialog.getBoundingClientRect(), card);
+		if (!frames) {
+			onClose();
+			return;
+		}
+		dialog
+			.animate([...frames].reverse(), {
+				duration: MEMO_CARD_MOTION_MS,
+				easing: "cubic-bezier(0.4, 0, 1, 1)",
+				fill: "forwards",
+			})
+			.finished.then(onClose, onClose);
 	}
 
 	function closeAfterDelete() {
@@ -228,9 +284,14 @@ function MemoDialogContent({
 	return (
 		<Dialog open>
 			<DialogContent
-				className="max-h-[90dvh] max-w-[720px] gap-0 overflow-y-auto bg-card p-0 sm:rounded-xl"
+				ref={dialogRef}
+				className={cn(
+					"max-h-[90dvh] max-w-[720px] gap-0 overflow-y-auto bg-card p-0 sm:rounded-xl",
+					canAnimateCard && "!animate-none",
+				)}
 				onClose={closeAndSave}
 				aria-describedby={undefined}
+				data-memo-motion={canAnimateCard ? "card" : "fallback"}
 			>
 				<DialogTitle className="sr-only">{title}</DialogTitle>
 				<MemoCardHeader

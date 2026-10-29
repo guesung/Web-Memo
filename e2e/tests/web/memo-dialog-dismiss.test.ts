@@ -101,6 +101,63 @@ test.describe("MemoDialog dismiss 동작 (Mocked)", () => {
 		await expect(dialog).toBeHidden();
 	});
 
+	test("카드에서 열면 카드 위치에서 상세가 펼쳐지고 닫을 때 되돌아간다", async ({
+		page,
+	}) => {
+		await page.emulateMedia({ reducedMotion: "no-preference" });
+		await page.evaluate(() => {
+			const originalAnimate = Element.prototype.animate;
+			const motionWindow = window as typeof window & {
+				memoMotionFrames: Keyframe[][];
+			};
+			motionWindow.memoMotionFrames = [];
+			Element.prototype.animate = function (...args) {
+				if (this.getAttribute("role") === "dialog" && Array.isArray(args[0])) {
+					motionWindow.memoMotionFrames.push(args[0]);
+				}
+				return originalAnimate.apply(this, args);
+			};
+		});
+		const memoItem = page.locator(".memo-item", { hasText: memoText });
+		await memoItem.click();
+
+		const dialog = page.getByRole("dialog");
+		await expect(dialog).toHaveAttribute("data-memo-motion", "card");
+		const openFrames = await page.evaluate(
+			() =>
+				(window as typeof window & { memoMotionFrames: Keyframe[][] })
+					.memoMotionFrames[0],
+		);
+		expect(String(openFrames[0].clipPath).startsWith("inset(")).toBe(true);
+		expect(String(openFrames[0].translate)).not.toBe("0px 0px");
+
+		await dialog.getByTestId("memo-close-button").click();
+		const closeFrames = await page.evaluate(() =>
+			(
+				window as typeof window & { memoMotionFrames: Keyframe[][] }
+			).memoMotionFrames.at(-1),
+		);
+		expect(closeFrames?.[0].translate).toBe("0px 0px");
+		expect(closeFrames?.[1].translate).toBe(openFrames[0].translate);
+		await expect(dialog).toBeHidden();
+		await expect(page).not.toHaveURL(/\?id=/);
+	});
+
+	test("모션 줄이기 설정에서는 카드와 상세 사이 전환을 즉시 마친다", async ({
+		page,
+	}) => {
+		await page.emulateMedia({ reducedMotion: "reduce" });
+		await page.locator(".memo-item", { hasText: memoText }).click();
+		const dialog = page.getByRole("dialog");
+		await expect(dialog).toHaveAttribute("data-memo-motion", "card");
+		const animationCount = await dialog.evaluate(
+			(element) => element.getAnimations().length,
+		);
+		expect(animationCount).toBe(0);
+		await dialog.getByTestId("memo-close-button").click();
+		await expect(dialog).toBeHidden();
+	});
+
 	test("Escape를 누르면, Dialog가 정상적으로 닫힌다.", async ({ page }) => {
 		const memoItem = page.locator(".memo-item", { hasText: memoText });
 		await memoItem.click();

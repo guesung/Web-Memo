@@ -13,7 +13,10 @@ import {
 	useSupabaseUserQuery,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
-import { analytics } from "@web-memo/shared/modules/analytics";
+import {
+	analytics,
+	type TCategoryChangeSource,
+} from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import type { Database, IFPastMemoDuplicate } from "@web-memo/shared/types";
 import { parsePlanDateKey } from "@web-memo/shared/utils";
@@ -34,7 +37,13 @@ import {
 	PlusIcon,
 	StarIcon,
 } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import {
 	CategoryAddChip,
@@ -73,6 +82,19 @@ const MemoFormContent = ({
 	const impressionRef = useRef<HTMLTextAreaElement | null>(null);
 	const actionItemRef = useRef<HTMLTextAreaElement | null>(null);
 	const [isSwitching, setIsSwitching] = useState(false);
+	const [animateCategory, setAnimateCategory] = useState(false);
+	const [categoryMotionSequence, setCategoryMotionSequence] = useState(0);
+	const [categoryWidth, setCategoryWidth] = useState<number | undefined>();
+	const categoryResizeObserverRef = useRef<ResizeObserver | null>(null);
+	const setCategoryVisual = useCallback((visual: HTMLDivElement | null) => {
+		categoryResizeObserverRef.current?.disconnect();
+		if (!visual) return;
+		const updateWidth = () => setCategoryWidth(visual.offsetWidth);
+		const observer = new ResizeObserver(updateWidth);
+		observer.observe(visual);
+		categoryResizeObserverRef.current = observer;
+		updateWidth();
+	}, []);
 	const isOffline = !useOnlineStatus();
 	const queryClient = useQueryClient();
 	const { register, watch, getValues } = useFormContext<MemoInput>();
@@ -225,9 +247,22 @@ const MemoFormContent = ({
 		isCategoryCreating,
 	} = useMemoCategory({
 		textareaRef,
-		onCategoryChange: updateCategory,
+		onCategoryChange: (
+			categoryId: number | null,
+			source: TCategoryChangeSource,
+		) => {
+			setAnimateCategory(true);
+			setCategoryMotionSequence((sequence) => sequence + 1);
+			updateCategory(categoryId, source);
+		},
 		isMemoLocked,
 	});
+
+	useEffect(() => {
+		if (categoryMotionSequence === 0) return;
+		const timeout = setTimeout(() => setAnimateCategory(false), 180);
+		return () => clearTimeout(timeout);
+	}, [categoryMotionSequence]);
 
 	const {
 		isLoading: isSuggestingCategory,
@@ -612,20 +647,38 @@ const MemoFormContent = ({
 							/>
 						)}
 					</div>
-					<div className="flex items-center gap-2">
+					<div
+						data-testid="category-slot"
+						className={cn(
+							"flex shrink-0 items-center justify-end",
+							animateCategory &&
+								"transition-[width] duration-[180ms] ease-out motion-reduce:transition-none",
+						)}
+						style={{ width: categoryWidth }}
+					>
 						{currentCategory ? (
-							<CategoryBadge
-								category={currentCategory}
-								badgeButtonRef={categoryBadgeButtonRef}
-								onBadgeButtonClick={handleCategoryButtonClick}
-								onRemoveButtonClick={handleCategoryRemove}
-								isDisabled={isMemoLocked}
-								isDimmed={isMemoUiDimmed}
-								disabledReason={changeDisabledReason}
-							/>
+							<div
+								ref={setCategoryVisual}
+								key={currentCategory.id}
+								className={cn(
+									"w-max",
+									animateCategory && "category-chip-enter",
+								)}
+							>
+								<CategoryBadge
+									category={currentCategory}
+									badgeButtonRef={categoryBadgeButtonRef}
+									onBadgeButtonClick={handleCategoryButtonClick}
+									onRemoveButtonClick={handleCategoryRemove}
+									isDisabled={isMemoLocked}
+									isDimmed={isMemoUiDimmed}
+									disabledReason={changeDisabledReason}
+								/>
+							</div>
 						) : isSuggestingCategory ? (
 							// 추천 중에는 칩 자리를 대신해, 곧 카테고리가 붙는다는 걸 같은 자리에서 보여 준다.
 							<div
+								ref={setCategoryVisual}
 								data-testid="category-suggesting"
 								className={cn(
 									badgeVariants({ variant: "outline" }),
@@ -636,13 +689,22 @@ const MemoFormContent = ({
 								{I18n.get("category_suggesting")}
 							</div>
 						) : (
-							<CategoryAddChip
-								chipRef={categoryAddChipRef}
-								onChipClick={handleCategoryButtonClick}
-								isDisabled={isMemoLocked}
-								isDimmed={isMemoUiDimmed}
-								disabledReason={changeDisabledReason}
-							/>
+							<div
+								ref={setCategoryVisual}
+								key="add"
+								className={cn(
+									"w-max",
+									animateCategory && "category-chip-enter",
+								)}
+							>
+								<CategoryAddChip
+									chipRef={categoryAddChipRef}
+									onChipClick={handleCategoryButtonClick}
+									isDisabled={isMemoLocked}
+									isDimmed={isMemoUiDimmed}
+									disabledReason={changeDisabledReason}
+								/>
+							</div>
 						)}
 					</div>
 				</div>

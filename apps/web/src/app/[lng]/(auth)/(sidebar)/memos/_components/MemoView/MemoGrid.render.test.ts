@@ -120,6 +120,7 @@ describe("MemoGrid 카드 렌더 경계", () => {
 				memos: memoList,
 				highlightsByUrl,
 				sourcesByMemo: new Map(),
+				filterKey: "all",
 				searchQuery: "",
 				domain: undefined,
 				hasNextPage: false,

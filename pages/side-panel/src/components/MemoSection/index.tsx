@@ -40,7 +40,10 @@ import {
 } from "./utils/pastMemoTracking";
 
 /** 사이드 패널의 현재 페이지 메모와 후보 선택을 표시한다. */
-export default function MemoSection({ memoHeight }: MemoSectionProps) {
+export default function MemoSection({
+	memoHeight,
+	animateHeight,
+}: MemoSectionProps) {
 	const loginBoundaryRef = useRef<ErrorBoundary>(null);
 	const tracking = useRef(new PastMemoTracking()).current;
 	const LoginFallback = useCallback(() => {
@@ -107,9 +110,14 @@ export default function MemoSection({ memoHeight }: MemoSectionProps) {
 
 	return (
 		<section
+			data-testid="memo-panel"
 			// 입력창이 이 경계에 딱 붙어 포커스 링(1px)이 좌우로 잘린다.
 			// 세로는 form 의 py-1 덕에 살아남아 좌우만 안 보였다.
-			className="flex flex-col overflow-hidden px-0.5"
+			className={cn(
+				"flex flex-col overflow-hidden px-0.5",
+				animateHeight &&
+					"transition-[height] duration-[180ms] ease-out motion-reduce:transition-none",
+			)}
 			style={{ height: `${memoHeight}%` }}
 		>
 			<ErrorBoundary ref={loginBoundaryRef} FallbackComponent={LoginFallback}>
@@ -482,4 +490,5 @@ const PreservedDraft = ({ draft }: { draft: MemoInput }) => (
 
 interface MemoSectionProps {
 	memoHeight: number;
+	animateHeight: boolean;
 }

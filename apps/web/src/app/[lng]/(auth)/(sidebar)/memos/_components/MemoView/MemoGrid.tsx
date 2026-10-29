@@ -50,6 +50,11 @@ import { MemoItemSkeleton } from "./MemoItemSkeleton";
 import MemoOptionHeader from "./MemoOptionHeader";
 import MemoSearchEmptyState from "./MemoSearchEmptyState";
 import {
+	armMemoRemoval,
+	disarmMemoRemoval,
+	settleMemoReflow,
+} from "./memoReflow";
+import {
 	holdScrollPosition,
 	restoreHeldScrollPosition,
 } from "./scrollPositionHold";
@@ -58,6 +63,7 @@ const CONTAINER_ID = "memo-grid";
 
 interface MemoGridProps extends LanguageType {
 	memos: GetMemoResponse[];
+	filterKey: string;
 	highlightsByUrl: Map<string, HighlightRow[]>;
 	sourcesByMemo: Map<number, HighlightMemoLink>;
 	searchQuery: string;
@@ -73,6 +79,7 @@ interface MemoGridProps extends LanguageType {
 export default function MemoGrid({
 	lng,
 	memos,
+	filterKey,
 	highlightsByUrl,
 	sourcesByMemo,
 	searchQuery,
@@ -88,6 +95,7 @@ export default function MemoGrid({
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const dragBoxRef = useRef<HTMLDivElement>(null);
+	const gridRef = useRef<HTMLDivElement>(null);
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
 	const queryClient = useQueryClient();
@@ -124,6 +132,7 @@ export default function MemoGrid({
 	const handleDeleteSelectedMemos = useCallback(() => {
 		if (selectedMemos.length === 0) return;
 
+		armMemoRemoval();
 		mutateDeleteMemo(selectedMemos.map((memo) => memo.id));
 
 		const handleToastActionClick = () => {
@@ -225,6 +234,7 @@ export default function MemoGrid({
 	}, [searchQuery]);
 	useEffect(() => {
 		if (memos.length === 0) {
+			disarmMemoRemoval();
 			reportMemoLoadStage({
 				route,
 				navigationId,
@@ -249,7 +259,7 @@ export default function MemoGrid({
 	}
 
 	return (
-		<div className="relative w-full">
+		<div ref={gridRef} className="relative w-full">
 			<DragBox ref={dragBoxRef} />
 			<AnimatePresence>
 				{isSelectingMode && (
@@ -276,6 +286,11 @@ export default function MemoGrid({
 				onRequestAppend={handleRequestAppend}
 				onRenderComplete={() => {
 					restoreHeldScrollPosition();
+					requestAnimationFrame(() => {
+						if (gridRef.current) {
+							settleMemoReflow(gridRef.current, filterKey, searchQuery);
+						}
+					});
 					reportMemoLoadStage({
 						route,
 						navigationId,

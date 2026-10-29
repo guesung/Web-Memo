@@ -4,6 +4,7 @@ import {
 	QueryClient,
 	QueryClientProvider,
 } from "@tanstack/react-query";
+import { getPageKey } from "@web-memo/shared/utils";
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -54,7 +55,7 @@ afterEach(() => {
 	vi.unstubAllGlobals();
 });
 
-async function render() {
+async function render(url = "https://example.com/page") {
 	await act(async () => {
 		root.render(
 			createElement(
@@ -62,7 +63,7 @@ async function render() {
 				{ client },
 				createElement(PageHighlights, {
 					userId: "user-1",
-					url: "https://example.com/page",
+					url,
 				}),
 			),
 		);
@@ -120,4 +121,26 @@ it("HTTP·권한 오류는 자동 재시도하지 않고 보고한다", async ()
 	expect(mocks.getHighlights).toHaveBeenCalledOnce();
 	expect(container.textContent).toContain("page_highlights_load_failed");
 	expect(onError).toHaveBeenCalledOnce();
+});
+
+it("조회에는 정규화된 pageKey가 아닌 원본 url을 넘긴다", async () => {
+	mocks.getHighlights.mockResolvedValue({ data: [], error: null });
+	await render("https://example.com/page");
+
+	expect(mocks.getHighlights).toHaveBeenCalledWith("https://example.com/page");
+});
+
+it("about:blank에서도 URL 이중 정규화 오류 없이 빈 상태로 끝난다", async () => {
+	// 실제 HighlightService처럼 전달받은 값을 getPageKey로 다시 정규화한다.
+	mocks.getHighlights.mockImplementation(async (url: string) => {
+		getPageKey(url);
+		return { data: [], error: null };
+	});
+	await render("about:blank");
+	await advanceRetries();
+
+	expect(mocks.getHighlights).toHaveBeenCalledWith("about:blank");
+	expect(container.textContent).toContain("page_highlights_empty");
+	expect(container.textContent).not.toContain("page_highlights_load_failed");
+	expect(onError).not.toHaveBeenCalled();
 });

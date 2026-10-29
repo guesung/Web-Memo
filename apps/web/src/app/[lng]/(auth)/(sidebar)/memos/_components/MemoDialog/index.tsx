@@ -22,13 +22,26 @@ import {
 	Textarea,
 } from "@web-memo/ui";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from "react";
 import { useWatch } from "react-hook-form";
 import { isTypingTarget } from "../../_utils";
 import MemoCardFooter from "../MemoCardFooter";
 import CategoryPopover from "../MemoCardFooter/CategoryPopover";
 import useMemoCategoryPopover from "../MemoCardFooter/useMemoCategoryPopover";
 import MemoCardHeader from "../MemoCardHeader";
+import {
+	cardMotionFrames,
+	clearMemoCardOpen,
+	MEMO_CARD_MOTION_MS,
+	peekMemoCardOpen,
+	visibleMemoCardRect,
+} from "../MemoView/_utils/memoCardMotion";
 import { MemoSourceQuote } from "../MemoView/MemoSourceQuote";
 import { MemoDialogHighlights } from "./MemoDialogHighlights";
 import SaveStatusIndicator from "./SaveStatusIndicator";
@@ -157,6 +170,20 @@ function MemoDialogContent({
 	const memoRef = useRef<HTMLTextAreaElement | null>(null);
 	const impressionRef = useRef<HTMLTextAreaElement | null>(null);
 	const actionItemRef = useRef<HTMLTextAreaElement | null>(null);
+	const dialogRef = useRef<HTMLDivElement | null>(null);
+	const [dialogElement, setDialogElement] = useState<HTMLDivElement | null>(
+		null,
+	);
+	const attachDialog = useCallback((element: HTMLDivElement | null) => {
+		dialogRef.current = element;
+		if (element) setDialogElement(element);
+	}, []);
+	const closingRef = useRef(false);
+	const closingAnimationRef = useRef<Animation | null>(null);
+	const mountedRef = useRef(true);
+	const [isClosing, setIsClosing] = useState(false);
+	const [openingCardRect] = useState(() => peekMemoCardOpen(memo.id));
+	const canAnimateCard = Boolean(openingCardRect);
 	const title = watch("title");
 	const memoField = register("memo", { onChange: () => markEdited("memo") });
 	const impressionField = register("impression", {
@@ -180,6 +207,35 @@ function MemoDialogContent({
 		}
 	});
 
+	useLayoutEffect(() => {
+		if (!dialogElement) return;
+		clearMemoCardOpen(memo.id);
+		if (
+			!openingCardRect ||
+			!visibleMemoCardRect(memo.id) ||
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches
+		)
+			return;
+		const frames = cardMotionFrames(
+			dialogElement.getBoundingClientRect(),
+			openingCardRect,
+		);
+		if (!frames) return;
+		const animation = dialogElement.animate(frames, {
+			duration: MEMO_CARD_MOTION_MS,
+			easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+		});
+		return () => animation.cancel();
+	}, [dialogElement, memo.id, openingCardRect]);
+
+	useEffect(() => {
+		mountedRef.current = true;
+		return () => {
+			mountedRef.current = false;
+			closingAnimationRef.current?.cancel();
+		};
+	}, []);
+
 	useLayoutEffect(
 		function focusOpenedField() {
 			if (!focusField) return;
@@ -196,8 +252,48 @@ function MemoDialogContent({
 	}
 
 	function closeAndSave() {
+		if (closingRef.current) return;
+		closingRef.current = true;
 		flushDebounce();
-		onClose();
+		const dialog = dialogRef.current;
+		if (dialog) {
+			dialog.setAttribute("inert", "");
+			if (dialog.contains(document.activeElement)) {
+				(document.activeElement as HTMLElement).blur();
+			}
+		}
+		setIsClosing(true);
+		const card = canAnimateCard && visibleMemoCardRect(memo.id);
+		if (
+			!dialog ||
+			!card ||
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches
+		) {
+			onClose();
+			return;
+		}
+		const frames = cardMotionFrames(dialog.getBoundingClientRect(), card);
+		if (!frames) {
+			onClose();
+			return;
+		}
+		const animation = dialog.animate([...frames].reverse(), {
+			duration: MEMO_CARD_MOTION_MS,
+			easing: "cubic-bezier(0.4, 0, 1, 1)",
+			fill: "forwards",
+		});
+		closingAnimationRef.current = animation;
+		const finishClose = () => {
+			if (
+				mountedRef.current &&
+				closingAnimationRef.current === animation &&
+				new URLSearchParams(window.location.search).get("id") ===
+					String(memo.id)
+			) {
+				onClose();
+			}
+		};
+		animation.finished.then(finishClose, finishClose);
 	}
 
 	function closeAfterDelete() {
@@ -206,13 +302,14 @@ function MemoDialogContent({
 	}
 
 	function navigateTo(memoId?: number) {
-		if (memoId === undefined) return;
+		if (memoId === undefined || closingRef.current) return;
 		flushDebounce();
 		onNavigate(memoId);
 	}
 
 	useEffect(function navigateWithArrowKeys() {
 		const handleKeyDown = (event: KeyboardEvent) => {
+			if (closingRef.current) return;
 			if (event.defaultPrevented || event.isComposing) return;
 			if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
 				return;
@@ -228,9 +325,15 @@ function MemoDialogContent({
 	return (
 		<Dialog open>
 			<DialogContent
-				className="max-h-[90dvh] max-w-[720px] gap-0 overflow-y-auto bg-card p-0 sm:rounded-xl"
+				ref={attachDialog}
+				className={cn(
+					"max-h-[90dvh] max-w-[720px] gap-0 overflow-y-auto bg-card p-0 sm:rounded-xl",
+					canAnimateCard && "!animate-none",
+				)}
 				onClose={closeAndSave}
 				aria-describedby={undefined}
+				data-memo-motion={canAnimateCard ? "card" : "fallback"}
+				inert={isClosing}
 			>
 				<DialogTitle className="sr-only">{title}</DialogTitle>
 				<MemoCardHeader

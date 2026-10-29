@@ -102,8 +102,8 @@
 - name: CLAUDE_CODE_OAUTH_TOKEN
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/audit-refactor.yml, .github/workflows/report-seo.yml, .github/workflows/chore-ga-events.yml]
-  impact: "주간 리팩토링 점검과 SEO AI 리포트, GA 이벤트 점검이 인증에 실패한다. 리팩토링 점검은 노션 카드와 Slack 알림이 오지 않고, SEO는 기존 기계 판정 알림으로 대신한다. 구독 토큰이라 만료·한도 소진으로도 실패한다"
+  consumers: [.github/workflows/audit-refactor.yml, .github/workflows/report-seo.yml, .github/workflows/chore-ga-events.yml, .github/workflows/chore-sentry-triage.yml]
+  impact: "주간 리팩토링 점검과 SEO AI 리포트, GA 이벤트 점검, Sentry AI 분석이 인증에 실패한다. 리팩토링 점검은 노션 카드와 Slack 알림이 오지 않고, SEO는 기존 기계 판정 알림으로 대신한다. 구독 토큰이라 만료·한도 소진으로도 실패한다"
 
 - name: NOTION_TOKEN
   kind: secret
@@ -145,13 +145,13 @@
 - name: APP_ID
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/chore-cleanup-unused.yml, .github/workflows/audit-env-registry.yml, .github/workflows/chore-supabase-inventory.yml, .github/workflows/chore-ga-events.yml]
+  consumers: [.github/workflows/chore-cleanup-unused.yml, .github/workflows/audit-env-registry.yml, .github/workflows/chore-supabase-inventory.yml, .github/workflows/chore-ga-events.yml, .github/workflows/chore-sentry-triage.yml]
   impact: "GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다"
 
 - name: APP_PRIVATE_KEY
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/chore-cleanup-unused.yml, .github/workflows/audit-env-registry.yml, .github/workflows/chore-supabase-inventory.yml, .github/workflows/chore-ga-events.yml]
+  consumers: [.github/workflows/chore-cleanup-unused.yml, .github/workflows/audit-env-registry.yml, .github/workflows/chore-supabase-inventory.yml, .github/workflows/chore-ga-events.yml, .github/workflows/chore-sentry-triage.yml]
   impact: "GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 등록 현황 감사가 GitHub Secrets를 조회하지 못한다"
   note: "등록 현황 감사가 쓰려면 GitHub App에 Secrets: read 권한이 있어야 한다"
 
@@ -167,10 +167,18 @@
   note: "확장·앱 네이티브 로컬 빌드는 GitHub Secrets, 웹은 Vercel 프로젝트 환경변수로 받는다"
   phase: build
 
+- name: SENTRY_API_TOKEN
+  kind: secret
+  stores: [github, vercel]
+  required: false
+  consumers: [apps/web/src/modules/sentry/config.ts, .github/workflows/chore-sentry-triage.yml, .github/scripts/sentry/fetch-sentry-context.mjs]
+  impact: "Sentry 알림에 대표 이벤트 상세(환경·릴리스·브라우저·스택·breadcrumb)가 빠지고, AI 분석이 웹훅 입력만으로 진행된다"
+  note: "SENTRY_AUTH_TOKEN(소스맵 업로드)과 다른 조회 전용 토큰이다. event:read·project:read만 준다. 서로 읽지 못해 양쪽에 같은 값을 등록한다"
+
 - name: SLACK_BOT_TOKEN
   kind: secret
   stores: [github, vercel]
-  consumers: [.github/workflows/ci.yml, apps/web/src/modules/slack/config.ts, .github/workflows/report-seo.yml]
+  consumers: [.github/workflows/ci.yml, apps/web/src/modules/slack/config.ts, .github/workflows/report-seo.yml, .github/workflows/chore-sentry-triage.yml, .github/scripts/sentry/report-sentry-triage.mjs]
   impact: "GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다"
   note: "같은 값이어야 하지만 서로 읽지 못해 따로 등록한다"
 
@@ -280,7 +288,8 @@
   kind: secret
   stores: [vercel]
   consumers: [apps/web/src/modules/slack/config.ts]
-  impact: "Slack에서 release.yml과 versions.yml을 실행하지 못한다"
+  impact: "Slack에서 release.yml과 versions.yml을 실행하지 못하고, Sentry AI 분석 워크플로(chore-sentry-triage.yml)를 디스패치하지 못한다"
+  note: "Vercel 서버에서 workflow_dispatch에만 쓴다. AI가 도는 워크플로에는 전달하지 않는다"
 
 - name: SENTRY_WEBHOOK_SECRET
   kind: secret
@@ -288,6 +297,14 @@
   consumers: [apps/web/src/modules/sentry/config.ts]
   impact: "Sentry 웹훅의 서명을 검증하지 못해 에러 알림이 Slack으로 릴레이되지 않는다"
   note: "예외로 production에만 둔다. Sentry Internal Integration의 Client Secret은 생성 때 한 번만 표시돼 다른 환경에 같은 값을 복사할 수 없다. 통일하려면 시크릿을 회전하고 세 환경에 새 값을 등록한다"
+
+- name: SENTRY_AI_TRIAGE_ENABLED
+  kind: config
+  stores: [vercel]
+  required: false
+  consumers: [apps/web/src/modules/sentry/config.ts]
+  impact: "값이 \"true\"가 아니면 Sentry AI 분석 워크플로(chore-sentry-triage.yml)를 디스패치하지 않는다. 알림 릴레이는 그대로다"
+  note: "전체 중지 스위치다. 기본 꺼짐이고, 값을 지우거나 false로 두면 즉시 멈춘다(재배포 필요)"
 
 - name: SLACK_SENTRY_ALERT_CHANNEL
   kind: config

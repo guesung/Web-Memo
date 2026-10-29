@@ -124,11 +124,20 @@ export const updateSlackModal = async ({
 export const postSlackMessage = async ({
 	channel,
 	text,
+	threadTs,
 }: {
 	channel: string;
 	text: string;
-}): Promise<void> => {
-	await callSlackApi("chat.postMessage", { channel, text });
+	/** 지정하면 해당 메시지의 스레드 답글로 보냅니다. */
+	threadTs?: string;
+}): Promise<{ channel: string; ts: string }> => {
+	const result = await callSlackApi("chat.postMessage", {
+		channel,
+		text,
+		...(threadTs ? { thread_ts: threadTs } : {}),
+	});
+
+	return { channel: result.channel as string, ts: result.ts as string };
 };
 
 /**

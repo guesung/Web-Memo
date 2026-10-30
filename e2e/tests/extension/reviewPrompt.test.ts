@@ -166,9 +166,14 @@ test("웹스토어에서 리뷰 쓰기를 누르면 리뷰 페이지가 새 탭�
 	const reviewTab = await reviewTabPromise;
 
 	await expect(banner).toHaveCount(0);
-	await expect
-		.poll(() => reviewTab.url())
-		.toBe(EXTERNAL_LINK.chromeWebStoreReviews);
+	// 확장이 연 탭은 라우트 목을 거치지 않고 실제 웹스토어로 간다. 웹스토어는 슬러그만 현지화된 제목으로
+	// 리다이렉트하고 확장 ID와 /reviews 경로는 유지하므로, 슬러그를 뺀 나머지로 비교한다.
+	const [, , , extensionId, reviewsPath] = new URL(
+		EXTERNAL_LINK.chromeWebStoreReviews,
+	).pathname.split("/");
+	await expect(reviewTab).toHaveURL(
+		new RegExp(`/detail/[^/]+/${extensionId}/${reviewsPath}$`),
+	);
 	await expect
 		.poll(async () => (await readStoredReviewPrompt(panel))?.dismissedForever)
 		.toBe(true);
@@ -253,7 +258,13 @@ test("배너 노출과 리뷰 쓰기 클릭이 shown_count와 함께 기록된�
 
 	await expect
 		.poll(() => events.filter((event) => event.name === "review_prompt_view"))
-		.toEqual([{ name: "review_prompt_view", params: { shown_count: 1 } }]);
+		.toEqual([
+			{
+				name: "review_prompt_view",
+				// 전송 계층이 build_env·event_category 같은 공통 필드를 덧붙이므로 이 이벤트의 속성만 본다.
+				params: expect.objectContaining({ shown_count: 1 }),
+			},
+		]);
 
 	const reviewTabPromise = context.waitForEvent("page");
 	await banner.getByRole("button", { name: OPEN_REVIEW_PATTERN }).click();
@@ -261,5 +272,10 @@ test("배너 노출과 리뷰 쓰기 클릭이 shown_count와 함께 기록된�
 
 	await expect
 		.poll(() => events.filter((event) => event.name === "review_prompt_open"))
-		.toEqual([{ name: "review_prompt_open", params: { shown_count: 1 } }]);
+		.toEqual([
+			{
+				name: "review_prompt_open",
+				params: expect.objectContaining({ shown_count: 1 }),
+			},
+		]);
 });

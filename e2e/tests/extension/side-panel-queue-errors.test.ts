@@ -56,7 +56,8 @@ test("큐 조회 중 편집은 유지되고 조회 전 온라인 저장하지 �
 	const panel = await preparePanel(page, url, store);
 	let writes = 0;
 	await context.route(`${SUPABASE.url}/rest/v1/memo**`, async (route) => {
-		if (route.request().method() !== "GET") writes++;
+		// 리뷰 요청 배너의 메모 개수 조회(HEAD)는 읽기라 쓰기로 세지 않는다.
+		if (!["GET", "HEAD"].includes(route.request().method())) writes++;
 		await route.fallback();
 	});
 	await panel.evaluate(() => {

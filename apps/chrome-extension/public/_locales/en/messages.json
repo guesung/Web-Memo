@@ -784,7 +784,7 @@
 		"message": "Reading plan date"
 	},
 	"review_prompt_message": {
-		"message": "You've been taking notes for a while. A short review would mean a lot."
+		"message": "A short review would mean a lot."
 	},
 	"review_prompt_open": {
 		"message": "Review on Chrome Web Store"

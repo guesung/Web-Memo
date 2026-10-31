@@ -782,5 +782,17 @@
 	},
 	"plan_date_button": {
 		"message": "Reading plan date"
+	},
+	"review_prompt_message": {
+		"message": "A short review would mean a lot."
+	},
+	"review_prompt_open": {
+		"message": "Review on Chrome Web Store"
+	},
+	"review_prompt_never": {
+		"message": "Don't show again"
+	},
+	"review_prompt_close": {
+		"message": "Close"
 	}
 }

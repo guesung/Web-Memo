@@ -1,5 +1,7 @@
 import { CHROME_EXTENSION_ID } from "./ChromeExtension";
 
+const CHROME_WEB_STORE_LISTING_URL = `https://chromewebstore.google.com/detail/web-memo/${CHROME_EXTENSION_ID}`;
+
 /**
  * 앱 밖으로 나가는 링크 모음.
  * @description
@@ -7,7 +9,8 @@ import { CHROME_EXTENSION_ID } from "./ChromeExtension";
  * 웹 서비스 자체의 origin은 환경별로 달라지므로 여기가 아니라 `CONFIG.webUrl`을 쓴다.
  */
 export const EXTERNAL_LINK = {
-	chromeWebStoreListing: `https://chromewebstore.google.com/detail/web-memo/${CHROME_EXTENSION_ID}`,
+	chromeWebStoreListing: CHROME_WEB_STORE_LISTING_URL,
+	chromeWebStoreReviews: `${CHROME_WEB_STORE_LISTING_URL}/reviews`,
 	iosAppStoreListing: "https://apps.apple.com/app/id6759237784",
 	playStoreListing:
 		"https://play.google.com/store/apps/details?id=com.webmemo.app",

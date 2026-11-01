@@ -21,7 +21,6 @@ export const useCategorySuggestion = ({
 	currentMemoId,
 	firstSavedMemoId,
 	isFirstSavedMemoReady,
-	isSuppressed,
 	onCategorySelect,
 }: IFUseCategorySuggestionProps) => {
 	const [isLoading, setIsLoading] = useState(false);
@@ -97,14 +96,8 @@ export const useCategorySuggestion = ({
 			setIsAccepting(false);
 		}
 	};
-	const cancelSuggestion = () => {
-		requestSequenceRef.current += 1;
-		abortControllerRef.current?.abort();
-		setIsLoading(false);
-	};
 	const triggerSuggestion = async (memoText: string) => {
 		if (
-			isSuppressed ||
 			currentCategoryId ||
 			suggestionRef.current ||
 			isLoading ||
@@ -118,7 +111,6 @@ export const useCategorySuggestion = ({
 		try {
 			const tabInfo = await getTabInfo();
 			if (
-				requestSequence !== requestSequenceRef.current ||
 				!tabInfo.url ||
 				dismissedUrlsRef.current.has(tabInfo.url) ||
 				failedUrlsRef.current.has(tabInfo.url)
@@ -187,8 +179,6 @@ export const useCategorySuggestion = ({
 	};
 	const triggerSuggestionRef = useRef(triggerSuggestion);
 	triggerSuggestionRef.current = triggerSuggestion;
-	const cancelSuggestionRef = useRef(cancelSuggestion);
-	cancelSuggestionRef.current = cancelSuggestion;
 	useEffect(() => {
 		if (previousTabUrlRef.current === tab?.url) {
 			return;
@@ -214,13 +204,7 @@ export const useCategorySuggestion = ({
 		setIsLoading(false);
 	}, [currentMemoId]);
 	useEffect(() => {
-		if (isSuppressed) {
-			cancelSuggestionRef.current();
-		}
-	}, [isSuppressed]);
-	useEffect(() => {
 		if (
-			isSuppressed ||
 			firstSavedMemoId === null ||
 			currentMemoId !== firstSavedMemoId ||
 			firstSuggestedMemoIdRef.current === firstSavedMemoId ||
@@ -238,7 +222,6 @@ export const useCategorySuggestion = ({
 			void triggerSuggestionRef.current(memoText);
 		}
 	}, [
-		isSuppressed,
 		firstSavedMemoId,
 		currentMemoId,
 		isFirstSavedMemoReady,
@@ -265,7 +248,6 @@ export const useCategorySuggestion = ({
 		suggestion,
 		isAccepting,
 		triggerSuggestion,
-		cancelSuggestion,
 		acceptSuggestion,
 		dismissSuggestion,
 	};
@@ -276,8 +258,6 @@ interface IFUseCategorySuggestionProps {
 	currentMemoId: number | null;
 	firstSavedMemoId: number | null;
 	isFirstSavedMemoReady: boolean;
-	/** 카테고리 팝업이 열려 있는지. 켜져 있는 동안은 추천을 시작하지 않고 진행 중인 요청도 취소한다 */
-	isSuppressed: boolean;
 	onCategorySelect: (
 		categoryId: number | null,
 		source: TCategoryChangeSource,

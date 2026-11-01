@@ -50,17 +50,6 @@ export default function useMemoCategory({
 	// 최신 목록을 받는 동안에는 isCategoryCreating이 아직 false라 이중 제출을 따로 막는다.
 	const isCategoryCreateInFlightRef = useRef(false);
 
-	// 추천 중 표시에서 연 팝업은 트리거가 언마운트되고 칩이 다시 그려진다. 떨어진 노드 대신 지금 그려진 칩·배지를 트리거로 본다.
-	const getPopupTrigger = useCallback(() => {
-		const trigger = categoryPopupTriggerRef.current;
-		if (trigger?.isConnected) {
-			return trigger;
-		}
-		return (
-			categoryAddChipRef.current ?? categoryBadgeButtonRef.current ?? trigger
-		);
-	}, []);
-
 	const restoreFocus = useCallback(() => {
 		if (textareaRef.current) {
 			textareaRef.current.focus();
@@ -86,7 +75,9 @@ export default function useMemoCategory({
 
 				const isInsidePopup = categoryPopupRef.current?.contains(event.target);
 				// 트리거를 다시 누른 경우는 트리거의 클릭 핸들러가 닫는다. 여기서도 닫으면 곧바로 다시 열린다.
-				const isOnTrigger = getPopupTrigger()?.contains(event.target);
+				const isOnTrigger = categoryPopupTriggerRef.current?.contains(
+					event.target,
+				);
 
 				if (isInsidePopup || isOnTrigger) {
 					return;
@@ -103,7 +94,7 @@ export default function useMemoCategory({
 
 				setCategoryPopupOpenSource(null);
 				if (!isOnFocusableElement) {
-					getPopupTrigger()?.focus();
+					categoryPopupTriggerRef.current?.focus();
 				}
 			};
 
@@ -113,7 +104,7 @@ export default function useMemoCategory({
 				document.removeEventListener("pointerdown", handleDocumentPointerDown);
 			};
 		},
-		[categoryPopupOpenSource, getPopupTrigger],
+		[categoryPopupOpenSource],
 	);
 
 	const openCategoryPopup = (source: TCategoryPopupOpenSource) => {
@@ -132,7 +123,7 @@ export default function useMemoCategory({
 
 	const closeButtonPopup = () => {
 		setCategoryPopupOpenSource(null);
-		getPopupTrigger()?.focus();
+		categoryPopupTriggerRef.current?.focus();
 	};
 
 	const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {

@@ -126,40 +126,6 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 		await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(memoText);
 	});
 
-	test("추천 중 표시를 눌러 팝업을 열면 추천을 취소하고 칩으로 돌아온다", async ({
-		page,
-	}) => {
-		const sidePanelPage = await findSidePanelPage(page);
-
-		const timestamp = Date.now();
-		const pageUrl = namespace.memoUrl(`suggesting-click-${timestamp}`);
-		memoUrls.push(pageUrl);
-		const pageMemoQuery = waitForSidePanelMemoQuery({
-			sidePanelPage,
-			url: pageUrl,
-		});
-		await page.goto(pageUrl);
-		await pageMemoQuery;
-
-		// 응답을 끝까지 주지 않아 추천이 진행 중인 상태를 유지한다.
-		await sidePanelPage.route("**/api/openai/category", async () => {});
-		const categoryApiRequest = sidePanelPage.waitForRequest(
-			"**/api/openai/category",
-		);
-		await fillMemo(sidePanelPage, `Suggesting click test ${timestamp}`);
-		await categoryApiRequest;
-
-		await sidePanelPage.getByTestId("category-suggesting").click();
-		await expect(sidePanelPage.getByTestId("category-popup")).toBeVisible();
-		await expect(sidePanelPage.getByTestId("category-suggesting")).toHaveCount(
-			0,
-		);
-
-		// 트리거가 새 칩으로 이어져, 칩을 다시 누르면 팝업이 닫힌다.
-		await sidePanelPage.getByTestId("category-add-chip").click();
-		await expect(sidePanelPage.getByTestId("category-popup")).toHaveCount(0);
-	});
-
 	test("Jev가 고른 기존 카테고리는 수락할 때만 적용한다", async ({ page }) => {
 		const sidePanelPage = await findSidePanelPage(page);
 

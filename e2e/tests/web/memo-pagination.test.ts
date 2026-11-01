@@ -2,6 +2,7 @@ import { PATHS } from "@web-memo/shared/constants";
 import { expect, test } from "../fixtures/web";
 import { gotoSafely, LANGUAGE } from "../lib";
 import {
+	createMockHighlight,
 	createMockMemo,
 	MockSupabaseStore,
 	resetMockIds,
@@ -13,9 +14,10 @@ const PAGE_SIZE = 20;
 const SEEDED_COUNT = 25;
 
 test.describe("메모 무한 스크롤 (Mocked)", () => {
+	let store: MockSupabaseStore;
 	test.beforeEach(async ({ page }) => {
 		resetMockIds();
-		const store = new MockSupabaseStore();
+		store = new MockSupabaseStore();
 
 		for (let order = 1; order <= SEEDED_COUNT; order++) {
 			store.addMemo(
@@ -68,6 +70,62 @@ test.describe("메모 무한 스크롤 (Mocked)", () => {
 		await expect(
 			page.locator(".memo-item", { hasText: "메모 01" }),
 		).toHaveCount(1);
+	});
+
+	test("추가 페이지의 보조 조회는 첫 페이지 범위를 다시 요청하지 않는다.", async ({
+		page,
+	}) => {
+		await expect(page.locator(".memo-item")).toHaveCount(PAGE_SIZE);
+		const auxiliaryRequests: URL[] = [];
+		page.on("request", (request) => {
+			const url = new URL(request.url());
+			if (
+				url.pathname.endsWith("/highlight") ||
+				url.pathname.endsWith("/highlight_memo_source")
+			) {
+				auxiliaryRequests.push(url);
+			}
+		});
+		await expect
+			.poll(async () => {
+				await page.mouse.wheel(0, 2000);
+				return page.locator(".memo-item").count();
+			})
+			.toBe(SEEDED_COUNT);
+		await expect.poll(() => auxiliaryRequests.length).toBeGreaterThanOrEqual(2);
+		const highlightRequests = auxiliaryRequests.filter((url) =>
+			url.pathname.endsWith("/highlight"),
+		);
+		const sourceRequests = auxiliaryRequests.filter((url) =>
+			url.pathname.endsWith("/highlight_memo_source"),
+		);
+		expect(highlightRequests).toHaveLength(1);
+		expect(sourceRequests).toHaveLength(1);
+		expect(highlightRequests[0].searchParams.get("page_key")).not.toContain(
+			"page-1",
+		);
+		expect(sourceRequests[0].searchParams.get("memo_id")).not.toMatch(/\b1\b/);
+
+		const firstCard = page.locator(".memo-item").first();
+		const memoId = Number(await firstCard.getAttribute("id"));
+		const memo = store.getAllMemos().find((item) => item.id === memoId);
+		if (!memo) throw new Error("첫 메모가 목 저장소에 없습니다");
+		const highlight = store.addHighlight(
+			createMockHighlight({ url: memo.url, exact_text: "Refreshed source" }),
+		);
+		store.addHighlightMemoSource({
+			memo_id: memoId,
+			highlight_id: highlight.id,
+			user_id: highlight.user_id,
+			exact_text: highlight.exact_text,
+			url: highlight.url,
+			prefix_text: highlight.prefix_text,
+			suffix_text: highlight.suffix_text,
+			text_position_start: highlight.text_position_start,
+			color: highlight.color,
+		});
+		await page.locator("#refresh").click();
+		await expect(firstCard.getByText("Refreshed source")).toBeVisible();
 	});
 });
 

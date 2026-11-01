@@ -38,7 +38,7 @@ const CategoryAddChip = (props: IFCategoryAddChipProps) => {
 			onClick={props.onChipClick}
 			className={cn(
 				badgeVariants({ variant: "outline" }),
-				"text-muted-foreground hover:text-foreground gap-1 border-dashed px-2 py-0.5 disabled:cursor-not-allowed disabled:opacity-50",
+				"text-muted-foreground hover:text-foreground shrink-0 gap-1 whitespace-nowrap border-dashed px-2 py-0.5 disabled:cursor-not-allowed disabled:opacity-50",
 				props.isDimmed && "opacity-50",
 			)}
 		>

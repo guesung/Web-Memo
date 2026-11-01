@@ -689,7 +689,7 @@ const MemoFormContent = ({
 								data-testid="category-suggesting"
 								className={cn(
 									badgeVariants({ variant: "outline" }),
-									"text-muted-foreground gap-1 border-dashed px-2 py-0.5",
+									"text-muted-foreground shrink-0 gap-1 whitespace-nowrap border-dashed px-2 py-0.5",
 								)}
 							>
 								<Loader2Icon size={12} className="animate-spin" />

@@ -25,8 +25,8 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | `cd-app.yml` | workflow_call | 검증된 develop 후보를 큐에서 재판정해 Android APK 빌드·Firebase App Distribution 배포, master·PR은 빌드만, release는 새 빌드·Play 내부 테스트 제출 | `deploy/prepareStagingApp.mjs` · `deploy/appDeploymentState.mjs` · `deploy/detect-affected-apps.sh` (EAS CLI·firebase-tools) |
 | `cd-extension.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-reusable-artifact.sh` · `deploy/upload-extension-to-store.mjs` |
 | `cd-web.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-staged-deployment.mjs` · `deploy/staged-deployment.mjs` · `deploy/notify-staging-deploy.mjs` |
-| `release.yml` | workflow_dispatch | 수동 실행할 때마다 | 없음. `cd-app`·`cd-extension`·`cd-web`·`release-notify` 호출 |
-| `release-notify.yml` | workflow_call | `release.yml`에서 호출할 때마다 | `deploy/notify-release-result.mjs` |
+| `release.yml` | workflow_dispatch | 수동 실행할 때마다 | `deploy/sync-next-version-pr.mjs`. `cd-app`·`cd-extension`·`cd-web`·`release-notify` 호출 |
+| `release-notify.yml` | workflow_call | `release.yml`에서 호출할 때마다 | `deploy/record-deploy.mjs` · `deploy/collect-deploy-prs.mjs` · `deploy/detect-affected-apps.sh` · `deploy/notify-release-result.mjs` |
 | `release-github.yml` | push(tag `v*`) | `v*` 태그 push마다 | 없음 |
 | `versions.yml` | workflow_dispatch | 수동 실행할 때마다 | `deploy/report-store-versions.mjs` |
 | `notify-extension-published.yml` | schedule, workflow_dispatch | 매시 07·37분 또는 수동 실행마다 | `deploy/notify-extension-published.mjs` |
@@ -65,7 +65,7 @@ dispatch해도 스크립트는 master의 것이 돕니다.
 | 폴더 | 담당 |
 | --- | --- |
 | `shared/` | 두 도메인 이상이 쓰는 모듈 (`run-context`·`slack-api`·`slack-blocks`·`http`·`jwt`·`google-auth`·`repo-versions`) |
-| `deploy/` | CI 빌드 판정, Slack 빌드·배포·릴리스 알림, PR 확장 다운로드 댓글, 확장 웹스토어 업로드, 스토어 버전 |
+| `deploy/` | CI 빌드 판정, Slack 빌드·배포·릴리스 알림, 다음 버전 PR, PR 확장 다운로드 댓글, 확장 웹스토어 업로드, 스토어 버전 |
 | `seo/` | SEO 점검·GSC·Sheets 적재·AI 리포트·P0·P1 자동 수정 PR |
 | `ga/` | GA4 일간·주간 리포트, 기능 사용량 측정 |
 | `env/` | 환경 변수 매니페스트 검사와 등록 현황 감사 |

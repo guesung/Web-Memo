@@ -1,7 +1,8 @@
 name: Release
 
-# 버전업(package.json / Update.ts / translation.json)은 이 워크플로가 하지 않습니다.
+# 배포 전 버전업(package.json / Update.ts / translation.json)은 이 워크플로가 하지 않습니다.
 # 로컬 `/version-update`로 처리해 master에 머지한 뒤 실행하세요.
+# 확장·앱 배포가 성공하면 next-version-* 잡이 "다음 버전" PR을 열어 둡니다(자동 머지 없음).
 on:
   workflow_dispatch:
     inputs:
@@ -143,3 +144,89 @@ jobs:
       target: web
       result: ${{ needs['release-web'].result }}
       ref: ${{ inputs.ref }}
+
+  # 배포가 성공한 트랙의 "다음 버전" PR을 열어 둡니다(트랙당 PR 하나, 자동 머지 없음).
+  # 버전은 실제 배포 때만 움직입니다(docs/versioning.md). 이 PR은 Slack에서 버전 올려 배포를 고를 때 머지됩니다.
+  # 알림 잡과 별개라 이 잡이 실패해도 릴리스 결과 알림은 영향이 없고, 이 잡만 빨갛게 드러납니다.
+  # GITHUB_TOKEN으로 연 PR은 다른 워크플로를 트리거하지 않아 CI가 안 도므로 GitHub App 토큰을 씁니다.
+  next-version-extension:
+    name: 확장 다음 버전 PR
+    needs: release-extension
+    if: ${{ needs.release-extension.result == 'success' }}
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    # 두 회차가 겹치면 같은 브랜치에 push가 부딪힙니다. 앞선 회차를 끊지 않고 줄을 세웁니다.
+    concurrency:
+      group: next-version-extension
+      cancel-in-progress: false
+    steps:
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      # 배포한 ref를 체크아웃합니다(비우면 워크플로를 실행한 브랜치). 스크립트는 이 HEAD의 버전에서 patch를 올립니다.
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Sync next version PR
+        env:
+          TRACK: extension
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GIT_USER_NAME: ${{ steps.app-token.outputs.app-slug }}[bot]
+          GIT_USER_EMAIL: ${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com
+          RELEASE_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node .github/scripts/deploy/sync-next-version-pr.mjs
+
+  # 배포가 성공한 트랙의 "다음 버전" PR을 열어 둡니다(트랙당 PR 하나, 자동 머지 없음).
+  # 버전은 실제 배포 때만 움직입니다(docs/versioning.md). 이 PR은 Slack에서 버전 올려 배포를 고를 때 머지됩니다.
+  # 알림 잡과 별개라 이 잡이 실패해도 릴리스 결과 알림은 영향이 없고, 이 잡만 빨갛게 드러납니다.
+  # GITHUB_TOKEN으로 연 PR은 다른 워크플로를 트리거하지 않아 CI가 안 도므로 GitHub App 토큰을 씁니다.
+  next-version-app:
+    name: 앱 다음 버전 PR
+    needs: release-app
+    if: ${{ needs.release-app.result == 'success' }}
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    # 두 회차가 겹치면 같은 브랜치에 push가 부딪힙니다. 앞선 회차를 끊지 않고 줄을 세웁니다.
+    concurrency:
+      group: next-version-app
+      cancel-in-progress: false
+    steps:
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      # 배포한 ref를 체크아웃합니다(비우면 워크플로를 실행한 브랜치). 스크립트는 이 HEAD의 버전에서 patch를 올립니다.
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Sync next version PR
+        env:
+          TRACK: app
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GIT_USER_NAME: ${{ steps.app-token.outputs.app-slug }}[bot]
+          GIT_USER_EMAIL: ${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com
+          RELEASE_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node .github/scripts/deploy/sync-next-version-pr.mjs

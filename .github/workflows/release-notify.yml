@@ -5,6 +5,13 @@ name: Notify - Release Result
 # 셋을 한 잡으로 묶으면 needs가 정적이라 알림이 가장 느린 타깃(앱 빌드 약 30분)을
 # 기다립니다. 그러면 1분이면 끝나는 웹 배포 결과도 30분 뒤에야 나갑니다.
 # 타깃마다 이 워크플로를 따로 부르면 각자 끝나는 대로 알립니다.
+#
+# 성공한 릴리스는 알리기 전에 deploy-log 브랜치의 타깃별 파일에 기록하고(record-deploy.mjs),
+# 그 결과를 같은 Slack 메시지에 합칩니다. 기록이 실패해도 알림은 나갑니다.
+#   - 앱 토큰 발급이 실패해도(continue-on-error) 기록 단계는 돌아 "기록 실패"로 알립니다.
+#   - 세 타깃의 호출이 겹칠 수 있지만 잡 단위 concurrency는 쓰지 않습니다. 한 그룹은 대기를
+#     하나만 허용해 가운데 알림이 취소될 수 있고, 알림이 다른 타깃 기록을 기다리게 되기 때문입니다.
+#     대신 타깃마다 파일이 달라, push가 겹치면 스크립트가 원격을 다시 받아 재시도합니다.
 on:
   workflow_call:
     inputs:
@@ -30,14 +37,37 @@ jobs:
       - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref }}
+          # 직전 기록 SHA..이번 ref의 머지 커밋을 읽으려면 전체 히스토리가 필요합니다.
+          fetch-depth: 0
 
       - uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
+      # deploy-log는 GITHUB_TOKEN(contents: read)으로 쓸 수 없어 GitHub App 토큰을 씁니다.
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        if: ${{ inputs.result == 'success' }}
+        continue-on-error: true
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      # 영향 판정은 turbo 바이너리(npx)만 쓰므로 pnpm install이 필요 없습니다(ci.yml의 changes 잡과 같습니다).
+      # 스크립트는 실패해도 exit 0이고 실패를 결과 JSON에 담습니다. continue-on-error는 예기치 못한 중단 대비입니다.
+      - name: Record deploy
+        if: ${{ inputs.result == 'success' }}
+        continue-on-error: true
+        env:
+          TARGET: ${{ inputs.target }}
+          DEPLOY_LOG_TOKEN: ${{ steps.app-token.outputs.token }}
+          DEPLOY_RECORD_PATH: ${{ runner.temp }}/deploy-record.json
+        run: node .github/scripts/deploy/record-deploy.mjs
+
       # 알림 스크립트는 의존성이 없습니다(fetch만 씁니다). pnpm install을 건너뜁니다.
       - name: Notify Slack
         env:
+          DEPLOY_RECORD_PATH: ${{ runner.temp }}/deploy-record.json
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           GH_TOKEN: ${{ github.token }}
           RELEASE_REF: ${{ inputs.ref || github.ref_name }}

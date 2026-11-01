@@ -23,7 +23,8 @@ master 머지
    │     └─ 자기 타깃이 끝나는 대로 스레드에 댓글
    │          ┌──────────────────────────────────────┐
    │          │ ✅ 확장 빌드 성공                      │
-   │          │ [🧩 확장 배포][다른 버전…]             │
+   │          │ [🧩 확장 배포][버전 올려 배포 ▾]       │
+   │          │ [다른 버전…]                           │
    │          │ [⬇️ 확장 다운로드][워크플로 보기]       │
    │          └──────────────────────────────────────┘
    │
@@ -42,19 +43,26 @@ master 머지
                                     │ 클릭
                                     ▼
         apps/web  /api/slack/interactivity   (서명 검증)
+                                    │ (버전 올려 배포면: 다음 버전 PR 갱신 → 머지)
                                     │ workflow_dispatch
                                     ▼
         release.yml → cd-app / cd-web / cd-extension → 스토어 제출
                                     │
-                                    └─ release-notify.yml (타깃마다 한 번씩)
-                                         └─ Slack ┌──────────────────────────────┐
-                                                  │ ✅ 앱 릴리스 완료              │
-                                                  │ 앱 v1.0.8 · 정렬 옵션 추가     │
-                                                  │ 📱 iOS (TestFlight)  ✅ 완료   │
-                                                  │ 🤖 Android           ❌ 실패   │
-                                                  │ [워크플로 실행 보기]           │
-                                                  └──────────────────────────────┘
-                                         (웹은 성공하면 [🌐 웹 열기]가 함께 붙습니다)
+                                    ├─ release-notify.yml (타깃마다 한 번씩)
+                                    │    ├─ 성공이면 deploy-log 브랜치에 기록
+                                    │    └─ Slack ┌──────────────────────────────┐
+                                    │             │ ✅ 앱 릴리스 완료              │
+                                    │             │ 앱 v1.0.8 · 정렬 옵션 추가     │
+                                    │             │ 📱 iOS (TestFlight)  ✅ 완료   │
+                                    │             │ 🤖 Android           ❌ 실패   │
+                                    │             │ 이번 배포에 들어간 PR 2건      │
+                                    │             │ #820 … · #823 …  배포 기록 보기 │
+                                    │             │ [워크플로 실행 보기]           │
+                                    │             └──────────────────────────────┘
+                                    │    (웹은 성공하면 [🌐 웹 열기]가 함께 붙습니다)
+                                    │
+                                    └─ next-version-extension / next-version-app
+                                         └─ 성공이면 다음 patch 버전 PR 열기·갱신
 ```
 
 **릴리스는 타깃별로 줄을 섭니다.** 웹·확장은 `release.yml`의 타깃별 그룹,
@@ -84,6 +92,17 @@ develop 후보만 실행권을 얻은 뒤 오래된 요청인지 재판정해 �
 정적이라 알림이 가장 느린 타깃(앱 빌드 약 30분)을 기다립니다. 그러면 1분이면 끝나는
 웹 배포 결과도 30분 뒤에야 나갑니다. 타깃마다 `release-notify.yml`을 따로 불러
 각자 끝나는 대로 알립니다.
+
+**성공한 결과 메시지에는 이번 배포에 들어간 PR 목록이 붙습니다.** `release-notify.yml`이
+알림 직전에 `record-deploy.mjs`로 그 타깃의 배포 기록을 남기고, 같은 내용을 메시지에
+`이번 배포에 들어간 PR n건`(최대 10건 + `외 n건`)과 `배포 기록 보기` 링크로 덧붙입니다.
+새 메시지를 따로 보내지 않습니다. 자세한 내용은 [이번 배포에 무엇이 들어갔는지 볼 때](#이번-배포에-무엇이-들어갔는지-볼-때)에 있습니다.
+
+**확장·앱이 성공하면 다음 버전 PR이 열립니다.** `release.yml`의 `next-version-extension`·
+`next-version-app` 잡이 배포한 버전에 patch를 1 올리는 PR을 `chore/next-version-<트랙>`
+브랜치에 엽니다. 이미 열려 있으면 같은 PR을 갱신합니다(트랙당 하나). 실패·취소한
+배포 뒤에는 돌지 않고, 웹에는 없습니다. **이 PR은 직접 머지하지 않습니다** — 다음 배포 때
+Slack의 "버전 올려 배포"가 머지합니다([버전을 올려서 배포할 때](#버전을-올려서-배포할-때)).
 
 ## master 머지는 하나의 스레드로 모입니다
 
@@ -225,6 +244,36 @@ PR에서도 확장이 바뀌면 `cd-extension`이 production으로 빌드합니�
 
 ### 버전을 올려서 배포할 때
 
+**기본 경로는 "버전 올려 배포" 선택 메뉴입니다.** 확장·앱 빌드 성공 댓글과 요약 댓글,
+`/배포현황` 메시지의 배포 버튼 옆에 트랙별 선택 메뉴가 붙습니다. 옵션은
+`patch → 1.11.6` · `minor → 1.12.0` · `major → 2.0.0`처럼 결과 버전을 함께 보여 주고,
+고르면 확인 대화상자가 뜹니다. 확인하면 Slack 서버(`nextVersionPr.ts`)가 다음 순서로 진행합니다.
+
+1. 응답 직후 누른 사람에게만 보이는 `⏳ <트랙> X.Y.Z 준비 중…`을 남깁니다(Slack 3초 제한).
+   원본 빌드 메시지는 교체하지 않습니다 — 교체하면 다른 배포 버튼이 사라지기 때문입니다.
+2. 게이트를 순서대로 봅니다. 하나라도 걸리면 아무것도 바꾸지 않고 반려합니다.
+   - 누른 메시지의 커밋이 `master` 최신이 아니면 `최신 master 빌드에서만 버전을 올릴 수 있습니다`
+   - 클릭 시점의 `master` 버전으로 다시 계산한 결과가 표시된 버전과 다르면 반려
+   - 결과 버전이 `master` 버전보다 크지 않으면 `선택한 버전(X.Y.Z)이 master 버전(A.B.C)보다 커야 합니다`
+3. `chore/next-version-<트랙>` 브랜치를 **`master` 최신 + 버전 한 줄만 바꾼 커밋 1개**로 강제
+   갱신합니다. 열린 PR이 없으면 그 자리에서 만듭니다.
+4. PR을 **머지 커밋 방식**으로 머지하고, 그 머지 SHA를 해당 트랙만 대상으로 `release.yml`에 넘깁니다.
+5. 채널에 `🚀 <트랙> X.Y.Z 배포를 시작했습니다`를 올립니다. 반려는 누른 사람에게만 보입니다.
+
+GitHub 단계가 하나라도 실패하면 GitHub 응답을 그대로 담아 반려합니다. 머지는 됐는데
+dispatch만 실패하면 `머지는 완료됨 · 배포 버튼으로 다시 시도`를 덧붙입니다 — 이때
+`master`에는 이미 새 버전이 들어가 있으니 일반 배포 버튼으로 다시 올리면 됩니다.
+
+- 머지는 필수 체크(`ci`·`tests_e2e`)를 기다리지 않습니다. 아래 모달 경로의 직접 커밋과
+  같은 보호 규칙 우회이고, 버전 한 줄만 바뀌는 커밋이라 감수한 선택입니다. 차이는
+  버전 변경이 PR로 남는다는 점입니다.
+- 머지 커밋이 `master`에 들어가므로 CI가 한 번 더 돌고 스레드도 하나 더 생깁니다.
+  release는 그 CI를 기다리지 않고 바로 시작합니다.
+- 머지에는 `GITHUB_DISPATCH_TOKEN`에 **Contents·Pull requests 쓰기 권한**이 필요합니다
+  ([GitHub PAT 만들기](#2-github-pat-만들기)).
+
+**`1.12.0-hotfix`처럼 단계로 표현할 수 없는 버전은 다른 버전… 모달로 올립니다.**
+
 **다른 버전…** 모달의 `앱 버전` / `확장 버전` 칸에 새 버전을 적으면, 배포를 누르는
 순간 파이프라인이 `apps/app/app.json`·`apps/chrome-extension/package.json`을 고쳐
 **`master`에 직접 커밋**하고 그 커밋을 배포합니다. 로컬 `/version-update` → PR →
@@ -269,6 +318,28 @@ Slack에서 `/배포현황`(등록한 슬래시 커맨드)을 실행하면 `vers
 30분마다 게시본을 조회해, `apps/chrome-extension/package.json`의 버전이 게시되면
 **🧩 확장 vX.Y.Z 웹스토어 게시 완료**를 한 번 보냅니다. 같은 버전은 캐시에 표시를 남겨
 다시 알리지 않습니다.
+
+### 이번 배포에 무엇이 들어갔는지 볼 때
+
+배포 기록은 레포의 **`deploy-log` 브랜치**에 플랫폼별 파일로 쌓입니다
+(`web.md` · `extension.md` · `app.md`). `master`에 두지 않은 이유는 기록 push마다 CI와
+Slack 스레드가 한 번씩 더 돌고, Actions 토큰이 `master` 보호를 우회할 수 있는지에 기대지
+않기 위해서입니다. 결과 메시지의 `배포 기록 보기` 링크가 해당 파일로 바로 갑니다.
+
+- **언제 쌓이나**: 릴리스 결과가 성공일 때만(확장·앱은 스토어 제출 성공 = 심사 전). 실패·취소면
+  남기지 않습니다. 게시(심사 통과)는 위의 게시 알림이 따로 알려 줍니다.
+- **항목 형식**: `## <버전 또는 web> · <YYYY-MM-DD HH:mm KST> · <ref 7자>` 아래에
+  `- #<번호> <제목>` 줄. 최신 항목이 파일 맨 위입니다.
+- **범위**: 그 파일의 직전 항목 커밋부터 이번 배포 ref까지 `--first-parent`로 들어온 PR 머지
+  커밋입니다. 다음 버전 PR(`chore/next-version-*`)은 뺍니다.
+- **플랫폼 귀속**: PR마다 머지 커밋의 `^1..머지`를 `detect-affected-apps.sh`(CI와 같은 판정)에
+  넣어 그 타깃에 영향을 준 PR만 남깁니다. `packages/shared`를 고친 PR은 여러 파일에 함께
+  들어갑니다. 판정에 실패한 PR은 빠뜨리지 않고 넣습니다.
+- **특수 항목**: 첫 기록은 `기록 시작`(과거는 소급하지 않습니다), 같은 커밋 재배포는
+  `변경된 PR 없음`, 과거 커밋 배포는 `롤백 → <sha>`, 직전 기록과 이어지지 않는 커밋은
+  `master 외 ref 배포`로 남습니다.
+- **기록 실패**: push가 겹치면 원격을 다시 받아 최대 3회 다시 씁니다. 그래도 안 되면 기록을
+  건너뛰고 결과 메시지에 `기록 실패` 한 줄을 붙입니다. 알림 잡은 실패시키지 않습니다.
 
 ## master 푸시는 스토어에 올리지 않습니다
 
@@ -539,8 +610,16 @@ vercel logs https://www.webmemo.xyz --scope gueit214s-projects
 ### 2. GitHub PAT 만들기
 
 <https://github.com/settings/personal-access-tokens> 에서 fine-grained 토큰을
-만들고, `guesung/Web-Memo` 레포에 **Actions: Read and write** 권한만 줍니다.
-버튼 클릭이 `release.yml` / `versions.yml`을 실행하는 데 쓰입니다.
+만들고, `guesung/Web-Memo` 레포에 아래 권한을 줍니다.
+
+| 권한 | 쓰는 곳 |
+| --- | --- |
+| **Actions: Read and write** | 버튼 클릭이 `release.yml` / `versions.yml`을 실행 |
+| **Contents: Read and write** | "다른 버전…" 모달의 `master` 버전 커밋, "버전 올려 배포"의 브랜치 갱신·머지 |
+| **Pull requests: Read and write** | "버전 올려 배포"의 다음 버전 PR 조회·생성·머지 |
+
+예전 문서는 Actions 권한만 적었지만, 모달의 버전 커밋이 이미 Contents 쓰기를 쓰고 있었습니다.
+Pull requests 권한이 없으면 "버전 올려 배포"가 GitHub 403 응답으로 반려됩니다.
 
 ### 3. Vercel 환경변수 (Production)
 
@@ -575,6 +654,7 @@ PAT나 Slack 시크릿을 거기 두면 확장 번들에 섞여 들어갈 수 �
 | `EXPO_ASC_API_KEY_P8` | iOS 스토어 버전 조회 | ✅ |
 | `EXPO_ANDROID_SERVICE_ACCOUNT_JSON` | Android 스토어 버전 조회 | ✅ |
 | `CLIENT_ID` / `CLIENT_SECRET` / `REFRESH_TOKEN` | 확장 업로드·게시 제출, 초안 버전 조회(웹스토어 API v2) | ✅ |
+| `APP_ID` / `APP_PRIVATE_KEY` | GitHub App 토큰 — `deploy-log` 기록 push, 다음 버전 PR 생성·갱신. App에 **Contents·Pull requests 쓰기** 권한이 필요합니다(GITHUB_TOKEN으로 연 PR은 CI가 돌지 않아 App 토큰을 씁니다) | ✅ (권한은 확인 필요) |
 
 위 두 스레드용 시크릿을 등록하기 전에는 스레드가 생기지 않고 기존처럼 웹훅 최상위
 메시지로 나갑니다. 등록했는데도 스레드가 안 생기면 Actions 실행의 `::warning::`을
@@ -600,8 +680,13 @@ App Store Connect의 키 ID·발급자 ID·앱 ID는 시크릿이 아니라
 | `.github/workflows/versions.yml` | 배포 현황만 조회해 게시 |
 | `.github/workflows/notify-extension-published.yml` | 30분마다 웹스토어 게시본을 조회해, 레포의 확장 버전이 게시되면 한 번 알림 |
 | `.github/workflows/release.yml` | 실제 스토어 제출 (버튼이 이걸 실행) |
-| `.github/workflows/release-notify.yml` | 릴리스 타깃 하나의 결과를 Slack에 게시 (release.yml이 타깃별로 호출) |
-| `.github/scripts/deploy/notify-release-result.mjs` | 릴리스 성패를 타깃별로 Slack에 보고 |
+| `.github/workflows/release.yml` (`next-version-extension` · `next-version-app`) | 확장·앱 릴리스 성공 뒤 다음 patch 버전 PR을 열거나 갱신 |
+| `.github/workflows/release-notify.yml` | 릴리스 타깃 하나의 결과를 Slack에 게시하고, 성공이면 배포 기록을 남김 (release.yml이 타깃별로 호출) |
+| `.github/scripts/deploy/notify-release-result.mjs` | 릴리스 성패를 타깃별로 Slack에 보고 (배포 기록 섹션 포함) |
+| `.github/scripts/deploy/record-deploy.mjs` | `deploy-log` 브랜치의 플랫폼별 파일에 배포 항목을 추가 |
+| `.github/scripts/deploy/collect-deploy-prs.mjs` | 배포 범위 분류와 타깃에 영향 준 PR 수집 |
+| `.github/scripts/deploy/sync-next-version-pr.mjs` | 트랙별 다음 버전 PR 생성·갱신 |
+| `.github/scripts/shared/version.mjs` | semver 파싱·비교·bump, 버전 한 줄 치환 |
 | `.github/scripts/deploy/notify-staging-deploy.mjs` | 테스트 서버 배포 성패를 Slack에 보고 |
 | `.github/scripts/deploy/notify-thread-root.mjs` | 머지 스레드의 루트 메시지를 만들고 `thread_ts`를 잡 output으로 냄 |
 | `.github/scripts/deploy/notify-thread-reply.mjs` | 타깃 하나(웹·확장·앱)의 빌드 결과를 스레드 댓글로 보고 |

@@ -87,11 +87,21 @@ $EDITOR apps/web/src/modules/i18n/locales/en/translation.json   # updates.versio
 
 릴리스 노트 초안까지 함께 작성하려면 `/version-update`를 사용하세요.
 
-**Slack에서 올릴 수도 있습니다.** 배포 알림의 **다른 버전…** 버튼을 눌러 `앱 버전` /
-`확장 버전` 칸에 새 버전을 적고 배포하면, `master`에 버전 커밋이 자동으로 생기고 그
-커밋이 그대로 배포됩니다. 릴리스 노트(`Update.ts`·`translation.json`)는 여기서 받지
-않습니다 — 사람이 쓰는 문장이라 위 방법으로 따로 넣습니다. 자세한 제약은
+**Slack에서 올리는 것이 기본입니다.** 확장·앱 배포가 성공하면 `release.yml`이 배포한
+버전에 patch를 1 올린 **다음 버전 PR**(`chore/next-version-<트랙>`)을 열어 둡니다. 이 PR은
+열어 두기만 하고 직접 머지하지 않습니다 — 위의 "실제로 배포될 때만 움직여야" 원칙 때문에,
+`master`의 버전은 배포하는 순간에만 올라가야 합니다. 다음 배포 때 Slack 배포 알림의
+**버전 올려 배포** 메뉴에서 patch / minor / major를 고르면 Slack 서버가 그 PR을 고른
+버전으로 맞춰 머지하고, 머지 커밋을 그대로 배포합니다.
+
+`1.12.0-hotfix`처럼 단계로 표현할 수 없는 버전은 **다른 버전…** 모달의 `앱 버전` /
+`확장 버전` 칸에 직접 적습니다. 이 경로는 `master`에 버전 커밋을 PR 없이 바로 만듭니다.
+릴리스 노트(`Update.ts`·`translation.json`)는 두 경로 모두 받지 않습니다 — 사람이 쓰는
+문장이라 위 방법으로 따로 넣습니다. 자세한 동작과 제약은
 [release-flow.md](release-flow.md)의 "버전을 올려서 배포할 때"에 있습니다.
+
+배포마다 어떤 PR이 나갔는지는 `deploy-log` 브랜치의 플랫폼별 기록(`web.md`·`extension.md`·
+`app.md`)에 남습니다. 웹은 버전 대신 커밋 SHA로 항목을 구분합니다.
 
 버전 변경은 일반적인 Pull Request를 통해 `master`로 들어갑니다 —
 [branch-strategy.md](branch-strategy.md)를 참고하세요. 릴리스 커밋에

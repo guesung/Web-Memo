@@ -97,6 +97,12 @@ git checkout feat/memo-search   # 작업 브랜치로 복귀
    - `extension` — 빌드 + Chrome 웹 스토어 업로드(심사를 통과하면 바로 게시)
    - `web` — Vercel 프로덕션 배포
 
+   확장·앱은 배포 버튼 옆 **버전 올려 배포** 메뉴로 patch / minor / major를 고르면
+   열려 있던 다음 버전 PR(`chore/next-version-<트랙>`)이 머지되고 그 머지 커밋이
+   배포됩니다. 이 PR은 배포 성공 뒤 자동으로 열리며 **사람이 직접 머지하지 않습니다**.
+   배포가 성공하면 결과 메시지에 이번에 나간 PR 목록이 붙고, `deploy-log` 브랜치에
+   플랫폼별로 기록됩니다.
+
    Slack이 막혔다면 Actions → **Release** → *Run workflow*로 같은 일을 할 수
    있습니다. 버튼은 이 워크플로를 대신 실행해 줄 뿐입니다.
 3. **`develop`을 리셋합니다** (아래 참고).

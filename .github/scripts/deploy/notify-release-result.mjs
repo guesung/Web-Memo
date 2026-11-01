@@ -10,6 +10,9 @@
  * (앱 빌드 약 30분)을 기다려야 해서 이미 끝난 웹·확장 결과까지 그만큼 늦게 나가기
  * 때문입니다. 배포마다 따로 나가면 각자 끝나는 대로 알립니다.
  *
+ * 성공 결과이고 DEPLOY_RECORD_PATH의 기록 결과 JSON(record-deploy.mjs가 씀)이 있으면
+ * "배포 기록" 섹션을 완료 메시지에 합칩니다. 별도 메시지는 보내지 않습니다.
+ *
  * 로컬 실행 (SLACK_WEBHOOK_URL 없이 돌리면 페이로드만 stdout에 찍습니다):
  *   GH_TOKEN=$(gh auth token) GITHUB_REPOSITORY=guesung/Web-Memo GITHUB_RUN_ID=<run id> \
  *   TARGET=app RESULT=success node .github/scripts/deploy/notify-release-result.mjs
@@ -22,6 +25,10 @@ import {
 } from "../shared/repo-versions.mjs";
 import { readCommitSubject, requireEnv } from "../shared/run-context.mjs";
 import { postToSlack } from "../shared/slack-blocks.mjs";
+import {
+	buildRecordBlock,
+	readRecordResult,
+} from "./release-record-section.mjs";
 
 const TARGET_LABELS = {
 	app: "앱",
@@ -141,6 +148,14 @@ const main = async () => {
 	const commitSubject = readCommitSubject("HEAD");
 	const subtitle = [version, commitSubject].filter(Boolean).join(" · ");
 
+	// 배포 기록은 성공한 릴리스에만 있고, 결과 파일이 없으면 기존 메시지 그대로 나갑니다.
+	const recordBlock =
+		result === "success"
+			? buildRecordBlock(
+					readRecordResult({ path: process.env.DEPLOY_RECORD_PATH, target }),
+				)
+			: null;
+
 	const payload = {
 		text: [headline, commitSubject].filter(Boolean).join(" — "),
 		blocks: [
@@ -152,6 +167,7 @@ const main = async () => {
 				},
 			},
 			{ type: "section", text: { type: "mrkdwn", text: lines.join("\n") } },
+			...(recordBlock ? [recordBlock] : []),
 			{
 				type: "context",
 				elements: [{ type: "mrkdwn", text: `배포 ref \`${ref}\`` }],
@@ -182,7 +198,9 @@ const main = async () => {
 	};
 
 	if (!process.env.SLACK_WEBHOOK_URL) {
-		console.warn("::warning::SLACK_WEBHOOK_URL 이 없어 Slack 전송을 건너뜁니다");
+		console.warn(
+			"::warning::SLACK_WEBHOOK_URL 이 없어 Slack 전송을 건너뜁니다",
+		);
 		console.log(JSON.stringify(payload, null, 2));
 
 		return;

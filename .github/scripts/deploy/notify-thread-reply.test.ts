@@ -19,7 +19,11 @@ const runScript = (env: Record<string, string>) => {
 		},
 	});
 
-	return { status: result.status, stdout: result.stdout, stderr: result.stderr };
+	return {
+		status: result.status,
+		stdout: result.stdout,
+		stderr: result.stderr,
+	};
 };
 
 describe("notify-thread-reply.mjs", () => {
@@ -94,13 +98,14 @@ describe("notify-thread-reply.mjs", () => {
 			return JSON.parse(result.stdout);
 		};
 
+		// 확장·앱은 배포 버튼 뒤에 "버전 올려 배포" 메뉴가 붙고 웹에는 붙지 않는다
 		it.each([
-			["web", "deploy_web"],
-			["extension", "deploy_extension"],
-			["app", "deploy_app"],
+			["web", ["deploy_web"]],
+			["extension", ["deploy_extension", "deploy_bump_extension"]],
+			["app", ["deploy_app", "deploy_bump_app"]],
 		])(
 			"%s 성공이면 그 타깃의 배포 · 다른 버전 · 워크플로 버튼이 붙는다",
-			(target, deployActionId) => {
+			(target, deployActionIds) => {
 				const payload = readPayload({
 					TARGET: target,
 					CHANGED: "true",
@@ -111,13 +116,15 @@ describe("notify-thread-reply.mjs", () => {
 
 				expect(actions.type).toBe("actions");
 				expect(
-					actions.elements.map((element: { action_id: string }) => element.action_id),
-				).toEqual([deployActionId, "deploy_custom", "open_link"]);
+					actions.elements.map(
+						(element: { action_id: string }) => element.action_id,
+					),
+				).toEqual([...deployActionIds, "deploy_custom", "open_link"]);
 				expect(JSON.parse(actions.elements[0].value)).toMatchObject({
 					target,
 					ref: commitSha,
 				});
-				expect(actions.elements[2].url).toBe(
+				expect(actions.elements.at(-1).url).toBe(
 					"https://github.com/guesung/Web-Memo/actions/runs/123",
 				);
 			},
@@ -251,11 +258,12 @@ describe("notify-thread-reply.mjs", () => {
 			expect(result.status).toBe(0);
 			expect(actionIds(result.stdout)).toEqual([
 				"deploy_extension",
+				"deploy_bump_extension",
 				"deploy_custom",
 				"download_extension",
 				"open_link",
 			]);
-			expect(elements[2].url).toBe(
+			expect(elements[3].url).toBe(
 				"https://github.com/guesung/Web-Memo/actions/runs/123/artifacts/2",
 			);
 		});
@@ -266,6 +274,7 @@ describe("notify-thread-reply.mjs", () => {
 			expect(result.status).toBe(0);
 			expect(actionIds(result.stdout)).toEqual([
 				"deploy_extension",
+				"deploy_bump_extension",
 				"deploy_custom",
 				"open_link",
 			]);

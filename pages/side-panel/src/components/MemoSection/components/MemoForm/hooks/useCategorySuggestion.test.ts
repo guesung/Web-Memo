@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
 	currentMemoId: 1 as number | null,
 	firstSavedMemoId: null as number | null,
 	isFirstSavedMemoReady: false,
+	isSuppressed: false,
 	tab: { url: "https://example.com/a", title: "Article" },
 }));
 
@@ -51,6 +52,7 @@ const TestHook = () => {
 		currentMemoId: mocks.currentMemoId,
 		firstSavedMemoId: mocks.firstSavedMemoId,
 		isFirstSavedMemoReady: mocks.isFirstSavedMemoReady,
+		isSuppressed: mocks.isSuppressed,
 		onCategorySelect: mocks.onSelect,
 	});
 	return null;
@@ -75,6 +77,7 @@ beforeEach(() => {
 	mocks.currentMemoId = 1;
 	mocks.firstSavedMemoId = null;
 	mocks.isFirstSavedMemoReady = false;
+	mocks.isSuppressed = false;
 	mocks.tab = { url: "https://example.com/a", title: "Article" };
 	mocks.request.mockReset();
 	mocks.trackEvent.mockReset();
@@ -283,4 +286,56 @@ it("사용자가 결정하기 전에는 제안이 15초 뒤에도 유지된다",
 		name: "category_suggestion_dismiss",
 		params: { source: "jev", is_new_category: false },
 	});
+});
+
+it("추천을 취소하면 늦게 온 결과를 적용하지 않고 로딩을 풀며 다시 요청할 수 있다", async () => {
+	let resolveRequest: (value: typeof jevSuggestion) => void = () => {};
+	mocks.request.mockImplementationOnce(
+		() =>
+			new Promise((resolve) => {
+				resolveRequest = resolve;
+			}),
+	);
+	await render();
+	let pending: Promise<void> = Promise.resolve();
+	await act(async () => {
+		pending = suggestion.triggerSuggestion("memo");
+	});
+	expect(suggestion.isLoading).toBe(true);
+
+	await act(async () => suggestion.cancelSuggestion());
+	expect(suggestion.isLoading).toBe(false);
+	await act(async () => {
+		resolveRequest(jevSuggestion);
+		await pending;
+	});
+	expect(suggestion.suggestion).toBeNull();
+	expect(suggestion.isLoading).toBe(false);
+
+	mocks.request.mockResolvedValueOnce(jevSuggestion);
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	expect(mocks.request).toHaveBeenCalledTimes(2);
+	expect(suggestion.suggestion?.existingCategoryId).toBe(7);
+});
+
+it("팝업이 열려 있는 동안에는 추천을 시작하지 않고 진행 중인 요청은 취소한다", async () => {
+	mocks.request.mockImplementationOnce(() => new Promise(() => {}));
+	await render();
+	await act(async () => {
+		void suggestion.triggerSuggestion("memo");
+	});
+	expect(suggestion.isLoading).toBe(true);
+
+	mocks.isSuppressed = true;
+	await render();
+	expect(suggestion.isLoading).toBe(false);
+
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	expect(mocks.request).toHaveBeenCalledTimes(1);
+
+	mocks.isSuppressed = false;
+	mocks.request.mockResolvedValueOnce(jevSuggestion);
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	expect(mocks.request).toHaveBeenCalledTimes(2);
 });

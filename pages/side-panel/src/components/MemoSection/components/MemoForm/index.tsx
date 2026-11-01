@@ -86,7 +86,7 @@ const MemoFormContent = ({
 	const [categoryMotionSequence, setCategoryMotionSequence] = useState(0);
 	const [categoryWidth, setCategoryWidth] = useState<number | undefined>();
 	const categoryResizeObserverRef = useRef<ResizeObserver | null>(null);
-	const setCategoryVisual = useCallback((visual: HTMLDivElement | null) => {
+	const setCategoryVisual = useCallback((visual: HTMLElement | null) => {
 		categoryResizeObserverRef.current?.disconnect();
 		if (!visual) return;
 		const updateWidth = () => setCategoryWidth(visual.offsetWidth);
@@ -280,6 +280,7 @@ const MemoFormContent = ({
 			!isControlsDisabled &&
 			!isWritePending &&
 			saveStatus === "saved",
+		isSuppressed: showCategoryList,
 		onCategorySelect: updateCategory,
 	});
 
@@ -677,17 +678,22 @@ const MemoFormContent = ({
 							</div>
 						) : isSuggestingCategory ? (
 							// 추천 중에는 칩 자리를 대신해, 곧 카테고리가 붙는다는 걸 같은 자리에서 보여 준다.
-							<div
+							// 눌러서 팝업이 열리면 추천이 취소되고 이 버튼은 칩으로 바뀐다.
+							<button
+								type="button"
 								ref={setCategoryVisual}
 								data-testid="category-suggesting"
+								onClick={handleCategoryButtonClick}
+								disabled={isMemoLocked || !!changeDisabledReason}
+								title={!isMemoLocked ? changeDisabledReason : undefined}
 								className={cn(
 									badgeVariants({ variant: "outline" }),
-									"text-muted-foreground gap-1 border-dashed px-2 py-0.5",
+									"text-muted-foreground gap-1 border-dashed px-2 py-0.5 disabled:cursor-not-allowed disabled:opacity-50",
 								)}
 							>
 								<Loader2Icon size={12} className="animate-spin" />
 								{I18n.get("category_suggesting")}
-							</div>
+							</button>
 						) : (
 							<div
 								ref={setCategoryVisual}

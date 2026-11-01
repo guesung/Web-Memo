@@ -6,7 +6,7 @@
 
 - **코드 계약:** [type.ts](../packages/shared/src/modules/analytics/type.ts)의 `TAnalyticsEvent`와 `EVENT_CATEGORY`.
 - **발생 동작:** 아래 호출부 코드가 원천입니다. 타입에 이름이 있어도 실행 경로가 없을 수 있습니다.
-- **문서 검토 기준:** 2026-10-28, master `445ea702`의 81종 명세에 PR #788의 신규 3종을 통합해 총 84개 이름을 기술했습니다.
+- **문서 검토 기준:** 2026-10-28, master `445ea702`의 81종 명세에 PR #788의 신규 3종을 통합해 총 84개 이름을 기술했습니다. 소개 데모 수동 조작 1종과 웹스토어 리뷰 요청 4종(DB-1264)을 더해 현재 89개입니다.
   기존 81종 문서화는 제품 동작을 바꾸지 않았으며, 신규 3종은 PR #788의 구현을 기준으로 기술했습니다.
   아래 한계는 AS-IS 기록이며, 오류 판정·개인정보 공백을 바람직한 동작으로 승인하는 것은 아닙니다.
 - **운영 확인과 구분:** 코드·테스트를 읽은 사실은 테스트 실행·배포·운영 수신의 증거가 아닙니다.
@@ -237,7 +237,7 @@
 
 - **질문:** 어떤 계기로 오프라인 대기 저장이 발생하는가?
 - **발생·제외:** 로그인 사용자의 폼 변경을 enqueueOfflineMemo에 await한 뒤 발생. 사전 오프라인·같은 대상 대기 중·온라인 시도 후 네트워크 오류 경로가 있다. 사용자 없으면 failed로 끝나며 발화하지 않는다.
-- **속성:** 필수 `trigger: "offline"|"network_error"|"already_queued"`.
+- **속성:** 필수 `trigger: "offline"|"network_error"|"already_queued"`; 선택 `queue_contract_version: 2`.
 - **단위·중복:** enqueue 성공 호출당 1회. 같은 대상의 최신 입력이 큐 항목을 덮어써도 다시 발생하므로 이벤트 수≠고유 큐 항목 수.
 - **근거·테스트:** [useMemoForm.ts](../pages/side-panel/src/components/MemoSection/components/MemoForm/hooks/useMemoForm.ts) · [offlineMemoQueue.ts](../pages/side-panel/src/utils/offlineMemoQueue.ts); 테스트: [useMemoForm.test.ts](../pages/side-panel/src/components/MemoSection/components/MemoForm/hooks/useMemoForm.test.ts) · [offlineMemoQueue.test.ts](../pages/side-panel/src/utils/offlineMemoQueue.test.ts).
 - **한계·이력:** 클라우드 영속 저장 성공을 의미하지 않는다. 사용자/메모/논리 저장 식별자는 없고 입력 유실률 분모로 바로 사용 불가. 도입 버전·일자 미확인.
@@ -245,11 +245,11 @@
 ### `memo_offline_sync_result`
 
 - **질문:** 대기열 flush에서 몇 항목이 처리·충돌했는가?
-- **발생·제외:** flush 완료 후 syncedCount>0 또는 conflicts.length>0 또는 hasOtherError이면 발생. 사용자 없음/동일 훅 flush 진행 중은 제외. 빈 큐·처리0의 순수 네트워크 실패·throw로 종료한 flush는 결과 이벤트가 없을 수 있다.
-- **속성:** 필수 `trigger: "mount"|"online"|"retry_click"|"enqueue"`, `synced_count: number`, `conflict_count: number`, `has_other_error: boolean`.
-- **단위·중복:** 관측된 flush 결과당 1회. synced_count는 처리한 항목 수이며 충돌 새 복사와 이미 같은 내용 no-op 성공도 포함할 수 있다. 훅 내부 ref는 중첩 flush를 막지만 전역 attempt ID는 없다.
+- **발생·제외:** v2는 flush에 서버 시도·ACK 완료·네트워크/저장소/잠금 오류가 있으면 종료 시 발생. 사용자 없음·동일 훅 중첩 호출·정상 빈 큐는 제외한다. 네트워크 실패만 난 시도와 서버 호출 전 오류도 포함한다. 이전 버전은 순수 네트워크 실패·throw의 결과가 누락될 수 있다.
+- **속성:** 필수 `trigger: "mount"|"online"|"retry_click"|"enqueue"`, `synced_count: number`, `conflict_count: number`, `has_other_error: boolean`; 선택 `queue_contract_version: 2`, `attempted_count`, `network_error_count`, `other_error_count`, `remaining_count`, `ack_latency_sum_ms`, `ack_latency_count`, `no_op_count`. 잔여량을 읽지 못하면 remaining_count는 생략한다.
+- **단위·중복:** 관측된 flush 결과당 1회. synced_count는 서버 확인과 로컬 ACK 저장을 모두 마쳐 제거한 revision 수다. conflict_count/no_op_count는 그 부분집합이다. 실제 충돌 복사 알림과 ACK 완료 수는 다를 수 있다. 같은 사용자 flush는 확장 origin의 Web Lock으로 직렬화하지만 서버·GA 전역 exactly-once는 보장하지 않는다.
 - **근거·테스트:** [useOfflineMemoSync.ts](../pages/side-panel/src/hooks/useOfflineMemoSync.ts) · [offlineMemoQueue.ts](../pages/side-panel/src/utils/offlineMemoQueue.ts); 테스트: [useOfflineMemoSync.test.ts](../pages/side-panel/src/hooks/useOfflineMemoSync.test.ts) · [offlineMemoQueue.test.ts](../pages/side-panel/src/utils/offlineMemoQueue.test.ts).
-- **한계·이력:** queue 이벤트와 단위가 달라 단순 나눗셈으로 복구 성공률을 만들 수 없다. has_other_error=false가 네트워크 성공 전체를 뜻하지 않는다. 지연·잔여 항목·전체 시도는 미계측. 도입 버전·일자 미확인.
+- **한계·이력:** DB-1255의 v2 필터로 관측 전송 시도와 ACK 지연을 분석한다. queue 이벤트와 단위가 달라 단순 나눗셈으로 24시간 복구 성공률을 만들 수 없다. 전체 운영 유실률·p95·입력부터 클라우드 완료 지연을 뜻하지 않는다. 분모·중복 제거·시각 기준은 [오프라인 큐 계약](analytics.md#오프라인-큐-계약-db-1255) 참조. 실제 보급 버전·수신은 별도 관찰 대상이다.
 
 ### `past_memo_show`
 
@@ -534,6 +534,15 @@
 
 ## 진입·인증·가이드·공지·블로그
 
+### `introduce_demo_control`
+
+- **질문:** 소개 페이지 방문자가 데모를 직접 제어하는가? 어느 단계로 이동하는가?
+- **발생·제외:** 사용자가 단계 버튼을 누르거나 재생·정지 버튼으로 상태를 바꿀 때 호출한다. 동일 단계 재선택도 포함한다. 일반 모션 설정에서는 단계 선택이 해당 장면의 시작부터 재생하며, 이때 별도 `play` 이벤트는 추가하지 않고 `select_step`만 기록한다. 명시적 단계 선택·재생은 남아 있는 포커스 정지보다 우선하지만 동작 축소 설정은 존중한다. 자동 재생 시작·자동 단계 전환·focus·화면 이탈·문서 숨김·동작 축소에 따른 일시정지는 기록하지 않는다. 마우스를 올리는 동작은 재생을 멈추지 않으며 계측하지 않는다. 동작 축소로 비활성화된 재생 버튼도 기록하지 않는다.
+- **속성:** `action: "select_step" | "play" | "pause"`, `stage: "read" | "shortcut" | "panel" | "write" | "saved"`. 재생·정지는 클릭 당시 화면 단계를 기록한다. 분류는 `engagement`다.
+- **단위·중복:** 수동 클릭당 1회. 자동 동작은 분모에 포함하지 않는다.
+- **근거·테스트:** [소개 데모](../apps/web/src/app/%5Blng%5D/%28no-auth%29/introduce/_components/InteractiveDemo/index.tsx); [브라우저 회귀 검증](../e2e/tests/web/introduceDemo.test.ts).
+- **한계·이력:** 가상 제품 화면의 조작이며 실제 메모 작성·저장·패널 실행이나 전체 영상 시청을 의미하지 않는다. 기존 메모·확장 이벤트와 합산하지 않는다. 2026-10-28 추가. 운영 수신은 별도 확인 대상이다.
+
 ### `side_panel_open`
 
 - **질문:** 패널 문서가 얼마나 열리는가?
@@ -667,7 +676,7 @@
 - **속성:** 필수 `from: string`(언어 없는 출발 경로), `position: TInstallClickPosition` = hero/recommendation/final/install_check_dialog.
 - **단위·중복:** 조건을 만족하는 클릭당 1회; 설치 여부/사용자별 중복 제거 없음.
 - **근거·테스트:** [호출 코드](../apps/web/src/app/%5Blng%5D/%28no-auth%29/_components/TrackInstallClick/index.tsx); 이벤트 전용 테스트 미확인; [계약](../packages/shared/src/modules/analytics/type.ts).
-- **한계·이력:** 스토어 도착이나 설치 완료를 보증하지 않는다. from은 호출 마크업 계약이지 수집 시 경로 재검증 결과가 아니다. 도입 버전·일자 미확인.
+- **한계·이력:** 스토어 도착이나 설치 완료를 보증하지 않는다. from은 호출 마크업 계약이지 수집 시 경로 재검증 결과가 아니다. 도입 버전·일자 미확인. DB-1267부터 같은 capture가 웹스토어 링크 href에 유입 utm_*를 붙이지만 이벤트 속성에는 UTM이 없다 — 채널 분해는 GA4 세션 소스/매체로 한다([홍보 링크 UTM 규약](analytics.md#홍보-링크-utm-규약)).
 
 ### `extension_install_dismiss`
 
@@ -785,6 +794,42 @@
 - **단위·중복:** 핸들러 호출당1회; 로컬 숨김·저장된 닫은목록으로 후속 표시를 억제.
 - **근거·테스트:** [호출 코드](../pages/side-panel/src/components/NoticeBanner/useNoticeBanner.ts); [관련 테스트](../pages/side-panel/src/components/NoticeBanner/useNoticeBanner.test.ts).
 - **한계·이력:** 닫기 저장 성공은 보장하지 않는다. 저장 실패면 같은 패널은 숨기지만 다음 패널에서 공지가 다시 보일 수 있음. 도입 버전·일자 미확인.
+
+### `review_prompt_view`
+
+- **질문:** 웹스토어 리뷰 요청 배너가 하루·주마다 몇 번 노출되는가? 1회차와 2회차 반응이 다른가?
+- **발생·제외:** 온라인 서버 저장 성공 뒤 노출 조건(Chrome·AI 탭 닫힘·영구 숨김 아님·노출 2회 미만·마지막 노출 후 14일 이상·내 메모 5개 이상)을 통과하고, 노출 횟수를 sync 저장소에 쓰는 데 성공해 배너를 표시한 직후. 자격 미달·개수 조회 실패·저장소 쓰기 실패는 제외.
+- **속성:** 필수 `shown_count: number`(이번 노출을 포함한 회차, 현재 1 또는 2).
+- **단위·중복:** 표시 중·조회 진행 중 가드로 노출 1회당 1건. 패널을 다시 열어도 저장된 횟수·간격 조건 때문에 같은 회차가 다시 나가지 않음.
+- **근거·테스트:** [호출 코드](../pages/side-panel/src/components/ReviewPromptBanner/useReviewPrompt.ts); [관련 테스트](../e2e/tests/extension/reviewPrompt.test.ts).
+- **한계·이력:** 뷰포트 노출·읽음 검증이 아니라 표시 상태 관측이다. `view − (open + close + never)`는 행동 없이 패널을 닫은 무응답 수로 해석한다. DB-1264. 도입 버전·일자 미확인.
+
+### `review_prompt_open`
+
+- **질문:** 노출된 리뷰 요청 중 몇 %가 웹스토어 리뷰 페이지를 열었는가?
+- **발생·제외:** '웹스토어에서 리뷰 쓰기' 클릭 핸들러에서 배너를 숨긴 뒤, 리뷰 페이지 새 탭 열기와 같은 시점. 탭 도착은 기다리지 않는다.
+- **속성:** 필수 `shown_count: number`(노출 시점 회차).
+- **단위·중복:** 클릭 직후 배너가 사라져 노출당 최대 1건.
+- **근거·테스트:** [호출 코드](../pages/side-panel/src/components/ReviewPromptBanner/useReviewPrompt.ts); [관련 테스트](../e2e/tests/extension/reviewPrompt.test.ts).
+- **한계·이력:** 리뷰 작성 완료는 웹스토어 안에서 일어나 측정할 수 없다. 이 이벤트는 리뷰 의도의 대리 지표다. 확장 사이드 패널에는 GA 향상된 측정이 없어 외부 링크 자동 수집과 겹치지 않음. DB-1264. 도입 버전·일자 미확인.
+
+### `review_prompt_close`
+
+- **질문:** 영구 거절 없이 그냥 닫는 사용자가 얼마나 되는가(2회차 노출 대상으로 남는 비율)?
+- **발생·제외:** 닫기(X) 버튼 또는 배너 안에 포커스가 있을 때 Esc. 두 경로가 같은 핸들러라 구분하지 않는다. 저장소는 바꾸지 않는다.
+- **속성:** 필수 `shown_count: number`(노출 시점 회차).
+- **단위·중복:** 닫으면 배너가 사라져 노출당 최대 1건.
+- **근거·테스트:** [호출 코드](../pages/side-panel/src/components/ReviewPromptBanner/useReviewPrompt.ts); [관련 테스트](../e2e/tests/extension/reviewPrompt.test.ts).
+- **한계·이력:** 패널을 닫아 배너가 사라진 경우는 포함하지 않는다(무응답). DB-1264. 도입 버전·일자 미확인.
+
+### `review_prompt_never`
+
+- **질문:** '다시 보지 않기' 비율이 높아 리뷰 요청을 잔소리로 느끼는가?
+- **발생·제외:** '다시 보지 않기' 핸들러에서 배너를 숨긴 직후, 영구 숨김 sync 저장 이전. 저장이 실패해도 의도는 기록한다.
+- **속성:** 필수 `shown_count: number`(노출 시점 회차).
+- **단위·중복:** 노출당 최대 1건.
+- **근거·테스트:** [호출 코드](../pages/side-panel/src/components/ReviewPromptBanner/useReviewPrompt.ts); [관련 테스트](../e2e/tests/extension/reviewPrompt.test.ts).
+- **한계·이력:** 영구 숨김 저장 성공은 보장하지 않는다. 저장 실패면 다음 조건 충족 때 다시 노출될 수 있음. 기준선은 배포 후 첫 4주 결과로 정한다. DB-1264. 도입 버전·일자 미확인.
 
 ### `blog_subscription_change`
 

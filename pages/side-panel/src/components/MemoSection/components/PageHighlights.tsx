@@ -14,7 +14,7 @@ import {
 } from "@web-memo/shared/utils";
 import { I18n } from "@web-memo/shared/utils/extension";
 import { ArrowUpRight, ChevronDown, Highlighter } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const PREVIEW_COUNT = 2;
 
@@ -30,7 +30,7 @@ export default function PageHighlights({ userId, tabId, url }: Props) {
 		queryFn: async () => {
 			const result = await new HighlightService(
 				supabaseClient,
-			).getHighlightsByUrl(pageKey);
+			).getHighlightsByUrl(url);
 			if (result.error) throw result.error;
 			return (result.data ?? []).sort(
 				(left, right) =>
@@ -43,6 +43,27 @@ export default function PageHighlights({ userId, tabId, url }: Props) {
 	const [isCollapsed, setIsCollapsed] = useState(false);
 	const [showAll, setShowAll] = useState(false);
 	const [focusFailed, setFocusFailed] = useState(false);
+	const bodyRef = useRef<HTMLDivElement>(null);
+	const previousHeightRef = useRef<number | null>(null);
+
+	useLayoutEffect(() => {
+		const body = bodyRef.current;
+		const previousHeight = previousHeightRef.current;
+		previousHeightRef.current = null;
+		if (
+			!body ||
+			previousHeight === null ||
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches
+		)
+			return;
+		const nextHeight = body.getBoundingClientRect().height;
+		if (Math.abs(nextHeight - previousHeight) < 1) return;
+		const animation = body.animate(
+			[{ height: `${previousHeight}px` }, { height: `${nextHeight}px` }],
+			{ duration: 180, easing: "cubic-bezier(.22, 1, .36, 1)" },
+		);
+		return () => animation.cancel();
+	});
 
 	useEffect(() => {
 		return bridge.handle.HIGHLIGHTS_CHANGED(({ pageKey: changedPageKey }) => {
@@ -99,64 +120,78 @@ export default function PageHighlights({ userId, tabId, url }: Props) {
 				<span className="text-xs">{highlights.length}</span>
 				<ChevronDown
 					aria-hidden
-					className={`size-4 shrink-0 text-muted-foreground transition-transform ${isCollapsed ? "-rotate-90" : ""}`}
+					className={`size-4 shrink-0 text-muted-foreground transition-transform duration-[180ms] ease-out motion-reduce:transition-none ${isCollapsed ? "-rotate-90" : ""}`}
 				/>
 			</button>
-			{!isCollapsed && (
-				<div className="min-h-0 overflow-y-auto pt-1">
-					{isLoading && <LoadingState />}
-					{isError && (
-						<p className="py-2 text-xs text-muted-foreground">
-							{I18n.get("page_highlights_load_failed")}{" "}
-							<button
-								type="button"
-								className="text-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-								onClick={() => void refetch()}
-							>
-								{I18n.get("page_highlights_retry")}
-							</button>
-						</p>
-					)}
-					{!isLoading && !isError && highlights.length === 0 && (
-						<p className="py-2 text-xs text-muted-foreground">
-							{I18n.get("page_highlights_empty")}
-						</p>
-					)}
-					{!isError && visibleHighlights.length > 0 && (
-						<>
-							<ul>
-								{visibleHighlights.map((highlight) => (
-									<li key={highlight.id}>
-										<QuoteButton
-											highlight={highlight}
-											onClick={() => void handleQuoteClick(highlight.id)}
-										/>
-									</li>
-								))}
-							</ul>
-							{highlights.length > PREVIEW_COUNT && (
+			<div
+				ref={bodyRef}
+				data-testid="highlights-body"
+				className={`grid min-h-0 transition-[grid-template-rows] duration-[180ms] ease-out motion-reduce:transition-none ${isCollapsed ? "grid-rows-[0fr]" : "grid-rows-[1fr]"}`}
+			>
+				<div
+					className="min-h-0 overflow-y-auto"
+					inert={isCollapsed}
+					aria-hidden={isCollapsed}
+				>
+					<div className="pt-1">
+						{isLoading && <LoadingState />}
+						{isError && (
+							<p className="py-2 text-xs text-muted-foreground">
+								{I18n.get("page_highlights_load_failed")}{" "}
 								<button
 									type="button"
-									className="mt-1 w-full text-right text-xs text-muted-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-									onClick={() => setShowAll((value) => !value)}
+									className="text-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+									onClick={() => void refetch()}
 								>
-									{showAll
-										? I18n.get("page_highlights_show_less")
-										: I18n.get(
-												"page_highlights_show_all",
-												String(highlights.length),
-											)}
+									{I18n.get("page_highlights_retry")}
 								</button>
-							)}
-						</>
-					)}
-					{focusFailed && (
-						<p role="alert" className="mt-1 text-xs text-destructive">
-							{I18n.get("page_highlights_focus_failed")}
-						</p>
-					)}
+							</p>
+						)}
+						{!isLoading && !isError && highlights.length === 0 && (
+							<p className="py-2 text-xs text-muted-foreground">
+								{I18n.get("page_highlights_empty")}
+							</p>
+						)}
+						{!isError && visibleHighlights.length > 0 && (
+							<>
+								<ul>
+									{visibleHighlights.map((highlight) => (
+										<li key={highlight.id}>
+											<QuoteButton
+												highlight={highlight}
+												onClick={() => void handleQuoteClick(highlight.id)}
+											/>
+										</li>
+									))}
+								</ul>
+								{highlights.length > PREVIEW_COUNT && (
+									<button
+										type="button"
+										className="mt-1 w-full text-right text-xs text-muted-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+										onClick={() => {
+											previousHeightRef.current =
+												bodyRef.current?.getBoundingClientRect().height ?? null;
+											setShowAll((value) => !value);
+										}}
+									>
+										{showAll
+											? I18n.get("page_highlights_show_less")
+											: I18n.get(
+													"page_highlights_show_all",
+													String(highlights.length),
+												)}
+									</button>
+								)}
+							</>
+						)}
+						{focusFailed && (
+							<p role="alert" className="mt-1 text-xs text-destructive">
+								{I18n.get("page_highlights_focus_failed")}
+							</p>
+						)}
+					</div>
 				</div>
-			)}
+			</div>
 		</section>
 	);
 }

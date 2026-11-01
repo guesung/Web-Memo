@@ -1,9 +1,60 @@
 import { expect, test } from "../fixtures/extension";
 import { findSidePanelPage, login, openSidePanel, skipGuide } from "../lib";
-import { MockSupabaseStore, setupSupabaseMocks } from "../lib/mocks";
+import {
+	createMockHighlight,
+	MockSupabaseStore,
+	setupSupabaseMocks,
+} from "../lib/mocks";
 
 const TEST_TEXT = "First selectable passage and second selectable passage.";
 const TOOLBAR = "#WEB_MEMO_HIGHLIGHT_TOOLTIP";
+
+test("사이드 패널의 저장된 인용을 누르면 원문의 정확한 범위를 잠시 강조한다", async ({
+	page,
+	context,
+}) => {
+	const url = "https://example.com/highlight-focus";
+	const quote = "Saved focus quote";
+	const store = new MockSupabaseStore();
+	store.addHighlight(
+		createMockHighlight({ url, exact_text: quote, text_position_start: 0 }),
+	);
+	await setupSupabaseMocks(page, store);
+	await context.route(url, (route) =>
+		route.fulfill({
+			contentType: "text/html",
+			body: `<div style="height:1500px"></div><p id="source">${quote} and other text</p>`,
+		}),
+	);
+	await login(page);
+	await skipGuide(page);
+	await openSidePanel(page);
+	const panel = await findSidePanelPage(page);
+	await page.goto(url);
+	await panel.getByRole("button", { name: new RegExp(quote) }).click();
+	const cue = page.locator("[data-web-memo-highlight-focus]");
+	await expect(cue).toHaveCount(1);
+	await expect(cue.locator("span")).toHaveCount(1);
+	expect(
+		await cue.evaluate((host) => {
+			const rect = host.shadowRoot
+				?.querySelector("span")
+				?.getBoundingClientRect();
+			const source = document.querySelector("#source")?.firstChild;
+			if (!rect || !source) return null;
+			const range = document.createRange();
+			range.setStart(source, 0);
+			range.setEnd(source, "Saved focus quote".length);
+			const selected = range.getBoundingClientRect();
+			return (
+				Math.abs(rect.left - selected.left) < 2 &&
+				Math.abs(rect.width - selected.width) < 2
+			);
+		}),
+	).toBe(true);
+	await expect(cue).toHaveCount(0);
+	await expect(page.locator("#source")).toHaveText(`${quote} and other text`);
+});
 
 test("첫 안내를 X로 닫으면 완료 저장하고 다음 선택에는 버블만 표시한다", async ({
 	page,

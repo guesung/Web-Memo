@@ -147,6 +147,12 @@ it("현재 페이지의 저장된 인용만 찾아 스크롤하고 등록한 수
 	const originalScrollIntoView = Element.prototype.scrollIntoView;
 	const scrollIntoView = vi.fn();
 	Element.prototype.scrollIntoView = scrollIntoView;
+	vi.stubGlobal("matchMedia", () => ({ matches: false }));
+	vi.stubGlobal(
+		"requestAnimationFrame",
+		vi.fn(() => 1),
+	);
+	vi.stubGlobal("cancelAnimationFrame", vi.fn());
 	const options = {
 		renderer: {
 			add: vi.fn(),
@@ -167,7 +173,10 @@ it("현재 페이지의 저장된 인용만 찾아 스크롤하고 등록한 수
 	const sendResponse = vi.fn();
 	handler({ pageKey, id: 7 }, {}, sendResponse);
 	expect(sendResponse).toHaveBeenLastCalledWith({ success: true });
-	expect(scrollIntoView).toHaveBeenCalledWith({ block: "center" });
+	expect(scrollIntoView).toHaveBeenCalledWith({
+		block: "center",
+		behavior: "smooth",
+	});
 	handler({ pageKey: `${pageKey}different`, id: 7 }, {}, sendResponse);
 	expect(sendResponse).toHaveBeenLastCalledWith({ success: false });
 	handler({ pageKey, id: 999 }, {}, sendResponse);

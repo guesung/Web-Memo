@@ -47,27 +47,63 @@ test("현재 페이지의 최근 인용 두 개를 보여주고, 전체 보기�
 		highlights.getByRole("button", { name: /First quote/ }),
 	).toHaveCount(0);
 	await expect(highlights.getByText("3", { exact: true })).toBeVisible();
+	const body = highlights.getByTestId("highlights-body");
+	const previewHeight = await body.evaluate(
+		(element) => element.getBoundingClientRect().height,
+	);
 	await highlights
 		.getByRole("button", { name: /Show all 3|3개 모두 보기/ })
 		.click();
 	await expect(
 		highlights.getByRole("button", { name: /First quote/ }),
 	).toBeVisible();
+	await expect
+		.poll(() =>
+			body.evaluate((element) => element.getBoundingClientRect().height),
+		)
+		.toBeGreaterThan(previewHeight);
 	const disclosure = highlights.getByRole("button", {
 		name: /Highlights on this page|이 페이지의 하이라이트/,
 	});
 	await disclosure.focus();
 	await panel.keyboard.press("Enter");
 	await expect(disclosure).toHaveAttribute("aria-expanded", "false");
+	await expect
+		.poll(() =>
+			body.evaluate((element) => element.getBoundingClientRect().height),
+		)
+		.toBe(0);
 	await expect(
 		highlights.getByRole("button", { name: /First quote/ }),
 	).toHaveCount(0);
 	await disclosure.click();
 	await expect(disclosure).toHaveAttribute("aria-expanded", "true");
+	await expect
+		.poll(() =>
+			body.evaluate((element) => element.getBoundingClientRect().height),
+		)
+		.toBeGreaterThan(0);
 	await expect(
 		highlights.getByRole("button", { name: /First quote/ }),
 	).toBeVisible();
 	await expect(panel.locator("#memo-textarea")).toBeEditable();
+	await panel.emulateMedia({ reducedMotion: "reduce" });
+	await highlights
+		.getByRole("button", { name: /Show preview|미리보기로 돌아가기/ })
+		.click();
+	expect(
+		await body.evaluate(
+			(element) =>
+				element
+					.getAnimations()
+					.filter((animation) => animation.playState === "running").length,
+		),
+	).toBe(0);
+	expect(
+		await body.evaluate(
+			(element) => getComputedStyle(element).transitionProperty,
+		),
+	).toBe("none");
 	await page.goto("https://example.com/panel-highlights-other");
 	await expect(
 		highlights.getByText(/No highlights saved|저장한 하이라이트가 없어요/),

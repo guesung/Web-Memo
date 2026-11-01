@@ -22,6 +22,7 @@ import {
 	type IFHighlightEditState,
 } from "./createHighlightEditor";
 import { startHighlightRestore } from "./restoreHighlights";
+import { showHighlightFocus } from "./showHighlightFocus";
 import { useHighlightBubbleGate } from "./useHighlightBubbleGate";
 
 /** 생성과 복원이 공유하는 렌더러 및 중복 판정에 필요한 기존 행. */
@@ -144,8 +145,11 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			requestEdit: bridge.request.EDIT_HIGHLIGHT,
 		});
 		editorRef.current = editor;
+		let stopFocus: (() => void) | undefined;
 		const stopScrollHandler = bridge.handle.SCROLL_TO_HIGHLIGHT(
 			(payload, _sender, sendResponse) => {
+				stopFocus?.();
+				stopFocus = undefined;
 				try {
 					const { pageKey, id } = payload ?? {};
 					if (
@@ -167,11 +171,18 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 						range?.startContainer instanceof Element
 							? range.startContainer
 							: range?.startContainer.parentElement;
-					if (!target?.isConnected || !target.scrollIntoView) {
+					if (!range || !target?.isConnected || !target.scrollIntoView) {
 						sendResponse({ success: false });
 						return;
 					}
-					target.scrollIntoView({ block: "center" });
+					const reducedMotion = window.matchMedia(
+						"(prefers-reduced-motion: reduce)",
+					).matches;
+					target.scrollIntoView({
+						block: "center",
+						behavior: reducedMotion ? "instant" : "smooth",
+					});
+					stopFocus = showHighlightFocus(range, reducedMotion);
 					sendResponse({ success: true });
 				} catch {
 					sendResponse({ success: false });
@@ -185,6 +196,7 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			isStopped = true;
 			generation += 1;
 			stopRestore?.();
+			stopFocus?.();
 			stopScrollHandler();
 			editor.stop();
 			editorRef.current = null;

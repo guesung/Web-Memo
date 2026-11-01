@@ -52,5 +52,21 @@ test("캐시에 없는 기존 카테고리 이름으로 만들기를 누르면 P
 
 	const badge = sidePanelPage.getByTestId("category-badge");
 	await expect(badge).toContainText(serverCategory.name);
+	await expect(badge.getByRole("button").first()).toBeFocused();
+	await expect(sidePanelPage.getByTestId("category-add-chip")).toHaveCount(0);
+	await badge.getByRole("button").first().click();
+	await popup.getByRole("option", { name: "Work" }).click();
+	await expect(badge).toContainText("Work");
+	await expect(badge.getByRole("button").first()).toBeFocused();
+	await sidePanelPage.emulateMedia({ reducedMotion: "reduce" });
+	await badge.getByRole("button").last().click();
+	await expect(chip).toBeVisible();
+	await expect(chip).toBeFocused();
+	await expect(badge).toHaveCount(0);
+	expect(
+		await chip
+			.locator("..")
+			.evaluate((element) => getComputedStyle(element).animationName),
+	).toBe("none");
 	expect(categoryPostRequests).toHaveLength(0);
 });

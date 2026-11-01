@@ -29,6 +29,9 @@ const mocks = vi.hoisted(() => ({
 	enqueueOfflineMemo: vi.fn(async (_item: unknown) => {}),
 	hasPendingOfflineMemo: vi.fn(async (_target: unknown) => false),
 	pendingOfflineItem: undefined as unknown,
+	pendingStatus: "absent" as "loading" | "absent" | "present" | "error",
+	userId: "user-1",
+	getTabInfo: vi.fn(),
 	trackEvent: vi.fn(async (_event: unknown) => {}),
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
@@ -37,7 +40,7 @@ vi.mock("@web-memo/shared/hooks", () => ({
 	useTabQuery: () => ({ data: mocks.tab }),
 	useSupabaseClientQuery: () => ({ data: {} }),
 	useSupabaseUserQuery: () => ({
-		user: { data: { user: { id: "user-1" } } },
+		user: { data: { user: mocks.userId ? { id: mocks.userId } : null } },
 	}),
 	memoQueryOptions: ({ url }: { url?: string }) => ({
 		queryKey: ["memo", url],
@@ -55,13 +58,20 @@ vi.mock("@web-memo/shared/modules/analytics", () => ({
 }));
 vi.mock("@web-memo/shared/utils/extension", () => ({
 	Tab: { get: async () => mocks.tab },
-	getTabInfo: async () => mocks.tab,
+	getTabInfo: () => mocks.getTabInfo(),
 }));
 vi.mock("../../../../../hooks/useOnlineStatus", () => ({
 	default: () => mocks.isOnline,
 }));
 vi.mock("../../../../../hooks/usePendingOfflineMemo", () => ({
-	default: () => mocks.pendingOfflineItem,
+	default: () => ({
+		status:
+			mocks.pendingStatus === "absent" && mocks.pendingOfflineItem
+				? "present"
+				: mocks.pendingStatus,
+		item: mocks.pendingOfflineItem,
+		refresh: vi.fn(),
+	}),
 }));
 vi.mock("../../../../../utils/offlineMemoQueue", () => ({
 	enqueueOfflineMemo: (item: unknown) => mocks.enqueueOfflineMemo(item),
@@ -133,6 +143,9 @@ beforeEach(() => {
 	mocks.enqueueOfflineMemo.mockReset().mockResolvedValue(undefined);
 	mocks.hasPendingOfflineMemo.mockReset().mockResolvedValue(false);
 	mocks.pendingOfflineItem = undefined;
+	mocks.pendingStatus = "absent";
+	mocks.userId = "user-1";
+	mocks.getTabInfo.mockReset().mockImplementation(async () => mocks.tab);
 	mocks.trackEvent.mockReset().mockResolvedValue(undefined);
 	queryClient = new QueryClient({
 		defaultOptions: { queries: { retry: false } },
@@ -614,7 +627,7 @@ it("오프라인이면 upsert 대신 대기열에 넣는다", async () => {
 	});
 	expect(mocks.trackEvent).toHaveBeenCalledWith({
 		name: "memo_offline_queued",
-		params: { trigger: "offline" },
+		params: { trigger: "offline", queue_contract_version: 2 },
 	});
 	expect(form.saveStatus).toBe("saved");
 });
@@ -630,7 +643,7 @@ it("현재 메모에 대기 항목이 있으면 온라인이어도 대기열에 
 	expect(mocks.enqueueOfflineMemo).toHaveBeenCalledTimes(1);
 	expect(mocks.trackEvent).toHaveBeenCalledWith({
 		name: "memo_offline_queued",
-		params: { trigger: "already_queued" },
+		params: { trigger: "already_queued", queue_contract_version: 2 },
 	});
 });
 
@@ -649,7 +662,7 @@ it("네트워크 오류로 실패하면 대기열에 넣고 저장 성공으로 
 	expect(mocks.enqueueOfflineMemo).toHaveBeenCalledTimes(1);
 	expect(mocks.trackEvent).toHaveBeenCalledWith({
 		name: "memo_offline_queued",
-		params: { trigger: "network_error" },
+		params: { trigger: "network_error", queue_contract_version: 2 },
 	});
 });
 
@@ -732,6 +745,88 @@ it("입력한 뒤에는 대기 항목이 갱신돼도 폼을 다시 덮지 않�
 	await render();
 
 	expect(mocks.values.memo).toBe("지금 입력 중");
+});
+
+it("queue lookup loading retains edits and writes once resolved", async () => {
+	mocks.pendingStatus = "loading";
+	await render();
+	await act(async () => form.handleMemoChange("latest"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(350);
+	});
+	expect(mocks.upsert).not.toHaveBeenCalled();
+	expect(mocks.enqueueOfflineMemo).not.toHaveBeenCalled();
+	mocks.pendingStatus = "absent";
+	await render();
+	expect(mocks.upsert).toHaveBeenCalledTimes(1);
+	expect(mocks.upsert.mock.calls[0][0].data.memo).toBe("latest");
+});
+
+it("lookup error fails closed and retry can save after lookup recovery", async () => {
+	mocks.pendingStatus = "error";
+	await render();
+	await act(async () => {
+		await form.saveMemo({ memo: "draft" });
+	});
+	expect(form.saveStatus).toBe("failed");
+	expect(mocks.upsert).not.toHaveBeenCalled();
+	mocks.pendingStatus = "absent";
+	await render();
+	await act(async () => {
+		await form.saveMemo({ memo: "draft" });
+	});
+	expect(mocks.upsert).toHaveBeenCalledTimes(1);
+});
+
+it("storage lookup and tab errors release save gate for retry", async () => {
+	await render();
+	mocks.getTabInfo.mockRejectedValueOnce(new Error("tab failed"));
+	await act(async () => {
+		expect(await form.saveMemo({ memo: "draft" })).toBe(false);
+	});
+	expect(form.isWritePending).toBe(false);
+	mocks.hasPendingOfflineMemo.mockRejectedValueOnce(
+		new Error("storage failed"),
+	);
+	await act(async () => {
+		expect(await form.saveMemo({ memo: "draft" })).toBe(false);
+	});
+	expect(form.isWritePending).toBe(false);
+	await act(async () => {
+		expect(await form.saveMemo({ memo: "draft" })).toBe(true);
+	});
+});
+
+it("enqueue failure does not report saved and remains retryable", async () => {
+	mocks.isOnline = false;
+	mocks.enqueueOfflineMemo.mockRejectedValueOnce(new Error("storage failed"));
+	await render();
+	await act(async () => {
+		expect(await form.saveMemo({ memo: "draft" })).toBe(false);
+	});
+	expect(form.saveStatus).toBe("failed");
+	expect(form.isWritePending).toBe(false);
+	expect(mocks.trackEvent).not.toHaveBeenCalled();
+	await act(async () => {
+		expect(await form.saveMemo({ memo: "draft" })).toBe(true);
+	});
+	expect(mocks.enqueueOfflineMemo).toHaveBeenCalledTimes(2);
+});
+
+it("telemetry rejection does not reject a completed queue write", async () => {
+	mocks.isOnline = false;
+	mocks.trackEvent.mockRejectedValueOnce(new Error("analytics failed"));
+	await render();
+	await act(async () => {
+		expect(await form.saveMemo({ memo: "private draft" })).toBe(true);
+	});
+	expect(form.saveStatus).toBe("saved");
+	expect(
+		(mocks.trackEvent.mock.calls[0][0] as { params: unknown }).params,
+	).toEqual({
+		trigger: "offline",
+		queue_contract_version: 2,
+	});
 });
 
 it("실제 온라인 upsert에는 사이드 패널 출처와 요청 사용자만 넘기고 UI 성공에서는 신규 이벤트를 보내지 않는다", async () => {

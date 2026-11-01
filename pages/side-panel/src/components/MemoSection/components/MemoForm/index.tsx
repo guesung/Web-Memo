@@ -78,6 +78,7 @@ const MemoFormContent = ({
 	onRetrySync,
 	onPastMemoOpen,
 	pageMemoCount = 0,
+	siblingCategoryId,
 }: IFMemoFormProps) => {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const impressionRef = useRef<HTMLTextAreaElement | null>(null);
@@ -281,6 +282,7 @@ const MemoFormContent = ({
 			!isControlsDisabled &&
 			!isWritePending &&
 			saveStatus === "saved",
+		siblingCategoryId,
 		onCategorySelect: updateCategory,
 	});
 
@@ -571,6 +573,11 @@ const MemoFormContent = ({
 					<div className="flex shrink-0 justify-end pt-2">
 						<CategorySuggestion
 							suggestion={suggestion}
+							label={
+								suggestion.source === "same_page"
+									? I18n.get("category_suggestion_same_page")
+									: undefined
+							}
 							isAccepting={isAccepting}
 							isShortcutDisabled={showCategoryList}
 							onAccept={(trigger) => void acceptSuggestion(trigger)}
@@ -818,6 +825,7 @@ const MemoForm = ({
 	onRetrySync,
 	onPastMemoOpen,
 	pageMemoCount,
+	siblingCategoryId,
 }: IFMemoFormProps) => {
 	const form = useForm<MemoInput>({
 		shouldUnregister: false,
@@ -850,6 +858,7 @@ const MemoForm = ({
 				onRetrySync={onRetrySync}
 				onPastMemoOpen={onPastMemoOpen}
 				pageMemoCount={pageMemoCount}
+				siblingCategoryId={siblingCategoryId}
 			/>
 		</FormProvider>
 	);
@@ -884,6 +893,8 @@ interface IFMemoFormProps {
 	onPastMemoOpen?: (duplicate: IFPastMemoDuplicate) => void;
 	/** 현재 주소에 저장된 메모 수. 1개 이상이면 과거 메모 판정을 부르지 않는다 */
 	pageMemoCount?: number;
+	/** 같은 페이지 다른 메모의 카테고리 id. 있으면 첫 저장 후 AI 대신 이 카테고리를 제안한다 */
+	siblingCategoryId?: number | null;
 }
 
 interface IFMemoStatusToggleProps {

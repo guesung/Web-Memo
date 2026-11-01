@@ -21,6 +21,7 @@ export const useCategorySuggestion = ({
 	currentMemoId,
 	firstSavedMemoId,
 	isFirstSavedMemoReady,
+	siblingCategoryId,
 	onCategorySelect,
 }: IFUseCategorySuggestionProps) => {
 	const [isLoading, setIsLoading] = useState(false);
@@ -52,7 +53,7 @@ export const useCategorySuggestion = ({
 		}
 		analytics.trackEvent({
 			name: "category_suggestion_dismiss",
-			params: { source: "jev", is_new_category: false },
+			params: { source: activeSuggestion.source, is_new_category: false },
 		});
 		suggestionRef.current = null;
 		setSuggestion(null);
@@ -84,7 +85,11 @@ export const useCategorySuggestion = ({
 			onCategorySelect(activeSuggestion.existingCategoryId, "ai");
 			analytics.trackEvent({
 				name: "category_suggestion_apply",
-				params: { source: "jev", is_new_category: false, trigger },
+				params: {
+					source: activeSuggestion.source,
+					is_new_category: false,
+					trigger,
+				},
 			});
 			suggestionRef.current = null;
 			setSuggestion(null);
@@ -105,6 +110,10 @@ export const useCategorySuggestion = ({
 		) {
 			return;
 		}
+		const siblingSuggestion = getSiblingSuggestion(
+			siblingCategoryId,
+			categories,
+		);
 		firstSuggestedMemoIdRef.current = currentMemoIdRef.current;
 		const requestSequence = ++requestSequenceRef.current;
 		let requestedUrl: string | null = null;
@@ -113,7 +122,7 @@ export const useCategorySuggestion = ({
 			if (
 				!tabInfo.url ||
 				dismissedUrlsRef.current.has(tabInfo.url) ||
-				failedUrlsRef.current.has(tabInfo.url)
+				(!siblingSuggestion && failedUrlsRef.current.has(tabInfo.url))
 			) {
 				return;
 			}
@@ -131,6 +140,20 @@ export const useCategorySuggestion = ({
 				);
 			};
 			currentUrlRef.current = tabInfo.url;
+			// 같은 페이지 다른 메모에 카테고리가 있으면 OpenAI를 부르지 않고 그 카테고리를 제안한다.
+			if (siblingSuggestion) {
+				if (await isRequestOutdated()) {
+					return;
+				}
+				analytics.trackEvent({
+					name: "category_suggestion_show",
+					params: { source: siblingSuggestion.source, is_new_category: false },
+				});
+				suggestionRef.current = siblingSuggestion;
+				suggestionMemoIdRef.current = currentMemoIdRef.current;
+				setSuggestion(siblingSuggestion);
+				return;
+			}
 			abortControllerRef.current?.abort();
 			const abortController = new AbortController();
 			abortControllerRef.current = abortController;
@@ -252,12 +275,35 @@ export const useCategorySuggestion = ({
 		dismissSuggestion,
 	};
 };
+/** 형제 메모의 카테고리가 사용자 카테고리 목록에 있으면 로컬 제안으로 바꿉니다. */
+const getSiblingSuggestion = (
+	siblingCategoryId: number | null | undefined,
+	categories: { id: number; name: string }[] | null | undefined,
+): IFCategorySuggestion | null => {
+	const category = categories?.find(
+		(candidate) => candidate.id === siblingCategoryId,
+	);
+	if (!category) {
+		return null;
+	}
+
+	return {
+		categoryName: category.name,
+		isExisting: true,
+		existingCategoryId: category.id,
+		confidence: 1,
+		source: "same_page",
+	};
+};
+
 /** 카테고리 추천 훅의 입력입니다. */
 interface IFUseCategorySuggestionProps {
 	currentCategoryId: number | null;
 	currentMemoId: number | null;
 	firstSavedMemoId: number | null;
 	isFirstSavedMemoReady: boolean;
+	/** 같은 페이지 다른 메모(최근 수정순 첫 번째 카테고리 보유 메모)의 카테고리 id. 있으면 OpenAI 없이 이것을 제안한다 */
+	siblingCategoryId?: number | null;
 	onCategorySelect: (
 		categoryId: number | null,
 		source: TCategoryChangeSource,

@@ -8,7 +8,7 @@ import { isAcceptShortcut } from "./isAcceptShortcut";
 
 /** 메모 하단에 Jev가 선택한 기존 카테고리를 제안합니다. */
 export const CategorySuggestion = (props: IFCategorySuggestionProps) => {
-	const labelText = I18n.get("category_suggestion_existing");
+	const labelText = props.label ?? I18n.get("category_suggestion_existing");
 	const isMacOS = isMac();
 	const shortcutLabel = isMacOS ? "⌘↵" : "Ctrl↵";
 	const acceptLabel = `${I18n.get("category_suggestion_accept")} (${isMacOS ? "⌘+Enter" : "Ctrl+Enter"})`;
@@ -87,6 +87,8 @@ export const CategorySuggestion = (props: IFCategorySuggestionProps) => {
 /** 카테고리 제안 칩의 입력입니다. */
 interface IFCategorySuggestionProps {
 	suggestion: IFCategorySuggestion;
+	/** 칩 앞 라벨. 없으면 기본 '추천:' */
+	label?: string;
 	isAccepting: boolean;
 	/** # 카테고리 팝업처럼 Enter를 다른 곳에서 쓰는 동안 단축키를 끈다. */
 	isShortcutDisabled: boolean;

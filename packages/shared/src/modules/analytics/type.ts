@@ -170,19 +170,19 @@ export type TAnalyticsEvent =
 	| { name: "memo_undo"; params: { action: "wish" | "reading" | "delete" } }
 	| {
 			name: "category_suggestion_show";
-			params: { is_new_category: boolean; source: "jev" | "llm" };
+			params: { is_new_category: boolean; source: "jev" | "llm" | "same_page" };
 	  }
 	| {
 			name: "category_suggestion_apply";
 			params: {
 				is_new_category: boolean;
-				source: "jev" | "llm";
+				source: "jev" | "llm" | "same_page";
 				trigger: TCategorySuggestionTrigger;
 			};
 	  }
 	| {
 			name: "category_suggestion_dismiss";
-			params: { is_new_category: boolean; source: "jev" | "llm" };
+			params: { is_new_category: boolean; source: "jev" | "llm" | "same_page" };
 	  }
 	| {
 			name: "extension_install_click";

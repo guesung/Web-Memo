@@ -277,6 +277,10 @@ const AuthenticatedMemoSectionContent = ({
 		: !currentDraft && memos.length === 1
 			? memos[0]
 			: undefined;
+	const siblingCategoryId =
+		memos.find(
+			(memo) => memo.id !== activeMemo?.id && memo.category_id !== null,
+		)?.category_id ?? null;
 	const hasMultipleMemos = memos.length > 1;
 	const isSelectedMemoMissing =
 		currentSelection?.memoId !== null &&
@@ -471,6 +475,7 @@ const AuthenticatedMemoSectionContent = ({
 						onRetrySync={retrySync}
 						onPastMemoOpen={handlePastMemoOpen}
 						pageMemoCount={memos.length}
+						siblingCategoryId={siblingCategoryId}
 					/>
 				)}
 			</div>

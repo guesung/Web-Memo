@@ -206,6 +206,9 @@
 	"category_suggestion_existing": {
 		"message": "Suggest:"
 	},
+	"category_suggestion_same_page": {
+		"message": "This page:"
+	},
 	"category_suggestion_accept": {
 		"message": "Apply"
 	},

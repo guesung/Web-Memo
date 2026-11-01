@@ -10,6 +10,7 @@ const html = readFileSync(
 describe("options/index.html", () => {
 	it("브라우저 자동 번역이 React가 관리하는 DOM을 건드리지 못하게 막는다", () => {
 		expect(html).toMatch(/<html[^>]*\btranslate="no"/);
+		expect(html).toMatch(/<html[^>]*\bclass="notranslate"/);
 		expect(html).toMatch(
 			/<meta\s+name="google"\s+content="notranslate"\s*\/?>/,
 		);

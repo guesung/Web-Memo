@@ -3,9 +3,12 @@
  *
  * 버튼의 value는 apps/web의 /api/slack/interactivity가 그대로 파싱합니다.
  * 여기 스키마를 바꾸면 그쪽 파서도 같이 고쳐야 합니다.
+ * "버전 올려 배포" 메뉴의 option value({target, ref, bump, version})도 같습니다 —
+ * 파서는 apps/web/src/modules/slack/nextVersionPr.ts의 parseBumpSelection입니다.
  */
 
 import { readAppConfig, readExtensionVersion } from "./repo-versions.mjs";
+import { BUMP_KINDS, bumpVersion } from "./version.mjs";
 
 const CHANNEL_LABELS = {
 	ios: "📱 iOS",
@@ -146,10 +149,62 @@ const buildDeployButton = ({ label, detail, target, ref, refSubject }) => ({
 // 앱 버튼 하나가 iOS·Android를 동시에 올립니다(cd-app.yml의 matrix).
 // 라벨에 드러내지 않으면 어느 쪽이 올라가는지 버튼만 봐서는 알 수 없습니다.
 const DEPLOY_TARGETS = [
-	{ target: "app", label: "📱 앱 배포 (iOS+AOS)", detail: "iOS TestFlight · Android 내부 테스트에 함께 올립니다." },
-	{ target: "web", label: "🌐 웹 배포", detail: "Vercel 프로덕션에 배포합니다." },
-	{ target: "extension", label: "🧩 확장 배포", detail: "크롬 웹 스토어에 업로드합니다. 게시는 대시보드에서 수동입니다." },
+	{
+		target: "app",
+		label: "📱 앱 배포 (iOS+AOS)",
+		detail: "iOS TestFlight · Android 내부 테스트에 함께 올립니다.",
+	},
+	{
+		target: "web",
+		label: "🌐 웹 배포",
+		detail: "Vercel 프로덕션에 배포합니다.",
+	},
+	{
+		target: "extension",
+		label: "🧩 확장 배포",
+		detail: "크롬 웹 스토어에 업로드합니다. 게시는 대시보드에서 수동입니다.",
+	},
 ];
+
+// 버전 트랙이 있는 대상만 "버전 올려 배포"를 단다. 웹은 버전이 없다(docs/versioning.md).
+const BUMP_TARGETS = [
+	{ target: "extension", label: "🧩 확장", readVersion: readExtensionVersion },
+	{ target: "app", label: "📱 앱", readVersion: () => readAppConfig().version },
+];
+
+/**
+ * "버전 올려 배포" 드롭다운 하나. 옵션마다 올린 결과 버전을 문구에 미리 보여줍니다.
+ *
+ * 결과 버전은 블록을 만드는 시점의 레포(=빌드된 ref) 버전 기준입니다. 클릭 시점에 master가
+ * 움직였을 수 있어 value에도 version을 실어, 서버가 다시 계산해 어긋나면 반려합니다.
+ * Slack option value는 150자까지라 subject 같은 자유 문장은 싣지 않습니다.
+ */
+const buildBumpSelect = ({ target, label, currentVersion, ref }) => ({
+	type: "static_select",
+	action_id: `deploy_bump_${target}`,
+	placeholder: {
+		type: "plain_text",
+		text: `${label} 버전 올려 배포`,
+		emoji: true,
+	},
+	options: BUMP_KINDS.map((bump) => {
+		const version = bumpVersion(currentVersion, bump);
+
+		return {
+			text: { type: "plain_text", text: `${bump} → ${version}` },
+			value: JSON.stringify({ target, ref, bump, version }),
+		};
+	}),
+	confirm: {
+		title: { type: "plain_text", text: "버전을 올려 배포할까요?" },
+		text: {
+			type: "mrkdwn",
+			text: `${label} 버전 PR을 머지하고 바로 배포합니다. 머지와 배포는 되돌릴 수 없습니다.`,
+		},
+		confirm: { type: "plain_text", text: "머지하고 배포" },
+		deny: { type: "plain_text", text: "취소" },
+	},
+});
 
 /**
  * 배포 버튼 줄을 만듭니다.
@@ -160,6 +215,7 @@ const DEPLOY_TARGETS = [
  * @param customTarget 넘기면 "다른 버전…" 모달이 이 대상으로 고정됩니다. 타깃별 댓글은 그 서비스의
  *   버튼을 따로 누르므로 모달에서 대상을 다시 고르게 할 이유가 없습니다. 여러 대상을 다루는
  *   요약 댓글은 넘기지 않아 모달이 대상 체크박스를 그대로 보여줍니다.
+ * @param versions 테스트용 현재 버전 덮어쓰기({extension, app}). 안 넘기면 레포에서 읽습니다.
  * @param downloadUrl 넘기면 배포 버튼 뒤에 다운로드 링크 버튼을 답니다. 확장 빌드 산출물 전용입니다.
  */
 export const buildActionBlock = ({
@@ -170,6 +226,7 @@ export const buildActionBlock = ({
 	downloadUrl,
 	linkUrl,
 	linkLabel,
+	versions,
 }) => {
 	const elements = DEPLOY_TARGETS.filter(({ target }) =>
 		targets.includes(target),
@@ -177,11 +234,27 @@ export const buildActionBlock = ({
 		buildDeployButton({ label, detail, target, ref, refSubject }),
 	);
 
+	for (const { target, label, readVersion } of BUMP_TARGETS) {
+		if (!targets.includes(target)) continue;
+
+		elements.push(
+			buildBumpSelect({
+				target,
+				label,
+				currentVersion: versions?.[target] ?? readVersion(),
+				ref,
+			}),
+		);
+	}
+
 	elements.push({
 		type: "button",
 		action_id: "deploy_custom",
 		text: { type: "plain_text", text: "다른 버전…", emoji: true },
-		value: JSON.stringify({ ref, ...(customTarget ? { target: customTarget } : {}) }),
+		value: JSON.stringify({
+			ref,
+			...(customTarget ? { target: customTarget } : {}),
+		}),
 	});
 
 	if (downloadUrl) {
@@ -197,7 +270,11 @@ export const buildActionBlock = ({
 		elements.push({
 			type: "button",
 			action_id: "open_link",
-			text: { type: "plain_text", text: linkLabel ?? "GitHub에서 보기", emoji: true },
+			text: {
+				type: "plain_text",
+				text: linkLabel ?? "GitHub에서 보기",
+				emoji: true,
+			},
 			url: linkUrl,
 		});
 	}

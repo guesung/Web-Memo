@@ -252,6 +252,10 @@ export type TAnalyticsEvent =
 			params: { notice_id: number; days_since_view: number };
 	  }
 	| { name: "notice_dismiss"; params: { notice_id: number } }
+	| { name: "review_prompt_view"; params: { shown_count: number } }
+	| { name: "review_prompt_open"; params: { shown_count: number } }
+	| { name: "review_prompt_close"; params: { shown_count: number } }
+	| { name: "review_prompt_never"; params: { shown_count: number } }
 	| {
 			name: "past_memo_show";
 			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
@@ -423,6 +427,10 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	notice_view: "engagement",
 	notice_return: "engagement",
 	notice_dismiss: "engagement",
+	review_prompt_view: "engagement",
+	review_prompt_open: "engagement",
+	review_prompt_close: "engagement",
+	review_prompt_never: "engagement",
 	past_memo_show: "engagement",
 	past_memo_open: "core_action",
 	past_memo_expand: "engagement",

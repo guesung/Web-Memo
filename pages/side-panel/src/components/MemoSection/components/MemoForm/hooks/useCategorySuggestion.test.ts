@@ -169,6 +169,7 @@ it("카테고리 없음·빈 응답·목록 밖 선택은 제안하지 않는다
 	];
 	for (const [index, response] of responses.entries()) {
 		mocks.tab = { url: `https://example.com/${index}`, title: "Article" };
+		mocks.currentMemoId = index + 10;
 		mocks.request.mockResolvedValueOnce(response);
 		await render();
 		await act(async () => suggestion.triggerSuggestion("memo"));
@@ -209,8 +210,46 @@ it("실패한 URL과 다른 URL로 이동하면 다시 요청한다", async () =
 	await render();
 	await act(async () => suggestion.triggerSuggestion("memo"));
 	mocks.tab = { url: "https://example.com/b", title: "Another article" };
+	mocks.currentMemoId = 2;
 	await render();
 	await act(async () => suggestion.triggerSuggestion("memo"));
+	expect(mocks.request).toHaveBeenCalledTimes(2);
+});
+
+it("유효한 추천을 받지 못한 메모는 URL이 바뀌어도 다시 요청하지 않는다", async () => {
+	mocks.request.mockResolvedValue(null);
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	mocks.tab = { url: "https://example.com/b", title: "Another article" };
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo updated"));
+	expect(mocks.request).toHaveBeenCalledTimes(1);
+	expect(suggestion.isLoading).toBe(false);
+});
+
+it("해시가 붙은 페이지에서도 응답을 버리지 않고 실패하면 다시 요청하지 않는다", async () => {
+	mocks.tab = { url: "https://example.com/a#section", title: "Article" };
+	mocks.getTabInfo.mockImplementation(async () => ({
+		...mocks.tab,
+		url: "https://example.com/a",
+	}));
+	mocks.request.mockResolvedValueOnce(jevSuggestion);
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	expect(suggestion.suggestion?.categoryName).toBe("개발");
+
+	await act(async () => suggestion.dismissSuggestion());
+	mocks.currentMemoId = 2;
+	mocks.tab = { url: "https://example.com/c#top", title: "Other" };
+	mocks.getTabInfo.mockImplementation(async () => ({
+		...mocks.tab,
+		url: "https://example.com/c",
+	}));
+	mocks.request.mockResolvedValue(null);
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	await act(async () => suggestion.triggerSuggestion("memo updated"));
+	await act(async () => suggestion.triggerSuggestion("memo updated again"));
 	expect(mocks.request).toHaveBeenCalledTimes(2);
 });
 

@@ -59,6 +59,8 @@ interface SaveMemoOptions extends Partial<MemoInput> {
 
 interface UseMemoFormProps {
 	onSaveSuccess?: (memoInput: MemoInput) => void;
+	/** 서버가 저장을 받아들였을 때만 불린다. 오프라인 대기열에 넣거나 동기화로 회복한 저장은 부르지 않는다 */
+	onServerSaveSuccess?: () => void;
 	selectedMemo?: Database["memo"]["Tables"]["memo"]["Row"];
 	/** 메모 후보 조회가 끝나지 않았거나 데이터 없이 실패했는지. 켜져 있으면 저장·토글·카테고리 변경을 보내지 않는다 */
 	isMemoLocked?: boolean;
@@ -69,6 +71,7 @@ interface UseMemoFormProps {
 /** 선택한 메모의 폼 값과 저장 순서를 관리한다. */
 export default function useMemoForm({
 	onSaveSuccess,
+	onServerSaveSuccess,
 	selectedMemo,
 	isMemoLocked = false,
 	isSyncing = false,
@@ -479,6 +482,7 @@ export default function useMemoForm({
 								setFirstSavedMemoId(result.data[0].id);
 							}
 							completeSaveAsSaved(resolveIsSaved);
+							onServerSaveSuccess?.();
 						},
 						onError: (error) => {
 							// 네트워크 실패는 오프라인 대기열로 돌린다. 실패 토스트를 띄우지 않는다(QueryProvider).
@@ -503,6 +507,7 @@ export default function useMemoForm({
 			memoData?.updated_at,
 			upsertMemo,
 			onSaveSuccess,
+			onServerSaveSuccess,
 			isOnline,
 			userId,
 			pendingOfflineMemo.status,

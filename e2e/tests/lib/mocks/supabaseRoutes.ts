@@ -1188,6 +1188,8 @@ export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
 			store,
 			handlers: {
 				GET: handleMemoGet,
+				// 개수만 세는 조회(`head: true`)는 HEAD로 온다. 응답 본문 없이 Content-Range만 쓰인다.
+				HEAD: handleMemoGet,
 				POST: handleMemoPost,
 				PATCH: handleMemoPatch,
 				DELETE: handleMemoDelete,

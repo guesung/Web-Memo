@@ -63,6 +63,25 @@ export class MemoService {
 	};
 
 	/**
+	 * 내 삭제되지 않은 메모 개수를 센다.
+	 * @description 행은 가져오지 않고 개수만 받는다. 조회에 실패하면 던진다.
+	 */
+	getMyMemoCount = async (userId: string) => {
+		const { count, error } = await this.supabaseClient
+			.schema(SUPABASE.table.memo)
+			.from(SUPABASE.table.memo)
+			.select("id", { count: "exact", head: true })
+			.is("deleted_at", null)
+			.eq("user_id", userId);
+
+		if (error) {
+			throw error;
+		}
+
+		return count ?? 0;
+	};
+
+	/**
 	 * 같은 페이지의 메모 후보를 최근 수정 순으로 모두 조회한다.
 	 * @description 키가 비어 있는 옛 행은 원본 URL 접두로 서버에서 먼저 좁힌다. 키가 있는 행도 같은 접두를
 	 * 가지므로 조건을 공통으로 건다.

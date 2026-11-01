@@ -281,6 +281,12 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 			page,
 		}) => {
 			await page.goto(`/ko${PATHS.introduce}?utm_source=x`);
+			// 저장은 하이드레이션 뒤 useEffect에서 일어난다. 끝나기 전에 옮기면 저장값이 없다.
+			await expect
+				.poll(() =>
+					page.evaluate(() => sessionStorage.getItem("web-memo:campaign-utm")),
+				)
+				.not.toBeNull();
 			await page.goto(`/ko${PATHS.introduce}`);
 			const install = page.locator(STORE_LINK).locator("visible=true").first();
 			await install.click();

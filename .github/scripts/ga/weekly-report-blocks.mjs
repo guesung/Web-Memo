@@ -186,6 +186,29 @@ const buildFunnelBlock = (funnel) => {
 };
 
 /**
+ * 유입 채널. 소스/매체별 방문자 수와 설치 클릭 사용자 수.
+ *
+ * 조회 실패와 유입 없음은 다른 말이라 문구를 나눕니다. channels 가 없으면(백필 등)
+ * 블록째로 뺍니다.
+ */
+const buildChannelBlock = (channels) => {
+	const lines =
+		channels.status === "failed"
+			? ["_유입 데이터 조회 실패_"]
+			: channels.rows.length === 0
+				? ["_유입 데이터 없음_"]
+				: channels.rows.map(
+						({ source, medium, visitors, installClicks }) =>
+							`${source} / ${medium} — 방문자 ${formatCount(visitors)}명 · 설치 클릭 ${formatCount(installClicks)}명`,
+					);
+
+	return {
+		type: "section",
+		text: { type: "mrkdwn", text: ["*유입 채널*", ...lines].join("\n") },
+	};
+};
+
+/**
  * 메모 리텐션. 조회하지 않은 실행(키 없음)이면 섹션째로 뺍니다.
  *
  * 경과 주마다 모수 코호트가 다릅니다(1주는 최근 8개, 4주는 5개). 그래서 세 줄을 한
@@ -309,6 +332,7 @@ export const buildWeeklyReportPayload = ({
 		activeUsers,
 		features,
 		funnel,
+		channels = null,
 		unused,
 		thresholds,
 	} = report;
@@ -329,6 +353,7 @@ export const buildWeeklyReportPayload = ({
 			buildActiveUsersBlock({ activeUsers, start, end }),
 			buildFeatureBlock(features),
 			buildFunnelBlock(funnel),
+			...(channels ? [buildChannelBlock(channels)] : []),
 			...(retention ? [buildRetentionBlock(retention)] : []),
 			{ type: "divider" },
 			buildUnusedBlock({ unused, thresholds }),

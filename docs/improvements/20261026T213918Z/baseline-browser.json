@@ -1,0 +1,11 @@
+{
+  "harness": "source-linked tab listener smoke with native Chromium events and mocked bridge; not full extension E2E",
+  "browserVersion": "145.0.7632.6",
+  "observations": {
+    "backgroundMutedMessages": 1,
+    "activeMutedMessages": 1,
+    "navigationMessages": 2,
+    "activationMessages": 1,
+    "otherWindowMessages": 4
+  }
+}

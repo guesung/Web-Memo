@@ -10,8 +10,10 @@ import {
 	fetchRefOptions,
 	fetchVersionForBump,
 	GITHUB_REPOSITORY,
+	handleBumpDeploy,
 	notifySlackSafely,
 	openSlackModal,
+	parseBumpSelection,
 	readVerifiedSlackForm,
 	rejectVersionInput,
 	runAfterResponse,
@@ -54,6 +56,9 @@ interface IFDeployButtonValue {
 	/** ref의 커밋 제목. 해시만으로는 무엇을 올리는지 알 수 없어 함께 실어 보냅니다. */
 	subject?: string;
 }
+
+/** "버전 올려 배포" 메뉴의 action_id 접두사. slack-blocks.mjs의 `deploy_bump_<트랙>`입니다. */
+const BUMP_ACTION_ID_PREFIX = "deploy_bump_";
 
 /** Slack 문구에 실을 만큼만 자른 에러 설명. */
 const describeError = (error: unknown): string =>
@@ -474,6 +479,26 @@ export async function POST(request: NextRequest) {
 		}
 
 		const action = payload.actions?.[0];
+
+		// "버전 올려 배포" 메뉴. static_select라 value가 action이 아니라 selected_option에 있고,
+		// 아래 "그 밖의 action_id는 즉시 배포" 경로로 빠지면 버전을 올리지 않고 배포해 버리므로 먼저 가릅니다.
+		// 머지·배포는 3초를 넘기므로 바로 200으로 ack하고 응답 뒤로 넘깁니다.
+		if (String(action?.action_id).startsWith(BUMP_ACTION_ID_PREFIX)) {
+			const selection = parseBumpSelection({
+				actionId: action.action_id,
+				value: action.selected_option?.value,
+			});
+
+			await runAfterResponse(() =>
+				handleBumpDeploy({
+					selection,
+					responseUrl: payload.response_url,
+					userId: payload.user.id,
+				}),
+			);
+
+			return new NextResponse(null, { status: 200 });
+		}
 
 		// url만 달린 링크 버튼("워크플로 보기")도 상호작용을 보냅니다. 확인만 하고 끝냅니다.
 		if (!action?.value) {

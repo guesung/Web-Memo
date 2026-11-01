@@ -3,6 +3,7 @@ export * from "./api";
 export * from "./config";
 export * from "./deployModal";
 export * from "./github";
+export * from "./nextVersionPr";
 export * from "./request";
 export * from "./verifyRequest";
 export * from "./version";

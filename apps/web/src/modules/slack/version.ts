@@ -28,6 +28,31 @@ export const compareSemver = (a: TSemver, b: TSemver): number => {
 	return 0;
 };
 
+/** "버전 올려 배포"에서 고르는 증가 단위. `.github/scripts/shared/version.mjs`의 BUMP_KINDS와 같습니다. */
+export const BUMP_KINDS = ["patch", "minor", "major"] as const;
+
+export type TBumpKind = (typeof BUMP_KINDS)[number];
+
+/**
+ * 버전을 한 단계 올립니다. 올린 자리 아래는 0으로 되돌립니다.
+ * `.github/scripts/shared/version.mjs`의 bumpVersion과 같은 규칙입니다(빌드 경계가 달라 따로 둡니다).
+ * semver가 아니면 던집니다 — 조용히 넘기면 엉뚱한 버전이 커밋됩니다.
+ */
+export const bumpVersion = (version: string, kind: TBumpKind): string => {
+	const parsed = parseSemver(version);
+
+	if (!parsed) {
+		throw new Error(`semver 형식이 아닌 버전입니다: ${version}`);
+	}
+
+	const [major, minor, patch] = parsed;
+
+	if (kind === "major") return `${major + 1}.0.0`;
+	if (kind === "minor") return `${major}.${minor + 1}.0`;
+
+	return `${major}.${minor}.${patch + 1}`;
+};
+
 /** 버전 입력을 반려하는 사유. 통과하면 null입니다. */
 export type TVersionRejection = "not-semver" | "not-ahead";
 

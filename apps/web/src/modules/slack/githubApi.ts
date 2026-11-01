@@ -14,6 +14,43 @@ export const buildHeaders = (): HeadersInit => ({
 	"x-github-api-version": "2022-11-28",
 });
 
+/**
+ * GitHub API가 거절한 응답. 메시지 문자열은 기존과 같고, 사용자에게 그대로 보여줄
+ * GitHub의 `message`와 상태 코드를 따로 들고 있습니다.
+ */
+export class GithubApiError extends Error {
+	readonly status: number;
+	/** GitHub 응답 본문의 `message`. JSON이 아니면 본문 앞부분. */
+	readonly githubMessage: string;
+
+	constructor({
+		path,
+		status,
+		body,
+	}: {
+		path: string;
+		status: number;
+		body: string;
+	}) {
+		super(`GitHub ${path} 실패: ${status} ${body.slice(0, 200)}`);
+		this.name = "GithubApiError";
+		this.status = status;
+		this.githubMessage = extractGithubMessage(body);
+	}
+}
+
+const extractGithubMessage = (body: string): string => {
+	try {
+		const parsed = JSON.parse(body) as { message?: unknown };
+
+		if (typeof parsed.message === "string") return parsed.message;
+	} catch {
+		// JSON이 아니면 본문 그대로 씁니다.
+	}
+
+	return body.slice(0, 200);
+};
+
 /** 실패를 삼키지 않는 GitHub API 호출. 버전 커밋 경로는 조용히 넘어가면 안 됩니다. */
 export const requestGithub = async <T>(
 	path: string,
@@ -29,9 +66,11 @@ export const requestGithub = async <T>(
 	);
 
 	if (!response.ok) {
-		throw new Error(
-			`GitHub ${path} 실패: ${response.status} ${(await response.text()).slice(0, 200)}`,
-		);
+		throw new GithubApiError({
+			path,
+			status: response.status,
+			body: await response.text(),
+		});
 	}
 
 	return (await response.json()) as T;

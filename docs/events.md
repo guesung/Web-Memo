@@ -503,7 +503,7 @@
 - **속성:** 필수 `is_new_category:boolean`, `source:"jev"|"llm"`. 현재 호출값은 각각 false, `jev`만 사용한다.
 - **단위·중복:** 유효 추천을 state에 넣는 흐름당 1회. hook ref로 진행/현재 추천·동일 메모 재요청·닫은 URL을 제한하나 세션 전체 사용자당 1회는 아니다.
 - **근거·테스트:** [useCategorySuggestion](../pages/side-panel/src/components/MemoSection/components/MemoForm/hooks/useCategorySuggestion.ts), [테스트](../pages/side-panel/src/components/MemoSection/components/MemoForm/hooks/useCategorySuggestion.test.ts).
-- **한계·이력:** DOM·viewport 실제 노출 확인 이벤트가 아니다. 2026-09-27 의미 변경 전 자동 적용(LLM·신규 포함) 기록과 같은 집단으로 비교하지 않는다. 보급 버전·일자 별도 확인.
+- **한계·이력:** DOM·viewport 실제 노출 확인 이벤트가 아니다. 2026-09-27 의미 변경 전 자동 적용(LLM·신규 포함) 기록과 같은 집단으로 비교하지 않는다. 보급 버전·일자 별도 확인. 2026-11-01(DB-1268)부터 카테고리 팝업이 열려 있는 동안에는 추천을 시작하지 않고 진행 중 요청도 취소하므로, 이후 발생 비율이 줄 수 있다.
 
 ### `category_suggestion_apply`
 

@@ -35,6 +35,7 @@ import MemoHeader from "./components/MemoHeader";
 import PageHighlights from "./components/PageHighlights";
 import PastMemoView from "./components/PastMemoView";
 import useMemoCandidatesQuery from "./hooks/useMemoCandidatesQuery";
+import { isNewMemoScreen } from "./utils/isNewMemoScreen";
 import {
 	type PastMemoAttempt,
 	PastMemoTracking,
@@ -472,7 +473,13 @@ const AuthenticatedMemoSectionContent = ({
 
 		const switchHandle = switchHandleRef.current;
 		if (switchHandle) {
-			if (currentSelection?.isNew) {
+			if (
+				isNewMemoScreen({
+					selection: currentSelection,
+					pageMemoCount: memos.length,
+					createdMemoId,
+				})
+			) {
 				switchHandle.focusBody();
 				return;
 			}

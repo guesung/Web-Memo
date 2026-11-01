@@ -168,3 +168,47 @@ test("목록 화면은 메모 개수 제목과 편집 중 표시를 보여 주�
 	await listButton.click();
 	await expect(textarea).toHaveValue("최근 메모 본문");
 });
+
+test("새 메모의 첫 저장 응답을 기다리는 동안에는 새 메모 화면으로 바뀌지 않고, 응답 뒤에도 본문이 유지된다", async ({
+	page,
+	context,
+}) => {
+	const { store, sidePanelPage } = await setupTwoMemoPage({ page, context });
+	const textarea = sidePanelPage.locator("#memo-textarea");
+	const newMemoButton = sidePanelPage.getByRole("button", {
+		name: NEW_MEMO_BUTTON_NAME,
+	});
+	const memoWrites: string[] = [];
+	let releaseInsert: () => void = () => {};
+	const insertGate = new Promise<void>((resolve) => {
+		releaseInsert = resolve;
+	});
+	let isInsertRequested = false;
+	// 나중에 등록한 라우트가 먼저 실행된다. 첫 insert만 응답을 붙잡아 두었다가 목 저장소로 넘긴다.
+	await context.route(/\/rest\/v1\/memo(\?|$)/, async (route) => {
+		const method = route.request().method();
+		if (method !== "GET") {
+			memoWrites.push(method);
+		}
+		if (method === "POST") {
+			isInsertRequested = true;
+			await insertGate;
+		}
+		await route.fallback();
+	});
+
+	await expect(textarea).toHaveValue("최근 메모 본문");
+	await newMemoButton.click();
+	await expect(textarea).toHaveValue("");
+
+	await textarea.fill("일부");
+	await expect.poll(() => isInsertRequested).toBe(true);
+	// 응답을 기다리는 동안 버튼은 막혀 있고, 화면은 입력한 새 메모 그대로다.
+	await expect(newMemoButton).toBeDisabled();
+	await expect(textarea).toHaveValue("일부");
+
+	releaseInsert();
+	await expect.poll(() => getPageMemos(store).length).toBe(3);
+	await expect(textarea).toHaveValue("일부");
+	expect(memoWrites).toEqual(["POST"]);
+});

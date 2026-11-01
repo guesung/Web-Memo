@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
 	currentMemoId: 1 as number | null,
 	firstSavedMemoId: null as number | null,
 	isFirstSavedMemoReady: false,
+	siblingCategoryId: null as number | null,
 	tab: { url: "https://example.com/a", title: "Article" },
 }));
 
@@ -51,6 +52,7 @@ const TestHook = () => {
 		currentMemoId: mocks.currentMemoId,
 		firstSavedMemoId: mocks.firstSavedMemoId,
 		isFirstSavedMemoReady: mocks.isFirstSavedMemoReady,
+		siblingCategoryId: mocks.siblingCategoryId,
 		onCategorySelect: mocks.onSelect,
 	});
 	return null;
@@ -75,6 +77,7 @@ beforeEach(() => {
 	mocks.currentMemoId = 1;
 	mocks.firstSavedMemoId = null;
 	mocks.isFirstSavedMemoReady = false;
+	mocks.siblingCategoryId = null;
 	mocks.tab = { url: "https://example.com/a", title: "Article" };
 	mocks.request.mockReset();
 	mocks.trackEvent.mockReset();
@@ -322,4 +325,54 @@ it("사용자가 결정하기 전에는 제안이 15초 뒤에도 유지된다",
 		name: "category_suggestion_dismiss",
 		params: { source: "jev", is_new_category: false },
 	});
+});
+
+it("형제 메모의 카테고리가 있으면 OpenAI 없이 same_page로 제안하고 수락 시 적용한다", async () => {
+	mocks.siblingCategoryId = 7;
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	expect(mocks.request).not.toHaveBeenCalled();
+	expect(suggestion.suggestion?.source).toBe("same_page");
+	expect(suggestion.suggestion?.categoryName).toBe("개발");
+	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "category_suggestion_show",
+		params: { source: "same_page", is_new_category: false },
+	});
+	expect(mocks.onSelect).not.toHaveBeenCalled();
+	await act(async () => suggestion.acceptSuggestion("click"));
+	expect(mocks.onSelect).toHaveBeenCalledWith(7, "ai");
+	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "category_suggestion_apply",
+		params: { source: "same_page", is_new_category: false, trigger: "click" },
+	});
+});
+
+it("첫 저장 직후에도 형제 카테고리가 있으면 OpenAI를 부르지 않는다", async () => {
+	mocks.siblingCategoryId = 7;
+	mocks.currentMemoId = 42;
+	mocks.firstSavedMemoId = 42;
+	mocks.isFirstSavedMemoReady = true;
+	await render();
+	expect(mocks.request).not.toHaveBeenCalled();
+	expect(suggestion.suggestion?.source).toBe("same_page");
+});
+
+it("형제 카테고리 제안을 거절하면 same_page 거절 이벤트를 남긴다", async () => {
+	mocks.siblingCategoryId = 7;
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	await act(async () => suggestion.dismissSuggestion());
+	expect(mocks.trackEvent).toHaveBeenCalledWith({
+		name: "category_suggestion_dismiss",
+		params: { source: "same_page", is_new_category: false },
+	});
+});
+
+it("형제 카테고리가 사용자 카테고리 목록에 없으면 기존대로 OpenAI에 묻는다", async () => {
+	mocks.siblingCategoryId = 99;
+	mocks.request.mockResolvedValue(jevSuggestion);
+	await render();
+	await act(async () => suggestion.triggerSuggestion("memo"));
+	expect(mocks.request).toHaveBeenCalledTimes(1);
+	expect(suggestion.suggestion?.source).toBe("jev");
 });

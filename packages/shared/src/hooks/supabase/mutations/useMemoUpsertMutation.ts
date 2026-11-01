@@ -11,8 +11,12 @@ interface IFMemoUpsertVariables {
 	id?: MemoRow["id"];
 	url?: string;
 	data: MemoTable["Insert"];
+	/** true면 URL로 기존 메모를 찾지 않고 새로 만든다. id가 함께 오면 id가 우선한다. */
+	forceInsert?: boolean;
 	analyticsSource?: "side_panel";
 	analyticsUserId?: string;
+	/** 저장 직전 이 페이지의 현재 주소 메모 수. 첫 작성 이벤트에 싣는다 */
+	pageMemoCount?: number;
 }
 
 /** 저장 후 무효화할 페이지 키. */
@@ -37,7 +41,15 @@ export default function useMemoUpsertMutation() {
 			operation: "upsert",
 			stage: "save",
 		},
-		mutationFn: async ({ id, url, data, analyticsSource, analyticsUserId }) => {
+		mutationFn: async ({
+			id,
+			url,
+			data,
+			forceInsert = false,
+			analyticsSource,
+			analyticsUserId,
+			pageMemoCount,
+		}) => {
 			const targetUrl = url ?? data.url;
 			let existingMemo: MemoRow | undefined;
 
@@ -58,7 +70,7 @@ export default function useMemoUpsertMutation() {
 				) {
 					throw new Error("선택한 메모가 현재 페이지에 속하지 않습니다.");
 				}
-			} else if (targetUrl) {
+			} else if (targetUrl && !forceInsert) {
 				const result = await memoService.getMemoByUrl(targetUrl);
 				if (result.error) {
 					throw result.error;
@@ -109,7 +121,12 @@ export default function useMemoUpsertMutation() {
 						await analytics.trackMemoUpdate(changedData);
 					}
 				} else {
-					await analytics.trackEvent({ name: "memo_first_write" });
+					await analytics.trackEvent({
+						name: "memo_first_write",
+						...(pageMemoCount !== undefined && {
+							params: { page_memo_count: pageMemoCount },
+						}),
+					});
 					await analytics.trackMemoCreate(data);
 					// 저장 전 새 메모에 처음 날짜를 배정하는 경우도 배정 이벤트로 센다.
 					if (data.plannedDate) {

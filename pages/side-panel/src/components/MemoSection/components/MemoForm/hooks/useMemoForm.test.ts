@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
 	upsert: vi.fn(),
 	patch: vi.fn(),
 	isMemoLocked: false,
+	hookProps: {} as { isNewMemo?: boolean; onMemoCreate?: (id: number) => void },
 	memoQueryImpl: vi.fn(
 		async (): Promise<{
 			data: unknown[] | null;
@@ -92,7 +93,7 @@ let queryClient: QueryClient;
 let form: ReturnType<typeof useMemoForm>;
 let refreshTitle: () => Promise<void>;
 const TestHook = () => {
-	form = useMemoForm({ isMemoLocked: mocks.isMemoLocked });
+	form = useMemoForm({ isMemoLocked: mocks.isMemoLocked, ...mocks.hookProps });
 	return null;
 };
 const render = async () => {
@@ -130,6 +131,7 @@ beforeEach(() => {
 	mocks.memo = { id: 1, title: "A" };
 	mocks.values = {};
 	mocks.isMemoLocked = false;
+	mocks.hookProps = {};
 	mocks.patch.mockReset();
 	mocks.upsert
 		.mockReset()
@@ -842,4 +844,108 @@ it("실제 온라인 upsert에는 사이드 패널 출처와 요청 사용자만
 			name: expect.stringMatching(/^memo_(content_saved|save_result)$/),
 		}),
 	);
+});
+
+it("새 메모는 같은 페이지의 유일한 메모를 편집 대상으로 잡지 않고 forceInsert로 저장한다", async () => {
+	mocks.hookProps = { isNewMemo: true };
+	await render();
+	expect(form.memoData).toBeUndefined();
+	await act(async () => form.handleMemoChange("새 메모 본문"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(350);
+	});
+	expect(mocks.upsert).toHaveBeenCalledTimes(1);
+	expect(mocks.upsert.mock.calls[0][0].id).toBeUndefined();
+	expect(mocks.upsert.mock.calls[0][0].forceInsert).toBe(true);
+});
+
+it("새 메모가 아니면 forceInsert를 켜지 않는다", async () => {
+	mocks.memo = undefined;
+	await render();
+	await act(async () => form.handleMemoChange("본문"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(350);
+	});
+	expect(mocks.upsert.mock.calls[0][0].forceInsert).toBe(false);
+});
+
+it("새 메모의 첫 insert id를 알리고, 대기 중이던 후속 저장은 insert 없이 그 id로 update한다", async () => {
+	const onMemoCreate = vi.fn();
+	mocks.hookProps = { isNewMemo: true, onMemoCreate };
+	let completeFirstSave: (result: unknown) => void = () => {};
+	mocks.upsert.mockImplementationOnce((_request, callbacks) => {
+		completeFirstSave = callbacks.onSuccess;
+	});
+	await render();
+	await act(async () => form.handleMemoChange("첫 입력"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(350);
+	});
+	await act(async () => form.handleMemoChange("저장 중 추가 입력"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(350);
+	});
+	await act(async () => {
+		completeFirstSave({ data: [{ id: 42 }] });
+	});
+
+	expect(onMemoCreate).toHaveBeenCalledWith(42);
+	expect(mocks.upsert).toHaveBeenCalledTimes(2);
+	expect(mocks.upsert.mock.calls[1][0]).toMatchObject({
+		id: 42,
+		data: { memo: "저장 중 추가 입력" },
+	});
+});
+
+it("새 메모의 첫 insert 뒤 저장은 조회 캐시가 따라오기 전에도 id로 update한다", async () => {
+	mocks.hookProps = { isNewMemo: true };
+	mocks.upsert
+		.mockReset()
+		.mockImplementationOnce((_request, callbacks) =>
+			callbacks.onSuccess({ data: [{ id: 42 }] }),
+		)
+		.mockImplementation((_request, callbacks) => callbacks.onSuccess());
+	await render();
+	await act(async () => form.handleMemoChange("첫 입력"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(350);
+	});
+	await act(async () => form.handleMemoChange("두 번째 입력"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(350);
+	});
+
+	expect(mocks.upsert.mock.calls[0][0].id).toBeUndefined();
+	expect(mocks.upsert.mock.calls[1][0].id).toBe(42);
+});
+
+it("본문이 빈 새 메모는 제목만 바꿔도 저장하지 않고, 떠날 때도 만들지 않는다", async () => {
+	mocks.hookProps = { isNewMemo: true };
+	await render();
+	await act(async () => form.handleTitleChange("제목만 수정"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(1500);
+	});
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveBeforeSwitch();
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.upsert).not.toHaveBeenCalled();
+});
+
+it("본문이 있는 새 메모는 떠나기 전에 forceInsert로 저장한다", async () => {
+	mocks.hookProps = { isNewMemo: true };
+	mocks.values.memo = "쓰던 내용";
+	await render();
+	await act(async () => form.handleMemoChange("쓰던 내용"));
+	let isSaved = false;
+	await act(async () => {
+		isSaved = await form.saveBeforeSwitch();
+	});
+
+	expect(isSaved).toBe(true);
+	expect(mocks.upsert).toHaveBeenCalledTimes(1);
+	expect(mocks.upsert.mock.calls[0][0]).toMatchObject({ forceInsert: true });
 });

@@ -30,7 +30,10 @@ import PastMemoNoticeItem from "./PastMemoNoticeItem";
  * 현재 사용처: MemoForm/index.tsx
  */
 const PastMemoNotice = (props: IFPastMemoNoticeProps) => {
-	const pastMemoMatch = usePastMemoMatch({ hasMemoData: props.hasMemoData });
+	const pastMemoMatch = usePastMemoMatch({
+		hasMemoData: props.hasMemoData,
+		pageMemoCount: props.pageMemoCount,
+	});
 	const shownNoticesRef = useRef(new Set<string>());
 	const openedNoticesRef = useRef(new Set<string>());
 
@@ -285,6 +288,8 @@ interface IFPastMemoEventParams {
 interface IFPastMemoNoticeProps {
 	/** 현재 URL에 저장된 메모가 있는지. 있으면 판정을 요청하지 않는다 */
 	hasMemoData: boolean;
+	/** 현재 URL에 저장된 메모 수. 1개 이상이면 판정을 요청하지 않는다 */
+	pageMemoCount: number;
 	/** 같은 글 안내의 메모 열기를 눌렀을 때. 없으면 원래 사이트를 새 탭으로 연다 */
 	onDuplicateOpen?: (duplicate: IFPastMemoDuplicate) => void;
 }

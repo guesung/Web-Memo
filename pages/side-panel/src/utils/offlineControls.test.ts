@@ -30,6 +30,7 @@ describe("getOfflineControlDisabledReason", () => {
 	it.each([
 		["change", "control_disabled_offline_change"],
 		["delete", "control_disabled_offline_delete"],
+		["create", "memo_header_new_offline"],
 	] as const)("오프라인 · %s는 %s를 쓴다", (kind, expectedKey) => {
 		expect(
 			getOfflineControlDisabledReason({

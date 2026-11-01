@@ -82,6 +82,13 @@ jobs:
             --allowedTools "Read,Grep,Glob"
             --json-schema '{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string","enum":["gap","none"]},"reason":{"type":"string"},"events":{"type":"array","items":{"type":"object","additionalProperties":false,"properties":{"name":{"type":"string"},"category":{"type":"string","enum":["engagement","core_action"]},"trigger":{"type":"string"},"question":{"type":"string"},"properties":{"type":"array","items":{"type":"string","pattern":"^[a-z][a-z0-9_]*$"}},"files":{"type":"array","items":{"type":"string"}}},"required":["name","category","trigger","question","properties","files"]}}},"required":["status","reason","events"]}'
 
+      - name: Diagnose Claude analyze failure
+        if: always() && steps.analyze.outcome == 'failure'
+        env:
+          CLAUDE_EXECUTION_FILE: ${{ steps.analyze.outputs.execution_file }}
+          CLAUDE_STAGE: analyze
+        run: node .github/scripts/ga-events/claude-diagnostics.mjs
+
       - name: Validate analysis result
         id: candidate
         if: steps.precheck.outputs.proceed == 'true'
@@ -108,10 +115,21 @@ jobs:
             --max-turns 40
             --allowedTools "Read,Grep,Glob,Edit"
 
+      - name: Diagnose Claude write_events failure
+        if: always() && steps.write_events.outcome == 'failure'
+        env:
+          CLAUDE_EXECUTION_FILE: ${{ steps.write_events.outputs.execution_file }}
+          CLAUDE_STAGE: write_events
+        run: node .github/scripts/ga-events/claude-diagnostics.mjs
+
       - name: Check generated changes
         id: changes
         if: steps.candidate.outputs.status == 'gap'
-        run: node .github/scripts/ga-events/maintain.mjs changes
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          exec > >(tee "$GA_EVENTS_DIR/changes-initial.log") 2>&1
+          node .github/scripts/ga-events/maintain.mjs changes
 
       # claude-code-action/base-action이 내부에서 Node 18을 설정해 이후 단계가 Node 18로 돕니다(jsdom 30이 ERR_REQUIRE_ESM으로 깨짐). AI 단계가 끝난 뒤 .nvmrc 버전으로 되돌립니다.
       - name: Restore Node for verification
@@ -122,12 +140,12 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        if: steps.candidate.outputs.status == 'gap'
+        if: steps.candidate.outputs.status == 'gap' && steps.changes.outcome == 'success'
         run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Verify changes
         id: verify_initial
-        if: steps.candidate.outputs.status == 'gap'
+        if: steps.candidate.outputs.status == 'gap' && steps.changes.outcome == 'success'
         continue-on-error: true
         env:
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -139,13 +157,14 @@ jobs:
 
       - name: Fix verification failure once
         id: fix_events
-        if: steps.candidate.outputs.status == 'gap' && steps.verify_initial.outcome == 'failure'
+        if: steps.candidate.outputs.status == 'gap' && (steps.changes.outcome == 'failure' || steps.verify_initial.outcome == 'failure')
         uses: anthropics/claude-code-action/base-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
-            Read ${{ runner.temp }}/ga-events/candidate.json and ${{ runner.temp }}/ga-events/verification-initial.log.
-            Fix the failure once. You may only edit files that are already modified (git diff --name-only) and only to make the log's errors pass.
+            Read ${{ runner.temp }}/ga-events/candidate.json and the available failure logs: ${{ runner.temp }}/ga-events/changes-initial.log and ${{ runner.temp }}/ga-events/verification-initial.log. The verification log is absent when the initial change check failed.
+            Fix the failure once. You may only edit the approved candidate's files, packages/shared/src/modules/analytics/type.ts, docs/events.md and docs/analytics.md, and only to make the log's errors pass. These must remain existing tracked files; a required document may not have been modified yet.
+            Both documents must list every approved event, including its properties; update the event counts in docs/analytics.md too.
             Keep exactly the approved events. Do not add, rename or remove events, and do not touch tests, config, workflows or other files.
             Biome rules are errors here: include every value used inside a hook in its dependency array, avoid non-null assertions and array-index keys. Do not use useCallback or useMemo.
             Do not create files. Do not commit or publish anything.
@@ -154,12 +173,26 @@ jobs:
             --max-turns 30
             --allowedTools "Read,Grep,Glob,Edit"
 
+      - name: Diagnose Claude fix_events failure
+        if: always() && steps.fix_events.outcome == 'failure'
+        env:
+          CLAUDE_EXECUTION_FILE: ${{ steps.fix_events.outputs.execution_file }}
+          CLAUDE_STAGE: fix_events
+        run: node .github/scripts/ga-events/claude-diagnostics.mjs
+
       - name: Restore Node after correction
         if: steps.fix_events.outcome == 'success'
         uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
           cache: "pnpm"
+
+      - name: Install dependencies after correction
+        if: steps.fix_events.outcome == 'success' && steps.changes.outcome == 'failure'
+        run: |
+          set -euo pipefail
+          node .github/scripts/ga-events/maintain.mjs changes
+          pnpm install --frozen-lockfile --prefer-offline
 
       - name: Verify corrected changes
         id: verify_retry

@@ -2,12 +2,12 @@ import type { LanguageParams } from "@src/modules/i18n";
 
 import { LandingPageTemplate } from "../../_components";
 import { NEWS_READING_PAGE } from "./_constants";
-import { metadataEnglish, metadataKorean } from "./_utils";
+import { getMetadata } from "./_utils";
 
 export async function generateMetadata({ params }: LanguageParams) {
 	const { lng } = await params;
 
-	return lng === "ko" ? metadataKorean : metadataEnglish;
+	return getMetadata(lng);
 }
 
 interface NewsReadingPageProps extends LanguageParams {}

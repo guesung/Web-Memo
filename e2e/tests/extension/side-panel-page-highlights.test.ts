@@ -47,27 +47,63 @@ test("현재 페이지의 최근 인용 두 개를 보여주고, 전체 보기�
 		highlights.getByRole("button", { name: /First quote/ }),
 	).toHaveCount(0);
 	await expect(highlights.getByText("3", { exact: true })).toBeVisible();
+	const body = highlights.getByTestId("highlights-body");
+	const previewHeight = await body.evaluate(
+		(element) => element.getBoundingClientRect().height,
+	);
 	await highlights
 		.getByRole("button", { name: /Show all 3|3개 모두 보기/ })
 		.click();
 	await expect(
 		highlights.getByRole("button", { name: /First quote/ }),
 	).toBeVisible();
+	await expect
+		.poll(() =>
+			body.evaluate((element) => element.getBoundingClientRect().height),
+		)
+		.toBeGreaterThan(previewHeight);
 	const disclosure = highlights.getByRole("button", {
 		name: /Highlights on this page|이 페이지의 하이라이트/,
 	});
 	await disclosure.focus();
 	await panel.keyboard.press("Enter");
 	await expect(disclosure).toHaveAttribute("aria-expanded", "false");
+	await expect
+		.poll(() =>
+			body.evaluate((element) => element.getBoundingClientRect().height),
+		)
+		.toBe(0);
 	await expect(
 		highlights.getByRole("button", { name: /First quote/ }),
 	).toHaveCount(0);
 	await disclosure.click();
 	await expect(disclosure).toHaveAttribute("aria-expanded", "true");
+	await expect
+		.poll(() =>
+			body.evaluate((element) => element.getBoundingClientRect().height),
+		)
+		.toBeGreaterThan(0);
 	await expect(
 		highlights.getByRole("button", { name: /First quote/ }),
 	).toBeVisible();
 	await expect(panel.locator("#memo-textarea")).toBeEditable();
+	await panel.emulateMedia({ reducedMotion: "reduce" });
+	await highlights
+		.getByRole("button", { name: /Show preview|미리보기로 돌아가기/ })
+		.click();
+	expect(
+		await body.evaluate(
+			(element) =>
+				element
+					.getAnimations()
+					.filter((animation) => animation.playState === "running").length,
+		),
+	).toBe(0);
+	expect(
+		await body.evaluate(
+			(element) => getComputedStyle(element).transitionProperty,
+		),
+	).toBe("none");
 	await page.goto("https://example.com/panel-highlights-other");
 	await expect(
 		highlights.getByText(/No highlights saved|저장한 하이라이트가 없어요/),
@@ -174,5 +210,54 @@ test("하이라이트 조회 실패 후 재시도와 빈 상태에서도 메모�
 	await expect(
 		highlights.getByText(/No highlights saved|저장한 하이라이트가 없어요/),
 	).toBeVisible();
+	await expect(panel.locator("#memo-textarea")).toBeEditable();
+});
+
+test("하이라이트 조회의 일시적인 전송 실패는 수동 재시도 없이 복구한다", async ({
+	page,
+	context,
+}) => {
+	const store = new MockSupabaseStore();
+	store.addHighlight(
+		createMockHighlight({ url: URL, exact_text: "Recovered quote" }),
+	);
+	await setupSupabaseMocks(page, store);
+	let failedRequests = 0;
+	await context.route(`${SUPABASE.url}/rest/v1/highlight**`, async (route) => {
+		const request = route.request();
+		if (
+			failedRequests === 0 &&
+			request.method() === "GET" &&
+			!request.serviceWorker() &&
+			request.frame().url().includes("side-panel") &&
+			new globalThis.URL(request.url()).searchParams
+				.get("page_key")
+				?.includes("panel-highlights")
+		) {
+			failedRequests += 1;
+			await route.abort("failed");
+			return;
+		}
+		await route.fallback();
+	});
+	await context.route("https://example.com/**", (route) =>
+		route.fulfill({ contentType: "text/html", body: "<p>Highlight page</p>" }),
+	);
+	await login(page);
+	await skipGuide(page);
+	await openSidePanel(page);
+	const panel = await findSidePanelPage(page);
+	await page.goto(URL);
+
+	const highlights = panel.getByRole("region", {
+		name: /Highlights on this page|이 페이지의 하이라이트/,
+	});
+	await expect(
+		highlights.getByRole("button", { name: /Recovered quote/ }),
+	).toBeVisible();
+	expect(failedRequests).toBe(1);
+	await expect(
+		highlights.getByRole("button", { name: /Try again|다시 시도/ }),
+	).toHaveCount(0);
 	await expect(panel.locator("#memo-textarea")).toBeEditable();
 });

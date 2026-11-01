@@ -10,10 +10,12 @@ import type { TSupportStatus } from "../_types";
  */
 const SupportMark = ({
 	status,
+	labels,
 	description,
 	className,
 }: IFSupportMarkProps) => {
-	const { icon: StatusIcon, label, iconClassName } = SUPPORT_MARK[status];
+	const { icon: StatusIcon, iconClassName } = SUPPORT_MARK[status];
+	const label = labels[status];
 
 	return (
 		<span className={cn("inline-flex items-start gap-1.5", className)}>
@@ -37,18 +39,16 @@ export default SupportMark;
 
 const SUPPORT_MARK: Record<
 	TSupportStatus,
-	{ icon: LucideIcon; label: string; iconClassName: string }
+	{ icon: LucideIcon; iconClassName: string }
 > = {
-	supported: { icon: Check, label: "지원", iconClassName: "text-foreground" },
-	partial: { icon: Minus, label: "일부", iconClassName: "text-foreground" },
+	supported: { icon: Check, iconClassName: "text-foreground" },
+	partial: { icon: Minus, iconClassName: "text-foreground" },
 	unsupported: {
 		icon: X,
-		label: "없음",
 		iconClassName: "text-muted-foreground",
 	},
 	unknown: {
 		icon: CircleHelp,
-		label: "확인 못 함",
 		iconClassName: "text-muted-foreground",
 	},
 };
@@ -56,6 +56,7 @@ const SUPPORT_MARK: Record<
 /** SupportMark의 입력 */
 interface IFSupportMarkProps {
 	status: TSupportStatus;
+	labels: Record<TSupportStatus, string>;
 	/** 셀에 보일 짧은 설명. 없으면 상태 이름을 보인다(범례) */
 	description?: string;
 	className?: string;

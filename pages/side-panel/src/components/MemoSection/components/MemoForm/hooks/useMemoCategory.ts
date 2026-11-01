@@ -30,7 +30,11 @@ export default function useMemoCategory({
 	isMemoLocked = false,
 }: UseMemoCategoryProps) {
 	const { watch, setValue, getValues } = useFormContext<MemoInput>();
-	const { categories, refetch: refetchCategories } = useCategoryQuery();
+	const {
+		categories,
+		isStale: isCategoriesStale,
+		refetch: refetchCategories,
+	} = useCategoryQuery();
 	const { mutateAsync: createCategory, isPending: isCategoryCreating } =
 		useCategoryPostMutation();
 	const [categoryPopupOpenSource, setCategoryPopupOpenSource] =
@@ -43,6 +47,8 @@ export default function useMemoCategory({
 	const categoryAddChipRef = useRef<HTMLButtonElement>(null);
 	const categoryPopupTriggerRef = useRef<HTMLElement | null>(null);
 	const cursorPositionRef = useRef<number | null>(null);
+	// 최신 목록을 받는 동안에는 isCategoryCreating이 아직 false라 이중 제출을 따로 막는다.
+	const isCategoryCreateInFlightRef = useRef(false);
 
 	const restoreFocus = useCallback(() => {
 		if (textareaRef.current) {
@@ -104,9 +110,9 @@ export default function useMemoCategory({
 	const openCategoryPopup = (source: TCategoryPopupOpenSource) => {
 		setCategoryPopupOpenSource(source);
 
-		// 웹에서 카테고리를 막 만들고 돌아왔을 수 있다. 캐시가 비어 있을 때만 다시 받는다.
+		// 웹에서 카테고리를 막 만들고 돌아왔을 수 있다. 캐시가 비어 있거나 오래됐으면 다시 받는다.
 		const hasNoCategories = !categories?.length;
-		if (hasNoCategories) {
+		if (hasNoCategories || isCategoriesStale) {
 			refetchCategories();
 		}
 
@@ -213,11 +219,19 @@ export default function useMemoCategory({
 	 * 팝업 검색어로 카테고리를 만들고 곧바로 메모에 지정한다. 색은 AI 추천 경로와 같은 규칙(랜덤 파스텔)이고, 웹 설정에서 바꾼다.
 	 */
 	const handleCategoryCreate = async (categoryName: string) => {
-		if (isCategoryCreating) {
+		if (isCategoryCreating || isCategoryCreateInFlightRef.current) {
 			return;
 		}
 
+		isCategoryCreateInFlightRef.current = true;
 		try {
+			// 캐시가 오래돼 팝업에는 없지만 서버에는 같은 이름이 있을 수 있다. 만들기 전에 최신 목록으로 확인한다.
+			const existingCategory = await findExistingCategory(categoryName);
+			if (existingCategory) {
+				handleCategorySelect(existingCategory);
+				return;
+			}
+
 			const result = await createCategory({
 				name: categoryName,
 				color: generateRandomPastelColor(),
@@ -230,7 +244,21 @@ export default function useMemoCategory({
 			handleCategorySelect(createdCategory);
 		} catch {
 			// 실패는 MutationCache가 토스트로 알린다. 팝업은 열어 둬 다시 시도할 수 있게 한다.
+		} finally {
+			isCategoryCreateInFlightRef.current = false;
 		}
+	};
+
+	/**
+	 * 최신 목록에서 같은 이름(공백 제외, 대소문자 무시)의 카테고리를 찾는다. 목록을 받지 못하면 없는 것으로 보고 만들기를 진행한다.
+	 */
+	const findExistingCategory = async (categoryName: string) => {
+		const { data } = await refetchCategories();
+		const normalizedName = categoryName.trim().toLowerCase();
+
+		return data?.data?.find(
+			(category) => category.name.trim().toLowerCase() === normalizedName,
+		);
 	};
 
 	const handleCategoryRemove = () => {

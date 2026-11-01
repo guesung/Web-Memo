@@ -6,6 +6,12 @@ import { AuthService } from "@web-memo/shared/utils";
 import { redirect } from "next/navigation";
 
 import { LoginErrorAlert, LoginSection } from "./_components";
+import { getLoginMetadata } from "./_utils";
+
+export async function generateMetadata({ params }: LanguageParams) {
+	const { lng } = await params;
+	return getLoginMetadata(lng);
+}
 
 /** 로그인 상태와 오류에 맞춰 로그인 화면을 표시합니다. */
 const LoginPage = async ({ params, searchParams }: IFPageProps) => {

@@ -105,7 +105,14 @@ export function useMemoDialogEditor({ memo, latestMemo }: EditorArgs) {
 
 	useKeyboardBind({ key: "s", callback: saveMemo, isMetaKey: true });
 
-	return { form, saveStatus, markEdited, changeTitle, flushDebounce };
+	return {
+		form,
+		saveStatus,
+		markEdited,
+		changeTitle,
+		flushDebounce,
+		abortDebounce,
+	};
 }
 
 function toInput(memo: GetMemoResponse): MemoInput {

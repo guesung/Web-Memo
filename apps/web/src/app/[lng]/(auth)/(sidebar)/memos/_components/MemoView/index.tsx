@@ -13,10 +13,14 @@ import { Skeleton } from "@web-memo/ui";
 import dynamic from "next/dynamic";
 import { Suspense, useEffect } from "react";
 import type { TMemoFilter } from "../../_types";
-import { useMemoSearchConditions } from "./_hooks";
+import {
+	useMemoListKeyboardNavigation,
+	useMemoSearchConditions,
+} from "./_hooks";
 import MemoGrid from "./MemoGrid";
 import { MemoListSkeleton } from "./MemoListSkeleton";
 import MemoViewFrame from "./MemoViewFrame";
+import { cancelMemoReflow, captureMemoReflow } from "./memoReflow";
 import PlanMemoView from "./PlanMemoView";
 
 /** 현지 날짜는 브라우저에서 계산하여 서버 시간대의 영향을 받지 않는다. */
@@ -33,6 +37,8 @@ const MemoDomainFilter = dynamic(() => import("./MemoDomainFilter"), {
 
 /** 라우트 필터에 해당하는 메모 목록과 검색 결과를 표시한다. */
 const MemoView = ({ lng, filter }: IFMemoViewProps) => {
+	useMemoListKeyboardNavigation();
+
 	if (filter === "plan") {
 		return <PlanMemoView lng={lng} />;
 	}
@@ -44,6 +50,10 @@ export default MemoView;
 
 /** 페이지 단위로 불러오는 메모 목록. 카드·작성일별·도메인별 보기를 전환한다. */
 const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
+	useEffect(() => {
+		const path = window.location.pathname;
+		return () => cancelMemoReflow(path);
+	}, []);
 	const { category, view, isListView, searchQuery, domainParam } =
 		useMemoSearchConditions();
 	const domain = parseDomainFilter(domainParam);
@@ -96,52 +106,63 @@ const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
 	const tabKey = `${category}|${filter}|${view}|${domain ?? ""}`;
 
 	return (
-		<MemoViewFrame
-			lng={lng}
-			memos={memos}
-			totalCount={totalCount}
-			domain={domain}
-			domainFilter={
-				<Suspense fallback={<Skeleton className="h-10 w-28" />}>
-					<MemoDomainFilter
-						lng={lng}
-						domain={domain}
-						category={category}
-						isWish={isWish}
-						isStar={isStar}
-						isReading={isReading}
-					/>
-				</Suspense>
-			}
-			isViewToggleVisible
-		>
-			{({ highlightsByUrl, sourcesByMemo }) => {
-				const listProps = {
-					lng,
-					memos,
-					highlightsByUrl,
-					sourcesByMemo,
-					searchQuery,
-					domain,
-					hasNextPage,
-					isFetchingNextPage,
-					fetchNextPage,
-					loadOutcome,
-					route,
-					navigationId,
-				};
-
-				return isListView ? (
-					<MemoList
-						key={tabKey}
-						groupBy={view === "domain" ? "domain" : "date"}
-						{...listProps}
-					/>
-				) : (
-					<MemoGrid key={tabKey} {...listProps} />
-				);
+		<div
+			className="w-full"
+			onPointerDownCapture={(event) => captureMemoReflow(event.currentTarget)}
+			onKeyDownCapture={(event) => {
+				if (event.key === "Enter" || event.key === " ") {
+					captureMemoReflow(event.currentTarget);
+				}
 			}}
-		</MemoViewFrame>
+		>
+			<MemoViewFrame
+				lng={lng}
+				memos={memos}
+				totalCount={totalCount}
+				domain={domain}
+				domainFilter={
+					<Suspense fallback={<Skeleton className="h-10 w-28" />}>
+						<MemoDomainFilter
+							lng={lng}
+							domain={domain}
+							category={category}
+							isWish={isWish}
+							isStar={isStar}
+							isReading={isReading}
+						/>
+					</Suspense>
+				}
+				isViewToggleVisible
+			>
+				{({ highlightsByUrl, sourcesByMemo }) => {
+					const listProps = {
+						lng,
+						memos,
+						filterKey: tabKey,
+						highlightsByUrl,
+						sourcesByMemo,
+						searchQuery,
+						domain,
+						hasNextPage,
+						isFetchingNextPage,
+						fetchNextPage,
+						loadOutcome,
+						route,
+						navigationId,
+					};
+
+					return isListView ? (
+						<MemoList
+							key={tabKey}
+							groupBy={view === "domain" ? "domain" : "date"}
+							{...listProps}
+						/>
+					) : (
+						<MemoGrid key={tabKey} {...listProps} />
+					);
+				}}
+			</MemoViewFrame>
+		</div>
 	);
 };
 

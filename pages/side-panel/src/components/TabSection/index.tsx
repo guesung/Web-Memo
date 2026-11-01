@@ -8,7 +8,9 @@ import { resolveActiveTab, type TTabName } from "./resolveActiveTab";
 
 interface TabSectionProps {
 	tabHeight: number;
+	animateHeight: boolean;
 	isSummaryOpen: boolean;
+	isExiting: boolean;
 	isChatEnabled: boolean;
 	selectedTab: TTabName;
 	onTabChange: (tab: TTabName) => void;
@@ -18,7 +20,9 @@ interface TabSectionProps {
 
 export default function TabSection({
 	tabHeight,
+	animateHeight,
 	isSummaryOpen,
+	isExiting,
 	isChatEnabled,
 	selectedTab,
 	onTabChange,
@@ -40,7 +44,10 @@ export default function TabSection({
 	return (
 		<ChatProvider>
 			<section
-				className="flex min-h-0 flex-col overflow-hidden"
+				data-testid="ai-panel"
+				inert={isExiting}
+				aria-hidden={isExiting}
+				className={`flex min-h-0 flex-col overflow-hidden ${animateHeight ? "transition-[height] duration-[180ms] ease-out motion-reduce:transition-none" : ""}`}
 				style={{ height: `${tabHeight}%` }}
 			>
 				<Tabs

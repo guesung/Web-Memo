@@ -62,15 +62,11 @@ export default async function Footer({ lng }: FooterProps) {
 			href: "#demo",
 			label: t("introduce.footer.features_link"),
 		},
-		...(lng === "ko"
-			? [
-					{
-						href: `/${lng}${PATHS.compareChromeMemoExtensions}`,
-						label: "크롬 메모 확장 비교",
-						icon: Scale,
-					},
-				]
-			: []),
+		{
+			href: `/${lng}${PATHS.compareChromeMemoExtensions}`,
+			label: t("introduce.footer.compare_chrome_memo_extensions"),
+			icon: Scale,
+		},
 	];
 
 	const companyLinks = [

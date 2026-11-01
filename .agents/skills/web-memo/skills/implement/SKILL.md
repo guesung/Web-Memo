@@ -49,7 +49,7 @@ model: sonnet
 
 ## 노션 접근
 
-개인 업무 로그 페이지를 읽고 쓴다. **식별자·속성·본문 골격은 [notion-databases.md](~/.agents/docs/notion-databases.md#개인-업무-로그)를 따른다.** `notion-home` MCP로만 접근한다.
+개인 업무 로그 페이지를 읽고 쓴다. **식별자·속성·본문 골격은 [notion-databases.md](~/.agents/docs/notion-databases.md#개인-업무-로그)를 따른다.** 접근 도구는 [Notion 접근 규칙](../../notion-access.md)을 따른다.
 
 **본문은 `# AI 작성` 아래만 고친다.** `# 인간 작성` 아래는 읽기만 하고, 섹션도 그 H1 아래에서 찾는다 — [AI 작성 경계](~/.agents/docs/notion-databases.md#ai-작성-경계).
 
@@ -183,7 +183,7 @@ model: sonnet
 
 ## 종료 — 기록 갱신
 
-노션 모드면 `notion-home`으로:
+노션 모드면 [Notion 접근 규칙](../../notion-access.md)에 따라:
 - `## TDL` 전부 체크, 속성 `TODO` 비움. **`상태`는 건드리지 않는다**(`진행 중` 유지)
 - `## 루프 로그`에 구현 요약(FE n건 · BE n건 · 공통 n건 · 커밋 n개)과 `이벤트 +a ~b −c · E2E +a ~b −c · 실행 <결과>` 한 줄(상태 파일 `events`·`e2e`의 배열 길이). 단독 호출이면 `QA·PR 미실행 (/web-memo:implement)` 한 줄을 더한다
 - `## 논의 필요`에 구현 중 쌓인 `[AI 자동 결정]` 전부와 §논의 필요 반영에서 정한 것
@@ -258,7 +258,7 @@ AI가 정한 것 (n건):               ← 없으면 "AI가 정한 것: 없음"
 | | 조건 | 남기는 것 |
 |---|---|---|
 | D | ①·①-b에서, 또는 ③ `/web-memo:pr`의 충돌 해결에서 타입체크·빌드 2회 연속 실패 · ①-c E2E 2회 연속 FAIL | 에러 로그, 어느 TDL 항목(또는 충돌 파일·spec)에서인지 |
-| E | 노션 페이지 접근 실패 (개인 DB는 `notion-home`) | URL, 에러 |
+| E | 노션 페이지 접근 실패 (선택한 개인 Notion 연결) | URL, 에러 |
 | G | 대상 레포가 cashwalk 안 (§0-2) — 회사 작업 | 레포 경로와 `/nudge:implement` 안내 한 줄 |
 
 ## 하지 않는 것

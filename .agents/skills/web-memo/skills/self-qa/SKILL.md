@@ -11,7 +11,7 @@ argument-hint: '<개인 업무 로그 페이지 URL | 설계서 파일 경로> [
 
 명세는 `qa-checklist`, 판정은 `qa-verifier` 에이전트가 별도 컨텍스트에서 한다. 이 스킬은 **입력을 넘기고, 반환을 DB에 기록하는 오케스트레이터**다.
 
-## 저장소 — 노션 "QA 항목" DB (guesung, `notion-home` MCP)
+## 저장소 — 노션 "QA 항목" DB (guesung, [Notion 접근 규칙](../../notion-access.md))
 
 **시작 전에 [notion-databases.md](~/.agents/docs/notion-databases.md#qa-항목)를 읽는다.** 식별자와 12개 속성의 채우는 규칙이 거기 있다. **에이전트는 노션에 접근하지 않는다** — DB 읽기·쓰기는 전부 이 스킬이 한다.
 

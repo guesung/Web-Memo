@@ -16,6 +16,9 @@ declare global {
 /** 이벤트 분류. GA4의 event_category로 전송됩니다. */
 export type TEventCategory = "engagement" | "core_action";
 
+/** 실제 클라우드 저장을 시도한 확장 경로. */
+export type TMemoSaveSource = "side_panel" | "offline_sync";
+
 /**
  * GA4로 실제 전송되는 파라미터.
  * @description 호출부가 넘긴 이벤트별 파라미터에 전송 계층이 공통 파라미터를 얹은 결과입니다.
@@ -72,7 +75,24 @@ export type TInstallClickPosition =
 export type TAnalyticsEvent =
 	| { name: "highlight_source_jump" }
 	| { name: "highlight_panel_open_result"; params: { is_success: boolean } }
+	| {
+			name: "introduce_demo_control";
+			params: {
+				action: "select_step" | "play" | "pause";
+				stage: "read" | "shortcut" | "panel" | "write" | "saved";
+			};
+	  }
 	| { name: "side_panel_open" }
+	| { name: "memo_editor_ready"; params: { source: "side_panel" } }
+	| { name: "memo_content_saved"; params: { source: TMemoSaveSource } }
+	| {
+			name: "memo_save_result";
+			params: {
+				is_success: boolean;
+				source: TMemoSaveSource;
+				reason: "none" | "network" | "server" | "unknown";
+			};
+	  }
 	| { name: "page_view"; params: { page_title: string; page_location: string } }
 	| {
 			name: "memo_write";
@@ -232,6 +252,10 @@ export type TAnalyticsEvent =
 			params: { notice_id: number; days_since_view: number };
 	  }
 	| { name: "notice_dismiss"; params: { notice_id: number } }
+	| { name: "review_prompt_view"; params: { shown_count: number } }
+	| { name: "review_prompt_open"; params: { shown_count: number } }
+	| { name: "review_prompt_close"; params: { shown_count: number } }
+	| { name: "review_prompt_never"; params: { shown_count: number } }
 	| {
 			name: "past_memo_show";
 			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
@@ -248,11 +272,31 @@ export type TAnalyticsEvent =
 			name: "past_memo_dismiss";
 			params: { kind: "duplicate" | "related"; source: "rule" | "jev" };
 	  }
+	| { name: "past_memo_view_start"; params: { source: "rule" | "jev" } }
+	| {
+			name: "past_memo_view_result";
+			params: {
+				source: "rule" | "jev";
+				is_success: boolean;
+				reason:
+					| "displayed"
+					| "empty_content"
+					| "query_error"
+					| "not_found"
+					| "cancelled";
+				action: "existing" | "recent" | "unknown";
+			};
+	  }
+	| {
+			name: "past_memo_reuse";
+			params: { source: "rule" | "jev"; action: "source_open" };
+	  }
 	| {
 			name: "memo_offline_queued";
 			params: {
 				/** 대기열에 넣은 이유. offline은 사전 판단, network_error는 시도 후 실패, already_queued는 같은 메모에 대기 항목이 이미 있던 경우 */
 				trigger: "offline" | "network_error" | "already_queued";
+				queue_contract_version?: 2;
 			};
 	  }
 	| {
@@ -266,6 +310,16 @@ export type TAnalyticsEvent =
 				synced_count: number;
 				conflict_count: number;
 				has_other_error: boolean;
+				queue_contract_version?: 2;
+				/** revision별 첫 서버 호출 수. 동일 내용 확인(no-op)도 포함한다. */
+				attempted_count?: number;
+				network_error_count?: number;
+				other_error_count?: number;
+				/** 마지막 큐 조회가 실패하면 생략한다. */
+				remaining_count?: number;
+				ack_latency_sum_ms?: number;
+				ack_latency_count?: number;
+				no_op_count?: number;
 			};
 	  }
 	| { name: "shortcut_change_click"; params: { is_success: boolean } }
@@ -305,9 +359,13 @@ export type TAnalyticsEventName = TAnalyticsEvent["name"];
 export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	highlight_source_jump: "core_action",
 	highlight_panel_open_result: "core_action",
+	introduce_demo_control: "engagement",
 	side_panel_open: "engagement",
 	page_view: "engagement",
 	memo_write: "core_action",
+	memo_editor_ready: "engagement",
+	memo_content_saved: "core_action",
+	memo_save_result: "engagement",
 	memo_delete: "core_action",
 	summary_run: "core_action",
 	summary_panel_toggle: "engagement",
@@ -369,10 +427,17 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	notice_view: "engagement",
 	notice_return: "engagement",
 	notice_dismiss: "engagement",
+	review_prompt_view: "engagement",
+	review_prompt_open: "engagement",
+	review_prompt_close: "engagement",
+	review_prompt_never: "engagement",
 	past_memo_show: "engagement",
 	past_memo_open: "core_action",
 	past_memo_expand: "engagement",
 	past_memo_dismiss: "engagement",
+	past_memo_view_start: "engagement",
+	past_memo_view_result: "engagement",
+	past_memo_reuse: "core_action",
 	memo_offline_queued: "engagement",
 	memo_offline_sync_result: "engagement",
 	shortcut_change_click: "engagement",

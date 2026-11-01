@@ -67,6 +67,43 @@ Slack 봇으로 릴레이합니다.
 `issue` 웹훅은 태그를 싣지 않습니다. 그래서 어느 기능이 깨졌는지는 이슈 제목으로만 알 수 있고,
 `packages/shared/src/utils/errorReporter.ts`가 제목 앞에 `[feature/operation/stage]`를 붙이는 이유가 이것입니다.
 
+### 알림 보강 — 대표 이벤트 조회
+
+`issue` 웹훅만으로는 환경·릴리스·브라우저·스택을 알 수 없어, 수신기가 응답을 먼저 돌려준 뒤
+(`runAfterResponse`) Sentry API로 이슈의 **대표 이벤트**(`/issues/{id}/events/recommended/`)를 조회해
+Slack 메시지에 붙입니다.
+
+- 토큰은 `SENTRY_API_TOKEN`(Vercel)입니다. 소스맵 업로드용 `SENTRY_AUTH_TOKEN`과 별개로 `event:read`·
+  `project:read`만 준 토큰을 씁니다. 없거나 조회가 실패하면 웹훅 필드만으로 예전처럼 보냅니다.
+- 대표 이벤트는 **알림을 일으킨 이벤트와 다를 수 있습니다.** 메시지에 event ID와 조회 시각을 함께 적습니다.
+- 발생 횟수·영향 사용자 수는 웹훅 수신 시점 값이고 관측 기간(최초~최근)을 같이 적습니다. 받지 못한 값은
+  0이나 `production`으로 채우지 않고 `미수집`으로 둡니다.
+- 메시지·breadcrumb·프레임은 비신뢰 데이터로 보고 URL 쿼리, 이메일, 토큰 모양 문자열을 지운 뒤 길이를 자릅니다
+  (`apps/web/src/modules/sentry/eventContext.ts`).
+
+## AI 원인 분석·수정 PR (`chore-sentry-triage.yml`)
+
+알림을 보낸 뒤 **`SENTRY_AI_TRIAGE_ENABLED=true`일 때만** 수신기가 `GITHUB_DISPATCH_TOKEN`으로
+`chore-sentry-triage.yml`을 `master`에서 실행합니다. 기본은 꺼져 있고, 이 값이 전체 중지 스위치입니다.
+AI가 실패·지연·한도 소진돼도 원본 알림은 그대로 남습니다.
+
+| 잡 | 하는 일 | 자격 증명 |
+| --- | --- | --- |
+| `guard` | 입력 검증, 같은 이슈의 열린 `sentry-fix/<issue_id>` PR·오늘 성공 실행이 있으면 건너뜀, 하루(UTC) 실행 상한(`vars.SENTRY_TRIAGE_DAILY_LIMIT`, 기본 3) | `GITHUB_TOKEN`(읽기), Slack 봇(건너뜀 사유) |
+| `analyze` | Sentry 상세를 정제해 파일로 남기고, Claude Code(구독 OAuth)가 Read·Grep·Glob·Edit·Write만으로 원인 가설과 최소 수정을 냄. 금지 경로·크기 검사 | `SENTRY_API_TOKEN`(조회 step만), `CLAUDE_CODE_OAUTH_TOKEN` |
+| `verify` | 패치를 적용해 `pnpm check`·`type-check`·`test:jest` 실행 | 없음 (`contents: read`) |
+| `publish` | 검증을 통과한 패치만 `sentry-fix/<issue_id>` 브랜치·PR로 게시(코드 실행 없음), 결과를 원본 알림 스레드에 답글 | GitHub App 토큰, Slack 봇 |
+| `notify-failure` | 어느 잡이든 실패하면 스레드에 실패 알림 | Slack 봇 |
+
+- 자동 수정 금지 경로: `.github/`, 마이그레이션·Supabase, 인증·결제 경로, `manifest.js`, `package.json`·lockfile,
+  `.env*`·`packages/env/`, 에이전트 규칙 파일. 5개 파일·200줄을 넘으면 패치를 버리고 분석만 보고합니다.
+- 자동 머지·배포·Sentry resolve는 하지 않습니다. PR은 사람이 리뷰합니다.
+- 동시 실행은 `concurrency: sentry-triage`로 한 줄로 세웁니다. 이 경로는 DB에 작업 상태를 저장하지 않습니다 —
+  중복 판정은 GitHub의 PR·실행 이력으로 하고, 수신기가 디스패치에 실패하면 재시도하지 않고 스레드에 알립니다.
+- 처음 켜기 전에 준비할 것: Sentry 조회 토큰을 Vercel·GitHub에 `SENTRY_API_TOKEN`으로 등록, Claude GitHub App
+  설치 확인(`audit-refactor.yml`과 같은 전제), PR을 만드는 GitHub App(`APP_ID`)에 contents·pull-requests write,
+  알림 채널에 Slack 봇 초대. 수동 시험은 Actions에서 `dry_run: true`로 실행합니다.
+
 ## 보고가 조용히 사라지는 경로
 
 설정은 멀쩡한데 이벤트가 안 오는 경우를 모았습니다. 모두 오류 없이 일어납니다.

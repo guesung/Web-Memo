@@ -66,7 +66,7 @@ describe("postSeoAiReport", () => {
 			post,
 		});
 
-		expect(sent).toEqual({ sent: true, threadFailures: 1, error: null });
+		expect(sent).toEqual({ sent: true, threadFailures: 1, error: null, rootTs: "1.1" });
 		expect(post.mock.calls[1][0].threadTs).toBe("1.1");
 		expect(post.mock.calls[2][0].threadTs).toBe("1.1");
 	});
@@ -104,7 +104,7 @@ describe("sendSeoAiReport", () => {
 		expect(stored).toMatchObject({ status: "warning", delivered: true, counts: { P2: 1 } });
 		expect(appendFile).toHaveBeenCalledWith(
 			"/tmp/output",
-			"sent=true\nthread_failures=0\nfailure_reason=none\n",
+			"sent=true\nthread_failures=0\nfailure_reason=none\nroot_ts=1.1\n",
 		);
 	});
 
@@ -146,7 +146,7 @@ describe("sendSeoAiReport", () => {
 		await expect(sendSeoAiReport({ env: env(), post })).rejects.toThrow("disk full");
 		expect(appendFile).toHaveBeenCalledWith(
 			"/tmp/output",
-			"sent=true\nthread_failures=0\nfailure_reason=none\n",
+			"sent=true\nthread_failures=0\nfailure_reason=none\nroot_ts=1.1\n",
 		);
 		writeFile.mockReset();
 	});

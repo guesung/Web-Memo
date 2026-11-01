@@ -3,7 +3,15 @@ import {
 	HIGHLIGHT_COLORS,
 } from "@web-memo/shared/constants";
 import { I18n } from "@web-memo/shared/utils/extension";
-import { ArrowDown, ArrowUp, Ban, Pencil, X } from "lucide-react";
+import {
+	ArrowDown,
+	ArrowUp,
+	Ban,
+	Pencil,
+	Plus,
+	Settings2,
+	X,
+} from "lucide-react";
 import { useEffect, useRef } from "react";
 import { HighlightEditToolbar } from "./HighlightEditToolbar";
 import { HighlightIntroCoachmark } from "./HighlightIntroCoachmark";
@@ -29,8 +37,12 @@ export const HighlightSelectionToolbar = (
 		isCreatedNoteOpen,
 		isIntroVisible,
 		disabledNoticePosition,
+		panelOpenErrorPosition,
+		handlePanelOpenRetry,
 		handleHighlightColorClick,
 		handleHighlightNoteClick,
+		handleHighlightMemoClick,
+		handleBubbleMenuClick,
 		handleBubbleCloseClick,
 		handleBubblePositionClick,
 		handleBubbleDisableClick,
@@ -61,6 +73,26 @@ export const HighlightSelectionToolbar = (
 			document.removeEventListener("keydown", handleDocumentKeyDown);
 		};
 	}, [isMenuOpen, handleMenuDismiss]);
+	if (panelOpenErrorPosition) {
+		return (
+			<div
+				className="fixed z-[2147483647] flex flex-col gap-2 rounded-lg border bg-background px-3 py-2 text-sm text-foreground shadow-lg"
+				style={{
+					left: panelOpenErrorPosition.x,
+					top: panelOpenErrorPosition.y,
+				}}
+			>
+				<output>{I18n.get("highlight_panel_open_failed")}</output>
+				<button
+					type="button"
+					onClick={handlePanelOpenRetry}
+					className="self-start underline"
+				>
+					{I18n.get("highlight_memo_retry")}
+				</button>
+			</div>
+		);
+	}
 	if (editState) {
 		return (
 			<HighlightEditToolbar
@@ -113,7 +145,7 @@ export const HighlightSelectionToolbar = (
 			ref={toolbarRef}
 			role="toolbar"
 			aria-label={I18n.get("highlight_create")}
-			className="fixed z-[2147483647] flex flex-col items-start gap-1 text-foreground animate-fade-in"
+			className="fixed z-[2147483647] flex flex-col items-start gap-1 text-foreground animate-fade-in motion-reduce:animate-none"
 			style={{ left: selectionState.x, top: selectedY }}
 			onPointerDown={(event) => event.preventDefault()}
 			onMouseUp={(event) => event.stopPropagation()}
@@ -129,7 +161,7 @@ export const HighlightSelectionToolbar = (
 						onClick={() => {
 							void handleHighlightColorClick(color);
 						}}
-						className="flex size-7 items-center justify-center rounded-full hover:bg-accent disabled:opacity-50"
+						className="flex size-7 items-center justify-center rounded-full hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
 					>
 						<span
 							className="size-4 rounded-full border border-black/10"
@@ -145,17 +177,38 @@ export const HighlightSelectionToolbar = (
 					onClick={() => {
 						void handleHighlightNoteClick();
 					}}
-					className="flex size-7 items-center justify-center rounded-full hover:bg-accent disabled:opacity-50"
+					className="flex size-7 items-center justify-center rounded-full hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
 				>
 					<Pencil size={16} aria-hidden="true" />
 				</button>
 				<button
 					type="button"
-					aria-label={I18n.get("highlight_bubble_disable")}
+					aria-label={I18n.get("highlight_panel_memo_action")}
+					disabled={!selectionState.canSave || selectionState.isSaving}
+					onClick={() => {
+						void handleHighlightMemoClick();
+					}}
+					className="flex size-7 items-center justify-center rounded-full hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+				>
+					<Plus size={16} aria-hidden="true" />
+				</button>
+				<button
+					type="button"
+					aria-label={I18n.get("highlight_bubble_settings")}
 					aria-expanded={isMenuOpen}
+					aria-haspopup="menu"
+					disabled={selectionState.isSaving}
+					onClick={handleBubbleMenuClick}
+					className="flex size-7 items-center justify-center rounded-full hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+				>
+					<Settings2 size={16} aria-hidden="true" />
+				</button>
+				<button
+					type="button"
+					aria-label={I18n.get("highlight_bubble_dismiss")}
 					disabled={selectionState.isSaving}
 					onClick={handleBubbleCloseClick}
-					className="flex size-7 items-center justify-center rounded-full hover:bg-accent disabled:opacity-50"
+					className="flex size-7 items-center justify-center rounded-full hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
 				>
 					<X size={16} aria-hidden="true" />
 				</button>

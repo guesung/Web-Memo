@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
 	is: vi.fn(),
 	order: vi.fn(),
 	range: vi.fn(),
+	ilike: vi.fn(),
 }));
 
 vi.mock("@supabase/supabase-js", () => ({ createClient: mocks.createClient }));
@@ -22,6 +23,7 @@ beforeEach(() => {
 	mocks.eq.mockReturnValue(mocks);
 	mocks.is.mockReturnValue(mocks);
 	mocks.order.mockReturnValue(mocks);
+	mocks.ilike.mockReturnValue(mocks);
 });
 
 describe("getMemoPage", () => {
@@ -63,6 +65,22 @@ describe("getMemoPage", () => {
 			["id", { ascending: false }],
 		]);
 		expect(mocks.range).toHaveBeenCalledWith(200, 399);
+		expect(mocks.ilike).not.toHaveBeenCalled();
+	});
+
+	it("urlPattern을 주면 원본 URL을 ILIKE로 좁힌다", async () => {
+		mocks.range.mockResolvedValue({ data: [], error: null });
+
+		await getMemoPage({
+			accessToken: "token",
+			userId: "owner",
+			offset: 0,
+			pageSize: 50,
+			urlPattern: "%blog.com/post%",
+		});
+
+		expect(mocks.ilike).toHaveBeenCalledWith("url", "%blog.com/post%");
+		expect(mocks.range).toHaveBeenCalledWith(0, 49);
 	});
 
 	it("조회 오류를 상위 fail-open 처리로 전달한다", async () => {

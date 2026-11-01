@@ -1,4 +1,3 @@
-export { default as ExtensionInstallCheckDialog } from "./ExtensionInstallCheckDialog";
 export { default as MemoDialog } from "./MemoDialog";
 export { default as MemoPage } from "./MemoPage";
 export { default as MemoSearchForm } from "./MemoSearchForm";

@@ -1,0 +1,63 @@
+# 의존 목록
+
+이 플러그인은 **전역 스킬에 의존하지 않는다.** 파이프라인 부품(스킬·에이전트)이 전부 이 폴더 안에 있다 — 다른 PC에서 이 레포 하나만 받아도 파이프라인이 돈다.
+
+## 에이전트 (플러그인 내장)
+
+| 에이전트          | 쓰이는 곳              | 역할                                     |
+| ----------------- | ---------------------- | ---------------------------------------- |
+| `web-memo:planner`      | `/web-memo:idea` ①           | 아이디어 → 기획서 초안 + 결정 필요       |
+| `web-memo:designer`     | `/web-memo:design` ①-D       | 기획 → 디자인 명세 초안 (UI 있는 작업만) |
+| `web-memo:backend-dev`  | `/web-memo:implement` ①    | TDL `[BE]` 구현. API 계약을 먼저 고정    |
+| `web-memo:frontend-dev` | `/web-memo:implement` ①    | TDL `[FE]` 구현. BE의 계약 위에 쌓는다   |
+| `web-memo:event-analyst` | `/web-memo:implement` ①-b   | diff → 이벤트 로깅 명세. 심지 않는다      |
+| `web-memo:qa-checklist` | `/web-memo:self-qa` ①        | 설계서 → QA 체크리스트 초안. 코드를 안 본다 |
+| `web-memo:qa-verifier`  | `/web-memo:self-qa` ②        | 자동 항목 브라우저 판정 + 수동 재현 방법. 고치지 않는다 |
+
+## 스킬이 부르는 스킬
+
+파이프라인 순서(`idea → design → implement-loop`)가 아니라, **한 스킬이 다른 스킬을 부품으로 쓰는** 관계다.
+
+| 부르는 곳 | 불리는 스킬 | 넘기는 것 | 받는 것 |
+| --- | --- | --- | --- |
+| `/web-memo:idea` ② | `/web-memo:interview` | 기획서 초안 + `--items` (planner의 `결정 필요`) | 확정 결정 4표 → 기획서에 반영 |
+| `/web-memo:design` ⑤ | `/web-memo:interview` | 기획서·설계서 초안 + `--items` (`## 논의 필요`) | 확정 결정 4표 → 설계서·디자인에 반영 |
+| `/web-memo:implement-loop` §0-5 · ② | `/web-memo:self-qa` | 설계서 (`--checklist-only` / `--run`) | QA 항목 생성·판정 결과 |
+| `/web-memo:improve-loop` | `/web-memo:commit`, `/web-memo:pr` | 효과 입증·회귀 검증을 통과한 변경과 공개 증거 | 커밋과 master 대상 일반 PR |
+
+`/web-memo:interview`와 `/web-memo:self-qa`는 **아무것도 고치지 않고 반환만 한다.** 문서에 쓰는 것은 부른 쪽 책임이다 — 같은 섹션을 둘이 쓰면 어느 쪽이 마지막인지 알 수 없다.
+
+## 참조 문서 (플러그인 내장)
+
+| 문서                                   | 읽는 에이전트     | 내용                                                     |
+| -------------------------------------- | ----------------- | -------------------------------------------------------- |
+| `references/frontend-fundamentals.md`  | `web-memo:frontend-dev` | 클린 코드 4가지 기준(가독성·예측 가능성·응집도·결합도)과 항목별 처방 |
+| `references/backend-fundamentals.md`   | `web-memo:backend-dev`  | 판단 4가지 기준(경계 명확성·실패 다루기·데이터 정합성·변경 안전성)과 항목별 체크 |
+
+## 대상 레포 안의 문서
+
+플러그인이 아니라 **작업 대상 레포**에 사는 문서다. 골격·인터뷰 질문은 [project-docs.md](./project-docs.md)가 SSOT다.
+
+| 문서 | 읽는 에이전트 | 없으면 채우는 곳 |
+| --- | --- | --- |
+| `<레포>/docs/project-identity.md` | `web-memo:planner` | `/web-memo:idea` §0-4 (아이디어·레포에서 채움 → 검토 권장으로 노출) |
+| `<레포>/docs/design-system.md` | `web-memo:designer` | `/web-memo:design` §0-5 (코드에서 읽고 채움 → 검토 권장으로 노출) |
+| `<레포>/docs/architecture.md` | `web-memo:frontend-dev` · `web-memo:backend-dev` | `/web-memo:implement` §0-8 (레포에서 읽고 채움 → 검토 권장으로 노출) |
+| └ `## QA 실행` 섹션만 | `web-memo:qa-verifier` | 위와 같음 |
+
+에이전트는 **읽기만** 한다. 문서를 쓰는 건 위 스킬 몫이고, 승인 없이 쓰는 대신 자동 작성 사실을 항상 노출한다(`/web-memo:discuss`는 사람과 합의해 쓴다).
+
+## MCP 의존
+
+`/web-memo:improve-loop`는 구현 전에 `notion-home`으로 업무 로그 카드/ID를 확보한다(없으면 생성). 접근 불가 시 `blocked`로 끝내며, 기존 PR 스킬의 카드 게이트를 우회하지 않는다. GitHub는 `gh`, 시간 측정은 Node 표준 라이브러리 도구를 쓴다. 독립 검증은 native `verifier`를 사용하고, 사용할 수 없으면 분리 검증임을 밝힌다. OMX Team·goal 런타임이나 전역 스킬은 필요하지 않다. Codex 진입점 `.codex/skills/web-memo-improve-loop`는 원본 스킬을 가리키는 심링크다.
+
+| MCP           | 쓰이는 곳                                                                        | 용도                                                      |
+| ------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| 개인 Notion 연결 ([접근 규칙](notion-access.md)) | `/web-memo:idea`, `/web-memo:design`, `/web-memo:implement-loop`, `/web-memo:self-qa`, `/common:problem-log`, `/web-memo:blog-material` | 개인 업무 로그·QA 항목·개발 위키 DB(문제 해결 기록) 읽기·쓰기 (guesung) |
+| `playwright`  | `/web-memo:self-qa` ② — `web-memo:qa-verifier`가 사용                                        | 브라우저 구동·DOM/스크린샷/콘솔/네트워크 관측             |
+
+`/web-memo:document`는 [Notion 접근 규칙](notion-access.md)에 따른 개인 Notion 연결로 프로젝트 문서를 기록한다. 업무 로그·QA 파이프라인을 호출하지 않는다. 대상과 뷰 필터는 `~/.agents/docs/notion-databases.md`의 `웹 메모 프로젝트 문서` 절을 따른다.
+
+회사판이 쓰던 `claude.ai Notion`(팀 DB)·`slack` 플러그인은 쓰지 않는다.
+
+도구 선택은 [Notion 접근 규칙](notion-access.md)을 따른다. DB 식별자·속성·본문 규약은 [notion-databases.md](~/.agents/docs/notion-databases.md)가 SSOT다. 스킬 본문에는 ID를 두지 않는다.

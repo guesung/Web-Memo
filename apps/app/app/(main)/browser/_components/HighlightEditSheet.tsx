@@ -4,7 +4,8 @@ import {
 	type HighlightColor,
 } from "@web-memo/shared/constants";
 import type { HighlightRow } from "@web-memo/shared/types";
-import { Trash2 } from "lucide-react-native";
+import * as Clipboard from "expo-clipboard";
+import { Check, Copy, Trash2 } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	Alert,
@@ -30,6 +31,8 @@ import { useKeyboardHeight } from "@/lib/hooks/useKeyboardHeight";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.5;
+/** 복사 직후 `복사됨` 라벨을 보여주는 시간(ms). */
+const COPIED_FEEDBACK_DURATION = 1500;
 
 /** 하이라이트 수정 요청. 색상 또는 코멘트 중 바뀐 값만 채워 보낸다. */
 interface HighlightUpdateRequest {
@@ -82,6 +85,8 @@ export function HighlightEditSheet({
 	 * "이미 보낸 값과 같다"고 판단해 중복 저장 요청을 만들지 않는다.
 	 */
 	const lastFlushedNoteRef = useRef<string | null>(null);
+	const [copied, setCopied] = useState(false);
+	const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const visible = highlight !== null;
 
@@ -119,6 +124,14 @@ export function HighlightEditSheet({
 		}
 	}, [visible, translateY, opacity]);
 
+	const resetCopied = useCallback(() => {
+		if (copiedTimerRef.current) {
+			clearTimeout(copiedTimerRef.current);
+			copiedTimerRef.current = null;
+		}
+		setCopied(false);
+	}, []);
+
 	/**
 	 * 다른 하이라이트를 연속으로 탭했을 때만 note를 다시 채운다.
 	 * @description `highlight`는 조회 쿼리가 refetch될 때마다 같은 id라도 새 객체로
@@ -129,6 +142,7 @@ export function HighlightEditSheet({
 		if (!highlight) {
 			syncedHighlightIdRef.current = null;
 			lastFlushedNoteRef.current = null;
+			resetCopied();
 			return;
 		}
 
@@ -137,9 +151,20 @@ export function HighlightEditSheet({
 		}
 
 		syncedHighlightIdRef.current = highlight.id;
+		resetCopied();
 		lastFlushedNoteRef.current = highlight.note ?? "";
 		setNote(highlight.note ?? "");
-	}, [highlight]);
+	}, [highlight, resetCopied]);
+
+	/** 언마운트 시 `복사됨` 타이머를 정리한다. */
+	useEffect(
+		() => () => {
+			if (copiedTimerRef.current) {
+				clearTimeout(copiedTimerRef.current);
+			}
+		},
+		[],
+	);
 
 	const sheetStyle = useAnimatedStyle(() => ({
 		transform: [{ translateY: translateY.value }],
@@ -177,6 +202,27 @@ export function HighlightEditSheet({
 		},
 		[highlight, onUpdate],
 	);
+
+	const handleCopyPress = useCallback(async () => {
+		if (!highlight) {
+			return;
+		}
+
+		try {
+			await Clipboard.setStringAsync(highlight.exact_text);
+		} catch {
+			return;
+		}
+
+		if (copiedTimerRef.current) {
+			clearTimeout(copiedTimerRef.current);
+		}
+		setCopied(true);
+		copiedTimerRef.current = setTimeout(() => {
+			setCopied(false);
+			copiedTimerRef.current = null;
+		}, COPIED_FEEDBACK_DURATION);
+	}, [highlight]);
 
 	const handleDeletePress = useCallback(() => {
 		if (!highlight) {
@@ -269,6 +315,28 @@ export function HighlightEditSheet({
 							textAlignVertical="top"
 							className="mb-4 min-h-20 rounded-lg bg-input dark:bg-neutral-800 p-3 text-[15px] text-foreground dark:text-white"
 						/>
+
+						<TouchableOpacity
+							onPress={handleCopyPress}
+							activeOpacity={0.7}
+							accessibilityLabel="텍스트 복사"
+							className="mb-2 flex-row items-center justify-center gap-2 rounded-[10px] border border-gray-200 dark:border-neutral-700 bg-secondary dark:bg-neutral-800 py-2.5"
+						>
+							{copied ? (
+								<Check size={16} color={isDark ? "#4ade80" : "#16a34a"} />
+							) : (
+								<Copy size={16} color={isDark ? "#e5e5e5" : "#333333"} />
+							)}
+							<Text
+								className={`text-sm font-semibold ${
+									copied
+										? "text-[#16a34a] dark:text-[#4ade80]"
+										: "text-[#333333] dark:text-[#e5e5e5]"
+								}`}
+							>
+								{copied ? "복사됨" : "텍스트 복사"}
+							</Text>
+						</TouchableOpacity>
 
 						<TouchableOpacity
 							onPress={handleDeletePress}

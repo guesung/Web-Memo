@@ -98,6 +98,12 @@ test("오프라인 중 서버 메모가 바뀌면 충돌로 새 메모에 저장
 	const sidePanelPage = await findSidePanelPage(page);
 
 	await page.goto(OFFLINE_CONFLICT_URL);
+	const syncResults: Record<string, unknown>[] = [];
+	sidePanelPage.on("console", async (message) => {
+		if (message.text().startsWith("[analytics] memo_offline_sync_result")) {
+			syncResults.push(await message.args()[1].jsonValue());
+		}
+	});
 	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(
 		"원래 내용",
 	);
@@ -140,6 +146,14 @@ test("오프라인 중 서버 메모가 바뀌면 충돌로 새 메모에 저장
 				candidate.memo === offlineText,
 		),
 	).toBe(true);
+	await expect
+		.poll(() => syncResults.find((result) => result.conflict_count === 1))
+		.toMatchObject({
+			queue_contract_version: 2,
+			synced_count: 1,
+			attempted_count: 1,
+			other_error_count: 0,
+		});
 });
 
 const OFFLINE_NAV_FROM_URL = "https://example.com/offline-nav-from";
@@ -234,7 +248,9 @@ test("오프라인에서 패널을 다시 연 뒤 온라인이 되면 메모 화
 		sidePanelPage.getByText(/offline|인터넷에 연결되어 있지 않아요/i).first(),
 	).toBeVisible();
 	await expect(
-		sidePanelPage.getByRole("button", { name: /로그인하러가기|log ?in/i }),
+		sidePanelPage.getByRole("button", {
+			name: /카카오로 시작하기|continue with google/i,
+		}),
 	).toHaveCount(0);
 
 	await network.goOnline();
@@ -243,7 +259,9 @@ test("오프라인에서 패널을 다시 연 뒤 온라인이 되면 메모 화
 		"복귀 메모",
 	);
 	await expect(
-		sidePanelPage.getByRole("button", { name: /로그인하러가기|log ?in/i }),
+		sidePanelPage.getByRole("button", {
+			name: /카카오로 시작하기|continue with google/i,
+		}),
 	).toHaveCount(0);
 });
 

@@ -27,3 +27,24 @@
 	border-width: 0;
 	border-style: solid;
 }
+
+@keyframes category-chip-enter {
+	from {
+		opacity: 0;
+		transform: translateY(3px) scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+.category-chip-enter {
+	animation: category-chip-enter 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.category-chip-enter {
+		animation: none;
+	}
+}

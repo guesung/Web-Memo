@@ -49,6 +49,7 @@ const findPageFiles = (dir) =>
 
 const isRouteGroup = (segment) => /^\([^.][^)]*\)$/.test(segment);
 const isInterceptingRoute = (segment) => /^\(\.{1,3}\)/.test(segment);
+const isCatchAllSegment = (segment) => /^\[\.\.\.[^\]]+\]$/.test(segment);
 const isDynamicSegment = (segment) => segment.startsWith("[");
 const isParallelRoute = (segment) => segment.startsWith("@");
 const isPrivateFolder = (segment) => segment.startsWith("_");
@@ -63,6 +64,12 @@ const toUrlPath = (pageFile) => {
 	const displayPath = relative(repoRoot, pageFile);
 
 	if (segments.some(isPrivateFolder)) {
+		return null;
+	}
+	// catch-all(`[...x]`)은 하나의 값으로 링크할 수 있는 경로가 아니라(예: notFound()
+	// 전용 폴백) 생성 대상에서 제외한다. 특정 값으로 링크해야 하는 동적 라우트라면
+	// 여전히 아래 isDynamicSegment 분기에서 걸러져 MANUAL_PATHS로 안내된다.
+	if (segments.some(isCatchAllSegment)) {
 		return null;
 	}
 	if (segments.some(isInterceptingRoute)) {

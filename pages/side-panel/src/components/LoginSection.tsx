@@ -5,7 +5,13 @@ import { analytics } from "@web-memo/shared/modules/analytics";
 import { getResultError, isNetworkError } from "@web-memo/shared/utils";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import { Button } from "@web-memo/ui";
-import { ExternalLinkIcon } from "lucide-react";
+import {
+	ExternalLinkIcon,
+	FileTextIcon,
+	HighlighterIcon,
+	PencilLineIcon,
+	SearchIcon,
+} from "lucide-react";
 import useOnlineStatus from "../hooks/useOnlineStatus";
 
 /**
@@ -50,18 +56,82 @@ export default function LoginSection() {
 		);
 	}
 
+	// 패널을 연 사람의 대부분이 이 화면에서 떠났다. 로그인 전에 할 수 있는 일을 먼저 보여준다.
 	return (
-		<div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-center">
-			<p className="text-muted-foreground text-sm">
-				메모 기능을 이용하려면 로그인이 필요합니다.
-			</p>
-			<Button variant="outline" size="sm" onClick={handleLoginButtonClick}>
-				로그인하러가기
-				<ExternalLinkIcon />
-			</Button>
+		<div className="flex h-full flex-col gap-6 overflow-y-auto py-6">
+			<div className="flex flex-col gap-1">
+				<h2 className="text-balance font-semibold text-lg">
+					{I18n.get("login_intro_title")}
+				</h2>
+				<p className="text-muted-foreground text-sm">
+					{I18n.get("login_intro_description")}
+				</p>
+			</div>
+
+			<figure className="relative m-0 flex flex-col gap-2 rounded-lg border p-3">
+				<figcaption className="absolute -top-2 right-3 bg-background px-1 text-muted-foreground text-xs">
+					{I18n.get("login_example_label")}
+				</figcaption>
+				<p className="text-sm">
+					{I18n.get("login_example_quote_before")}
+					<mark className="box-decoration-clone rounded-sm bg-highlight-yellow px-0.5 text-highlight-yellow-foreground">
+						{I18n.get("login_example_quote_highlight")}
+					</mark>
+					{I18n.get("login_example_quote_after")}
+				</p>
+				<p className="flex gap-1.5 text-muted-foreground text-xs">
+					<PencilLineIcon className="mt-0.5 size-3.5 shrink-0" />
+					{I18n.get("login_example_note")}
+				</p>
+			</figure>
+
+			<ul className="flex flex-col gap-3">
+				{LOGIN_BENEFITS.map(({ Icon, titleKey, descriptionKey }) => (
+					<li key={titleKey} className="flex items-start gap-3">
+						<span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+							<Icon className="size-4" />
+						</span>
+						<span className="flex flex-col text-sm">
+							{I18n.get(titleKey)}
+							<span className="text-muted-foreground text-xs">
+								{I18n.get(descriptionKey)}
+							</span>
+						</span>
+					</li>
+				))}
+			</ul>
+
+			<div className="mt-auto flex flex-col gap-2">
+				<Button className="w-full" onClick={handleLoginButtonClick}>
+					{I18n.get("login_start_button")}
+					<ExternalLinkIcon />
+				</Button>
+				<p className="text-center text-muted-foreground text-xs">
+					{I18n.get("login_start_hint")}
+				</p>
+			</div>
 		</div>
 	);
 }
+
+/** 로그인하면 할 수 있는 일. 순서는 패널을 연 사람이 가장 먼저 쓸 기능 순이다. */
+const LOGIN_BENEFITS = [
+	{
+		Icon: HighlighterIcon,
+		titleKey: "login_benefit_highlight_title",
+		descriptionKey: "login_benefit_highlight_description",
+	},
+	{
+		Icon: FileTextIcon,
+		titleKey: "login_benefit_organize_title",
+		descriptionKey: "login_benefit_organize_description",
+	},
+	{
+		Icon: SearchIcon,
+		titleKey: "login_benefit_web_title",
+		descriptionKey: "login_benefit_web_description",
+	},
+] as const;
 
 /**
  * 사용자 확인 쿼리가 네트워크 오류로 끝났는지 본다.

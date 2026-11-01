@@ -14,15 +14,19 @@ export type TMemoSaveStatus = "idle" | "saving" | "saved" | "error";
 interface SaveStatusIndicatorProps extends LanguageType {
 	/** 현재 자동 저장 상태 */
 	status: TMemoSaveStatus;
+	/** 저장 중·완료 문구도 화면에 보인다. 메모 상세 다이얼로그가 켠다 */
+	showsLabel?: boolean;
 }
 
 /**
- * 메모 자동 저장 상태를 아이콘과 텍스트로 보여주는 인디케이터
- * @description Dialog 하단에 상시 노출되어 사용자가 자동 저장 진행 상황을 확인할 수 있게 한다.
+ * 메모 자동 저장 상태 인디케이터
+ * @description 사이드 패널(SaveStatus)과 같이 저장 중·완료는 회색 아이콘만 조용히 보여주고
+ * 문구는 툴팁·스크린 리더로만 전한다. 실패만 문구를 드러낸다.
  */
 export default function SaveStatusIndicator({
 	status,
 	lng,
+	showsLabel = false,
 }: SaveStatusIndicatorProps) {
 	const { t } = useTranslation(lng);
 
@@ -36,24 +40,37 @@ export default function SaveStatusIndicator({
 				animate={{ opacity: 1, y: 0 }}
 				exit={{ opacity: 0, y: -4 }}
 				transition={{ duration: 0.15 }}
+				data-testid="memo-save-status"
+				data-save-status={status}
+				title={status === "error" ? undefined : t(`memos.saveStatus.${status}`)}
 				className={cn(
 					"flex items-center gap-1.5 text-xs font-medium",
-					status === "saving" && "text-muted-foreground",
-					status === "saved" && "text-emerald-500",
-					status === "error" && "text-red-500",
+					status === "error" ? "text-red-500" : "text-muted-foreground",
 				)}
 				aria-live="polite"
 			>
 				{status === "saving" && (
 					<>
-						<LoaderCircle size={13} className="animate-spin" />
-						<span>{t("memos.saveStatus.saving")}</span>
+						<LoaderCircle
+							size={13}
+							className="animate-spin"
+							aria-hidden="true"
+						/>
+						<span className={cn({ "sr-only": !showsLabel })}>
+							{t("memos.saveStatus.saving")}
+						</span>
 					</>
 				)}
 				{status === "saved" && (
 					<>
-						<Check size={13} />
-						<span>{t("memos.saveStatus.saved")}</span>
+						<Check size={13} aria-hidden="true" />
+						<span className={cn({ "sr-only": !showsLabel })}>
+							{t(
+								showsLabel
+									? "memos.saveStatus.savedShort"
+									: "memos.saveStatus.saved",
+							)}
+						</span>
 					</>
 				)}
 				{status === "error" && (

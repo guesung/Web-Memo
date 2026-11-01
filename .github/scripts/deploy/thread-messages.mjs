@@ -144,7 +144,7 @@ export const decideTargetReply = ({ changed, result }) => {
 };
 
 /**
- * 타깃별 빌드 결과 댓글 페이로드를 만듭니다.
+ * 타깃별 빌드 또는 develop 앱 App Tester 배포 결과 댓글 페이로드를 만듭니다.
  * 문구는 "웹 빌드 성공"처럼 타깃 + 결과이고, 기본으로 이 실행의 Actions 로그 링크가 붙습니다.
  *
  * actionBlock을 넘기면 로그 링크 줄을 그 버튼 줄로 대신합니다. 버튼 줄이 워크플로 링크를
@@ -154,6 +154,7 @@ export const decideTargetReply = ({ changed, result }) => {
  * @param {"web" | "extension" | "app"} params.target
  * @param {"success" | "failure"} params.outcome decideTargetReply의 결과
  * @param {string} params.runUrl 이 실행의 Actions 로그 주소
+ * @param {"build" | "store-submit"} [params.replyPhase="build"] store-submit은 develop 앱의 App Tester 배포 결과에만 사용하며 배포 버튼을 붙이지 않습니다.
  * @param {object} [params.actionBlock] 배포 버튼 줄(buildActionBlock의 결과). 성공 댓글에만 넘깁니다.
  * @returns {{ text: string, blocks: object[] }}
  */
@@ -162,6 +163,7 @@ export const buildTargetReplyPayload = ({
 	outcome,
 	runUrl,
 	actionBlock,
+	replyPhase = "build",
 }) => {
 	const label = TARGET_LABELS[target];
 	const outcomeLabel = REPLY_OUTCOME_LABELS[outcome];
@@ -170,7 +172,21 @@ export const buildTargetReplyPayload = ({
 		throw new Error(`알 수 없는 댓글 대상입니다: ${target} / ${outcome}`);
 	}
 
-	const message = `${label} 빌드 ${outcomeLabel.word}`;
+	if (
+		replyPhase !== "build" &&
+		(replyPhase !== "store-submit" || target !== "app")
+	) {
+		throw new Error(`알 수 없는 댓글 단계입니다: ${target} / ${replyPhase}`);
+	}
+
+	let message = `${label} 빌드 ${outcomeLabel.word}`;
+
+	if (replyPhase === "store-submit") {
+		message =
+			outcome === "success"
+				? "앱 App Tester 배포 완료"
+				: "앱 빌드·App Tester 배포 실패";
+	}
 
 	return {
 		text: message,
@@ -179,7 +195,7 @@ export const buildTargetReplyPayload = ({
 				type: "section",
 				text: { type: "mrkdwn", text: `${outcomeLabel.icon} *${message}*` },
 			},
-			actionBlock ?? {
+			(replyPhase === "build" ? actionBlock : undefined) ?? {
 				type: "context",
 				elements: [{ type: "mrkdwn", text: `<${runUrl}|Actions 로그 보기>` }],
 			},

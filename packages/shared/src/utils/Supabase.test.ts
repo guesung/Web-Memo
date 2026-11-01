@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { MemoSupabaseClient } from "../types";
 import { HighlightService, MemoService } from "./Supabase";
+
+vi.mock("../modules/analytics", () => ({
+	analytics: { trackEvent: vi.fn() },
+}));
 
 /** 가짜 빌더가 기록한 호출 인자 */
 interface IFRecordedCalls {
@@ -10,9 +14,13 @@ interface IFRecordedCalls {
 	eq: [string, unknown][];
 	in: [string, unknown][];
 	is: [string, unknown][];
+	like: [string, string][];
+	not: [string, string, unknown][];
 	lt: [string, unknown][];
 	gt: [string, unknown][];
 	or: string[];
+	filter: [string, string, unknown][];
+	range: [number, number][];
 	order: [string, unknown][];
 	limit: number[];
 	rpc: [string, unknown][];
@@ -34,9 +42,13 @@ const createMockClient = (): {
 		eq: [],
 		in: [],
 		is: [],
+		like: [],
+		not: [],
 		lt: [],
 		gt: [],
 		or: [],
+		filter: [],
+		range: [],
 		order: [],
 		limit: [],
 		rpc: [],
@@ -60,6 +72,15 @@ const createMockClient = (): {
 
 			return builder;
 		},
+		not: (column: string, operator: string, value: unknown) => {
+			calls.not.push([column, operator, value]);
+			return builder;
+		},
+		like: (column: string, pattern: string) => {
+			calls.like.push([column, pattern]);
+
+			return builder;
+		},
 		lt: (column: string, value: unknown) => {
 			calls.lt.push([column, value]);
 
@@ -72,6 +93,14 @@ const createMockClient = (): {
 		},
 		or: (filter: string) => {
 			calls.or.push(filter);
+			return builder;
+		},
+		filter: (column: string, operator: string, value: unknown) => {
+			calls.filter.push([column, operator, value]);
+			return builder;
+		},
+		range: (from: number, to: number) => {
+			calls.range.push([from, to]);
 			return builder;
 		},
 		order: (column: string, options: unknown) => {
@@ -168,6 +197,7 @@ describe("HighlightService.getHighlightsByUrl", () => {
 		);
 
 		expect(calls.in).toContainEqual(["page_key", ["https://a.com/?id=1", ""]]);
+		expect(calls.like).toContainEqual(["url", "https://a.com/%"]);
 		expect(calls.order).toContainEqual(["id", { ascending: true }]);
 	});
 });
@@ -180,6 +210,8 @@ describe("MemoService.getMemoByUrl", () => {
 		);
 
 		expect(calls.in).toContainEqual(["page_key", ["https://a.com/?id=1", ""]]);
+		// 키가 비어 있는 옛 행을 전부 읽지 않도록 원본 URL 접두로 서버에서 좁힌다.
+		expect(calls.like).toContainEqual(["url", "https://a.com/%"]);
 		expect(calls.order).toEqual([["id", { ascending: true }]]);
 	});
 });
@@ -225,6 +257,38 @@ describe("HighlightService.getHighlightCountsByPageKeys", () => {
 		await new HighlightService(client).getHighlightCountsByPageKeys(pageKeys);
 		expect(calls.in.map(([, values]) => (values as string[]).length)).toEqual([
 			21, 21, 2,
+		]);
+	});
+});
+
+describe("MemoService.getMemoDomains", () => {
+	it("삭제되지 않은 메모의 url만 최근 수정 순으로 1000건씩 읽는다", async () => {
+		const { client, calls } = createMockClient();
+		const result = await new MemoService(client).getMemoDomains();
+
+		expect(calls.select).toEqual(["url"]);
+		expect(calls.is).toEqual([["deleted_at", null]]);
+		expect(calls.order).toEqual([
+			["updated_at", { ascending: false, nullsFirst: false }],
+			["id", { ascending: false }],
+		]);
+		expect(calls.range).toEqual([[0, 999]]);
+		expect(result).toEqual({ data: [], error: null });
+	});
+
+	it("탭·카테고리 조건을 목록 조회와 같은 방식으로 건다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemoDomains({
+			category: "Work",
+			isWish: false,
+			isStar: true,
+		});
+
+		expect(calls.select).toEqual(["url,category!inner(name)"]);
+		expect(calls.eq).toEqual([
+			["isWish", false],
+			["isStar", true],
+			["category.name", "Work"],
 		]);
 	});
 });
@@ -296,6 +360,28 @@ describe("MemoService.getMemosPaginated", () => {
 		expect(calls.is).toEqual([["deleted_at", null]]);
 	});
 
+	it("도메인은 url 정규식 조건 하나로 다른 필터와 함께 적용한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemosPaginated({
+			domain: "youtube.com",
+			isStar: true,
+			searchQuery: "리액트",
+		});
+
+		expect(calls.filter).toEqual([
+			["url", "imatch", "^https?://(www\\.)?youtube\\.com([/:?#]|$)"],
+		]);
+		expect(calls.eq).toEqual([["isStar", true]]);
+		expect(calls.or).toHaveLength(1);
+	});
+
+	it("도메인이 없으면 url 조건을 걸지 않는다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemosPaginated({});
+
+		expect(calls.filter).toEqual([]);
+	});
+
 	it("첫 페이지는 커서 필터 없이 최신 수정순 20건을 조회한다", async () => {
 		const { client, calls } = createMockClient();
 		await new MemoService(client).getMemosPaginated({});
@@ -327,5 +413,43 @@ describe("MemoService.getMemosPaginated", () => {
 			["title", { ascending: true }],
 			["id", { ascending: true }],
 		]);
+	});
+});
+
+describe("MemoService.getPlannedMemos", () => {
+	it("계획 날짜가 있는 메모만 계획 날짜 오름차순, 수정 최신순으로 500건까지 조회한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getPlannedMemos({});
+
+		expect(calls.not).toEqual([["plannedDate", "is", null]]);
+		expect(calls.is).toEqual([["deleted_at", null]]);
+		expect(calls.order).toEqual([
+			["plannedDate", { ascending: true }],
+			["updated_at", { ascending: false, nullsFirst: false }],
+		]);
+		expect(calls.limit).toEqual([500]);
+		expect(calls.select).toEqual(["*, category(id, name, color)"]);
+		expect(calls.eq).toEqual([]);
+		expect(calls.or).toEqual([]);
+	});
+
+	it("위시 메모를 거르지 않는다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getPlannedMemos({});
+
+		expect(calls.eq.some(([column]) => column === "isWish")).toBe(false);
+	});
+
+	it("카테고리와 검색어를 목록 조회와 같은 방식으로 적용한다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getPlannedMemos({
+			category: "개발",
+			searchQuery: "리액트",
+		});
+
+		expect(calls.select).toEqual(["*, category!inner(id, name, color)"]);
+		expect(calls.eq).toEqual([["category.name", "개발"]]);
+		expect(calls.or).toHaveLength(1);
+		expect(calls.or[0]).toContain("title.ilike.%리액트%");
 	});
 });

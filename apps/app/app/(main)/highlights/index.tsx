@@ -10,6 +10,7 @@ import {
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTabBarHideOnScroll } from "@/lib/hooks/useTabBarHideOnScroll";
 import { HighlightFilterBar } from "./_components/HighlightFilterBar";
 import { HighlightGroupCard } from "./_components/HighlightGroupCard";
 import { useHighlightScreen } from "./_hooks/useHighlightScreen";
@@ -32,6 +33,7 @@ export default function HighlightScreen() {
 		isFetchingNextPage,
 		handleEndReached,
 	} = useHighlightScreen();
+	const { scrollProps } = useTabBarHideOnScroll();
 
 	const emptyStateIconColor = isDark ? "#404040" : "#ddd";
 
@@ -82,6 +84,7 @@ export default function HighlightScreen() {
 						<ActivityIndicator className="mt-10" />
 					) : (
 						<FlatList
+							{...scrollProps}
 							data={groups}
 							keyExtractor={(group) => group.url}
 							renderItem={({ item }) => (

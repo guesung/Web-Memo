@@ -9,6 +9,7 @@ import {
 	defaultNS,
 	SUPPORTED_LANGUAGES,
 } from "./constant";
+import type { Language } from "./type";
 
 export const getOptions = (
 	lng = DEFAULT_LANGUAGE,
@@ -42,4 +43,18 @@ export const getLanguage = (request: NextRequest) => {
 			request.headers.get("referer")?.startsWith(`/${language}`),
 		);
 	return DEFAULT_LANGUAGE;
+};
+
+/**
+ * 요청 경로의 첫 세그먼트에서 언어를 뽑는다.
+ *
+ * @description `global-not-found.tsx`처럼 미들웨어가 넘긴 경로 헤더만으로 언어를
+ * 판단해야 하는 자리에서 쓴다. 첫 세그먼트가 지원 언어가 아니면 기본 언어로 떨어진다.
+ */
+export const getLanguageFromPathname = (pathname: string): Language => {
+	const [, firstSegment] = pathname.split("/");
+
+	return (SUPPORTED_LANGUAGES as readonly string[]).includes(firstSegment)
+		? (firstSegment as Language)
+		: DEFAULT_LANGUAGE;
 };

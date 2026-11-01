@@ -1,7 +1,7 @@
 "use server";
 
 import type { LanguageParams } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { Suspense } from "react";
 
 import {
@@ -15,7 +15,7 @@ interface PageProps extends LanguageParams {}
 /** 받은 피드백을 모아 보는 관리자 화면 */
 export default async function FeedbackPage({ params }: PageProps) {
 	const { lng } = await params;
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	return (
 		<>

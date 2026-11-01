@@ -4,15 +4,22 @@ import type { MemoRow, MemoTable } from "@web-memo/shared/types";
 import { getPageKey } from "@web-memo/shared/utils/url";
 import { buildMemoWriteFields } from "@/lib/analytics/analyticsCore";
 import { trackAppEvent } from "@/lib/analytics/appAnalytics";
-import { memoService } from "@/lib/supabase/client";
+import { memoService, supabase } from "@/lib/supabase/client";
 
 /** 페이지 후보 중 명시적으로 선택된 메모 또는 유일한 메모를 반환한다. */
-const getTargetMemo = async (url: string, selectedId?: number) => {
+const getTargetMemo = async (
+	url: string,
+	selectedId?: number,
+	expectedNew = false,
+) => {
 	const result = await memoService.getMemoByUrl(url);
 	if (result.error) {
 		throw result.error;
 	}
 	const candidates = result.data ?? [];
+	if (expectedNew && candidates.length > 0) {
+		throw new Error("새 메모가 발견됐어요. 저장할 메모를 다시 선택해 주세요.");
+	}
 	if (selectedId === undefined && candidates.length > 1) {
 		throw new Error("수정할 메모를 선택해 주세요.");
 	}
@@ -46,12 +53,26 @@ export function useMemoUpsertMutation() {
 			data: MemoTable["Insert"] & {
 				selectedId?: number;
 				createSeparate?: boolean;
+				expectedNew?: boolean;
+				expectedOwnerId?: string;
 			},
 		) => {
-			const { selectedId, createSeparate, ...request } = data;
+			const {
+				selectedId,
+				createSeparate,
+				expectedNew,
+				expectedOwnerId,
+				...request
+			} = data;
 			const existing = createSeparate
 				? undefined
-				: await getTargetMemo(data.url, selectedId);
+				: await getTargetMemo(data.url, selectedId, expectedNew);
+			if (expectedOwnerId) {
+				const { data: auth, error } = await supabase.auth.getSession();
+				if (error || auth.session?.user.id !== expectedOwnerId) {
+					throw new Error("로그인 계정이 변경되어 이전 메모 저장을 멈췄어요.");
+				}
+			}
 			const result = existing
 				? await memoService.updateMemo({
 						id: existing.id,
@@ -87,6 +108,8 @@ export function useMemoUpsertMutation() {
 				void trackAppEvent({ name: "memo_first_write" });
 			}
 		},
+		onError: (_error, variables) =>
+			invalidateMemoPage(queryClient, variables.url),
 	});
 }
 

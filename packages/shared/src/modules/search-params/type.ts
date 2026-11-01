@@ -1,9 +1,19 @@
-import type { SEARCH_PARAMS_KEYS } from "./constant";
+import type { SEARCH_PARAMS_KEYS, SEARCH_TARGET_OPTIONS } from "./constant";
 
-export type SearchParamViewType = "grid" | "calendar";
+export type SearchParamViewType = "grid" | "list";
+export type SearchParamSearchTargetType =
+	(typeof SEARCH_TARGET_OPTIONS)[number];
 export type SearchParamKeyType = (typeof SEARCH_PARAMS_KEYS)[number];
-export type SearchParamValueType = string;
-export type SearchParamType = [SearchParamKeyType, SearchParamValueType];
 export type SearchParamsType = {
-	[K in SearchParamKeyType]: K extends "view" ? SearchParamViewType : string;
+	[K in SearchParamKeyType]: K extends "view"
+		? SearchParamViewType
+		: K extends "searchTarget"
+			? SearchParamSearchTargetType
+			: string;
 };
+export type SearchParamValueType<
+	K extends SearchParamKeyType = SearchParamKeyType,
+> = SearchParamsType[K];
+export type SearchParamType = {
+	[K in SearchParamKeyType]: [K, SearchParamValueType<K>];
+}[SearchParamKeyType];

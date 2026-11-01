@@ -59,6 +59,8 @@ interface SaveMemoOptions extends Partial<MemoInput> {
 
 interface UseMemoFormProps {
 	onSaveSuccess?: (memoInput: MemoInput) => void;
+	/** 서버가 저장을 받아들였을 때만 불린다. 오프라인 대기열에 넣거나 동기화로 회복한 저장은 부르지 않는다 */
+	onServerSaveSuccess?: () => void;
 	selectedMemo?: Database["memo"]["Tables"]["memo"]["Row"];
 	/** 메모 후보 조회가 끝나지 않았거나 데이터 없이 실패했는지. 켜져 있으면 저장·토글·카테고리 변경을 보내지 않는다 */
 	isMemoLocked?: boolean;
@@ -69,6 +71,7 @@ interface UseMemoFormProps {
 /** 선택한 메모의 폼 값과 저장 순서를 관리한다. */
 export default function useMemoForm({
 	onSaveSuccess,
+	onServerSaveSuccess,
 	selectedMemo,
 	isMemoLocked = false,
 	isSyncing = false,
@@ -83,6 +86,19 @@ export default function useMemoForm({
 	const isOnline = useOnlineStatus();
 	const { user } = useSupabaseUserQuery();
 	const userId = user.data.user?.id;
+	const isMountedRef = useRef(true);
+	useEffect(() => {
+		isMountedRef.current = true;
+		return () => {
+			isMountedRef.current = false;
+		};
+	}, []);
+	const currentUserIdRef = useRef(userId);
+	currentUserIdRef.current = userId;
+	const authEpochRef = useRef({ userId, epoch: 0 });
+	if (authEpochRef.current.userId !== userId) {
+		authEpochRef.current = { userId, epoch: authEpochRef.current.epoch + 1 };
+	}
 	// Suspense로 읽으면 조회를 기다리는 동안 폼 전체가 스켈레톤으로 바뀐다. 잠금 판단은 MemoSection이 맡는다.
 	const { data: memoQueryData, refetch: refetchMemo } = useQuery({
 		...memoQueryOptions({ supabaseClient, url: tab?.url ?? "" }),
@@ -93,11 +109,16 @@ export default function useMemoForm({
 		memoQueryData?.data?.length === 1 ? memoQueryData.data[0] : undefined;
 	// 잠긴 동안에는 캐시에 남은 메모도 편집 대상으로 삼지 않는다.
 	const memoData = isMemoLocked ? undefined : (selectedMemo ?? onlyMemo);
-	const pendingOfflineItem = usePendingOfflineMemo({
+	const pendingOfflineMemo = usePendingOfflineMemo({
+		userId,
 		memoId: memoData?.id,
 		url: tab?.url ?? "",
 	});
-	const hasPendingOfflineItem = pendingOfflineItem !== undefined;
+	const pendingOfflineItem =
+		pendingOfflineMemo.status === "present"
+			? pendingOfflineMemo.item
+			: undefined;
+	const hasPendingOfflineItem = pendingOfflineMemo.status === "present";
 	const titleSync = useMemoTitleSync({
 		onTitleUpdate: (title) => setValue("title", title),
 		initialSavedTitle: memoData?.title,
@@ -132,6 +153,7 @@ export default function useMemoForm({
 	/** 입력했지만 아직 저장 요청이 나가지 않은 변경이 있는지. 전환 전 저장을 건너뛸지 판단한다. */
 	const hasUnsavedChangeRef = useRef(false);
 	const pendingDataRef = useRef<SaveMemoOptions | null>(null);
+	const waitingForLookupRef = useRef(false);
 
 	useDidMount(() => {
 		bridge.handle.REFETCH_THE_MEMO_LIST_FROM_WEB(refetchMemo);
@@ -186,6 +208,7 @@ export default function useMemoForm({
 				setValue("isStar", memoData?.isStar ?? false);
 				setValue("isReading", memoData?.isReading ?? false);
 				setValue("categoryId", memoData?.category_id ?? null);
+				setValue("plannedDate", memoData?.plannedDate ?? null);
 			}
 		},
 		[
@@ -197,6 +220,7 @@ export default function useMemoForm({
 			memoData?.isStar,
 			memoData?.isReading,
 			memoData?.category_id,
+			memoData?.plannedDate,
 			saveStatus,
 			setValue,
 		],
@@ -223,7 +247,7 @@ export default function useMemoForm({
 				return;
 			}
 
-			const targetKey = `${memoData?.id ?? ""}|${tab?.url ?? ""}`;
+			const targetKey = `${userId ?? ""}|${memoData?.id ?? ""}|${tab?.url ?? ""}`;
 
 			if (restoredPendingTargetKeyRef.current === targetKey) {
 				return;
@@ -244,6 +268,7 @@ export default function useMemoForm({
 		},
 		[
 			pendingOfflineItem,
+			userId,
 			memoData?.id,
 			tab?.url,
 			tab?.title,
@@ -258,6 +283,16 @@ export default function useMemoForm({
 			if (isMemoLocked) {
 				return false;
 			}
+			if (pendingOfflineMemo.status === "loading") {
+				waitingForLookupRef.current = true;
+				hasUnsavedChangeRef.current = true;
+				return false;
+			}
+			if (pendingOfflineMemo.status === "error" || !userId) {
+				setSaveStatus("failed");
+				hasUnsavedChangeRef.current = true;
+				return false;
+			}
 
 			// 이미 저장 중이면 이 변경은 큐에 실려 다음 저장에 함께 나간다. 그 저장의 성패는
 			// 이 호출이 아니라 그때의 onError가 들고 있으므로 여기서는 실패로 보지 않는다.
@@ -266,6 +301,12 @@ export default function useMemoForm({
 				return true;
 			}
 
+			const saveUserId = userId;
+			const saveEpoch = authEpochRef.current.epoch;
+			const isCurrentSave = () =>
+				isMountedRef.current &&
+				currentUserIdRef.current === saveUserId &&
+				authEpochRef.current.epoch === saveEpoch;
 			const currentValues = getValues();
 			const memoInput: MemoInput = {
 				title: overrides?.title ?? currentValues.title,
@@ -276,6 +317,11 @@ export default function useMemoForm({
 				isStar: overrides?.isStar ?? currentValues.isStar,
 				isReading: overrides?.isReading ?? currentValues.isReading,
 				categoryId: overrides?.categoryId ?? currentValues.categoryId,
+				// null은 "계획 해제"라는 값이므로 ??가 아니라 undefined 여부로 덮어쓴다.
+				plannedDate:
+					overrides?.plannedDate !== undefined
+						? overrides.plannedDate
+						: currentValues.plannedDate,
 			};
 
 			isSavingRef.current = true;
@@ -283,7 +329,28 @@ export default function useMemoForm({
 			pendingDataRef.current = null;
 			hasUnsavedChangeRef.current = false;
 
-			const tabInfo = overrides?.tabInfo ?? (await getTabInfo());
+			const failSave = () => {
+				if (slowSaveTimerRef.current) {
+					clearTimeout(slowSaveTimerRef.current);
+					slowSaveTimerRef.current = null;
+				}
+				isSavingRef.current = false;
+				setIsWritePending(false);
+				pendingDataRef.current = null;
+				hasUnsavedChangeRef.current = true;
+				if (isCurrentSave()) setSaveStatus("failed");
+			};
+			let tabInfo: NonNullable<SaveMemoOptions["tabInfo"]>;
+			try {
+				tabInfo = overrides?.tabInfo ?? (await getTabInfo());
+			} catch {
+				failSave();
+				return false;
+			}
+			if (!isCurrentSave()) {
+				failSave();
+				return false;
+			}
 			const memoId = overrides?.memoId ?? memoData?.id;
 
 			// 데이터는 안전하게 남았으니(로컬 대기열 또는 서버) 저장 큐를 마저 비우고 성공으로 알린다.
@@ -296,13 +363,13 @@ export default function useMemoForm({
 				}
 				isSavingRef.current = false;
 				setIsWritePending(false);
-				setSaveStatus("saved");
-				if (pendingDataRef.current !== null) {
+				if (isCurrentSave()) setSaveStatus("saved");
+				if (isCurrentSave() && pendingDataRef.current !== null) {
 					const pendingData = pendingDataRef.current;
 					pendingDataRef.current = null;
 					void saveMemo(pendingData);
 				}
-				onSaveSuccess?.(memoInput);
+				if (isCurrentSave()) onSaveSuccess?.(memoInput);
 				resolveIsSaved(true);
 			};
 
@@ -311,47 +378,59 @@ export default function useMemoForm({
 				resolveIsSaved: (isSaved: boolean) => void,
 				trigger: "offline" | "network_error" | "already_queued",
 			) => {
-				if (!userId) {
-					if (slowSaveTimerRef.current) {
-						clearTimeout(slowSaveTimerRef.current);
-						slowSaveTimerRef.current = null;
-					}
-					isSavingRef.current = false;
-					setIsWritePending(false);
-					setSaveStatus("failed");
-					pendingDataRef.current = null;
-					hasUnsavedChangeRef.current = true;
+				if (!isCurrentSave()) {
+					failSave();
 					resolveIsSaved(false);
 					return;
 				}
 
-				await enqueueOfflineMemo({
-					userId,
-					memoId,
-					url: tabInfo.url,
-					baseUpdatedAt:
-						memoId !== undefined ? memoData?.updated_at : undefined,
-					data: {
-						title: memoInput.title,
-						memo: memoInput.memo,
-						impression: memoInput.impression,
-						actionItem: memoInput.actionItem,
-						tabInfo,
-					},
-					queuedAt: Date.now(),
-				});
-				void analytics.trackEvent({
-					name: "memo_offline_queued",
-					params: { trigger },
-				});
+				try {
+					await enqueueOfflineMemo({
+						userId: saveUserId,
+						memoId,
+						url: tabInfo.url,
+						baseUpdatedAt:
+							memoId !== undefined ? memoData?.updated_at : undefined,
+						data: {
+							title: memoInput.title,
+							memo: memoInput.memo,
+							impression: memoInput.impression,
+							actionItem: memoInput.actionItem,
+							tabInfo,
+						},
+						queuedAt: Date.now(),
+					});
+					void Promise.resolve()
+						.then(() =>
+							analytics.trackEvent({
+								name: "memo_offline_queued",
+								params: { trigger, queue_contract_version: 2 },
+							}),
+						)
+						.catch(() => {});
 
-				completeSaveAsSaved(resolveIsSaved);
+					completeSaveAsSaved(resolveIsSaved);
+				} catch {
+					failSave();
+					resolveIsSaved(false);
+				}
 			};
 
-			const isAlreadyQueued = await hasPendingOfflineMemo({
-				memoId,
-				url: tabInfo.url,
-			});
+			let isAlreadyQueued: boolean;
+			try {
+				isAlreadyQueued = await hasPendingOfflineMemo({
+					userId: saveUserId,
+					memoId,
+					url: tabInfo.url,
+				});
+			} catch {
+				failSave();
+				return false;
+			}
+			if (!isCurrentSave()) {
+				failSave();
+				return false;
+			}
 			const shouldQueueOffline = !isOnline || isAlreadyQueued;
 
 			if (shouldQueueOffline) {
@@ -376,6 +455,8 @@ export default function useMemoForm({
 					{
 						id: memoId,
 						url: tabInfo.url,
+						analyticsSource: "side_panel",
+						analyticsUserId: saveUserId,
 						data: {
 							...tabInfo,
 							// 사용자가 고친 제목이 탭 제목보다 우선이다. 비어 있을 때만 탭 제목으로 되돌린다.
@@ -387,14 +468,21 @@ export default function useMemoForm({
 							isStar: memoInput.isStar,
 							isReading: memoInput.isReading,
 							category_id: memoInput.categoryId,
+							plannedDate: memoInput.plannedDate,
 						},
 					},
 					{
 						onSuccess: (result) => {
+							if (!isCurrentSave()) {
+								failSave();
+								resolveIsSaved(false);
+								return;
+							}
 							if (memoId === undefined && result?.data?.[0]?.id) {
 								setFirstSavedMemoId(result.data[0].id);
 							}
 							completeSaveAsSaved(resolveIsSaved);
+							onServerSaveSuccess?.();
 						},
 						onError: (error) => {
 							// 네트워크 실패는 오프라인 대기열로 돌린다. 실패 토스트를 띄우지 않는다(QueryProvider).
@@ -405,15 +493,7 @@ export default function useMemoForm({
 
 							// 실패 토스트와 Sentry 보고는 QueryProvider의 MutationCache가 이미 맡는다.
 							// 여기서는 저장 상태만 되돌리고, 성패는 호출부가 UI 분기에 쓰도록 넘긴다.
-							if (slowSaveTimerRef.current) {
-								clearTimeout(slowSaveTimerRef.current);
-								slowSaveTimerRef.current = null;
-							}
-							isSavingRef.current = false;
-							setIsWritePending(false);
-							setSaveStatus("failed");
-							pendingDataRef.current = null;
-							hasUnsavedChangeRef.current = true;
+							failSave();
 							resolveIsSaved(false);
 						},
 					},
@@ -427,8 +507,10 @@ export default function useMemoForm({
 			memoData?.updated_at,
 			upsertMemo,
 			onSaveSuccess,
+			onServerSaveSuccess,
 			isOnline,
 			userId,
+			pendingOfflineMemo.status,
 		],
 	);
 
@@ -437,8 +519,24 @@ export default function useMemoForm({
 	 * @description 자동 저장이 1초를 넘겨 실패로 이어지는 것과 달리, 사용자가 직접 누른 시도는
 	 * 기다리지 않고 곧바로 다시 시도 중 표시로 넘어간다.
 	 */
+	useEffect(() => {
+		if (
+			waitingForLookupRef.current &&
+			(pendingOfflineMemo.status === "absent" ||
+				pendingOfflineMemo.status === "present")
+		) {
+			waitingForLookupRef.current = false;
+			void saveMemo();
+		}
+	}, [pendingOfflineMemo.status, saveMemo]);
+
 	const handleSaveRetryClick = () => {
 		setSaveStatus("retrying");
+		if (pendingOfflineMemo.status === "error") {
+			waitingForLookupRef.current = true;
+			void pendingOfflineMemo.refresh();
+			return;
+		}
 		void saveMemo();
 	};
 
@@ -571,6 +669,45 @@ export default function useMemoForm({
 		return nextStatusValue;
 	};
 
+	/**
+	 * 읽을 계획 날짜를 바꿔 저장한다. `null`이면 계획에서 뺀다.
+	 * @description toggleMemoStatus와 같은 가드·낙관 반영·롤백을 따른다. 저장에 실패하면
+	 * 폼 값과 캐시를 이전 날짜로 되돌리고 `undefined`를 준다(호출부가 성공 토스트를 건너뛴다).
+	 * 성공하면 저장된 날짜 키(해제는 `null`)를 준다. 실패 알림은 MutationCache가 맡는다.
+	 */
+	const setPlannedDate = async (
+		plannedDate: string | null,
+	): Promise<{ plannedDate: string | null } | undefined> => {
+		if (isMemoLocked || !isOnline || isSyncing) {
+			return undefined;
+		}
+
+		hasEditedMemoRef.current = true;
+		const previousPlannedDate = getValues("plannedDate");
+		const memoId = memoData?.id;
+
+		setValue("plannedDate", plannedDate);
+		if (memoId !== undefined) {
+			patchPlannedDateCache({ queryClient, memoId, plannedDate });
+		}
+
+		const isSaved = await saveMemo({ plannedDate });
+
+		if (!isSaved) {
+			setValue("plannedDate", previousPlannedDate);
+			if (memoId !== undefined) {
+				patchPlannedDateCache({
+					queryClient,
+					memoId,
+					plannedDate: previousPlannedDate,
+				});
+			}
+			return undefined;
+		}
+
+		return { plannedDate };
+	};
+
 	const saveBeforeSwitch = async () => {
 		if (isMemoLocked || isSavingRef.current) {
 			return false;
@@ -597,6 +734,7 @@ export default function useMemoForm({
 		saveStatus,
 		/** 지금 편집 중인 메모가 오프라인 대기열에 있는지. 저장 표시줄이 이 값으로 상태를 고른다 */
 		hasPendingOfflineItem,
+		pendingOfflineStatus: pendingOfflineMemo.status,
 		handleSaveRetryClick,
 		saveMemo,
 		handleTitleChange,
@@ -605,6 +743,7 @@ export default function useMemoForm({
 		handleActionItemChange,
 		updateCategory,
 		toggleMemoStatus,
+		setPlannedDate,
 	};
 }
 
@@ -636,6 +775,38 @@ export function patchMemoStatusCache({
 				data: cachedResponse.data.map((cachedMemo) =>
 					cachedMemo.id === memoId
 						? { ...cachedMemo, [statusKey]: statusValue }
+						: cachedMemo,
+				),
+			};
+		},
+	);
+}
+
+/**
+ * `["memo"]` 접두사 캐시에서 해당 메모의 읽을 계획 날짜를 바꾼다.
+ * @description patchMemoStatusCache가 boolean 상태 전용이라 날짜는 따로 둔다. 낙관적 갱신 용도다.
+ */
+function patchPlannedDateCache({
+	queryClient,
+	memoId,
+	plannedDate,
+}: {
+	queryClient: QueryClient;
+	memoId: number;
+	plannedDate: string | null;
+}) {
+	queryClient.setQueriesData<{ data: MemoRow[] | null }>(
+		{ queryKey: ["memo"] },
+		(cachedResponse) => {
+			if (!Array.isArray(cachedResponse?.data)) {
+				return cachedResponse;
+			}
+
+			return {
+				...cachedResponse,
+				data: cachedResponse.data.map((cachedMemo) =>
+					cachedMemo.id === memoId
+						? { ...cachedMemo, plannedDate }
 						: cachedMemo,
 				),
 			};

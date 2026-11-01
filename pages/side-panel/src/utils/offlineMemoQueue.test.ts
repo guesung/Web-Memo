@@ -1,10 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@web-memo/env", () => ({ CONFIG: {} }));
+vi.mock("@web-memo/shared/modules/analytics", () => ({
+	analytics: { trackMemoCreate: vi.fn(), trackMemoSaveResult: vi.fn() },
+}));
+
+import { analytics } from "@web-memo/shared/modules/analytics";
 
 import {
 	enqueueOfflineMemo,
 	flushOfflineMemoQueue,
+	getPendingOfflineMemo,
 	getPendingOfflineMemos,
 	hasPendingOfflineMemo,
 	type IFOfflineMemoQueueItem,
@@ -30,6 +36,7 @@ beforeEach(() => {
 
 afterEach(() => {
 	vi.unstubAllGlobals();
+	vi.resetAllMocks();
 });
 
 const createItem = (
@@ -50,11 +57,97 @@ const createItem = (
 });
 
 describe("enqueueOfflineMemo · getPendingOfflineMemos · removeOfflineMemo", () => {
+	it("같은 URL의 기존 ID와 새 초안을 분리하고 다른 ID 조회를 막는다", async () => {
+		await enqueueOfflineMemo(createItem({ memoId: 1 }));
+		await enqueueOfflineMemo(
+			createItem({
+				memoId: undefined,
+				data: { ...createItem().data, memo: "new" },
+			}),
+		);
+		expect(await getPendingOfflineMemos()).toHaveLength(2);
+		expect(
+			(
+				await getPendingOfflineMemo({
+					userId: "user-1",
+					memoId: 1,
+					url: createItem().url,
+				})
+			)?.data.memo,
+		).toBe("본문");
+		expect(
+			(await getPendingOfflineMemo({ userId: "user-1", url: createItem().url }))
+				?.data.memo,
+		).toBe("new");
+		expect(
+			await getPendingOfflineMemo({
+				userId: "user-1",
+				memoId: 2,
+				url: createItem().url,
+			}),
+		).toBeUndefined();
+	});
+
+	it("잘못된 신규 입력은 저장하지 않는다", async () => {
+		await expect(
+			enqueueOfflineMemo({
+				...createItem(),
+				data: { ...createItem().data, memo: 1 as unknown as string },
+			}),
+		).rejects.toThrow("Invalid offline memo queue item");
+		expect(storage.offlineMemoQueue).toBeUndefined();
+	});
+	it("같은 URL을 서로 다른 사용자에게 보존하고 사용자 범위로만 찾는다", async () => {
+		await enqueueOfflineMemo(createItem({ userId: "a" }));
+		await enqueueOfflineMemo(
+			createItem({ userId: "b", data: { ...createItem().data, memo: "B" } }),
+		);
+		expect(
+			(await getPendingOfflineMemos()).map(({ userId }) => userId),
+		).toEqual(["a", "b"]);
+		expect(
+			(await getPendingOfflineMemo({ userId: "a", url: createItem().url }))
+				?.data.memo,
+		).toBe("본문");
+	});
+
+	it("동시 enqueue가 서로 다른 대상을 모두 보존한다", async () => {
+		let release!: () => void;
+		const gate = new Promise<void>((resolve) => {
+			release = resolve;
+		});
+		const originalGet = chrome.storage.local.get;
+		let reads = 0;
+		chrome.storage.local.get = vi.fn(async () => {
+			const snapshot = await originalGet("offlineMemoQueue");
+			if (++reads <= 2) await gate;
+			return snapshot;
+		}) as unknown as typeof chrome.storage.local.get;
+		const a = enqueueOfflineMemo(createItem({ url: "https://example.com/a" }));
+		const b = enqueueOfflineMemo(createItem({ url: "https://example.com/b" }));
+		await Promise.resolve();
+		release();
+		await Promise.all([a, b]);
+		expect(await getPendingOfflineMemos()).toHaveLength(2);
+	});
+
+	it("읽기 실패 시 기존 큐를 덮어쓰지 않는다", async () => {
+		await enqueueOfflineMemo(createItem());
+		chrome.storage.local.get = vi.fn(async () => {
+			throw new Error("read failed");
+		});
+		await expect(
+			enqueueOfflineMemo(createItem({ url: "https://example.com/b" })),
+		).rejects.toThrow("read failed");
+		expect(storage.offlineMemoQueue).toHaveLength(1);
+	});
 	it("넣은 항목을 그대로 읽는다", async () => {
 		const item = createItem();
 		await enqueueOfflineMemo(item);
 
-		expect(await getPendingOfflineMemos()).toEqual([item]);
+		expect(await getPendingOfflineMemos()).toEqual([
+			expect.objectContaining({ ...item, revision: expect.any(String) }),
+		]);
 	});
 
 	it("같은 memoId의 이전 스냅샷은 지우고 최신 것만 남긴다", async () => {
@@ -86,7 +179,7 @@ describe("enqueueOfflineMemo · getPendingOfflineMemos · removeOfflineMemo", ()
 	it("항목을 지운다", async () => {
 		const item = createItem({ memoId: 1 });
 		await enqueueOfflineMemo(item);
-		await removeOfflineMemo(item);
+		await removeOfflineMemo((await getPendingOfflineMemos())[0]);
 
 		expect(await getPendingOfflineMemos()).toEqual([]);
 	});
@@ -94,23 +187,616 @@ describe("enqueueOfflineMemo · getPendingOfflineMemos · removeOfflineMemo", ()
 	it("대기 여부를 memoId 또는 url로 확인한다", async () => {
 		await enqueueOfflineMemo(createItem({ url: "https://example.com/a" }));
 
-		expect(await hasPendingOfflineMemo({ url: "https://example.com/a" })).toBe(
-			true,
-		);
 		expect(
-			await hasPendingOfflineMemo({ url: "https://example.com/other" }),
+			await hasPendingOfflineMemo({
+				userId: "user-1",
+				url: "https://example.com/a",
+			}),
+		).toBe(true);
+		expect(
+			await hasPendingOfflineMemo({
+				userId: "user-1",
+				url: "https://example.com/other",
+			}),
 		).toBe(false);
 	});
 });
 
 describe("flushOfflineMemoQueue", () => {
+	it("A 뒤 재기준화된 B 전송 중 오래된 기준의 C가 와도 같은 ID를 업데이트한다", async () => {
+		const base = "2026-01-01";
+		await enqueueOfflineMemo(
+			createItem({
+				memoId: 1,
+				baseUpdatedAt: base,
+				data: { ...createItem().data, memo: "A" },
+			}),
+		);
+		let releaseA!: () => void;
+		const gateA = new Promise<void>((resolve) => {
+			releaseA = resolve;
+		});
+		let startedA!: () => void;
+		const startA = new Promise<void>((resolve) => {
+			startedA = resolve;
+		});
+		let releaseB!: () => void;
+		const gateB = new Promise<void>((resolve) => {
+			releaseB = resolve;
+		});
+		let startedB!: () => void;
+		const startB = new Promise<void>((resolve) => {
+			startedB = resolve;
+		});
+		let serverUpdatedAt = base;
+		const updateMemo = vi.fn(
+			async ({ request }: { id: number; request: { memo?: string } }) => {
+				if (request.memo === "A") {
+					startedA();
+					await gateA;
+					serverUpdatedAt = "2026-01-02";
+				}
+				if (request.memo === "B") {
+					startedB();
+					await gateB;
+					serverUpdatedAt = "2026-01-03";
+				}
+				if (request.memo === "C") serverUpdatedAt = "2026-01-04";
+				return { data: [{ id: 1, updated_at: serverUpdatedAt }], error: null };
+			},
+		);
+		const insertMemo = vi.fn(async () => ({
+			data: [{ id: 2, updated_at: "2026-01-04" }],
+			error: null,
+		}));
+		const service: TOfflineMemoQueueService = {
+			getMemoById: vi.fn(async () => ({
+				data: [
+					{
+						id: 1,
+						updated_at: serverUpdatedAt,
+						title: "old",
+						memo: "old",
+						impression: "",
+						actionItem: "",
+					},
+				],
+				error: null,
+			})),
+			insertMemo,
+			updateMemo,
+		};
+		const flushing = flushOfflineMemoQueue({
+			userId: "user-1",
+			memoService: service,
+		});
+		await startA;
+		await enqueueOfflineMemo(
+			createItem({
+				memoId: 1,
+				baseUpdatedAt: base,
+				data: { ...createItem().data, memo: "B" },
+			}),
+		);
+		releaseA();
+		await startB;
+		await enqueueOfflineMemo(
+			createItem({
+				memoId: 1,
+				baseUpdatedAt: base,
+				data: { ...createItem().data, memo: "C" },
+			}),
+		);
+		releaseB();
+		const result = await flushing;
+		expect(
+			updateMemo.mock.calls.map(([params]) => params.request.memo),
+		).toEqual(["A", "B", "C"]);
+		expect(insertMemo).not.toHaveBeenCalled();
+		expect(result.conflicts).toEqual([]);
+		expect(await getPendingOfflineMemos()).toEqual([]);
+	});
+
+	it("충돌 복사 중 B와 뒤이은 원본 ID 편집을 새 ID에 연결한다", async () => {
+		await enqueueOfflineMemo(createItem({ memoId: 1 }));
+		let releaseInsert!: () => void;
+		const gate = new Promise<void>((resolve) => {
+			releaseInsert = resolve;
+		});
+		let insertStarted!: () => void;
+		const started = new Promise<void>((resolve) => {
+			insertStarted = resolve;
+		});
+		const firstService: TOfflineMemoQueueService = {
+			getMemoById: vi.fn(async (id) =>
+				id === 1
+					? {
+							data: [
+								{
+									id: 1,
+									updated_at: "2026-02-01",
+									title: "remote",
+									memo: "remote",
+									impression: "",
+									actionItem: "",
+								},
+							],
+							error: null,
+						}
+					: { data: null, error: new Error("temporary") },
+			),
+			insertMemo: vi.fn(async () => {
+				insertStarted();
+				await gate;
+				return { data: [{ id: 2, updated_at: "2026-02-02" }], error: null };
+			}),
+			updateMemo: vi.fn(async () => ({
+				data: [{ id: 2, updated_at: "2026-02-03" }],
+				error: null,
+			})),
+		};
+		const flushing = flushOfflineMemoQueue({
+			userId: "user-1",
+			memoService: firstService,
+		});
+		await started;
+		await enqueueOfflineMemo(
+			createItem({ memoId: 1, data: { ...createItem().data, memo: "B" } }),
+		);
+		releaseInsert();
+		const result = await flushing;
+		expect(result.conflicts).toEqual([
+			{ oldMemoId: 1, newMemoId: 2, url: createItem().url },
+		]);
+		expect(result.syncedCount).toBe(0);
+		expect(result.acknowledgedConflictCount).toBe(0);
+		await enqueueOfflineMemo(
+			createItem({ memoId: 1, data: { ...createItem().data, memo: "C" } }),
+		);
+		const pending = await getPendingOfflineMemos();
+		expect(pending).toHaveLength(1);
+		expect(pending[0]).toMatchObject({
+			memoId: 2,
+			originMemoId: 1,
+			data: { memo: "C" },
+		});
+		const updateMemo = vi.fn(
+			async (_params: { id: number; request: { memo?: string } }) => ({
+				data: [{ id: 2, updated_at: "2026-02-03" }],
+				error: null,
+			}),
+		);
+		const retryResult = await flushOfflineMemoQueue({
+			userId: "user-1",
+			memoService: {
+				getMemoById: vi.fn(async () => ({
+					data: [
+						{
+							id: 2,
+							updated_at: "2026-02-02",
+							title: "old",
+							memo: "B",
+							impression: "",
+							actionItem: "",
+						},
+					],
+					error: null,
+				})),
+				insertMemo: vi.fn(async () => ({
+					data: [{ id: 3, updated_at: "2026-02-03" }],
+					error: null,
+				})),
+				updateMemo,
+			},
+		});
+		expect(updateMemo.mock.calls[0]?.[0]).toMatchObject({
+			id: 2,
+			request: { memo: "C" },
+		});
+		expect(retryResult.syncedCount).toBe(1);
+		expect(retryResult.acknowledgedConflictCount).toBe(1);
+		expect(await getPendingOfflineMemos()).toEqual([]);
+	});
+
+	it("서버 성공 후 ACK 저장 실패는 pending을 보존하고 실패로 집계한다", async () => {
+		await enqueueOfflineMemo(createItem());
+		chrome.storage.local.set = vi.fn(async () => {
+			throw new Error("set failed");
+		});
+		const memoService: TOfflineMemoQueueService = {
+			getMemoById: vi.fn(async () => ({ data: [], error: null })),
+			insertMemo: vi.fn(async () => ({
+				data: [{ id: 100, updated_at: "2026-01-02" }],
+				error: null,
+			})),
+			updateMemo: vi.fn(async () => ({
+				data: [{ id: 100, updated_at: "2026-01-02" }],
+				error: null,
+			})),
+		};
+		const result = await flushOfflineMemoQueue({
+			userId: "user-1",
+			memoService,
+		});
+		expect(result).toMatchObject({
+			attemptedCount: 1,
+			syncedCount: 0,
+			otherErrorCount: 1,
+			hasOtherError: true,
+			remainingCount: 1,
+		});
+		expect((await getPendingOfflineMemos())[0].data.memo).toBe("본문");
+	});
+
+	it("GET 중 인증 범위가 바뀌면 다음 write를 보내지 않는다", async () => {
+		await enqueueOfflineMemo(createItem({ memoId: 1 }));
+		let active = true;
+		const updateMemo = vi.fn(async () => ({
+			data: [{ id: 1, updated_at: "2026-01-02" }],
+			error: null,
+		}));
+		const service: TOfflineMemoQueueService = {
+			getMemoById: vi.fn(async () => {
+				active = false;
+				return {
+					data: [
+						{
+							id: 1,
+							updated_at: "2026-01-01T00:00:00.000Z",
+							title: "old",
+							memo: "old",
+							impression: "",
+							actionItem: "",
+						},
+					],
+					error: null,
+				};
+			}),
+			insertMemo: vi.fn(async () => ({
+				data: [{ id: 2, updated_at: "2026-01-02" }],
+				error: null,
+			})),
+			updateMemo,
+		};
+		const result = await flushOfflineMemoQueue({
+			userId: "user-1",
+			memoService: service,
+			shouldContinue: () => active,
+		});
+		expect(updateMemo).not.toHaveBeenCalled();
+		expect(result.attemptedCount).toBe(1);
+		expect(result.syncedCount).toBe(0);
+		expect(await getPendingOfflineMemos()).toHaveLength(1);
+	});
+
+	it("신규 insert 중 추가된 B를 반환 ID로 연결하고 URL 조회를 유지한다", async () => {
+		await enqueueOfflineMemo(createItem());
+		let releaseInsert!: () => void;
+		const insertGate = new Promise<void>((resolve) => {
+			releaseInsert = resolve;
+		});
+		let insertStarted!: () => void;
+		const insertStartedPromise = new Promise<void>((resolve) => {
+			insertStarted = resolve;
+		});
+		let releaseGet!: () => void;
+		const getGate = new Promise<void>((resolve) => {
+			releaseGet = resolve;
+		});
+		let getStarted!: () => void;
+		const getStartedPromise = new Promise<void>((resolve) => {
+			getStarted = resolve;
+		});
+		const updateMemo = vi.fn(
+			async (_params: { id: number; request: { memo?: string } }) => ({
+				data: [{ id: 100, updated_at: "2026-01-03" }],
+				error: null,
+			}),
+		);
+		const memoService: TOfflineMemoQueueService = {
+			insertMemo: vi.fn(async () => {
+				insertStarted();
+				await insertGate;
+				return { data: [{ id: 100, updated_at: "2026-01-02" }], error: null };
+			}),
+			getMemoById: vi.fn(async () => {
+				getStarted();
+				await getGate;
+				return {
+					data: [
+						{
+							id: 100,
+							updated_at: "2026-01-02",
+							title: "old",
+							memo: "A",
+							impression: "",
+							actionItem: "",
+						},
+					],
+					error: null,
+				};
+			}),
+			updateMemo,
+		};
+		const flushing = flushOfflineMemoQueue({ userId: "user-1", memoService });
+		await insertStartedPromise;
+		await enqueueOfflineMemo(
+			createItem({ data: { ...createItem().data, memo: "B" } }),
+		);
+		releaseInsert();
+		await getStartedPromise;
+		const pending = await getPendingOfflineMemo({
+			userId: "user-1",
+			url: createItem().url,
+		});
+		expect(pending).toMatchObject({ memoId: 100, data: { memo: "B" } });
+		releaseGet();
+		await flushing;
+		expect(updateMemo.mock.calls[0]?.[0]).toMatchObject({
+			id: 100,
+			request: { memo: "B" },
+		});
+		expect(await getPendingOfflineMemos()).toEqual([]);
+	});
+
+	it("A 전송 중 B를 저장하면 A ACK 뒤 B 본문을 보존한다", async () => {
+		const original = createItem({ memoId: 1 });
+		await enqueueOfflineMemo(original);
+		let release!: () => void;
+		const gate = new Promise<void>((resolve) => {
+			release = resolve;
+		});
+		let started!: () => void;
+		const startedPromise = new Promise<void>((resolve) => {
+			started = resolve;
+		});
+		let serverUpdatedAt = original.baseUpdatedAt ?? "2026-01-01T00:00:00.000Z";
+		const updateMemo = vi.fn(
+			async (_params: { id: number; request: { memo?: string } }) => {
+				started();
+				await gate;
+				serverUpdatedAt = "2026-01-02";
+				return { data: [{ id: 1, updated_at: serverUpdatedAt }], error: null };
+			},
+		);
+		const memoService: TOfflineMemoQueueService = {
+			getMemoById: vi.fn(async () => ({
+				data: [
+					{
+						id: 1,
+						updated_at: serverUpdatedAt,
+						title: "old",
+						memo: "old",
+						impression: "",
+						actionItem: "",
+					},
+				],
+				error: null,
+			})),
+			insertMemo: vi.fn(async () => ({
+				data: [{ id: 2, updated_at: "2026-01-02" }],
+				error: null,
+			})),
+			updateMemo,
+		};
+		const flushing = flushOfflineMemoQueue({ userId: "user-1", memoService });
+		await startedPromise;
+		await enqueueOfflineMemo(
+			createItem({ memoId: 1, data: { ...original.data, memo: "B" } }),
+		);
+		release();
+		await flushing;
+		expect(updateMemo).toHaveBeenCalledTimes(2);
+		expect(updateMemo.mock.calls[1]?.[0].request.memo).toBe("B");
+		expect(await getPendingOfflineMemos()).toEqual([]);
+	});
 	const buildMemoService = (
 		overrides: Partial<TOfflineMemoQueueService> = {},
 	): TOfflineMemoQueueService => ({
 		getMemoById: vi.fn(async () => ({ data: [], error: null })),
-		insertMemo: vi.fn(async () => ({ data: [{ id: 100 }], error: null })),
-		updateMemo: vi.fn(async () => ({ data: [{ id: 1 }], error: null })),
+		insertMemo: vi.fn(async () => ({
+			data: [{ id: 100, updated_at: "2026-01-02" }],
+			error: null,
+		})),
+		updateMemo: vi.fn(async () => ({
+			data: [{ id: 1, updated_at: "2026-01-02" }],
+			error: null,
+		})),
 		...overrides,
+	});
+
+	it("대기열에 넣거나 삭제하는 것만으로는 DB 저장 결과를 기록하지 않는다", async () => {
+		const item = createItem();
+		await enqueueOfflineMemo(item);
+		await removeOfflineMemo((await getPendingOfflineMemos())[0]);
+		expect(analytics.trackMemoSaveResult).not.toHaveBeenCalled();
+	});
+
+	it.each(["insert", "update", "conflict"])(
+		"%s 성공의 반환 행과 실제 쓰기 전 행을 한 번 전달한다",
+		async (operation) => {
+			const item = createItem(operation === "insert" ? {} : { memoId: 1 });
+			const before = {
+				id: 1,
+				updated_at:
+					operation === "conflict" ? "다른 시각" : (item.baseUpdatedAt ?? null),
+				title: "이전 제목",
+				memo: "이전 본문",
+				impression: "",
+				actionItem: "",
+			};
+			const after = {
+				id: 100,
+				updated_at: "2026-01-02",
+				memo: "저장된 본문",
+				impression: "",
+				actionItem: "",
+			};
+			const memoService = buildMemoService({
+				getMemoById: vi.fn(async () => ({ data: [before], error: null })),
+				insertMemo: vi.fn(async () => ({ data: [after], error: null })),
+				updateMemo: vi.fn(async () => ({ data: [after], error: null })),
+			});
+			await enqueueOfflineMemo(item);
+			await flushOfflineMemoQueue({ userId: "user-1", memoService });
+
+			expect(analytics.trackMemoSaveResult).toHaveBeenCalledTimes(1);
+			expect(analytics.trackMemoSaveResult).toHaveBeenCalledWith({
+				before: operation === "update" ? before : undefined,
+				after,
+				isSuccess: true,
+				source: "offline_sync",
+				error: null,
+				userId: "user-1",
+			});
+			expect(await getPendingOfflineMemos()).toEqual([]);
+		},
+	);
+
+	it.each([
+		["insert", "returned"],
+		["insert", "thrown"],
+		["update", "returned"],
+		["update", "thrown"],
+		["conflict", "returned"],
+		["conflict", "thrown"],
+	])(
+		"%s 쓰기의 %s 오류를 한 번 기록하고 항목을 남긴다",
+		async (operation, failure) => {
+			const error = new Error("서버 오류");
+			const item = createItem(operation === "insert" ? {} : { memoId: 1 });
+			const before = {
+				id: 1,
+				updated_at:
+					operation === "conflict" ? "다른 시각" : (item.baseUpdatedAt ?? null),
+				title: "이전 제목",
+				memo: "이전 본문",
+				impression: "",
+				actionItem: "",
+			};
+			const write = vi.fn(async () => {
+				if (failure === "thrown") throw error;
+				return { data: null, error };
+			});
+			const memoService = buildMemoService({
+				getMemoById: vi.fn(async () => ({ data: [before], error: null })),
+				insertMemo: write,
+				updateMemo: write,
+			});
+			await enqueueOfflineMemo(item);
+			const result = await flushOfflineMemoQueue({
+				userId: "user-1",
+				memoService,
+			});
+
+			expect(write).toHaveBeenCalledTimes(1);
+			expect(analytics.trackMemoSaveResult).toHaveBeenCalledTimes(1);
+			expect(analytics.trackMemoSaveResult).toHaveBeenCalledWith({
+				before: operation === "update" ? before : undefined,
+				after: undefined,
+				isSuccess: false,
+				source: "offline_sync",
+				error,
+				userId: "user-1",
+			});
+			expect(result.hasOtherError).toBe(true);
+			expect(await getPendingOfflineMemos()).toEqual([
+				expect.objectContaining({ ...item, revision: expect.any(String) }),
+			]);
+		},
+	);
+
+	it("DB 성공 응답에 행이 없으면 실패로 기록하고 신규 항목을 보존한다", async () => {
+		await enqueueOfflineMemo(createItem());
+		const memoService = buildMemoService({
+			insertMemo: vi.fn(async () => ({ data: null, error: null })),
+		});
+		const result = await flushOfflineMemoQueue({
+			userId: "user-1",
+			memoService,
+		});
+
+		expect(analytics.trackMemoSaveResult).toHaveBeenCalledTimes(1);
+		expect(analytics.trackMemoSaveResult).toHaveBeenCalledWith(
+			expect.objectContaining({ isSuccess: false, after: undefined }),
+		);
+		expect(result.syncedCount).toBe(0);
+		expect(result.hasOtherError).toBe(true);
+		expect(await getPendingOfflineMemos()).toHaveLength(1);
+	});
+
+	it.each(["returned", "thrown"])(
+		"사전 조회의 %s 오류는 저장 시도로 기록하지 않는다",
+		async (failure) => {
+			const error = new Error("조회 오류");
+			const memoService = buildMemoService({
+				getMemoById: vi.fn(async () => {
+					if (failure === "thrown") throw error;
+					return { data: null, error };
+				}),
+			});
+			await enqueueOfflineMemo(createItem({ memoId: 1 }));
+			const result = await flushOfflineMemoQueue({
+				userId: "user-1",
+				memoService,
+			});
+
+			expect(analytics.trackMemoSaveResult).not.toHaveBeenCalled();
+			expect(memoService.insertMemo).not.toHaveBeenCalled();
+			expect(memoService.updateMemo).not.toHaveBeenCalled();
+			expect(result.hasOtherError).toBe(true);
+		},
+	);
+
+	it("계측이 throw해도 성공한 쓰기는 대기열에서 지우고 재시도하지 않는다", async () => {
+		vi.mocked(analytics.trackMemoSaveResult).mockImplementation(() => {
+			throw new Error("계측 오류");
+		});
+		await enqueueOfflineMemo(createItem());
+		const memoService = buildMemoService();
+		const result = await flushOfflineMemoQueue({
+			userId: "user-1",
+			memoService,
+		});
+		await flushOfflineMemoQueue({ userId: "user-1", memoService });
+
+		expect(result.syncedCount).toBe(1);
+		expect(result.hasOtherError).toBe(false);
+		expect(memoService.insertMemo).toHaveBeenCalledTimes(1);
+		expect(analytics.trackMemoSaveResult).toHaveBeenCalledTimes(1);
+		expect(await getPendingOfflineMemos()).toEqual([]);
+	});
+
+	it("서버 반영 후 같은 항목이 다시 남아도 두 번째 flush는 쓰기와 결과 계측을 반복하지 않는다", async () => {
+		const item = createItem({ memoId: 1 });
+		let existing = {
+			id: 1,
+			updated_at: item.baseUpdatedAt ?? null,
+			title: "제목",
+			memo: "이전",
+			impression: "",
+			actionItem: "",
+		};
+		const memoService = buildMemoService({
+			getMemoById: vi.fn(async () => ({ data: [existing], error: null })),
+			updateMemo: vi.fn(async () => {
+				existing = { ...existing, ...item.data, updated_at: "새 시각" };
+				return { data: [existing], error: null };
+			}),
+		});
+		await enqueueOfflineMemo(item);
+		await flushOfflineMemoQueue({ userId: "user-1", memoService });
+		await enqueueOfflineMemo(item);
+		const result = await flushOfflineMemoQueue({
+			userId: "user-1",
+			memoService,
+		});
+
+		expect(memoService.updateMemo).toHaveBeenCalledTimes(1);
+		expect(memoService.insertMemo).not.toHaveBeenCalled();
+		expect(analytics.trackMemoSaveResult).toHaveBeenCalledTimes(1);
+		expect(result.syncedCount).toBe(1);
+		expect(await getPendingOfflineMemos()).toEqual([]);
 	});
 
 	it("memoId가 없으면 insert하고 대기열에서 지운다", async () => {
@@ -123,6 +809,13 @@ describe("flushOfflineMemoQueue", () => {
 		});
 
 		expect(memoService.insertMemo).toHaveBeenCalledTimes(1);
+		expect(analytics.trackMemoCreate).toHaveBeenCalledTimes(1);
+		expect(analytics.trackMemoSaveResult).toHaveBeenCalledWith(
+			expect.objectContaining({
+				after: { id: 100, updated_at: "2026-01-02" },
+				isSuccess: true,
+			}),
+		);
 		expect(result.conflicts).toEqual([]);
 		expect(await getPendingOfflineMemos()).toEqual([]);
 	});
@@ -176,7 +869,10 @@ describe("flushOfflineMemoQueue", () => {
 				],
 				error: null,
 			})),
-			insertMemo: vi.fn(async () => ({ data: [{ id: 2 }], error: null })),
+			insertMemo: vi.fn(async () => ({
+				data: [{ id: 2, updated_at: "2026-01-02" }],
+				error: null,
+			})),
 		});
 
 		const result = await flushOfflineMemoQueue({
@@ -185,6 +881,7 @@ describe("flushOfflineMemoQueue", () => {
 		});
 
 		expect(memoService.insertMemo).toHaveBeenCalledTimes(1);
+		expect(analytics.trackMemoCreate).toHaveBeenCalledTimes(1);
 		expect(result.conflicts).toEqual([
 			{ oldMemoId: 1, newMemoId: 2, url: "https://example.com/a" },
 		]);
@@ -218,6 +915,7 @@ describe("flushOfflineMemoQueue", () => {
 
 		expect(memoService.updateMemo).not.toHaveBeenCalled();
 		expect(memoService.insertMemo).not.toHaveBeenCalled();
+		expect(analytics.trackMemoSaveResult).not.toHaveBeenCalled();
 		expect(result.conflicts).toEqual([]);
 		expect(result.syncedCount).toBe(1);
 		expect(await getPendingOfflineMemos()).toEqual([]);
@@ -227,7 +925,10 @@ describe("flushOfflineMemoQueue", () => {
 		await enqueueOfflineMemo(createItem({ memoId: 1 }));
 		const memoService = buildMemoService({
 			getMemoById: vi.fn(async () => ({ data: [], error: null })),
-			insertMemo: vi.fn(async () => ({ data: [{ id: 2 }], error: null })),
+			insertMemo: vi.fn(async () => ({
+				data: [{ id: 2, updated_at: "2026-01-02" }],
+				error: null,
+			})),
 		});
 
 		const result = await flushOfflineMemoQueue({
@@ -248,7 +949,13 @@ describe("flushOfflineMemoQueue", () => {
 		await flushOfflineMemoQueue({ userId: "user-1", memoService });
 
 		expect(memoService.insertMemo).not.toHaveBeenCalled();
-		expect(await getPendingOfflineMemos()).toEqual([otherUserItem]);
+		expect(analytics.trackMemoSaveResult).not.toHaveBeenCalled();
+		expect(await getPendingOfflineMemos()).toEqual([
+			expect.objectContaining({
+				...otherUserItem,
+				revision: expect.any(String),
+			}),
+		]);
 	});
 
 	it("네트워크 오류를 만나면 중단하고 대기열을 그대로 둔다", async () => {
@@ -280,7 +987,7 @@ describe("flushOfflineMemoQueue", () => {
 				if (callCount === 1) {
 					throw new Error("서버 오류");
 				}
-				return { data: [{ id: 100 }], error: null };
+				return { data: [{ id: 100, updated_at: "2026-01-02" }], error: null };
 			}),
 		});
 

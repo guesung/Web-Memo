@@ -93,11 +93,16 @@ describe("앱 영향 판정 스크립트", () => {
 		rmSync(fixtureDirectory, { recursive: true, force: true });
 	});
 
-	it("워크플로만 바뀌어도 앱을 빌드하고 웹·확장은 건너뛴다", () => {
-		writeFileSync(
-			join(fixtureDirectory, ".github/workflows/cd-app.yml"),
-			"updated",
-		);
+	it.each([
+		".github/workflows/cd-app.yml",
+		".github/workflows/ci.yml",
+		".github/workflows/release.yml",
+		".github/scripts/deploy/prepareStagingApp.mjs",
+		".github/scripts/deploy/appDeploymentState.mjs",
+		".github/scripts/deploy/detect-affected-apps.sh",
+	])("%s만 바뀌어도 앱을 빌드하고 웹·확장은 건너뛴다", (path) => {
+		mkdirSync(join(fixtureDirectory, path, ".."), { recursive: true });
+		writeFileSync(join(fixtureDirectory, path), "updated");
 		commitFixture();
 
 		expect(runDetector([]).status).toBe(0);

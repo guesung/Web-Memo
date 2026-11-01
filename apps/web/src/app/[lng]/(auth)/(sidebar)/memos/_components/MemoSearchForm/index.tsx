@@ -14,9 +14,10 @@ import {
 	SelectValue,
 } from "@web-memo/ui";
 import { FileText, Search, StickyNote, X } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
+import { isTypingTarget } from "../../_utils";
 import type { SearchFormValues } from "../MemoSearchFormProvider";
 
 /** 이 시간 동안 입력이 없으면 검색을 한 번 기록한다. */
@@ -33,6 +34,8 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 		formState: { isDirty },
 	} = useFormContext<SearchFormValues>();
 	const searchQuery = watch("searchQuery");
+	const { searchInputRef, isSearchFocused, setIsSearchFocused } =
+		useSearchShortcut();
 
 	/**
 	 * 입력이 멈추면 검색을 한 번 기록한다.
@@ -135,8 +138,29 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 									"focus:ring-4 focus:ring-primary/20",
 									"transition-all",
 								)}
+								aria-keyshortcuts="/ Meta+K Control+K"
 								{...field}
+								ref={(element) => {
+									field.ref(element);
+									searchInputRef.current = element;
+								}}
+								onFocus={() => setIsSearchFocused(true)}
+								onBlur={() => {
+									field.onBlur();
+									setIsSearchFocused(false);
+								}}
+								onKeyDown={(event) => {
+									if (event.key === "Escape") event.currentTarget.blur();
+								}}
 							/>
+							{!isDirty && (
+								<kbd
+									aria-hidden
+									className="pointer-events-none absolute right-4 top-1/2 hidden -translate-y-1/2 rounded-md border border-b-2 border-border bg-muted px-1.5 font-sans text-xs text-muted-foreground sm:inline-block"
+								>
+									{isSearchFocused ? "Esc" : "/"}
+								</kbd>
+							)}
 							{isDirty && (
 								<Button
 									type="button"
@@ -155,4 +179,44 @@ export default function MemoSearchForm({ lng }: MemoSearchFormProps) {
 			</div>
 		</form>
 	);
+}
+
+/**
+ * 어디서든 / 나 ⌘K(Ctrl+K)로 검색창에 바로 간다.
+ * @description /는 글을 쓰는 중이면 그 글자로 두고, ⌘K는 입력 중에도 동작한다. 다이얼로그가 떠 있으면
+ * 뒤의 검색창으로 포커스를 빼앗지 않는다. 한글 자판에서도 같도록 key 대신 code로 판정한다.
+ */
+function useSearchShortcut() {
+	const searchInputRef = useRef<HTMLInputElement | null>(null);
+	const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+	useEffect(function focusSearchOnShortcut() {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.defaultPrevented || event.isComposing) return;
+			if (document.querySelector('[role="dialog"], [role="alertdialog"]'))
+				return;
+
+			const isSlash =
+				event.code === "Slash" &&
+				!event.altKey &&
+				!event.ctrlKey &&
+				!event.metaKey &&
+				!event.shiftKey &&
+				!isTypingTarget(event.target);
+			const isCommandK =
+				event.code === "KeyK" &&
+				(event.metaKey || event.ctrlKey) &&
+				!event.altKey &&
+				!event.shiftKey;
+			if (!isSlash && !isCommandK) return;
+
+			event.preventDefault();
+			searchInputRef.current?.focus();
+		};
+
+		document.addEventListener("keydown", handleKeyDown);
+		return () => document.removeEventListener("keydown", handleKeyDown);
+	}, []);
+
+	return { searchInputRef, isSearchFocused, setIsSearchFocused };
 }

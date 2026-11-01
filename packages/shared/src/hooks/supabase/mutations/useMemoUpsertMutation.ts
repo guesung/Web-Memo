@@ -11,12 +11,13 @@ interface IFMemoUpsertVariables {
 	id?: MemoRow["id"];
 	url?: string;
 	data: MemoTable["Insert"];
+	analyticsSource?: "side_panel";
+	analyticsUserId?: string;
 }
 
-/** URL 후보 캐시의 변경 전 상태. */
+/** 저장 후 무효화할 페이지 키. */
 interface IFMemoUpsertContext {
 	pageKey?: string;
-	isUpdate: boolean;
 }
 
 /** 명시적인 ID 또는 중복이 없는 페이지 후보에만 메모를 저장한다. */
@@ -36,7 +37,7 @@ export default function useMemoUpsertMutation() {
 			operation: "upsert",
 			stage: "save",
 		},
-		mutationFn: async ({ id, url, data }) => {
+		mutationFn: async ({ id, url, data, analyticsSource, analyticsUserId }) => {
 			const targetUrl = url ?? data.url;
 			let existingMemo: MemoRow | undefined;
 
@@ -68,41 +69,80 @@ export default function useMemoUpsertMutation() {
 				existingMemo = result.data?.[0];
 			}
 
-			const result = existingMemo
-				? await memoService.updateMemo({
-						id: existingMemo.id,
-						request: { ...data, url: existingMemo.url },
-					})
-				: await memoService.insertMemo(data);
-			if (result.error) {
-				throw result.error;
+			let result: MemoSupabaseResponse;
+			try {
+				result = existingMemo
+					? await memoService.updateMemo({
+							id: existingMemo.id,
+							request: { ...data, url: existingMemo.url },
+						})
+					: await memoService.insertMemo(data);
+				if (result.error) throw result.error;
+			} catch (error) {
+				if (analyticsSource && analyticsUserId) {
+					analytics.trackMemoSaveResult({
+						isSuccess: false,
+						source: analyticsSource,
+						userId: analyticsUserId,
+						error,
+					});
+				}
+				throw error;
+			}
+			if (analyticsSource && analyticsUserId) {
+				analytics.trackMemoSaveResult({
+					before: existingMemo,
+					after: result.data?.[0],
+					isSuccess: true,
+					source: analyticsSource,
+					userId: analyticsUserId,
+				});
+			}
+			const trackExistingEvents = async () => {
+				if (existingMemo) {
+					const changedData = Object.fromEntries(
+						Object.entries(data).filter(
+							([key, value]) => value !== existingMemo[key as keyof MemoRow],
+						),
+					) as MemoTable["Update"];
+					if (Object.keys(changedData).length > 0) {
+						await analytics.trackMemoUpdate(changedData);
+					}
+				} else {
+					await analytics.trackEvent({ name: "memo_first_write" });
+					await analytics.trackMemoCreate(data);
+					// 저장 전 새 메모에 처음 날짜를 배정하는 경우도 배정 이벤트로 센다.
+					if (data.plannedDate) {
+						await analytics.trackMemoUpdate({ plannedDate: data.plannedDate });
+					}
+				}
+			};
+			if (analyticsSource === "side_panel") {
+				void trackExistingEvents().catch(() => {
+					console.warn("[analytics] 메모 작성 이벤트를 전송하지 못했습니다.");
+				});
+			} else {
+				await trackExistingEvents();
 			}
 
 			return result;
 		},
-		onMutate: ({ id, url, data }) => {
+		onMutate: ({ url, data }) => {
 			const targetUrl = url ?? data.url;
 			const pageKey = targetUrl ? getPageKey(targetUrl) : undefined;
-			const candidates = pageKey
-				? queryClient.getQueryData<MemoSupabaseResponse>(
-						QUERY_KEY.memo({ url: pageKey }),
-					)?.data
-				: undefined;
 
-			return {
-				pageKey,
-				isUpdate: id !== undefined || candidates?.length === 1,
-			};
+			return { pageKey };
 		},
 		onSuccess: async (_result, variables, context) => {
-			if (context.isUpdate) {
-				await analytics.trackMemoUpdate(variables.data);
-			} else {
-				await analytics.trackEvent({ name: "memo_first_write" });
-			}
-
 			await queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.memosPaginatedPrefix(),
+			});
+			await queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.memosPlannedPrefix(),
+			});
+			// 블로그 정주행 완료 표시·완료 수는 메모 내용에서 계산되므로 함께 다시 읽는다.
+			await queryClient.invalidateQueries({
+				queryKey: QUERY_KEY.blogCompletionPrefix(),
 			});
 			if (context.pageKey) {
 				await queryClient.invalidateQueries({

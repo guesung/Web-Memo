@@ -4,7 +4,13 @@ import {
 	analytics,
 	type TInstallClickPosition,
 } from "@web-memo/shared/modules/analytics";
-import type { MouseEvent, PropsWithChildren } from "react";
+import { type MouseEvent, type PropsWithChildren, useEffect } from "react";
+import {
+	appendCampaignUtm,
+	readCampaignUtm,
+	resolveCampaignUtm,
+	saveCampaignUtm,
+} from "../../_utils";
 
 /**
  * `position`으로 보낼 수 있는 값 전체.
@@ -24,6 +30,7 @@ const INSTALL_CLICK_POSITION_RECORD: Record<TInstallClickPosition, true> = {
  * 감싼 영역의 클릭을 캡처해, 가장 가까운 `[data-install-from]` 요소의
  * `data-install-from`·`data-install-position`을 `extension_install_click`으로 보냅니다.
  * 링크의 기본 동작(새 탭 열기)은 막지 않습니다.
+ * 클릭된 링크가 크롬 웹스토어로 가면 유입 UTM(현재 URL, 없으면 세션 저장값)을 href에 붙입니다.
  *
  * `data-install-from`에는 언어 접두사를 뺀 경로(`/features/memo`)를 넣습니다.
  */
@@ -31,8 +38,17 @@ export default function TrackInstallClick({
 	children,
 	className,
 }: PropsWithChildren<{ className?: string }>) {
+	useEffect(() => {
+		const utm = readCampaignUtm(window.location.search);
+		if (utm) {
+			saveCampaignUtm(utm);
+		}
+	}, []);
+
 	const handleInstallAreaClickCapture = (event: MouseEvent<HTMLDivElement>) => {
 		const target = event.target as HTMLElement;
+		attachCampaignUtm(target.closest("a"));
+
 		const installButton = target.closest("[data-install-from]");
 
 		if (!installButton) {
@@ -64,3 +80,18 @@ const isInstallClickPosition = (
 	value: string,
 ): value is TInstallClickPosition =>
 	Object.keys(INSTALL_CLICK_POSITION_RECORD).includes(value);
+
+/** 웹스토어 링크의 href에 유입 UTM을 붙입니다. 붙일 값이 없으면 그대로 둡니다. */
+const attachCampaignUtm = (anchor: HTMLAnchorElement | null) => {
+	if (!anchor) {
+		return;
+	}
+
+	const href = appendCampaignUtm(
+		anchor.href,
+		resolveCampaignUtm(window.location.search),
+	);
+	if (href) {
+		anchor.href = href;
+	}
+};

@@ -193,4 +193,52 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 		).toContainText(categoryName);
 		expect(categoryRequestCount).toBe(2);
 	});
+
+	test("메모 입력에 포커스가 있어도 Cmd/Ctrl+Enter로 추천을 수락한다", async ({
+		page,
+	}) => {
+		const sidePanelPage = await findSidePanelPage(page);
+
+		const timestamp = Date.now();
+		const pageUrl = namespace.memoUrl(`shortcut-${timestamp}`);
+		memoUrls.push(pageUrl);
+		const pageMemoQuery = waitForSidePanelMemoQuery({
+			sidePanelPage,
+			url: pageUrl,
+		});
+		await page.goto(pageUrl);
+		await pageMemoQuery;
+
+		const categoryName = namespace.categoryName("jev-suggestion");
+		await sidePanelPage.route("**/api/openai/category", async (route) => {
+			await route.fulfill({
+				status: 200,
+				contentType: "application/json",
+				body: JSON.stringify({
+					suggestion: {
+						categoryName,
+						isExisting: true,
+						existingCategoryId: categoryId,
+						confidence: 0.2,
+						source: "jev",
+					},
+				}),
+			});
+		});
+
+		const memoText = `Shortcut accept test ${timestamp}`;
+		await fillMemo(sidePanelPage, memoText);
+		await expect(
+			sidePanelPage.getByTestId("category-suggestion"),
+		).toContainText(categoryName, { timeout: 5000 });
+
+		// 단축키로 수락해도 textarea에 줄바꿈이 들어가지 않는다.
+		await sidePanelPage.locator("#memo-textarea").focus();
+		await sidePanelPage.keyboard.press("ControlOrMeta+Enter");
+		await expect(sidePanelPage.getByTestId("category-badge")).toContainText(
+			categoryName,
+			{ timeout: 5000 },
+		);
+		await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(memoText);
+	});
 });

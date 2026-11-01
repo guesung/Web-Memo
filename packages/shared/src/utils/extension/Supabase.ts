@@ -53,6 +53,45 @@ let feedbackSupabaseClient: ReturnType<
 /** 로그인 쿠키와 저장 세션이 모두 없는 경우. 다른 인증 장애와 구분한다. */
 export class SupabaseSessionRequiredError extends Error {}
 
+/**
+ * Supabase 인증 서버가 세션을 거부한 오류인지 판별한다.
+ *
+ * @description 웹 쿠키 refresh token 만료·이미 사용됨 같은 4xx(429 제외) 거부와 세션 부재는
+ * 장애가 아니라 로그인 만료 상태다. 네트워크·5xx(`AuthRetryableFetchError` 포함)는 제외한다.
+ * `supabase-js` 모듈 의존을 피하려고 name·status로 덕타이핑한다.
+ */
+const isAuthRejectionError = (error: unknown): boolean => {
+	if (!(error instanceof Error)) {
+		return false;
+	}
+	if (error.name === "AuthSessionMissingError") {
+		return true;
+	}
+	if (error.name !== "AuthApiError") {
+		return false;
+	}
+
+	const status = (error as { status?: unknown }).status;
+
+	return (
+		typeof status === "number" &&
+		status >= 400 &&
+		status < 500 &&
+		status !== 429
+	);
+};
+
+/** 인증 거부는 로그인 필요 오류로 바꾸고, 그 외는 원본을 그대로 돌려준다. */
+const toSessionRequiredError = (error: unknown): unknown => {
+	if (isAuthRejectionError(error)) {
+		return new SupabaseSessionRequiredError("로그인을 먼저 해주세요", {
+			cause: error,
+		});
+	}
+
+	return error;
+};
+
 /** 확장 세션을 복원하고 안전한 사용자용 오류 메시지와 원인 정보를 유지한다. */
 export const getSupabaseClient = async () => {
 	try {
@@ -65,7 +104,7 @@ export const getSupabaseClient = async () => {
 			error: sessionError,
 		} = await memoSupabaseClient.auth.getSession();
 		if (sessionError) {
-			throw sessionError;
+			throw toSessionRequiredError(sessionError);
 		}
 		if (session) {
 			return memoSupabaseClient;
@@ -89,7 +128,7 @@ export const getSupabaseClient = async () => {
 			refresh_token: refreshTokenCookieFromWeb.value,
 		});
 		if (restoreError) {
-			throw restoreError;
+			throw toSessionRequiredError(restoreError);
 		}
 
 		return memoSupabaseClient;

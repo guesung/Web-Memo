@@ -1,8 +1,4 @@
-import type {
-	BasicStorageKeyType,
-	LocalStorageKeyType,
-	UpdateVersionType,
-} from "./type";
+import type { UpdateVersionType } from "./type";
 
 const REGEXR_UPDATE_VERSION_VERSION = /^updateVersion\d+\.\d+\.\d+$/;
 
@@ -16,11 +12,3 @@ export const LOCAL_STORAGE_KEYS = [
 	"install",
 	"dismissedUpdateVersion",
 ] as const;
-
-const isBasicStorageKey = (value: string): value is BasicStorageKeyType =>
-	LOCAL_STORAGE_KEYS.includes(value as BasicStorageKeyType);
-
-export const checkLocalStorageKey = (
-	value: string,
-): value is LocalStorageKeyType =>
-	checkUpdateVersionKey(value) || isBasicStorageKey(value);

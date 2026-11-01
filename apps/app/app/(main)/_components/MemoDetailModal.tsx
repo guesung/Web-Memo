@@ -26,11 +26,6 @@ import {
 	useColorScheme,
 	View,
 } from "react-native";
-import Animated, {
-	useAnimatedStyle,
-	useSharedValue,
-	withTiming,
-} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useSettingQuery } from "@/lib/hooks/useSetting";
@@ -71,9 +66,6 @@ export function MemoDetailModal({
 	const { isLoggedIn } = useAuth();
 	const { showImpression, showActionItem } = useSettingQuery(isLoggedIn);
 	const isDark = useColorScheme() === "dark";
-	const translateY = useSharedValue(SHEET_HEIGHT);
-	const opacity = useSharedValue(0);
-	const [modalVisible, setModalVisible] = useState(false);
 	const [isEditing, setIsEditing] = useState(false);
 	const [editedTitle, setEditedTitle] = useState("");
 	const [editedMemo, setEditedMemo] = useState("");
@@ -82,19 +74,6 @@ export function MemoDetailModal({
 	const [saved, setSaved] = useState(false);
 
 	const visible = memo !== null;
-
-	useEffect(() => {
-		if (visible) {
-			setModalVisible(true);
-			translateY.value = withTiming(0, { duration: 300 });
-			opacity.value = withTiming(1, { duration: 300 });
-		} else {
-			translateY.value = withTiming(SHEET_HEIGHT, { duration: 250 });
-			opacity.value = withTiming(0, { duration: 250 });
-			const timer = setTimeout(() => setModalVisible(false), 260);
-			return () => clearTimeout(timer);
-		}
-	}, [visible, translateY, opacity]);
 
 	useEffect(
 		function syncEditState() {
@@ -109,14 +88,6 @@ export function MemoDetailModal({
 		},
 		[memo],
 	);
-
-	const sheetStyle = useAnimatedStyle(() => ({
-		transform: [{ translateY: translateY.value }],
-	}));
-
-	const overlayStyle = useAnimatedStyle(() => ({
-		opacity: opacity.value,
-	}));
 
 	const handleNavigate = useCallback(() => {
 		if (memo?.url && /^https?:\/\//.test(memo.url)) {
@@ -199,24 +170,23 @@ export function MemoDetailModal({
 	const formattedDate = rawDate ? formatDate(String(rawDate)) : "";
 
 	return (
-		<Modal visible={modalVisible} transparent statusBarTranslucent>
+		<Modal
+			visible={visible}
+			animationType="none"
+			transparent
+			statusBarTranslucent
+		>
 			<KeyboardAvoidingView
 				className="flex-1 justify-end"
 				behavior={Platform.OS === "ios" ? "padding" : undefined}
 			>
-				<Animated.View
-					className="absolute inset-0 bg-black/40"
-					style={overlayStyle}
-				>
+				<View className="absolute inset-0 bg-black/40">
 					<Pressable className="absolute inset-0" onPress={onClose} />
-				</Animated.View>
+				</View>
 
-				<Animated.View
+				<View
 					className="bg-white dark:bg-neutral-900 rounded-t-[20px]"
-					style={[
-						sheetStyle,
-						{ height: SHEET_HEIGHT, paddingBottom: insets.bottom + 16 },
-					]}
+					style={{ height: SHEET_HEIGHT, paddingBottom: insets.bottom + 16 }}
 				>
 					<View className="items-center py-2.5">
 						<View className="w-9 h-1 rounded-sm bg-gray-300 dark:bg-neutral-700" />
@@ -446,7 +416,7 @@ export function MemoDetailModal({
 							</View>
 						</View>
 					)}
-				</Animated.View>
+				</View>
 			</KeyboardAvoidingView>
 		</Modal>
 	);

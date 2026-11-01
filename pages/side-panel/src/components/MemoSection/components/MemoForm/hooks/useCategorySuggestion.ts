@@ -4,8 +4,10 @@ import { useCategoryQuery, useTabQuery } from "@web-memo/shared/hooks";
 import {
 	analytics,
 	type TCategoryChangeSource,
+	type TCategorySuggestionTrigger,
 } from "@web-memo/shared/modules/analytics";
 import { getTabInfo, I18n } from "@web-memo/shared/utils/extension";
+import { normalizeUrl } from "@web-memo/shared/utils/url";
 import { toast } from "@web-memo/ui";
 import { useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
@@ -34,6 +36,9 @@ export const useCategorySuggestion = ({
 	const abortControllerRef = useRef<AbortController | null>(null);
 	const requestSequenceRef = useRef(0);
 	const dismissedUrlsRef = useRef(new Set<string>());
+	const failedUrlsRef = useRef(new Set<string>());
+	// 한 번 유효한 추천을 받지 못한 메모는 입력이 이어져도 다시 요청하지 않는다.
+	const failedMemoIdsRef = useRef(new Set<number>());
 	const currentUrlRef = useRef<string | null>(null);
 	const suggestionMemoIdRef = useRef<number | null>(null);
 	const firstSuggestedMemoIdRef = useRef<number | null>(null);
@@ -57,7 +62,7 @@ export const useCategorySuggestion = ({
 	};
 	const previousTabUrlRef = useRef(tab?.url);
 	const previousMemoIdRef = useRef(currentMemoId);
-	const acceptSuggestion = async () => {
+	const acceptSuggestion = async (trigger: TCategorySuggestionTrigger) => {
 		const activeSuggestion = suggestionRef.current;
 		const isAlreadyAssigned = Boolean(getValues("categoryId"));
 		if (!activeSuggestion || isAcceptingRef.current || isAlreadyAssigned) {
@@ -82,7 +87,7 @@ export const useCategorySuggestion = ({
 			onCategorySelect(activeSuggestion.existingCategoryId, "ai");
 			analytics.trackEvent({
 				name: "category_suggestion_apply",
-				params: { source: "jev", is_new_category: false },
+				params: { source: "jev", is_new_category: false, trigger },
 			});
 			suggestionRef.current = null;
 			setSuggestion(null);
@@ -94,6 +99,11 @@ export const useCategorySuggestion = ({
 			setIsAccepting(false);
 		}
 	};
+	const markMemoFailed = (memoId: number | null) => {
+		if (memoId !== null) {
+			failedMemoIdsRef.current.add(memoId);
+		}
+	};
 	const triggerSuggestion = async (memoText: string) => {
 		if (
 			currentCategoryId ||
@@ -103,20 +113,34 @@ export const useCategorySuggestion = ({
 		) {
 			return;
 		}
-		firstSuggestedMemoIdRef.current = currentMemoIdRef.current;
+		const requestedMemoId = currentMemoIdRef.current;
+		if (
+			requestedMemoId !== null &&
+			failedMemoIdsRef.current.has(requestedMemoId)
+		) {
+			return;
+		}
+		firstSuggestedMemoIdRef.current = requestedMemoId;
 		const requestSequence = ++requestSequenceRef.current;
+		let requestedUrl: string | null = null;
 		try {
 			const tabInfo = await getTabInfo();
-			if (!tabInfo.url || dismissedUrlsRef.current.has(tabInfo.url)) {
+			if (
+				!tabInfo.url ||
+				dismissedUrlsRef.current.has(tabInfo.url) ||
+				failedUrlsRef.current.has(tabInfo.url)
+			) {
 				return;
 			}
-			const requestedMemoId = currentMemoIdRef.current;
+			requestedUrl = tabInfo.url;
 			const isRequestOutdated = async () => {
 				const latestTab = await getTabInfo();
 				return (
 					requestSequence !== requestSequenceRef.current ||
 					latestTab.url !== tabInfo.url ||
-					tab?.url !== tabInfo.url ||
+					// getTabInfo는 정규화한 URL을 준다. 탭 쿼리 값도 같은 규칙으로 맞춰야 해시·추적 파라미터가 있는 페이지의 응답을 버리지 않는다.
+					!tab?.url ||
+					normalizeUrl(tab.url) !== tabInfo.url ||
 					currentMemoIdRef.current !== requestedMemoId ||
 					Boolean(getValues("categoryId")) ||
 					dismissedUrlsRef.current.has(tabInfo.url)
@@ -146,6 +170,8 @@ export const useCategorySuggestion = ({
 					(category) => category.id === result.existingCategoryId,
 				)
 			) {
+				failedUrlsRef.current.add(tabInfo.url);
+				markMemoFailed(requestedMemoId);
 				return;
 			}
 			analytics.trackEvent({
@@ -158,6 +184,10 @@ export const useCategorySuggestion = ({
 		} catch (error) {
 			if (!(error instanceof Error && error.name === "AbortError")) {
 				Sentry.captureException(error);
+				if (requestedUrl && requestSequence === requestSequenceRef.current) {
+					failedUrlsRef.current.add(requestedUrl);
+					markMemoFailed(requestedMemoId);
+				}
 			}
 		} finally {
 			if (requestSequence === requestSequenceRef.current) {

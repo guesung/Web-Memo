@@ -304,7 +304,7 @@ test.describe("날짜별 메모 그리드 페이지 연결 (Mocked)", () => {
 		);
 	});
 
-	test("날짜별 보기와 일반 카드에서 같은 제목과 본문을 표시한다.", async ({
+	test("작성일별 보기와 일반 카드에서 같은 제목과 본문을 표시한다.", async ({
 		page,
 	}) => {
 		const dateCard = page
@@ -323,7 +323,7 @@ test.describe("날짜별 메모 그리드 페이지 연결 (Mocked)", () => {
 		await expect(regularCard.getByText("Test memo content 2")).toBeVisible();
 	});
 
-	test("날짜별 보기에서 검색해도 기존 검색 조건으로 메모를 걸러낸다.", async ({
+	test("작성일별 보기에서 검색해도 기존 검색 조건으로 메모를 걸러낸다.", async ({
 		page,
 	}) => {
 		await page.getByPlaceholder("Search memos").fill("전날 메모 1");

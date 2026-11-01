@@ -1,4 +1,8 @@
 import { captureRouterTransitionStart, init } from "@sentry/nextjs";
+import {
+	initializeMemoObservability,
+	startMemoNavigation,
+} from "@src/modules/observability/client";
 import { CONFIG } from "@web-memo/env";
 import { SENTRY } from "@web-memo/shared/constants";
 
@@ -24,9 +28,12 @@ init({
 	},
 });
 
-/**
- * 라우터 이동을 Sentry 트랜잭션으로 계측한다.
- *
- * @description Next는 `instrumentation-client.ts`에서 이 이름의 export를 찾아 이동이 시작될 때 호출한다.
- */
-export const onRouterTransitionStart = captureRouterTransitionStart;
+initializeMemoObservability();
+
+/** Next 라우터 이동의 시작 시각을 Sentry와 메모 지연 계측에 전달한다. */
+export const onRouterTransitionStart = (
+	...args: Parameters<typeof captureRouterTransitionStart>
+): void => {
+	captureRouterTransitionStart(...args);
+	startMemoNavigation(args[0]);
+};

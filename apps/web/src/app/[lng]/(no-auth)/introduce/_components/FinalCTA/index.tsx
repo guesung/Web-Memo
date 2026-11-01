@@ -1,5 +1,5 @@
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import InstallButtons from "../InstallButtons";
@@ -17,7 +17,7 @@ interface FinalCTAProps extends LanguageType {
 }
 
 export default async function FinalCTA({ lng, background }: FinalCTAProps) {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	return (
 		<SectionShell background={background} className="max-w-3xl">
@@ -41,7 +41,7 @@ export default async function FinalCTA({ lng, background }: FinalCTAProps) {
 					href="#demo"
 					className="mt-8 inline-flex items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 hover:underline"
 				>
-					{t("introduce.hero.learn_more")}
+					{t("introduce.section.demo_link_text")}
 					<ArrowRight className="h-3.5 w-3.5" />
 				</Link>
 			</div>

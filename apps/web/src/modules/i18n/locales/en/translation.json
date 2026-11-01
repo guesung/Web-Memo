@@ -28,8 +28,10 @@
 		"memo": "My memos",
 		"wishList": "Wishlist",
 		"highlight": "Highlights",
+		"favorite": "Favorites",
 		"importantMemo": "Important",
 		"readingMemo": "Reading",
+		"readingPlan": "Reading plan",
 		"allCategory": "All categories",
 		"tags": "Tags",
 		"settings": "Settings",
@@ -39,7 +41,8 @@
 		"deleteConfirmTitle": "Delete category?",
 		"deleteConfirmDescription": "Memos in this category will become uncategorized.",
 		"cancel": "Cancel",
-		"trash": "Trash"
+		"trash": "Trash",
+		"blogReading": "Blog Reading"
 	},
 	"header": {
 		"login": "Sign in",
@@ -351,6 +354,8 @@
 		"memoStarDeleted": "Removed from important",
 		"memoReadingAdded": "Marked as reading",
 		"memoReadingDeleted": "Unmarked as reading",
+		"memoPlanAdded": "Added to your {{date}} reading list",
+		"memoPlanRemoved": "Removed from your reading plan",
 		"saveSuccess": "Saved",
 		"deleteSuccess": "Deleted",
 		"addSuccess": "Added",
@@ -359,7 +364,10 @@
 		"memo_updated_at": "Modified at {{time}}",
 		"guideDone": "🎉 Guide completed",
 		"guideDoneDescription": "Enjoy taking memos!",
-		"duplicateCategory": "A category with this name already exists"
+		"duplicateCategory": "A category with this name already exists",
+		"categoryRemoved": "Category removed",
+		"categoryCreateFailed": "Couldn't create the category",
+		"categoryEditFailed": "Couldn't change the category"
 	},
 	"toastActionMessage": {
 		"goTo": "Go to",
@@ -369,7 +377,52 @@
 		"deleteMemo": "Delete memo",
 		"changeCategory": "Change category"
 	},
+	"installGuide": {
+		"metadata": {
+			"title": "Getting started with Web Memo | Web Memo",
+			"description": "Learn how to open the side panel and write your first memo after installing the extension."
+		},
+		"eyebrow": "Installed",
+		"title": {
+			"first": "Take notes beside",
+			"second": "the page you're reading"
+		},
+		"lead": "Open the side panel to start right on this page.",
+		"previewLabel": "Preview of a browser page and the Web Memo side panel",
+		"previewCaption": "Preview only · Sign in to open the real editor",
+		"preview": {
+			"page": "The page you're reading",
+			"url": "Page title and address",
+			"memo": "Write down anything you'd like to revisit later.",
+			"save": "Save memo"
+		},
+		"steps": {
+			"open": {
+				"title": "Open the side panel",
+				"description": "Use the button above, the Web Memo icon in the toolbar, or Alt+S."
+			},
+			"write": {
+				"title": "Sign in from the panel",
+				"description": "Start right away with your Google or Kakao account."
+			},
+			"save": {
+				"title": "Drag and take notes",
+				"description": "Drag a sentence to highlight it, or type in the panel to save notes per page."
+			}
+		},
+		"openPanel": {
+			"cta": "Open side panel",
+			"shortcutPrefix": "or",
+			"failure": "Didn't open? Pin Web Memo from the puzzle icon next to the address bar, then click its icon."
+		},
+		"webLogin": {
+			"prefix": "Already have an account?",
+			"cta": "Sign in on the web"
+		},
+		"stepCompleted": "Done"
+	},
 	"login": {
+		"metadataTitle": "Sign in | Web Memo",
 		"welcomeTitle": "Easily take notes while browsing websites.",
 		"kakaoLogin": "Login with Kakao",
 		"googleLogin": "Sign in with Google",
@@ -384,13 +437,6 @@
 		"errorAlert": "Login didn't finish. Please tap the button once more.",
 		"askGoInstallExtension": "Looks like you haven't installed our extension yet. You'll need it to use all the great memo features. Would you like to install it now?",
 		"personalInformationInfo": "Signing in is used to sync your memos."
-	},
-	"dialogInstall": {
-		"title": "Extension required",
-		"description": "You'll need to install the extension to use memos",
-		"cancel": "Maybe later",
-		"ok": "Install now",
-		"close": "Close"
 	},
 	"dialogVersion": {
 		"title": "New version available",
@@ -432,14 +478,37 @@
 		"selectLanguage": "Select language",
 		"guide": "Guide",
 		"restartGuide": "Restart guide",
+		"guideExtensionNotDetected": "Web Memo extension wasn't detected, so the guide can't start. Install and enable it, then refresh the page and try again.",
+		"installExtension": "Install extension",
 		"category": "Category",
 		"addCategory": "Add category",
 		"deleteCategory": "Delete category",
+		"renameCategory": "Rename {{name}}",
+		"deleteCategoryNamed": "Delete {{name}}",
 		"defaultCategoryName": "New category",
 		"export": "Export",
 		"exportMemos": "Export memos",
 		"showImpressionSection": "Show the impression field when writing a memo",
-		"showActionItemSection": "Show the action items field when writing a memo"
+		"showActionItemSection": "Show the action items field when writing a memo",
+		"sectionWeeklyReport": "Weekly report",
+		"sectionWeeklyReportDescription": "Every Sunday evening, we email you the memos you wrote that week",
+		"weeklyReportEnable": "Get the report email",
+		"weeklyReportEnableDescription": "We skip weeks without memos",
+		"weeklyReportEmail": "Email address",
+		"weeklyReportEmailDescription": "It can differ from your sign-in account",
+		"weeklyReportEmailPlaceholder": "Enter an email address",
+		"weeklyReportEmailInvalid": "Check the email format",
+		"weeklyReportEmailRequired": "Enter an email address",
+		"weeklyReportTest": "Test email",
+		"weeklyReportTestDescription": "Send this week's report once, right now",
+		"weeklyReportTestButton": "Send test email",
+		"weeklyReportTestSending": "Sending…",
+		"weeklyReportTestSent": "Sent to {{email}}",
+		"weeklyReportTestSentDescription": "Check your inbox",
+		"weeklyReportTestFailed": "Couldn't send the email",
+		"weeklyReportTestFailedDescription": "Check the address and try again",
+		"weeklyReportTestRateLimited": "Please try again in a moment",
+		"saveFailed": "Couldn't save"
 	},
 	"guide": {
 		"next": "Next",
@@ -474,14 +543,34 @@
 		"impression": "Impression",
 		"impressionPlaceholder": "Write what you felt about this page",
 		"actionItem": "Action items",
-		"actionItemPlaceholder": "Write what to do after reading this page"
+		"actionItemPlaceholder": "Write what to do after reading this page",
+		"addImpression": "Impression",
+		"addActionItem": "Action items"
 	},
 	"memos": {
+		"categoryPopup": {
+			"search": "Search categories",
+			"noResult": "No matching categories",
+			"empty": "No categories yet",
+			"emptyHint": "Type a name to create one",
+			"createNamed": "Create '{{name}}'",
+			"remove": "Remove category"
+		},
+		"tooltip": {
+			"wishAdd": "Add to wishlist",
+			"wishRemove": "Remove from wishlist",
+			"readingAdd": "Mark as reading",
+			"readingRemove": "Remove from reading",
+			"starAdd": "Mark as important",
+			"starRemove": "Remove from important"
+		},
 		"view": {
 			"truncateContent": "Shorten memo content",
 			"unknownDate": "No creation date",
 			"label": "Memo view",
-			"byDate": "By date",
+			"byDate": "By created date",
+			"byDomain": "By domain",
+			"unknownDomain": "No domain",
 			"untitled": "Untitled memo",
 			"loadMore": "Load more"
 		},
@@ -500,7 +589,43 @@
 			"message": "We couldn't find any memo matching '{{query}}'.",
 			"hint": "Try a different keyword."
 		},
+		"plan": {
+			"sectionPast": "Past plans ({{count}})",
+			"sectionToday": "Today",
+			"sectionUpcoming": "Upcoming",
+			"todayEmpty": "Nothing to read today",
+			"emptyTitle": "No dates picked yet",
+			"emptyHint": "Use the calendar button on a card to pick a day to read it",
+			"emptyAction": "View all memos",
+			"chip": "Read {{label}}",
+			"label": {
+				"today": "today",
+				"tomorrow": "tomorrow"
+			},
+			"picker": {
+				"title": "When will you read it?",
+				"today": "Today",
+				"tomorrow": "Tomorrow",
+				"weekend": "This weekend",
+				"nextMonday": "Next Monday",
+				"clear": "Clear date"
+			}
+		},
 		"totalMemos": "{{total}} memos",
+		"domainFilter": {
+			"label": "Domain",
+			"all": "All domains",
+			"searchPlaceholder": "Search domains",
+			"clear": "Clear domain filter",
+			"totalMemos": "{{total}} memos from {{domain}}",
+			"loadError": "Couldn't load domains",
+			"noResults": "No results found",
+			"emptyState": {
+				"title": "No memos from this domain",
+				"message": "Memos from {{domain}} don't show up with the current filters",
+				"clear": "Clear the domain filter"
+			}
+		},
 		"searchPlaceholder": "Search memos",
 		"searchTarget": {
 			"label": "Search in",
@@ -521,15 +646,74 @@
 		"saveStatus": {
 			"saving": "Saving...",
 			"saved": "All changes saved",
-			"error": "Failed to save"
+			"error": "Failed to save",
+			"savedShort": "Saved"
+		},
+		"dialog": {
+			"prev": "Previous memo",
+			"next": "Next memo",
+			"updatedAt": "Edited {{date}}"
 		},
 		"toggle": {
 			"wish": "Wishlist",
 			"reading": "Reading",
-			"star": "Important"
+			"star": "Important",
+			"plan": "Pick a day to read"
+		}
+	},
+	"favorite": {
+		"title": "Favorites",
+		"subtitle": "{{count}} saved · Pages you favorited in the app and on the web",
+		"add": "Add",
+		"edit": "Edit",
+		"delete": "Delete",
+		"retry": "Try again",
+		"loadError": "Couldn't load your favorites",
+		"addSuccess": "Favorite added",
+		"editSuccess": "Favorite updated",
+		"saveFailed": "Couldn't save the favorite. Please try again in a moment.",
+		"deleteSuccess": "Favorite deleted",
+		"deleteFailed": "Couldn't delete it. Please try again in a moment.",
+		"empty": {
+			"title": "No favorite pages yet",
+			"description": "Favorite a page in the app browser, or add one here yourself.",
+			"add": "Add favorite"
+		},
+		"form": {
+			"addTitle": "Add favorite",
+			"editTitle": "Edit favorite",
+			"urlLabel": "URL",
+			"titleLabel": "Title",
+			"titlePlaceholder": "Leave blank to save the domain",
+			"invalidUrl": "Enter a valid URL",
+			"duplicate": "This page is already in your favorites",
+			"cancel": "Cancel",
+			"add": "Add",
+			"save": "Save"
+		},
+		"deleteDialog": {
+			"title": "Delete this favorite?",
+			"description": "\"{{title}}\" will be removed from both the app and web lists.",
+			"cancel": "Cancel",
+			"confirm": "Delete"
 		}
 	},
 	"highlight": {
+		"memo": {
+			"open": "Open memo",
+			"viewTrash": "Linked memo is in trash · View trash",
+			"linked": "Linked memo",
+			"quote": "Quoted text",
+			"loadError": "Could not load linked memos. Try again.",
+			"loading": "Loading memo...",
+			"source": "View source",
+			"viewHighlight": "View linked highlight",
+			"deletedHighlight": "This highlight was deleted.",
+			"related": "Other highlights on this page",
+			"relatedCount": "Other highlights on this page ({{count}})"
+		},
+		"panelOpenError": "Could not open the side panel. Check the extension.",
+		"openSourceAndPanel": "Open source and memo panel",
 		"loadError": "Could not load highlights. Please try again.",
 		"loadMore": "Load more",
 		"count": "{{count}}",
@@ -547,7 +731,10 @@
 		"note": {
 			"label": "Highlight note",
 			"placeholder": "Add a note"
-		}
+		},
+		"noResultHint": "Try another search term or color.",
+		"clearFilters": "Clear filters",
+		"loadingMore": "Loading..."
 	},
 	"introduce": {
 		"navigation": {
@@ -589,9 +776,40 @@
 			"testimonials_note": "* Based on representative use cases",
 			"cta_title": "Write beside the next page you read",
 			"cta_desc": "Add Web Memo to Chrome, open the side panel, and write on the page you are reading.",
+			"demo_link_text": "Preview Web Memo",
 			"cta_badge": "Get Started Today"
 		},
 		"demo": {
+			"flow": {
+				"article_kicker": "LIFE · ESSAY",
+				"article_title": "Good ideas arrive while you read",
+				"article_meta": "Daily Note · 5 min read",
+				"article_p1": "When a sentence stays with you, pause and jot down a thought. It does not have to be polished.",
+				"article_p2": "Keeping the thought next to what you are reading makes it easier to revisit the article and remember why it mattered.",
+				"article_p3": "A useful note can begin with a single line.",
+				"shortcut_label": "Open with a shortcut",
+				"summary": "Show summary",
+				"highlights": "Highlights on this page",
+				"empty_highlight": "No highlights saved on this page yet.",
+				"memo": "Memo",
+				"memo_placeholder": "Memo",
+				"category": "+ Category",
+				"memo_text": "Write down the sentence that stayed with me.\nI can pick up this thought when I read it again.",
+				"steps_label": "Demo steps",
+				"step_read": "Read",
+				"step_shortcut": "Alt+S",
+				"step_panel": "Open panel",
+				"step_write": "Write memo",
+				"step_saved": "Saved",
+				"caption_read": "Read an article on the web.",
+				"caption_shortcut": "Press Alt+S to open Web Memo.",
+				"caption_panel": "The side panel opens next to the article.",
+				"caption_write": "Write down the thought while it is fresh.",
+				"caption_saved": "Your memo is saved automatically.",
+				"play": "Play",
+				"pause": "Pause",
+				"reduced": "Reduced motion is on. Use the step buttons to move through the demo."
+			},
 			"write_memo": "Write Memo",
 			"write_memo_desc": "Take notes while reading articles",
 			"tab_memo": "Side panel",
@@ -686,7 +904,8 @@
 		"features": {
 			"memo": {
 				"title": "Take notes while reading",
-				"description": "Write a thought or a passage in the side panel beside the page."
+				"description": "Write a thought or a passage in the side panel beside the page.",
+				"link_text": "Explore browser note-taking"
 			},
 			"overview": {
 				"title": "Find notes by category",
@@ -820,7 +1039,8 @@
 				"instagram": "Instagram",
 				"youtube": "YouTube",
 				"kakaotalk": "KakaoTalk chat"
-			}
+			},
+			"compare_chrome_memo_extensions": "Compare Chrome note-taking extensions"
 		}
 	},
 	"feedback": {
@@ -849,8 +1069,8 @@
 	},
 	"error": {
 		"404": {
-			"title": "Page not found",
-			"description": "This page doesn't exist or was moved",
+			"title": "We couldn't find this page",
+			"description": "Check that the address is correct",
 			"backToHome": "Go to home"
 		},
 		"500": {
@@ -884,6 +1104,7 @@
 			"dashboard": "Dashboard",
 			"users": "Users",
 			"feedback": "Feedback",
+			"versions": "Versions",
 			"back_to_memos": "Back to Memos"
 		},
 		"users": {
@@ -977,6 +1198,18 @@
 		"growth": {
 			"title": "User Growth",
 			"new_users": "New Users"
+		},
+		"versions": {
+			"title": "Versions",
+			"description": "Current version and last change date for the extension, app, and release notes tracks.",
+			"track": "Track",
+			"version": "Version",
+			"last_changed": "Last Changed",
+			"track_extension": "Extension",
+			"track_app": "App",
+			"track_release_notes": "Release Notes",
+			"unknown": "Unknown",
+			"generated_at": "As of {{date}} (build-time snapshot)"
 		}
 	},
 	"landing": {
@@ -1411,9 +1644,10 @@
 					},
 					"feedback": {
 						"title": "f. Support and feedback data",
-						"description": "Collected only when you submit feedback yourself.",
+						"description": "Collected only when you submit feedback or answer the uninstall survey yourself.",
 						"items": [
 							"The feedback text you write",
+							"The removal reason and comment you choose to submit after uninstalling",
 							"An email address you optionally provide so we can reply"
 						]
 					},
@@ -1656,5 +1890,355 @@
 		"confirmDescription": "This action cannot be undone.",
 		"ok": "Delete permanently",
 		"cancel": "Cancel"
+	},
+	"uninstall": {
+		"metaTitle": "You removed Web Memo | Web Memo",
+		"title": "You removed Web Memo",
+		"description": "Tell us what fell short and we'll use it to improve things",
+		"reasons": {
+			"not_useful": "I didn't need it",
+			"hard_to_use": "It was hard to use",
+			"found_alternative": "I switched to something else",
+			"privacy_concerns": "I had privacy concerns",
+			"performance_issues": "It was slow or unstable",
+			"other": "Something else"
+		},
+		"form": {
+			"feedbackLabel": "Anything else you'd like to share?",
+			"optional": "(optional)",
+			"feedbackPlaceholder": "Write freely",
+			"submit": "Send",
+			"submitting": "Sending...",
+			"notice": "We don't collect your name or contact info"
+		},
+		"success": {
+			"title": "Thanks for your feedback",
+			"description": "Thank you for using Web Memo"
+		},
+		"error": "We couldn't send it just now. Please try again in a moment"
+	},
+	"blogs": {
+		"title": "Blog Reading",
+		"description": "Read public posts from the beginning and leave memos.",
+		"selectBlogs": "Choose blogs",
+		"filterLabel": "Choose blog",
+		"filterAll": "All",
+		"sortLabel": "Sort",
+		"sortAriaLabel": "Sort posts",
+		"sortOldest": "Oldest first",
+		"sortNewest": "Newest first",
+		"summaryComplete": "{{total}} posts · {{todo}} to memo · {{done}} memoed",
+		"summaryCollecting": "{{total}} posts collected so far · {{done}} memoed",
+		"allMemoed": "You have left memos on every post collected so far",
+		"feedAllMemoed": "You have left memos on every collected post.",
+		"summaryFeedUnread": "Unread {{count}}",
+		"summaryWithFeed": "{{summary}} · {{name}} {{unread}}",
+		"lastUpdated": "Last updated: {{time}}",
+		"refresh": "Refresh",
+		"status": {
+			"label": "Collection status by blog",
+			"completeTitle": "{{name}} · All posts collected",
+			"completeCopy": "Collected {{total}} public posts in total.",
+			"waitingTitle": "{{name}} · Getting ready to collect",
+			"collectingTitle": "{{name}} · Collecting earlier posts",
+			"partialTitle": "{{name}} · Some posts could not be fetched",
+			"queuedTitle": "{{name}} · Resume requested",
+			"refreshingTitle": "{{name}} · Checking for new posts",
+			"refreshFailedTitle": "{{name}} · Could not check for new posts",
+			"foundCopy": "Found {{count}} so far. The total is still being confirmed.",
+			"readNow": "You can read and memo the posts collected first.",
+			"queuedCopy": "Collection continues in the next scheduled run. Requests are checked every 15 minutes, and it may take longer depending on the run.",
+			"refreshFailedCopy": "You can keep reading the posts collected earlier.",
+			"resume": "Resume collecting",
+			"retry": "Retry",
+			"feed": {
+				"normalTitle": "{{name}} · Collecting new posts",
+				"normalCopy": "Recent posts are checked several times a day. Earlier posts are not fetched.",
+				"waitingTitle": "{{name}} · Waiting to collect",
+				"waitingCopy": "Your subscription is saved. Collecting starts soon with the latest posts.",
+				"failedTitle": "{{name}} · Could not check for new posts",
+				"failedCopy": "You can keep reading the posts collected earlier."
+			}
+		},
+		"sync": {
+			"queued": "Requested to resume collecting",
+			"running": "Already collecting",
+			"throttled": "You can request again shortly",
+			"throttledAt": "You can request again after {{time}}",
+			"failed": "Could not request collecting"
+		},
+		"list": {
+			"label": "Blog posts",
+			"completed": "Memoed",
+			"notYet": "No memo yet",
+			"openArticle": "Original",
+			"openArticleLabel": "Open original: {{title}}",
+			"writeMemo": "Write memo",
+			"writeMemoLabel": "Write memo for {{title}}",
+			"viewMemo": "View memo",
+			"viewMemoLabel": "View memo for {{title}}",
+			"memoCreateFailed": "Could not open the memo. Please try again shortly.",
+			"hint": "Saving a memo, impression, or action item checks the post."
+		},
+		"pagination": {
+			"label": "Post list pages",
+			"range": "Posts {{from}}–{{to}}",
+			"rangeWithTotal": "{{from}}–{{to}} of {{total}}",
+			"prev": "Previous",
+			"next": "Next",
+			"page": "Page {{page}}",
+			"pageWithTotal": "Page {{page}} of {{pages}}",
+			"partialEnd": "More earlier posts are being collected. This is the last page so far.",
+			"feedEnd": "GeekNews only shows posts collected since you subscribed."
+		},
+		"newArticles": {
+			"message": "{{count}} new posts fetched",
+			"refresh": "Update list"
+		},
+		"empty": {
+			"title": "You have not subscribed to any blog yet",
+			"description": "Pick a blog you want to read."
+		},
+		"login": {
+			"title": "Log in to keep reading",
+			"description": "See the same checklist in the app and on the web.",
+			"action": "Log in"
+		},
+		"loading": {
+			"title": "Loading posts"
+		},
+		"noArticles": {
+			"title": "No posts collected yet",
+			"description": "Posts will appear here once collecting starts. Your subscription stays.",
+			"feedDescription": "No posts collected yet. The latest posts will show up after the next collection."
+		},
+		"firstError": {
+			"title": "Could not load the post list",
+			"description": "Your subscription is saved. Please try again shortly.",
+			"retry": "Try again"
+		},
+		"refreshError": {
+			"message": "Could not check for new posts.",
+			"description": "You can keep reading the posts collected earlier.",
+			"retry": "Retry"
+		},
+		"offline": "You are offline. Showing posts loaded earlier.",
+		"dialog": {
+			"title": "Choose blogs",
+			"description": "Collect public posts to read through.",
+			"feedHint": "Only collects new posts published after you subscribe.",
+			"subscribe": "Subscribe",
+			"unsubscribe": "Unsubscribe",
+			"keepMemos": "Your memos stay even if you unsubscribe.",
+			"close": "Close",
+			"failed": "Could not change your subscription"
+		}
+	},
+	"seoTitles": {
+		"learning": "Online Learning Notes | Web Memo",
+		"newsReading": "News & Article Notes | Web Memo",
+		"developer": "Developer Notes & Code Snippets | Web Memo",
+		"techArticle": "Tech Article Notes | Web Memo",
+		"jobHunting": "Job Search Notes | Web Memo"
+	},
+	"compareChromeMemoExtensions": {
+		"hero": {
+			"badge": "Chrome note-taking extensions compared",
+			"title": "Which Chrome note-taking extension should you use?",
+			"descriptions": [
+				"We compare five Chrome extensions for notes and highlights: Web Memo, Notion Web Clipper, LINER, Glasp, and Google Keep.",
+				"We checked eight criteria against each product’s official pages: how you capture content, notes beside the page, highlights, AI summaries, YouTube, export, a Korean interface, and login."
+			],
+			"disclosure": "Written by the maker of Web Memo. We also show where Web Memo has limitations.",
+			"lastCheckedLabel": "Last checked",
+			"anchorLabel": "Jump to comparison"
+		},
+		"overview": {
+			"title": "At a glance"
+		},
+		"comparison": {
+			"title": "Compare by feature",
+			"caption": "Based on each product’s official pages. “Not verified” means the official information was insufficient; it does not mean the feature is unavailable. Verification dates appear in the sources below.",
+			"loginNote": "The login row shows what you can use without signing in. “Supported” means all listed functions work without login; “Partial” means only some do.",
+			"criterionHeader": "Criterion",
+			"scrollHint": "Swipe sideways to see more"
+		},
+		"recommendation": {
+			"title": "Find your fit"
+		},
+		"sources": {
+			"title": "Sources and verification dates",
+			"checkedLabel": "Checked",
+			"feedback": "Spotted a change? Let us know and we’ll update this page.",
+			"feedbackLinkLabel": "Send an email"
+		},
+		"finalCTA": {
+			"title": "Take notes while you read",
+			"description": "Web Memo is free. Install it and sign in to take notes in the side panel beside the page you’re reading."
+		},
+		"products": {
+			"webMemo": {
+				"name": "Web Memo",
+				"identity": "Take notes beside the page you are reading",
+				"sources": ["Chrome Web Store"]
+			},
+			"notionWebClipper": {
+				"name": "Notion Web Clipper",
+				"identity": "Save web pages to Notion pages and databases",
+				"sources": ["Web Clipper", "Help center", "Pricing", "Export help"]
+			},
+			"liner": {
+				"name": "LINER",
+				"identity": "AI research tool and highlighter",
+				"sources": [
+					"Homepage",
+					"Pricing",
+					"AI answer export guide (2024)",
+					"Highlighter overview",
+					"Chrome Web Store"
+				]
+			},
+			"glasp": {
+				"name": "Glasp",
+				"identity": "Web, PDF, and YouTube highlighter",
+				"sources": [
+					"Homepage",
+					"FAQ",
+					"Highlighter",
+					"Sync help",
+					"Pricing",
+					"YouTube summary",
+					"Chrome Web Store"
+				]
+			},
+			"googleKeep": {
+				"name": "Google Keep extension",
+				"identity": "Save pages and selected text to Keep notes",
+				"sources": ["Chrome Web Store", "Help center", "Data export help"]
+			}
+		},
+		"criteria": {
+			"recordingMethod": {
+				"label": "Capture method",
+				"cells": {
+					"webMemo": "Write directly in the side panel",
+					"notionWebClipper": "Save to Notion from a popup",
+					"liner": "Highlight on the page",
+					"glasp": "Highlight on the page",
+					"googleKeep": "Create a Keep note in the extension popup"
+				}
+			},
+			"memoBesidePage": {
+				"label": "Notes beside the page",
+				"cells": {
+					"webMemo": "Side panel with autosave",
+					"notionWebClipper": "Edit in Notion after saving",
+					"liner": "Attach notes to highlights",
+					"glasp": "Attach notes to highlights",
+					"googleKeep": "Write notes in a popup"
+				}
+			},
+			"highlight": {
+				"label": "Text highlighting",
+				"cells": {
+					"webMemo": "Five highlight colors and notes",
+					"notionWebClipper": "Not verified in official guidance",
+					"liner": "Web, PDF, and YouTube",
+					"glasp": "Multiple colors; web and PDF",
+					"googleKeep": "Save selected text to a note"
+				}
+			},
+			"aiSummary": {
+				"label": "AI summaries",
+				"cells": {
+					"webMemo": "Summarizes some web pages; some pages are unsupported",
+					"notionWebClipper": "Notion AI is separate; the free plan includes a trial",
+					"liner": "Web, YouTube, and PDF summaries",
+					"glasp": "YouTube and PDF summaries; free usage limits apply",
+					"googleKeep": "AI summaries in the extension not verified"
+				}
+			},
+			"youtube": {
+				"label": "YouTube videos",
+				"cells": {
+					"webMemo": "Notes beside videos; no timestamped notes",
+					"notionWebClipper": "Save video URLs; video-specific functions not verified",
+					"liner": "Video summaries and saved key moments",
+					"glasp": "Transcript highlights and timestamps",
+					"googleKeep": "Save video URLs; video-specific functions not verified"
+				}
+			},
+			"export": {
+				"label": "Export",
+				"cells": {
+					"webMemo": "JSON, CSV, and Markdown",
+					"notionWebClipper": "PDF, HTML, Markdown and CSV from Notion",
+					"liner": "AI answer export documented (2024); highlights and current free access not verified",
+					"glasp": "Markdown, CSV, JSON, Notion, and Obsidian",
+					"googleKeep": "Download notes and attachments with Google Takeout"
+				}
+			},
+			"koreanInterface": {
+				"label": "Korean interface",
+				"cells": {
+					"webMemo": "Korean is the default language",
+					"notionWebClipper": "Korean extension UI not verified in the cited sources",
+					"liner": "Supports Korean",
+					"glasp": "Supports Korean",
+					"googleKeep": "Supports Korean"
+				}
+			},
+			"login": {
+				"label": "Login",
+				"cells": {
+					"webMemo": "Sign-in required for notes and summaries",
+					"notionWebClipper": "Notion login required",
+					"liner": "Free account documented; signed-out access unverified",
+					"glasp": "Sign-in is part of the highlighting setup",
+					"googleKeep": "Sign-in requirement not verified in the cited sources"
+				}
+			}
+		},
+		"recommendations": [
+			{
+				"situation": "If you already keep resources in Notion and want to organize clipped articles with database properties and tags",
+				"note": "Choose a page or database as the destination; the URL property is added automatically.",
+				"productName": "Notion Web Clipper"
+			},
+			{
+				"situation": "If you want to review YouTube lessons by timestamp and move your notes to Obsidian or Notion",
+				"note": "Web Memo only records the video URL.",
+				"productName": "Glasp"
+			},
+			{
+				"situation": "If you already use Keep on your phone or watch and want web clippings in the same place",
+				"productName": "Google Keep extension"
+			},
+			{
+				"situation": "If you want to ask AI questions about papers and PDFs while keeping highlights together",
+				"note": "The free plan has ads in AI answers and allows one file upload per day.",
+				"productName": "LINER"
+			},
+			{
+				"situation": "If you want to jot down independent thoughts while reading and automatically save which page they came from",
+				"note": "Notes autosave in the side panel, along with the page URL and title.",
+				"productName": "Web Memo"
+			},
+			{
+				"situation": "If you want free notes, summaries, and export with a Korean interface",
+				"note": "There is no paid plan, but you need to sign in to write notes.",
+				"productName": "Web Memo"
+			}
+		],
+		"statuses": {
+			"supported": "Supported",
+			"partial": "Partial",
+			"unsupported": "Unavailable",
+			"unknown": "Not verified"
+		},
+		"metadata": {
+			"title": "Compare Chrome Note-Taking Extensions | Web Memo",
+			"description": "Compare Web Memo, Notion Web Clipper, LINER, Glasp, and Google Keep on notes, highlights, AI summaries, export, login, and more. Checked {{date}}."
+		}
 	}
 }

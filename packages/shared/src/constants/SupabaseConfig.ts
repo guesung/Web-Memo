@@ -22,6 +22,7 @@ export const SUPABASE = {
 		memo: "memo",
 		category: "category",
 		setting: "setting",
+		favorite: "favorite",
 		highlight: "highlight",
 		notice: "notice",
 	},

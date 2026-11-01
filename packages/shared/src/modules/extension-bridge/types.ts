@@ -1,4 +1,5 @@
 import type { HighlightRow } from "../../types";
+import type { HighlightMemoLink } from "../../types/highlightMemo";
 import type { HighlightAnchor } from "../highlight/types";
 import type { Category } from "./constant";
 
@@ -26,6 +27,28 @@ export interface CreateMemoResponse {
 	success: boolean;
 	error?: string;
 }
+
+/** 하이라이트와 실제 메모를 원자적으로 연결하는 전용 요청. */
+export interface CreateHighlightMemoPayload {
+	highlightId: number;
+	memo: string;
+}
+
+export type CreateHighlightMemoResponse =
+	| {
+			success: true;
+			memoId: number;
+			created: boolean;
+			deletedAt: string | null;
+	  }
+	| {
+			success: false;
+			reason: "unauthenticated" | "invalid_request" | "save_failed";
+	  };
+
+export type GetHighlightMemoLinksResponse =
+	| { success: true; links: HighlightMemoLink[] }
+	| { success: false; reason: "unauthenticated" | "load_failed" };
 
 export interface YoutubeTranscriptResponse {
 	success: boolean;

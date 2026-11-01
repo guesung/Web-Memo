@@ -1,12 +1,14 @@
 "use client";
 
-import { Label } from "@web-memo/ui";
+import { cn, Label } from "@web-memo/ui";
 import type { PropsWithChildren } from "react";
 
 interface IFSettingRowProps extends PropsWithChildren {
 	label: string;
 	/** 이 설정이 무엇을 바꾸는지. 라벨만으로 충분하면 넘기지 않는다 */
 	description?: string;
+	/** 설명 줄이 오류 안내를 대신할 때 true. 색이 바뀌고 보조 기술에 바로 읽힌다 */
+	isDescriptionError?: boolean;
 	/** 오른쪽 컨트롤의 id. 넘기면 라벨을 눌러도 컨트롤이 반응한다 */
 	htmlFor?: string;
 }
@@ -20,6 +22,7 @@ interface IFSettingRowProps extends PropsWithChildren {
 export default function SettingRow({
 	label,
 	description,
+	isDescriptionError = false,
 	htmlFor,
 	children,
 }: IFSettingRowProps) {
@@ -28,7 +31,15 @@ export default function SettingRow({
 			<div className="min-w-0 space-y-0.5">
 				<Label htmlFor={htmlFor}>{label}</Label>
 				{description && (
-					<p className="text-xs text-muted-foreground">{description}</p>
+					<p
+						className={cn(
+							"text-xs",
+							isDescriptionError ? "text-destructive" : "text-muted-foreground",
+						)}
+						role={isDescriptionError ? "alert" : undefined}
+					>
+						{description}
+					</p>
 				)}
 			</div>
 			<div className="shrink-0 max-sm:w-full">{children}</div>

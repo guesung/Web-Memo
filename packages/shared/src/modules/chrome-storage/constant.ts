@@ -18,4 +18,5 @@ export const STORAGE_KEYS = {
 	highlightIntroSeen: "highlightIntroSeen",
 	dismissedNoticeIds: "dismissedNoticeIds",
 	pastMemoDismissedUrls: "pastMemoDismissedUrls",
+	reviewPrompt: "reviewPrompt",
 } as const;

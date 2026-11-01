@@ -23,6 +23,16 @@ interface QueryProviderProps extends PropsWithChildren, LanguageType {}
 
 const reportWebError = createErrorReporter({ capture: captureException });
 
+function notifyExtension(request: () => Promise<void>) {
+	try {
+		void request().catch(() => {
+			// 확장이 연결되지 않아도 저장 결과는 유지한다.
+		});
+	} catch {
+		// 확장이 연결되지 않아도 저장 결과는 유지한다.
+	}
+}
+
 export default function QueryProvider({ children }: QueryProviderProps) {
 	const [queryClient] = useState(
 		() =>
@@ -32,9 +42,15 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 				// 확장 프로그램 동기화가 누락되므로 MutationCache에 등록한다.
 				// Supabase는 실패를 던지지 않고 `{ error }` 값으로 돌려줘 React Query가 성공으로 본다.
 				// 화면 동작은 그대로 두고, 값으로 담긴 오류만 Sentry에 보고한다.
+				// 조회의 네트워크 오류는 사용자 쪽 연결 끊김이라 고칠 것이 없고, 끊길 때마다
+				// 쿼리 키별 이슈가 쌓이며 breadcrumb에 방문 URL이 실려 보고하지 않는다.
 				queryCache: new QueryCache({
 					onError: (error, query) => {
-						if (isAbortError(error) || isLoggedOutError(error)) {
+						if (
+							isAbortError(error) ||
+							isLoggedOutError(error) ||
+							isNetworkError(error)
+						) {
 							return;
 						}
 
@@ -43,14 +59,13 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 							feature: "web",
 							operation: String(query.queryKey[0]),
 							stage: "query",
-							level: isNetworkError(error) ? "warning" : undefined,
 							groupByMessage: true,
 						});
 					},
 					onSuccess: (data, query) => {
 						const resultError = getResultError(data);
 
-						if (!resultError) {
+						if (!resultError || isNetworkError(resultError)) {
 							return;
 						}
 
@@ -59,18 +74,16 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 							feature: "web",
 							operation: String(query.queryKey[0]),
 							stage: "query-result",
-							level: isNetworkError(resultError) ? "warning" : undefined,
 							groupByMessage: true,
 						});
 					},
 				}),
 				mutationCache: new MutationCache({
-					onSuccess: async (data, _variables, _context, mutation) => {
+					onSuccess: (data, _variables, _context, mutation) => {
 						const resultError = getResultError(data);
+						const mutationMeta = mutation?.options?.meta;
 
 						if (resultError) {
-							const mutationMeta = mutation?.options?.meta;
-
 							reportWebError({
 								error: resultError,
 								feature: mutationMeta?.feature ?? "web",
@@ -80,7 +93,15 @@ export default function QueryProvider({ children }: QueryProviderProps) {
 							});
 						}
 
-						await bridge.request.REFETCH_THE_MEMO_LIST_FROM_WEB();
+						if (
+							!resultError &&
+							mutationMeta?.feature === "setting" &&
+							mutationMeta.operation === "upsert"
+						) {
+							notifyExtension(bridge.request.SETTING_UPDATED_FROM_WEB);
+						}
+
+						notifyExtension(bridge.request.REFETCH_THE_MEMO_LIST_FROM_WEB);
 					},
 					onError: (error, _variables, _context, mutation) => {
 						if (isAbortError(error)) {

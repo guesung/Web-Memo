@@ -1,9 +1,13 @@
 import {
+	dispatchSentryTriage,
+	extractEventContext,
+	fetchSentryRecommendedEvent,
 	formatSentryAlertText,
 	getSentryAlertSlackChannel,
+	type IFSentryIssueWebhookPayload,
 	readVerifiedSentryWebhook,
 } from "@src/modules/sentry";
-import { postSlackMessage } from "@src/modules/slack";
+import { postSlackMessage, runAfterResponse } from "@src/modules/slack";
 import { NextResponse } from "next/server";
 
 /**
@@ -44,14 +48,32 @@ export async function POST(request: Request) {
 		return NextResponse.json({ ok: true });
 	}
 
-	try {
-		await postSlackMessage({
-			channel: getSentryAlertSlackChannel(),
-			text: formatSentryAlertText(payload),
-		});
-	} catch (error) {
-		console.error("Sentry 알림을 Slack으로 릴레이하는 데 실패했습니다:", error);
-	}
+	// Sentry는 웹훅 응답을 짧게 기다립니다. 이벤트 조회와 Slack 전송은 응답 뒤로 넘깁니다.
+	await runAfterResponse(() => relayToSlack(payload));
 
 	return NextResponse.json({ ok: true });
 }
+
+/** 대표 이벤트를 조회해 Slack으로 보내고, 켜져 있으면 AI 분석 워크플로를 실행합니다. */
+const relayToSlack = async (payload: IFSentryIssueWebhookPayload) => {
+	const issue = payload.data?.issue;
+	const event = issue?.id ? await fetchSentryRecommendedEvent(issue.id) : null;
+	const eventContext = event
+		? extractEventContext({ event, projectSlug: issue?.project?.slug })
+		: null;
+
+	let slack: { channel: string; ts: string };
+
+	try {
+		slack = await postSlackMessage({
+			channel: getSentryAlertSlackChannel(),
+			text: formatSentryAlertText(payload, eventContext),
+		});
+	} catch (error) {
+		console.error("Sentry 알림을 Slack으로 릴레이하는 데 실패했습니다:", error);
+
+		return;
+	}
+
+	await dispatchSentryTriage({ payload, slack });
+};

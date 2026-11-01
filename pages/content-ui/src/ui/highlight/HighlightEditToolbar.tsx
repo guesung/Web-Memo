@@ -7,6 +7,7 @@ import { I18n } from "@web-memo/shared/utils/extension";
 import { Pencil, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { IFHighlightEditState } from "./createHighlightEditor";
+import { HighlightMemoAction } from "./HighlightMemoAction";
 
 /** 편집 메뉴의 표시 상태와 저장 핸들러. */
 interface IFHighlightEditToolbarProps {
@@ -66,14 +67,14 @@ export const HighlightEditToolbar = (props: IFHighlightEditToolbarProps) => {
 			role="toolbar"
 			aria-label={I18n.get("highlight_edit")}
 			aria-busy={props.state.isSaving}
-			className="fixed z-[2147483647] flex max-h-[calc(100vh-16px)] max-w-[250px] flex-col gap-2 overflow-y-auto rounded-md border bg-background p-2 text-sm text-foreground shadow-lg"
+			className="fixed z-[2147483647] flex max-h-[calc(100vh-16px)] w-[min(360px,calc(100vw-16px))] flex-col gap-2 overflow-y-auto rounded-md border bg-background p-2 text-sm text-foreground shadow-lg"
 			style={{
-				left: props.state.x,
+				left: Math.max(8, Math.min(props.state.x, window.innerWidth - 368)),
 				top: Math.max(
 					8,
 					Math.min(
 						props.state.y,
-						window.innerHeight - (isNoteOpen ? 310 : 150),
+						window.innerHeight - (isNoteOpen ? 360 : 150),
 					),
 				),
 			}}
@@ -140,6 +141,7 @@ export const HighlightEditToolbar = (props: IFHighlightEditToolbarProps) => {
 					</button>
 				</form>
 			)}
+			<HighlightMemoAction key={props.state.row.id} row={props.state.row} />
 			<button
 				type="button"
 				disabled={props.state.isSaving}

@@ -13,7 +13,12 @@ import { NextResponse } from "next/server";
  * 하위 경로를 따로 적지 않는다. 예전에는 쿼리 문자열이 붙은 `PATHS.memosWish`가 들어 있었는데
  * 비교 대상이 pathname이라 절대 매치되지 않는 죽은 항목이었다.
  */
-const NEED_AUTH_PAGES = [PATHS.memos, PATHS.highlights, PATHS.admin];
+const NEED_AUTH_PAGES = [
+	PATHS.memos,
+	PATHS.highlights,
+	PATHS.favorites,
+	PATHS.admin,
+];
 
 export async function updateAuthorization(request: NextRequest) {
 	const nextResponse = NextResponse.next({
@@ -60,7 +65,7 @@ export async function updateAuthorization(request: NextRequest) {
 
 	if (!isUserLogin && isNeedAuthPage) {
 		const url = request.nextUrl.clone();
-		url.pathname = PATHS.login;
+		url.pathname = `/${request.nextUrl.pathname.split("/")[1]}${PATHS.login}`;
 		return NextResponse.redirect(url);
 	}
 

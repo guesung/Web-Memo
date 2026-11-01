@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Web Memo 설치 가이드 시각 목업</title>
+    <style>
+      :root { font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #172033; background: #f8fafc; }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      header { height: 56px; padding: 0 max(24px, calc((100vw - 1120px)/2)); display: flex; align-items: center; background: white; border-bottom: 1px solid #e5eaf2; font-weight: 750; font-size: 18px; }
+      header span { color: #2463d7; margin-right: 8px; }
+      main { max-width: 1120px; padding: 58px 24px 80px; margin: auto; }
+      .eyebrow { color: #2463d7; font-weight: 700; font-size: 14px; margin: 0 0 13px; }
+      h1 { margin: 0; font-size: clamp(30px, 4vw, 42px); line-height: 1.28; letter-spacing: -0.045em; }
+      .lead { color: #64748b; font-size: 17px; line-height: 1.65; margin: 17px 0 38px; }
+      .layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(290px, 0.9fr); gap: 28px; align-items: stretch; }
+      .browser { min-height: 364px; overflow: hidden; background: white; border: 1px solid #dce4ef; border-radius: 12px; box-shadow: 0 12px 36px rgba(24, 39, 75, .07); }
+      .browser-top { height: 42px; display: flex; align-items: center; gap: 7px; padding: 0 16px; border-bottom: 1px solid #e5eaf2; }
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: #d3dce8; }
+      .address { margin-left: 14px; color: #8a97a9; font-size: 11px; }
+      .browser-body { height: 322px; display: grid; grid-template-columns: 1fr 196px; }
+      .article { padding: 28px 24px; }
+      .line { height: 9px; background: #e5eaf1; border-radius: 10px; margin-bottom: 12px; }
+      .line.title { width: 76%; height: 19px; background: #cbd7e8; margin-bottom: 22px; }
+      .line.short { width: 61%; }
+      .line.medium { width: 83%; }
+      .panel { border-left: 1px solid #dce4ef; background: #fcfdff; padding: 17px 14px; }
+      .panel-title { font-weight: 750; font-size: 13px; margin-bottom: 18px; }
+      .panel-card { padding: 12px; border: 1px solid #dce4ef; border-radius: 8px; background: white; }
+      .panel-url { color: #718198; font-size: 10px; margin-bottom: 8px; }
+      .panel-text { font-size: 11px; line-height: 1.6; }
+      .panel-save { margin-top: 12px; background: #2463d7; color: white; border-radius: 6px; padding: 7px 0; text-align: center; font-size: 11px; font-weight: 700; }
+      .preview-label { color: #74839a; font-size: 12px; margin-top: 12px; }
+      .steps { display: flex; flex-direction: column; gap: 12px; }
+      .step { display: flex; gap: 14px; padding: 19px; border: 1px solid #dce4ef; background: white; border-radius: 10px; }
+      .number { flex: 0 0 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: #eaf1ff; color: #2463d7; font-size: 13px; font-weight: 750; }
+      .step h2 { font-size: 16px; margin: 1px 0 7px; }
+      .step p { color: #64748b; font-size: 13px; line-height: 1.55; margin: 0; }
+      .action { margin-top: 34px; padding: 26px; border: 1px solid #dce4ef; border-radius: 12px; background: white; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+      .action strong { font-size: 17px; }
+      .action p { margin: 7px 0 0; color: #64748b; font-size: 13px; }
+      .button { display: inline-block; background: #2463d7; border-radius: 8px; color: white; padding: 13px 21px; font-weight: 700; font-size: 14px; text-decoration: none; white-space: nowrap; }
+      @media (max-width: 760px) { main { padding-top: 38px; } .layout { grid-template-columns: 1fr; } .browser-body { grid-template-columns: 1fr 165px; } .action { flex-direction: column; align-items: stretch; } .button { text-align: center; } }
+    </style>
+  </head>
+  <body>
+    <header><span>▣</span> Web Memo</header>
+    <main>
+      <p class="eyebrow">처음 사용하는 방법</p>
+      <h1>읽던 페이지 옆에서<br />바로 메모해요</h1>
+      <p class="lead">확장을 설치했다면, 이제 웹페이지를 떠나지 않고 기록할 수 있어요.</p>
+      <div class="layout">
+        <div>
+          <div class="browser" aria-label="브라우저와 사이드 패널 사용 장면 미리보기">
+            <div class="browser-top"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="address">읽고 있던 웹페이지</span></div>
+            <div class="browser-body">
+              <div class="article"><div class="line title"></div><div class="line medium"></div><div class="line"></div><div class="line short"></div><div class="line"></div><div class="line medium"></div></div>
+              <div class="panel"><div class="panel-title">Web Memo</div><div class="panel-card"><div class="panel-url">읽던 페이지의 제목과 주소</div><div class="panel-text">나중에 다시 보고 싶은 내용을 이곳에 적어요.</div><div class="panel-save">메모 저장</div></div></div>
+            </div>
+          </div>
+          <div class="preview-label">사용 장면 미리보기 · 실제 입력 화면은 로그인 후 열려요</div>
+        </div>
+        <div class="steps">
+          <div class="step"><span class="number">1</span><div><h2>사이드 패널을 열어요</h2><p>브라우저의 Web Memo 아이콘을 누르거나 Alt+S를 사용해요.</p></div></div>
+          <div class="step"><span class="number">2</span><div><h2>읽던 곳에서 메모해요</h2><p>페이지 제목과 주소가 붙어 있어, 생각만 바로 적으면 돼요.</p></div></div>
+          <div class="step"><span class="number">3</span><div><h2>로그인하고 보관해요</h2><p>메모를 저장하고 다시 꺼내 보려면 로그인이 필요해요.</p></div></div>
+        </div>
+      </div>
+      <div class="action"><div><strong>메모를 저장하려면 로그인이 필요해요</strong><p>로그인하면 사이드 패널에서 첫 메모를 시작할 수 있어요.</p></div><a class="button" href="#">로그인하고 시작하기</a></div>
+    </main>
+  </body>
+</html>

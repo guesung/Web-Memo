@@ -19,23 +19,40 @@ import {
 	useSupabaseUserQuery,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
-import type { Database } from "@web-memo/shared/types";
+import type { Database, IFPastMemoDuplicate } from "@web-memo/shared/types";
 import { getPageKey } from "@web-memo/shared/utils";
 import { I18n } from "@web-memo/shared/utils/extension";
-import { ErrorBoundary, ToastAction, toast } from "@web-memo/ui";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { cn, ErrorBoundary, ToastAction, toast } from "@web-memo/ui";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import LoginSection from "../LoginSection";
 import NoticeBanner from "../NoticeBanner";
+import ReviewPromptBanner from "../ReviewPromptBanner";
+import useReviewPrompt from "../ReviewPromptBanner/useReviewPrompt";
 import MemoCandidateList from "./components/MemoCandidateList";
 import MemoForm from "./components/MemoForm";
 import { MemoFormSkeleton } from "./components/MemoForm/components";
 import { useMemoFieldRatios } from "./components/MemoForm/hooks/useMemoFieldResize";
 import MemoHeader from "./components/MemoHeader";
+import PageHighlights from "./components/PageHighlights";
+import PastMemoView from "./components/PastMemoView";
 import useMemoCandidatesQuery from "./hooks/useMemoCandidatesQuery";
+import {
+	type PastMemoAttempt,
+	PastMemoTracking,
+} from "./utils/pastMemoTracking";
 
 /** 사이드 패널의 현재 페이지 메모와 후보 선택을 표시한다. */
-export default function MemoSection({ memoHeight }: MemoSectionProps) {
+export default function MemoSection({
+	memoHeight,
+	animateHeight,
+	isAiTabOpen,
+}: MemoSectionProps) {
 	const loginBoundaryRef = useRef<ErrorBoundary>(null);
+	const tracking = useRef(new PastMemoTracking()).current;
+	const LoginFallback = useCallback(() => {
+		tracking.updateContext(undefined, "");
+		return <LoginSection />;
+	}, [tracking]);
 	const queryClient = useQueryClient();
 	const { data: tab } = useTabQuery();
 
@@ -96,36 +113,73 @@ export default function MemoSection({ memoHeight }: MemoSectionProps) {
 
 	return (
 		<section
+			data-testid="memo-panel"
 			// 입력창이 이 경계에 딱 붙어 포커스 링(1px)이 좌우로 잘린다.
 			// 세로는 form 의 py-1 덕에 살아남아 좌우만 안 보였다.
-			className="flex flex-col overflow-hidden px-0.5"
+			className={cn(
+				"flex flex-col overflow-hidden px-0.5",
+				animateHeight &&
+					"transition-[height] duration-[180ms] ease-out motion-reduce:transition-none",
+			)}
 			style={{ height: `${memoHeight}%` }}
 		>
-			<NoticeBanner />
-			<ErrorBoundary ref={loginBoundaryRef} FallbackComponent={LoginSection}>
+			<ErrorBoundary ref={loginBoundaryRef} FallbackComponent={LoginFallback}>
 				<Suspense fallback={<MemoFormSkeleton />}>
-					<MemoSectionContent />
+					<MemoSectionContent tracking={tracking} isAiTabOpen={isAiTabOpen} />
 				</Suspense>
 			</ErrorBoundary>
 		</section>
 	);
 }
 
-const MemoSectionContent = () => {
+const MemoSectionContent = ({
+	tracking,
+	isAiTabOpen,
+}: {
+	tracking: PastMemoTracking;
+	isAiTabOpen: boolean;
+}) => {
 	const { user } = useSupabaseUserQuery();
+	const { data: tab } = useTabQuery();
+	const scope = `${tab?.id}:${tab?.url ? getPageKey(tab.url) : ""}`;
+	tracking.updateContext(user?.data.user?.id, scope);
+	useEffect(() => tracking.cancelOutsideScope(scope), [tracking, scope]);
 
 	if (!user?.data.user) {
 		return <LoginSection />;
 	}
 
-	return <AuthenticatedMemoSectionContent />;
+	return (
+		<>
+			{/* 로그인 전에는 공지가 로그인 안내를 가린다. 공지는 로그인한 뒤에만 띄운다. */}
+			<NoticeBanner />
+			<PageHighlights
+				key={`${user.data.user.id}:${tab?.id}:${tab?.url ? getPageKey(tab.url) : ""}`}
+				userId={user.data.user.id}
+				tabId={tab?.id}
+				url={tab?.url ?? ""}
+			/>
+			<AuthenticatedMemoSectionContent
+				key={user.data.user.id}
+				tracking={tracking}
+				isAiTabOpen={isAiTabOpen}
+			/>
+		</>
+	);
 };
 
-const AuthenticatedMemoSectionContent = () => {
+const AuthenticatedMemoSectionContent = ({
+	tracking,
+	isAiTabOpen,
+}: {
+	tracking: PastMemoTracking;
+	isAiTabOpen: boolean;
+}) => {
 	const fieldResizeState = useMemoFieldRatios();
 	const { data: tab } = useTabQuery();
 	const { user } = useSupabaseUserQuery();
 	const userId = user.data.user?.id;
+	const reviewPrompt = useReviewPrompt({ userId, isAiTabOpen });
 	// 후보 조회를 기다리는 동안 폼 전체를 스켈레톤으로 바꾸지 않도록 Suspense 없이 읽는다.
 	const {
 		memos,
@@ -163,6 +217,19 @@ const AuthenticatedMemoSectionContent = () => {
 		null,
 	);
 	const isCandidateListRequested = candidateListScope === editorScope;
+	// 같은 글 알림에서 연 과거 메모. 탭·페이지가 바뀌면 scope가 달라져 자동으로 닫힌다.
+	const [openedPastMemo, setOpenedPastMemo] = useState<{
+		scope: string;
+		memoId: number;
+		url: string;
+		title: string;
+		attempt: PastMemoAttempt;
+	} | null>(null);
+	const currentOpenedPastMemo =
+		openedPastMemo?.scope === editorScope &&
+		tracking.isCurrent(openedPastMemo.attempt)
+			? openedPastMemo
+			: null;
 	const currentSelection = selection?.scope === editorScope ? selection : null;
 	const currentDraft =
 		preservedDraft?.scope === editorScope ? preservedDraft.value : null;
@@ -323,6 +390,18 @@ const AuthenticatedMemoSectionContent = () => {
 		});
 	};
 
+	const handlePastMemoOpen = (duplicate: IFPastMemoDuplicate) => {
+		const attempt = tracking.start(duplicate.source);
+		if (!attempt) return;
+		setOpenedPastMemo({
+			attempt,
+			scope: editorScope,
+			memoId: duplicate.id,
+			url: duplicate.url,
+			title: duplicate.title,
+		});
+	};
+
 	const handleNewMemoClick = () => {
 		setCandidateListScope(null);
 		setSelection({ scope: editorScope, memoId: null, memo: null });
@@ -334,6 +413,14 @@ const AuthenticatedMemoSectionContent = () => {
 		}
 		openCandidateList();
 	};
+
+	const reviewPromptBanner = reviewPrompt.isVisible && (
+		<ReviewPromptBanner
+			onClose={reviewPrompt.handleClose}
+			onOpenReview={reviewPrompt.handleOpenReview}
+			onNeverShow={reviewPrompt.handleNeverShow}
+		/>
+	);
 
 	// 후보를 받기 전에는 목록·선택 로직을 돌리지 않고 잠긴 폼을 그린다. key가 같아 도착 뒤에도 같은 폼을 이어 쓴다.
 	if (isMemoLocked) {
@@ -347,6 +434,7 @@ const AuthenticatedMemoSectionContent = () => {
 					isMemoLoadFailed={isMemoLoadFailed}
 					onMemoRetryClick={refetchMemoCandidates}
 				/>
+				{reviewPromptBanner}
 			</>
 		);
 	}
@@ -354,42 +442,61 @@ const AuthenticatedMemoSectionContent = () => {
 	return (
 		<>
 			<MemoHeader memoData={activeMemo} />
-			{currentDraft && <PreservedDraft draft={currentDraft} />}
-			{(hasMultipleMemos ||
-				hasOnlyOtherUrlMemos ||
-				isCandidateListRequested ||
-				currentDraft) &&
-			!currentSelection ? (
-				<MemoCandidateList
-					memos={memos}
-					otherUrlMemos={otherUrlMemos}
-					onMemoSelect={handleMemoSelect}
-					onNewMemoClick={memos.length === 0 ? handleNewMemoClick : undefined}
-					onMemoDelete={handleMemoDelete}
-					isOffline={!isOnline}
-					isSyncing={isSyncing}
-				/>
-			) : (
-				<MemoForm
-					key={editorScope}
-					fieldResizeState={fieldResizeState}
-					selectedMemo={activeMemo}
-					isSelectedMemoMissing={
-						isSelectedMemoMissing || hasUnselectedCollision
-					}
-					onOtherMemoClick={
-						hasMultipleMemos ||
-						otherUrlMemos.length > 0 ||
-						isSelectedMemoMissing
-							? handleOtherMemoClick
-							: undefined
-					}
-					isSyncing={isSyncing}
-					isSyncFailed={isSyncFailed}
-					hasSyncNetworkError={lastFlushHadNetworkError}
-					onRetrySync={retrySync}
+			{currentOpenedPastMemo && (
+				<PastMemoView
+					memoId={currentOpenedPastMemo.memoId}
+					title={currentOpenedPastMemo.title}
+					url={currentOpenedPastMemo.url}
+					attempt={currentOpenedPastMemo.attempt}
+					tracking={tracking}
+					onBackClick={() => {
+						tracking.finish(currentOpenedPastMemo.attempt, "cancelled");
+						setOpenedPastMemo(null);
+					}}
 				/>
 			)}
+			{/* 작성 중 내용과 자동 저장 상태를 지키려고 폼을 언마운트하지 않고 숨긴다. */}
+			<div className={cn(currentOpenedPastMemo ? "hidden" : "contents")}>
+				{currentDraft && <PreservedDraft draft={currentDraft} />}
+				{(hasMultipleMemos ||
+					hasOnlyOtherUrlMemos ||
+					isCandidateListRequested ||
+					currentDraft) &&
+				!currentSelection ? (
+					<MemoCandidateList
+						memos={memos}
+						otherUrlMemos={otherUrlMemos}
+						onMemoSelect={handleMemoSelect}
+						onNewMemoClick={memos.length === 0 ? handleNewMemoClick : undefined}
+						onMemoDelete={handleMemoDelete}
+						isOffline={!isOnline}
+						isSyncing={isSyncing}
+					/>
+				) : (
+					<MemoForm
+						key={editorScope}
+						fieldResizeState={fieldResizeState}
+						selectedMemo={activeMemo}
+						isSelectedMemoMissing={
+							isSelectedMemoMissing || hasUnselectedCollision
+						}
+						onOtherMemoClick={
+							hasMultipleMemos ||
+							otherUrlMemos.length > 0 ||
+							isSelectedMemoMissing
+								? handleOtherMemoClick
+								: undefined
+						}
+						isSyncing={isSyncing}
+						isSyncFailed={isSyncFailed}
+						hasSyncNetworkError={lastFlushHadNetworkError}
+						onRetrySync={retrySync}
+						onPastMemoOpen={handlePastMemoOpen}
+						onServerSaveSuccess={reviewPrompt.notifySaved}
+					/>
+				)}
+			</div>
+			{reviewPromptBanner}
 		</>
 	);
 };
@@ -407,4 +514,7 @@ const PreservedDraft = ({ draft }: { draft: MemoInput }) => (
 
 interface MemoSectionProps {
 	memoHeight: number;
+	animateHeight: boolean;
+	/** AI 탭이 열려 있는지. 열려 있으면 리뷰 요청 배너를 새로 띄우지 않는다 */
+	isAiTabOpen: boolean;
 }

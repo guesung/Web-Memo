@@ -15,9 +15,8 @@ export const DEFAULT_HIGHLIGHT_COLOR: HighlightColor = "yellow";
 
 /**
  * 색상별 스타일 값.
- * background는 WebView의 ::highlight() 배경과 폴백 <span> 배경에 쓰고,
- * bar는 웹 대시보드 목록에서 문장 왼쪽에 세우는 색 막대에 쓴다.
- * 다크 모드에서도 글자가 읽히도록 배경은 알파를 넣은 값으로 둔다.
+ * background는 기존 목록과 모바일 표시의 반투명 배경에 쓰고,
+ * bar는 문장 왼쪽 색 막대에 쓴다. 원문 위 노란 표시는 아래 전용 색상 쌍을 쓴다.
  */
 export const HIGHLIGHT_COLOR_STYLE: Record<
 	HighlightColor,
@@ -29,3 +28,9 @@ export const HIGHLIGHT_COLOR_STYLE: Record<
 	pink: { background: "rgba(244, 114, 182, 0.40)", bar: "#f472b6" },
 	purple: { background: "rgba(192, 132, 252, 0.40)", bar: "#c084fc" },
 };
+
+/** 원문 위 노란 하이라이트는 사이트의 글자색과 무관하게 읽히는 불투명 색상 쌍을 쓴다. */
+export const HIGHLIGHT_SOURCE_YELLOW_STYLE = {
+	background: "#fef3b0",
+	foreground: "#29220b",
+} as const;

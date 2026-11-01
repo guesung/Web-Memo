@@ -10,7 +10,7 @@ export default function useGetExtensionManifest() {
 	useDidMount(async () => {
 		try {
 			const result = await bridge.request.GET_EXTENSION_MANIFEST();
-			setManifest(result);
+			setManifest(result ?? "NOT_INSTALLED");
 		} catch {
 			setManifest("NOT_INSTALLED");
 		}

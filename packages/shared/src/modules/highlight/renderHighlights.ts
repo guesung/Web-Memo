@@ -1,6 +1,7 @@
 import {
 	HIGHLIGHT_COLOR_STYLE,
 	HIGHLIGHT_COLORS,
+	HIGHLIGHT_SOURCE_YELLOW_STYLE,
 	type HighlightColor,
 } from "../../constants/Highlight";
 
@@ -80,9 +81,18 @@ export function createHighlightRenderer(): HighlightRenderer {
 	): void {
 		const span = document.createElement("span");
 		span.setAttribute(DATA_ATTRIBUTE, String(id));
-		span.style.backgroundColor = HIGHLIGHT_COLOR_STYLE[color].background;
+		applyFallbackColor(span, color);
 		span.appendChild(range.extractContents());
 		range.insertNode(span);
+	}
+
+	function applyFallbackColor(span: HTMLElement, color: HighlightColor): void {
+		span.style.backgroundColor =
+			color === "yellow"
+				? HIGHLIGHT_SOURCE_YELLOW_STYLE.background
+				: HIGHLIGHT_COLOR_STYLE[color].background;
+		span.style.color =
+			color === "yellow" ? HIGHLIGHT_SOURCE_YELLOW_STYLE.foreground : "";
 	}
 
 	/**
@@ -151,7 +161,7 @@ export function createHighlightRenderer(): HighlightRenderer {
 			}
 
 			for (const span of findFallbackSpans(id)) {
-				span.style.backgroundColor = HIGHLIGHT_COLOR_STYLE[color].background;
+				applyFallbackColor(span, color);
 			}
 		},
 
@@ -248,10 +258,13 @@ function ensureHighlightStyles(): void {
 
 	const style = document.createElement("style");
 	style.id = STYLE_ELEMENT_ID;
-	style.textContent = HIGHLIGHT_COLORS.map(
-		(color) =>
-			`::highlight(${HIGHLIGHT_NAME_PREFIX}${color}) { background-color: ${HIGHLIGHT_COLOR_STYLE[color].background}; }`,
-	).join("\n");
+	style.textContent = HIGHLIGHT_COLORS.map((color) => {
+		if (color === "yellow") {
+			return `::highlight(${HIGHLIGHT_NAME_PREFIX}${color}) { background-color: ${HIGHLIGHT_SOURCE_YELLOW_STYLE.background}; color: ${HIGHLIGHT_SOURCE_YELLOW_STYLE.foreground}; }`;
+		}
+
+		return `::highlight(${HIGHLIGHT_NAME_PREFIX}${color}) { background-color: ${HIGHLIGHT_COLOR_STYLE[color].background}; }`;
+	}).join("\n");
 
 	document.head.appendChild(style);
 }

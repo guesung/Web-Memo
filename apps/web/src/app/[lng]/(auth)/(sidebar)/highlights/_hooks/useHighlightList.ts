@@ -1,4 +1,4 @@
-import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import type { HighlightColor } from "@web-memo/shared/constants";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import { useSupabaseClientQuery } from "@web-memo/shared/hooks";
@@ -8,7 +8,7 @@ import { useMemo } from "react";
 
 const PAGE_SIZE = 20;
 
-/** 하이라이트 무한스크롤 목록. memos의 useMemosInfiniteQuery와 같은 복합 커서 방식을 쓴다. */
+/** 메모 목록과 같은 복합 커서로 하이라이트를 이어 읽는다. */
 export function useHighlightList({
 	searchQuery,
 	color,
@@ -22,8 +22,9 @@ export function useHighlightList({
 		[supabaseClient],
 	);
 
-	return useSuspenseInfiniteQuery({
+	return useInfiniteQuery({
 		queryKey: QUERY_KEY.highlightsPaginated({ searchQuery, color }),
+		retry: false,
 		initialPageParam: undefined as { value: string; id: number } | undefined,
 		queryFn: async ({ pageParam }) => {
 			const { data, error } = await highlightService.getHighlightsPaginated({
@@ -34,7 +35,7 @@ export function useHighlightList({
 			});
 
 			if (error) {
-				throw new Error(error.message);
+				throw error;
 			}
 
 			return (data ?? []) as HighlightRow[];

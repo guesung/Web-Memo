@@ -90,11 +90,27 @@ const labelError = ({
  * @description 요청 취소는 장애가 아니므로 보고하지 않고, 화면에도 실패로 표시하지 않는다.
  */
 export const isAbortError = (error: unknown): boolean => {
-	if (!(error instanceof Error)) {
-		return false;
+	if (error instanceof Error) {
+		return (
+			error.name === "AbortError" ||
+			error.name === "CanceledError" ||
+			error.message === "AbortError: signal is aborted without reason"
+		);
 	}
 
-	return error.name === "AbortError" || error.name === "CanceledError";
+	return (
+		typeof error === "object" &&
+		error !== null &&
+		"message" in error &&
+		error.message === "AbortError: signal is aborted without reason" &&
+		"hint" in error &&
+		typeof error.hint === "string" &&
+		error.hint.startsWith(
+			"Request was aborted (timeout or manual cancellation)",
+		) &&
+		"code" in error &&
+		error.code === ""
+	);
 };
 
 /**

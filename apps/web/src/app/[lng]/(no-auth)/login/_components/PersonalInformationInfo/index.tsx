@@ -1,5 +1,5 @@
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 
 /**
  * 로그인 정보를 어디까지 쓰는지 알리는 문구입니다.
@@ -8,7 +8,7 @@ import useTranslation from "@src/modules/i18n/util.server";
 export default async function PersonalInformationInfo({
 	lng,
 }: IFPersonalInformationInfoProps) {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	return (
 		<p className="text-xs text-muted-foreground">

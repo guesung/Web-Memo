@@ -1,13 +1,13 @@
 "use server";
 
 import type { LanguageType } from "@src/modules/i18n";
-import useTranslation from "@src/modules/i18n/util.server";
+import getTranslation from "@src/modules/i18n/util.server";
 
 interface IFSettingHeaderProps extends LanguageType {}
 
 /** 설정 화면의 제목 줄 */
 export default async function SettingHeader({ lng }: IFSettingHeaderProps) {
-	const { t } = await useTranslation(lng);
+	const { t } = await getTranslation(lng);
 
 	return (
 		<div className="mb-6 flex flex-col gap-1">

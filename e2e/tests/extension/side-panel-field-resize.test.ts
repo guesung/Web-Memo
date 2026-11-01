@@ -18,8 +18,23 @@ test("페이지를 이동해도 입력 영역 비율을 유지하고 메모 내�
 	store.setSetting(
 		createMockSetting({ show_impression: true, show_action_item: true }),
 	);
-	store.addMemo(createMockMemo({ url: firstUrl, memo: "첫 페이지 메모" }));
-	store.addMemo(createMockMemo({ url: secondUrl, memo: "둘째 페이지 메모" }));
+	// 비어 있는 느낀 점·액션 아이템은 접히므로, 세 칸이 모두 보이도록 내용을 채운다.
+	store.addMemo(
+		createMockMemo({
+			url: firstUrl,
+			memo: "첫 페이지 메모",
+			impression: "첫 페이지 느낀 점",
+			actionItem: "첫 페이지 할 일",
+		}),
+	);
+	store.addMemo(
+		createMockMemo({
+			url: secondUrl,
+			memo: "둘째 페이지 메모",
+			impression: "둘째 페이지 느낀 점",
+			actionItem: "둘째 페이지 할 일",
+		}),
+	);
 	await setupSupabaseMocks(page, store);
 	await context.route("https://example.com/**", async (route) => {
 		await route.fulfill({

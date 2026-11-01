@@ -14,6 +14,7 @@ function resolveViewName(pathname: string, searchParams: URLSearchParams) {
 	if (pathname.endsWith(PATHS.highlights)) return "highlights";
 	if (pathname.endsWith(PATHS.memosTrash)) return "trash";
 	if (pathname.endsWith(PATHS.memosSetting)) return "setting";
+	if (pathname.endsWith(PATHS.memosPlan)) return "plan";
 
 	if (searchParams.get("isWish") === "true") return "wish";
 	if (searchParams.get("isStar") === "true") return "star";
@@ -21,6 +22,30 @@ function resolveViewName(pathname: string, searchParams: URLSearchParams) {
 	if (searchParams.get("category")) return "category";
 
 	return "all";
+}
+
+const MEMO_LIST_PATHS = [
+	PATHS.memos,
+	PATHS.memosWish,
+	PATHS.memosStar,
+	PATHS.memosReading,
+];
+
+export function resolveViewChangeParams(
+	pathname: string,
+	searchParams: URLSearchParams,
+) {
+	const view = resolveViewName(pathname, searchParams);
+	if (!MEMO_LIST_PATHS.some((path) => pathname.endsWith(path))) {
+		return { view };
+	}
+
+	const requestedLayout = searchParams.get("view");
+	const layout: "grid" | "list" | "domain" =
+		requestedLayout === "list" || requestedLayout === "domain"
+			? requestedLayout
+			: "grid";
+	return { view, layout };
 }
 
 /**
@@ -36,7 +61,7 @@ export default function TrackViewChange() {
 	useEffect(() => {
 		analytics.trackEvent({
 			name: "view_change",
-			params: { view: resolveViewName(pathname, searchParams) },
+			params: resolveViewChangeParams(pathname, searchParams),
 		});
 	}, [pathname, searchParams]);
 

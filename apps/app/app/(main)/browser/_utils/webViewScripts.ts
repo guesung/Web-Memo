@@ -24,14 +24,33 @@ export const SCROLL_DETECT_JS = `
   if (window.__webmemoScrollSetup) return;
   window.__webmemoScrollSetup = true;
   var BOTTOM_MARGIN = 120;
+  // 헤더/탭바가 height 애니메이션으로 접히는 동안(약 250ms) WebView 뷰포트 높이가
+  // 바뀌어 사용자가 만들지 않은 scroll 이벤트가 발생한다. 그 여진까지 덮도록 넉넉히 잡는다.
+  var RESIZE_GUARD_MS = 350;
   var lastScrollY = window.scrollY;
+  var lastInnerHeight = window.innerHeight;
+  var lastResizeAt = 0;
+  window.addEventListener('resize', function() {
+    lastResizeAt = Date.now();
+  }, { passive: true });
   var ticking = false;
   window.addEventListener('scroll', function() {
     if (!ticking) {
       requestAnimationFrame(function() {
         var maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
         var currentY = Math.min(Math.max(0, window.scrollY), maxY);
-        if (currentY <= 5) {
+        var currentInnerHeight = window.innerHeight;
+        // iOS는 resize 이벤트가 늦게 오기도 해서, rAF 샘플 사이 innerHeight 변화도 같이 본다.
+        var isLayoutTriggered = (Date.now() - lastResizeAt < RESIZE_GUARD_MS)
+          || (currentInnerHeight !== lastInnerHeight);
+        lastInnerHeight = currentInnerHeight;
+        if (isLayoutTriggered) {
+          // 뷰포트 리사이즈로 생긴 스크롤: 방향 판정 없이 위치만 전달(읽기 위치 저장은 유지)
+          window.ReactNativeWebView.postMessage(JSON.stringify({
+            type: 'scroll', direction: 'resize', scrollY: currentY, maxY: maxY
+          }));
+          lastScrollY = currentY;
+        } else if (currentY <= 5) {
           window.ReactNativeWebView.postMessage(JSON.stringify({
             type: 'scroll', direction: 'top', scrollY: currentY, maxY: maxY
           }));

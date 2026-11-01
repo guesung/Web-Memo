@@ -26,7 +26,7 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | `cd-extension.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-reusable-artifact.sh` · `deploy/upload-extension-to-store.mjs` |
 | `cd-web.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-staged-deployment.mjs` · `deploy/staged-deployment.mjs` · `deploy/notify-staging-deploy.mjs` |
 | `release.yml` | workflow_dispatch | 수동 실행할 때마다 | 없음. `cd-app`·`cd-extension`·`cd-web`·`release-notify` 호출 |
-| `release-notify.yml` | workflow_call | `release.yml`에서 호출할 때마다 | `deploy/notify-release-result.mjs` |
+| `release-notify.yml` | workflow_call | `release.yml`에서 호출할 때마다 | `deploy/record-deploy.mjs` · `deploy/collect-deploy-prs.mjs` · `deploy/detect-affected-apps.sh` · `deploy/notify-release-result.mjs` |
 | `release-github.yml` | push(tag `v*`) | `v*` 태그 push마다 | 없음 |
 | `versions.yml` | workflow_dispatch | 수동 실행할 때마다 | `deploy/report-store-versions.mjs` |
 | `notify-extension-published.yml` | schedule, workflow_dispatch | 매시 07·37분 또는 수동 실행마다 | `deploy/notify-extension-published.mjs` |

@@ -676,7 +676,7 @@
 - **속성:** 필수 `from: string`(언어 없는 출발 경로), `position: TInstallClickPosition` = hero/recommendation/final/install_check_dialog.
 - **단위·중복:** 조건을 만족하는 클릭당 1회; 설치 여부/사용자별 중복 제거 없음.
 - **근거·테스트:** [호출 코드](../apps/web/src/app/%5Blng%5D/%28no-auth%29/_components/TrackInstallClick/index.tsx); 이벤트 전용 테스트 미확인; [계약](../packages/shared/src/modules/analytics/type.ts).
-- **한계·이력:** 스토어 도착이나 설치 완료를 보증하지 않는다. from은 호출 마크업 계약이지 수집 시 경로 재검증 결과가 아니다. 도입 버전·일자 미확인.
+- **한계·이력:** 스토어 도착이나 설치 완료를 보증하지 않는다. from은 호출 마크업 계약이지 수집 시 경로 재검증 결과가 아니다. 도입 버전·일자 미확인. DB-1267부터 같은 capture가 웹스토어 링크 href에 유입 utm_*를 붙이지만 이벤트 속성에는 UTM이 없다 — 채널 분해는 GA4 세션 소스/매체로 한다([홍보 링크 UTM 규약](analytics.md#홍보-링크-utm-규약)).
 
 ### `extension_install_dismiss`
 

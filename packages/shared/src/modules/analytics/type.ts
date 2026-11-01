@@ -170,19 +170,19 @@ export type TAnalyticsEvent =
 	| { name: "memo_undo"; params: { action: "wish" | "reading" | "delete" } }
 	| {
 			name: "category_suggestion_show";
-			params: { is_new_category: boolean; source: "jev" | "llm" };
+			params: { is_new_category: boolean; source: "jev" | "llm" | "same_page" };
 	  }
 	| {
 			name: "category_suggestion_apply";
 			params: {
 				is_new_category: boolean;
-				source: "jev" | "llm";
+				source: "jev" | "llm" | "same_page";
 				trigger: TCategorySuggestionTrigger;
 			};
 	  }
 	| {
 			name: "category_suggestion_dismiss";
-			params: { is_new_category: boolean; source: "jev" | "llm" };
+			params: { is_new_category: boolean; source: "jev" | "llm" | "same_page" };
 	  }
 	| {
 			name: "extension_install_click";
@@ -219,7 +219,7 @@ export type TAnalyticsEvent =
 	| { name: "guide_finish" }
 	| { name: "extension_setting_change"; params: { keys: string } }
 	| { name: "guide_step"; params: { step_name: string } }
-	| { name: "memo_first_write"; params?: { source: "highlight" } }
+	| { name: "memo_first_write"; params?: { source?: "highlight"; page_memo_count?: number } }
 	| { name: "export_run"; params: { format: ExportFormat } }
 	| { name: "search_no_result"; params: { has_domain_filter: boolean } }
 	| {

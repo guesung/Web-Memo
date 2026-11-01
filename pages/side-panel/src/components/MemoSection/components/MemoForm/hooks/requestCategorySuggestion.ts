@@ -87,11 +87,14 @@ interface IFCategorySuggestionResponse {
 	suggestion: IFCategorySuggestion | null;
 }
 
-/** Jev가 기존 카테고리에서 선택한 제안 데이터입니다. */
+/** 제안이 나온 곳. jev는 서버 판정, same_page는 같은 페이지 다른 메모의 카테고리입니다. */
+export type TCategorySuggestionSource = "jev" | "same_page";
+
+/** 기존 카테고리에서 선택한 제안 데이터입니다. */
 export interface IFCategorySuggestion {
 	categoryName: string;
 	isExisting: true;
 	existingCategoryId: number;
 	confidence: number;
-	source: "jev";
+	source: TCategorySuggestionSource;
 }

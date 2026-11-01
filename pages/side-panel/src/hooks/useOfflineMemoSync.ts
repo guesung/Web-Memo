@@ -62,11 +62,8 @@ export default function useOfflineMemoSync({
 	const flush = async (
 		trigger: "mount" | "online" | "retry_click" | "enqueue",
 	) => {
-		const {
-			userId: currentUserId,
-			onConflict: currentOnConflict,
-			epoch: currentEpoch,
-		} = latestPropsRef.current;
+		const { userId: currentUserId, epoch: currentEpoch } =
+			latestPropsRef.current;
 
 		if (!currentUserId || isFlushingRef.current) {
 			return;
@@ -106,8 +103,9 @@ export default function useOfflineMemoSync({
 			)
 				return;
 
+			// flush 도중 사용자가 화면을 바꿨을 수 있어 시작 시점이 아니라 지금의 핸들러로 알린다.
 			for (const conflict of result.conflicts) {
-				currentOnConflict?.(conflict);
+				latestPropsRef.current.onConflict?.(conflict);
 			}
 
 			const hasProcessedAnyItem =

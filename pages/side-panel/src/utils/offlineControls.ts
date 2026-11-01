@@ -1,11 +1,12 @@
 import { I18n } from "@web-memo/shared/utils/extension";
 
 /** 오프라인·동기화 중에 막히는 컨트롤의 종류. 오프라인일 때 보여줄 사유 문구가 저마다 다르다 */
-export type TOfflineControlKind = "change" | "delete";
+export type TOfflineControlKind = "change" | "delete" | "create";
 
 const OFFLINE_REASON_KEY: Record<TOfflineControlKind, string> = {
 	change: "control_disabled_offline_change",
 	delete: "control_disabled_offline_delete",
+	create: "memo_header_new_offline",
 };
 
 /**

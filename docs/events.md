@@ -84,10 +84,10 @@
 
 - **질문:** 새 메모 생성 경로를 사용한 사용자는 얼마나 되는가?
 - **발생·제외:** 일반 upsert에서 기존 행이 없어 insert한 뒤 result.error가 없을 때 발생. 하이라이트 연결 생성은 created=true일 때만 source와 함께 발생. 오프라인 큐 직접 insert와 공용 post 훅에는 이 이벤트 호출이 없다.
-- **속성:** params 자체 선택; 있을 때 필수 `source: "highlight"`.
+- **속성:** params 자체 선택; 있을 때 필수 `source: "highlight"`. 선택 `page_memo_count:number` — 사이드 패널 저장에서 insert 직전 같은 주소(page_key)의 메모 수. 0이면 그 페이지 첫 메모, 1 이상이면 같은 페이지에 메모를 하나 더 만든 것이다. 값을 넘기지 않는 호출부(하이라이트 등)는 속성이 없다.
 - **단위·중복:** 신규 생성 처리당 1회. 사용자 생애 1회 제한 없음. 하이라이트 재시도로 기존 연결을 받은 경우 제외.
 - **근거·테스트:** [useMemoUpsertMutation.ts](../packages/shared/src/hooks/supabase/mutations/useMemoUpsertMutation.ts) · [highlightMemo.ts](../apps/chrome-extension/lib/background/highlightMemo.ts) · [useHighlightMemos.ts](../packages/shared/src/hooks/supabase/useHighlightMemos.ts); 테스트: [useMemoUpsertMutation.test.ts](../packages/shared/src/hooks/supabase/mutations/useMemoUpsertMutation.test.ts) · [highlightMemo.test.ts](../apps/chrome-extension/lib/background/highlightMemo.test.ts).
-- **한계·이력:** 이름과 달리 생애 첫 작성이 아니며 비공백 본문 조건도 없다. 오프라인 생성까지 포괄하는 완전한 insert 집계가 아니다. 도입 버전·일자 미확인.
+- **한계·이력:** 이름과 달리 생애 첫 작성이 아니며 비공백 본문 조건도 없다. 오프라인 생성까지 포괄하는 완전한 insert 집계가 아니다. 도입 버전·일자 미확인. `page_memo_count`는 2026-11-01 한 페이지 여러 메모 작업(DB-1269)에서 추가됐으며, 그 전 기록에는 없다.
 
 ### `memo_editor_ready`
 
@@ -500,16 +500,16 @@
 
 - **질문:** 사용자에게 제시할 기존 카테고리 추천이 준비되는가?
 - **발생·제외:** 요청 결과가 현재 페이지/메모·미배정 상태에 유효하고 기존 카테고리의 Jev 추천으로 검증된 뒤, suggestion state 설정 직전에 발생. 실패·없음·LLM/신규 추천·오래된 응답은 제외한다.
-- **속성:** 필수 `is_new_category:boolean`, `source:"jev"|"llm"`. 현재 호출값은 각각 false, `jev`만 사용한다.
+- **속성:** 필수 `is_new_category:boolean`, `source:"jev"|"llm"|"same_page"`. 현재 호출값은 false와 `jev` 또는 `same_page`다. `same_page`는 같은 페이지 다른 메모의 카테고리를 OpenAI 호출 없이 제안한 것이다.
 - **단위·중복:** 유효 추천을 state에 넣는 흐름당 1회. hook ref로 진행/현재 추천·동일 메모 재요청·닫은 URL을 제한하나 세션 전체 사용자당 1회는 아니다.
 - **근거·테스트:** [useCategorySuggestion](../pages/side-panel/src/components/MemoSection/components/MemoForm/hooks/useCategorySuggestion.ts), [테스트](../pages/side-panel/src/components/MemoSection/components/MemoForm/hooks/useCategorySuggestion.test.ts).
-- **한계·이력:** DOM·viewport 실제 노출 확인 이벤트가 아니다. 2026-09-27 의미 변경 전 자동 적용(LLM·신규 포함) 기록과 같은 집단으로 비교하지 않는다. 보급 버전·일자 별도 확인.
+- **한계·이력:** DOM·viewport 실제 노출 확인 이벤트가 아니다. 2026-09-27 의미 변경 전 자동 적용(LLM·신규 포함) 기록과 같은 집단으로 비교하지 않는다. 2026-11-01 `same_page` 도입 전후의 show 건수는 jev만 나오던 때와 같은 집단으로 비교하지 않는다. 보급 버전·일자 별도 확인.
 
 ### `category_suggestion_apply`
 
 - **질문:** 추천을 명시적으로 수락하는가, 어떤 입력 방식인가?
 - **발생·제외:** 활성 추천·미배정·현재 URL/메모 검증 후 `onCategorySelect(id,"ai")`를 호출하고 발생. 진행 중·이미 배정·페이지/메모 변경·검증 예외는 제외한다.
-- **속성:** 필수 `is_new_category:boolean`, `source:"jev"|"llm"`, `trigger:"click"|"shortcut"`([타입](../packages/shared/src/modules/analytics/type.ts)). 현재는 false/`jev`, shortcut은 Cmd/Ctrl+Enter.
+- **속성:** 필수 `is_new_category:boolean`, `source:"jev"|"llm"|"same_page"`, `trigger:"click"|"shortcut"`([타입](../packages/shared/src/modules/analytics/type.ts)). 현재는 false와 `jev` 또는 `same_page`, shortcut은 Cmd/Ctrl+Enter.
 - **단위·중복:** 수락 ref 가드와 추천 해제로 같은 활성 추천의 중복 처리를 억제한다. 영속적 추천 ID 기반 dedupe는 없다.
 - **근거·테스트:** [hook](../pages/side-panel/src/components/MemoSection/components/MemoForm/hooks/useCategorySuggestion.ts), [칩](../pages/side-panel/src/components/MemoSection/components/MemoForm/components/CategorySuggestion.tsx), [테스트](../pages/side-panel/src/components/MemoSection/components/MemoForm/hooks/useCategorySuggestion.test.ts).
 - **한계·이력:** 콜백 반환 뒤지만 비동기 서버 저장 완료를 기다리지 않아 영속 배정 성공이 아니다. 2026-09-27 이후 명시 수락이며 이전 자동 적용 집계와 단절해서 해석한다.
@@ -518,7 +518,7 @@
 
 - **질문:** 추천 칩을 명시적으로 거절하는가?
 - **발생·제외:** 활성 추천의 X 또는 칩의 Esc 처리에서 발생. 타임아웃·메모/탭 전환·추천 없음은 제외한다.
-- **속성:** 필수 `is_new_category:boolean`, `source:"jev"|"llm"`; 현재 호출은 false/`jev`만 사용.
+- **속성:** 필수 `is_new_category:boolean`, `source:"jev"|"llm"|"same_page"`; 현재 호출은 false와 `jev` 또는 `same_page`.
 - **단위·중복:** 호출 시 추천 ref를 비우고 해당 URL을 닫은 집합에 추가해 같은 활성 추천을 재처리하지 않는다. remount 이후까지 보장하는 사용자별 dedupe는 아니다.
 - **근거·테스트:** [hook](../pages/side-panel/src/components/MemoSection/components/MemoForm/hooks/useCategorySuggestion.ts), [칩](../pages/side-panel/src/components/MemoSection/components/MemoForm/components/CategorySuggestion.tsx), [테스트](../pages/side-panel/src/components/MemoSection/components/MemoForm/hooks/useCategorySuggestion.test.ts).
 - **한계·이력:** 추천을 못 보거나 무시한 경우와 구분해야 한다. 2026-09-27 의미 변경 기준; 보급 버전·일자 별도 확인.

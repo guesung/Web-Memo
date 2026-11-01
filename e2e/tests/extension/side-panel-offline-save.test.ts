@@ -123,17 +123,13 @@ test("오프라인 중 서버 메모가 바뀌면 충돌로 새 메모에 저장
 
 	await context.setOffline(false);
 
-	// 토스트 액션은 role="status"가 아니라(그건 스크린리더용 숨김 공지 영역일 뿐이고 버튼이 없다)
-	// Radix ToastViewport의 role="region" 안에 있다. 메모 폼에도 같은 문구("다른 메모 선택")의
-	// 상시 링크가 있어 페이지 전체에서 role="button"으로 찾으면 둘 다 걸린다.
-	// 토스트는 2초 뒤 자동으로 닫히므로(packages/ui/src/components/toaster.tsx), 응답을 먼저
-	// 기다리지 않고 액션 버튼을 바로 찾아 누른다.
+	// 충돌 토스트는 2초 뒤 자동으로 닫히므로 토스트 액션 대신 헤더 목록 버튼으로 목록을 연다.
+	// 원래 메모와 충돌로 따로 저장된 새 메모, 두 개가 이 페이지에 있다.
 	await sidePanelPage
-		.getByRole("region", { name: /notifications/i })
-		.getByRole("button", { name: /choose another|다른 메모 선택/i })
+		.getByRole("button", { name: /memos on this page|이 페이지 메모 목록/i })
 		.click();
 	await expect(
-		sidePanelPage.getByText(/choose a note|메모를 선택하세요/i),
+		sidePanelPage.getByText(/2 memos on this page|이 페이지 메모 2개/),
 	).toBeVisible();
 
 	// 원래 메모는 다른 곳에서 바꾼 내용 그대로고, 오프라인 입력은 새 메모로 따로 저장됐다.

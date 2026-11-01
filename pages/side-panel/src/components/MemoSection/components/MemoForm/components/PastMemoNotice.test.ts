@@ -62,7 +62,11 @@ let root: Root;
 async function render(props: { onDuplicateOpen?: () => void } = {}) {
 	await act(async () =>
 		root.render(
-			createElement(PastMemoNotice, { hasMemoData: false, ...props }),
+			createElement(PastMemoNotice, {
+				hasMemoData: false,
+				pageMemoCount: 0,
+				...props,
+			}),
 		),
 	);
 }

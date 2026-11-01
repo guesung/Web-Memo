@@ -38,6 +38,7 @@ export const usePastMemoMatch = (
 	);
 
 	const normalizedUrl = getNormalizedUrl(tab?.url);
+	const hasPageMemo = hasSavedPageMemo(props);
 	const isDismissedUrl =
 		!!normalizedUrl && !!dismissedUrls?.includes(normalizedUrl);
 
@@ -62,7 +63,7 @@ export const usePastMemoMatch = (
 			!!normalizedUrl &&
 			dismissedUrls !== null &&
 			!isDismissedUrl &&
-			!props.hasMemoData,
+			!hasPageMemo,
 		staleTime: Number.POSITIVE_INFINITY,
 		retry: false,
 	});
@@ -72,12 +73,12 @@ export const usePastMemoMatch = (
 
 	// 관련 메모는 메모가 없을 때 받은 결과만 보여 준다. 한 번 보여 준 뒤에는 메모가 생겨도 닫지 않는다.
 	useEffect(() => {
-		if (!normalizedUrl || props.hasMemoData || !hasRelatedMemosFromServer) {
+		if (!normalizedUrl || hasPageMemo || !hasRelatedMemosFromServer) {
 			return;
 		}
 
 		setRelatedAcceptedUrl(normalizedUrl);
-	}, [normalizedUrl, props.hasMemoData, hasRelatedMemosFromServer]);
+	}, [normalizedUrl, hasPageMemo, hasRelatedMemosFromServer]);
 
 	const dismissCurrentUrl = async () => {
 		if (!normalizedUrl) {
@@ -108,6 +109,14 @@ export const usePastMemoMatch = (
 		dismissCurrentUrl,
 	};
 };
+
+/**
+ * 현재 페이지에 저장된 메모가 있는지.
+ * @description 편집 중인 메모가 저장됐거나, 같은 페이지에 다른 메모가 하나라도 있으면 true.
+ * 새 메모를 쓰는 중에도 페이지 메모가 이미 있으면 과거 메모 판정을 부르지 않는다.
+ */
+export const hasSavedPageMemo = (props: IFUsePastMemoMatchProps) =>
+	props.hasMemoData || props.pageMemoCount > 0;
 
 /**
  * 무시 목록 맨 앞에 URL을 넣고 최근 500개만 남긴다.
@@ -253,6 +262,8 @@ const isPastMemoResponse = (body: unknown): body is IFPastMemoResponse => {
 interface IFUsePastMemoMatchProps {
 	/** 현재 URL에 저장된 메모가 있는지(memoData?.created_at). 있으면 요청하지 않는다 */
 	hasMemoData: boolean;
+	/** 현재 URL에 저장된 메모 수. 1개 이상이면 요청하지 않는다 */
+	pageMemoCount: number;
 }
 
 /** usePastMemoMatch 반환값 */

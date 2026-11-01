@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { addDismissedUrl } from "./usePastMemoMatch";
+import { addDismissedUrl, hasSavedPageMemo } from "./usePastMemoMatch";
 
 vi.mock("@web-memo/env", () => ({ CONFIG: {} }));
 vi.mock("@web-memo/shared/hooks", () => ({}));
@@ -41,5 +41,25 @@ describe("addDismissedUrl", () => {
 		addDismissedUrl(dismissedUrls, "https://b.com/");
 
 		expect(dismissedUrls).toEqual(["https://a.com/"]);
+	});
+});
+
+describe("hasSavedPageMemo", () => {
+	it("편집 메모도 페이지 메모도 없으면 false", () => {
+		expect(hasSavedPageMemo({ hasMemoData: false, pageMemoCount: 0 })).toBe(
+			false,
+		);
+	});
+
+	it("편집 중인 메모가 저장돼 있으면 true", () => {
+		expect(hasSavedPageMemo({ hasMemoData: true, pageMemoCount: 0 })).toBe(
+			true,
+		);
+	});
+
+	it("새 메모를 쓰는 중이어도 페이지 메모가 1개 이상이면 true", () => {
+		expect(hasSavedPageMemo({ hasMemoData: false, pageMemoCount: 1 })).toBe(
+			true,
+		);
 	});
 });

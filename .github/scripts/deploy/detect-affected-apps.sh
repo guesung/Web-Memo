@@ -8,6 +8,12 @@ set -euo pipefail
 
 : "${BASE_REF:?BASE_REF 환경변수가 필요합니다}"
 
+# 선택 입력. 주어지면 HEAD 대신 이 ref까지의 변경(BASE_REF..HEAD_REF)을 판정합니다.
+# 배포 기록이 과거 머지 커밋 하나가 어느 앱에 영향을 줬는지 판정할 때 씁니다.
+# 비우면 지금까지와 똑같이 체크아웃된 HEAD 기준입니다.
+HEAD_REF="${HEAD_REF:-}"
+DIFF_HEAD="${HEAD_REF:-HEAD}"
+
 emit() {
   printf 'app=%s\nextension=%s\nweb=%s\n' "$1" "$2" "$3" >> "${GITHUB_OUTPUT:-/dev/stdout}"
   echo "판정 → app=$1 extension=$2 web=$3"
@@ -23,13 +29,16 @@ fi
 
 # turbo --affected는 lockfile을 읽지 않습니다. 의존성만 올린 PR은 affected가 0개로
 # 나와 빌드가 통째로 스킵되므로, 그 경우는 판정을 건너뛰고 전부 빌드합니다.
-if ! git diff --quiet "$BASE_REF...HEAD" -- pnpm-lock.yaml package.json; then
+if ! git diff --quiet "$BASE_REF...$DIFF_HEAD" -- pnpm-lock.yaml package.json; then
   echo "의존성 파일 변경 → 전체 빌드"
   emit true true true
   exit 0
 fi
 
 export TURBO_SCM_BASE="$BASE_REF"
+if [ -n "$HEAD_REF" ]; then
+  export TURBO_SCM_HEAD="$HEAD_REF"
+fi
 # turbo 버전은 루트 package.json 하나만 보고 따라갑니다.
 TURBO="turbo@$(node -p "require('./package.json').devDependencies.turbo")"
 
@@ -44,7 +53,7 @@ extension_affected="$(printf '%s' "$affected_packages" | jq -r 'any(.packages.it
 
 # 앱 배포 워크플로는 패키지 밖에 있어 turbo가 감지하지 못합니다.
 # 앱 큐·성공 이력·영향 판정이 바뀌어도 새 빌드·배포 경로를 검증합니다.
-if ! git diff --quiet "$BASE_REF...HEAD" -- \
+if ! git diff --quiet "$BASE_REF...$DIFF_HEAD" -- \
   .github/workflows/ci.yml .github/workflows/cd-app.yml .github/workflows/release.yml \
   .github/scripts/deploy/appDeploymentState.mjs .github/scripts/deploy/prepareStagingApp.mjs \
   .github/scripts/deploy/detect-affected-apps.sh; then

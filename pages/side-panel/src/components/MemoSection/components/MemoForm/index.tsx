@@ -68,7 +68,6 @@ import useMemoEditorReady from "./hooks/useMemoEditorReady";
 const MemoFormContent = ({
 	fieldResizeState,
 	selectedMemo,
-	onOtherMemoClick,
 	isSelectedMemoMissing,
 	isMemoLocked = false,
 	isMemoLoadFailed = false,
@@ -83,6 +82,7 @@ const MemoFormContent = ({
 	isNewMemo = false,
 	onMemoCreate,
 	switchHandleRef,
+	onBusyChange,
 }: IFMemoFormProps) => {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const impressionRef = useRef<HTMLTextAreaElement | null>(null);
@@ -244,16 +244,11 @@ const MemoFormContent = ({
 		return { isLeavable: isSaved };
 	};
 
-	const handleOtherMemoClick = async () => {
-		if (!onOtherMemoClick) {
-			return;
-		}
-
-		const leaveResult = await leaveMemo();
-		if (leaveResult.isLeavable) {
-			onOtherMemoClick(leaveResult.draft);
-		}
-	};
+	const isBusy = isWritePending || isSwitching;
+	useEffect(() => {
+		onBusyChange?.(isBusy);
+	}, [isBusy, onBusyChange]);
+	useEffect(() => () => onBusyChange?.(false), [onBusyChange]);
 
 	// 같은 페이지 안 전환은 폼을 다시 만들지 않으므로, 전환하는 쪽(헤더)이 이 폼을 거쳐 저장하게 한다.
 	useEffect(() => {
@@ -405,20 +400,6 @@ const MemoFormContent = ({
 				<p role="alert" className="text-xs text-destructive">
 					{I18n.get("memo_candidates_selection_lost")}
 				</p>
-			)}
-			{onOtherMemoClick && (
-				<button
-					type="button"
-					className={cn(
-						"min-h-8 self-start rounded px-2 py-1 text-xs text-muted-foreground underline hover:text-foreground",
-						// 잠금으로 막힌 경우는 200ms 뒤에만 흐리게 한다. 저장 중 차단은 기존처럼 바로 흐리게 한다.
-						(isWritePending || isSwitching || isMemoUiDimmed) && "opacity-50",
-					)}
-					disabled={isMemoLocked || isWritePending || isSwitching}
-					onClick={handleOtherMemoClick}
-				>
-					{I18n.get("memo_choose_other")}
-				</button>
 			)}
 			{!isMemoLocked && (
 				<PastMemoNotice
@@ -853,7 +834,6 @@ function useCollapsedSubFields({
 const MemoForm = ({
 	fieldResizeState,
 	selectedMemo,
-	onOtherMemoClick,
 	isSelectedMemoMissing,
 	isMemoLocked,
 	isMemoLoadFailed,
@@ -868,6 +848,7 @@ const MemoForm = ({
 	isNewMemo,
 	onMemoCreate,
 	switchHandleRef,
+	onBusyChange,
 }: IFMemoFormProps) => {
 	const form = useForm<MemoInput>({
 		shouldUnregister: false,
@@ -889,7 +870,6 @@ const MemoForm = ({
 			<MemoFormContent
 				fieldResizeState={fieldResizeState}
 				selectedMemo={selectedMemo}
-				onOtherMemoClick={onOtherMemoClick}
 				isSelectedMemoMissing={isSelectedMemoMissing}
 				isMemoLocked={isMemoLocked}
 				isMemoLoadFailed={isMemoLoadFailed}
@@ -904,6 +884,7 @@ const MemoForm = ({
 				isNewMemo={isNewMemo}
 				onMemoCreate={onMemoCreate}
 				switchHandleRef={switchHandleRef}
+				onBusyChange={onBusyChange}
 			/>
 		</FormProvider>
 	);
@@ -919,7 +900,6 @@ interface IFMemoFormProps {
 	>[0]["fieldResizeState"];
 	selectedMemo?: Database["memo"]["Tables"]["memo"]["Row"];
 	isSelectedMemoMissing?: boolean;
-	onOtherMemoClick?: (draft?: MemoInput) => void;
 	/** 메모 후보 조회가 대기 중이거나 데이터 없이 실패해 편집·저장을 막아야 하는지 */
 	isMemoLocked?: boolean;
 	/** 재조회 중이 아니면서 메모 후보 조회가 데이터 없이 실패했는지. 실패 문구와 다시 시도 버튼을 보여 준다 */
@@ -946,6 +926,8 @@ interface IFMemoFormProps {
 	onMemoCreate?: (memoId: number) => void;
 	/** 전환하는 쪽이 이 폼의 저장·초점 기능을 호출하도록 폼이 채워 두는 ref */
 	switchHandleRef?: MutableRefObject<IFMemoFormSwitchHandle | null>;
+	/** 전환 전 저장 중(저장 요청이 나가 있거나 떠나는 중)인지가 바뀔 때. 폼 밖 헤더 버튼을 막는 데 쓴다 */
+	onBusyChange?: (isBusy: boolean) => void;
 }
 
 /** 메모를 떠나기 전 저장 결과 */

@@ -1,6 +1,7 @@
 import { getOfflineControlDisabledReason } from "@src/utils";
 import type { Database } from "@web-memo/shared/types";
 import { I18n } from "@web-memo/shared/utils/extension";
+import { Button } from "@web-memo/ui";
 import { PlusIcon, Trash2Icon } from "lucide-react";
 
 /** 저장된 메모 행. */
@@ -15,8 +16,12 @@ interface IFMemoCandidateListProps {
 	onMemoSelect: (memoId: number) => void;
 	/** 후보 메모를 휴지통으로 옮길 때 */
 	onMemoDelete: (memoId: number) => void;
-	/** 현재 주소에 새 메모를 쓸 때. 현재 주소에 메모가 없을 때만 넘긴다 */
-	onNewMemoClick?: () => void;
+	/** 현재 주소에 새 메모를 쓸 때 */
+	onNewMemoClick: () => void;
+	/** 새 메모를 막는 사유(오프라인·동기화 중). 있으면 새 메모 버튼을 막는다 */
+	newMemoDisabledReason?: string;
+	/** 직전에 편집한 메모. 카드에 '편집 중'을 붙인다 */
+	editingMemoId?: number | null;
 	isOffline?: boolean;
 	isSyncing?: boolean;
 }
@@ -28,6 +33,8 @@ export default function MemoCandidateList({
 	onMemoSelect,
 	onMemoDelete,
 	onNewMemoClick,
+	newMemoDisabledReason,
+	editingMemoId = null,
 	isOffline = false,
 	isSyncing = false,
 }: IFMemoCandidateListProps) {
@@ -37,29 +44,50 @@ export default function MemoCandidateList({
 		kind: "delete",
 	});
 
+	if (memos.length === 0 && otherUrlMemos.length === 0) {
+		return (
+			<div className="flex flex-col items-start gap-2 py-4">
+				<p className="text-xs text-muted-foreground">
+					{I18n.get("memo_candidates_empty")}
+				</p>
+				<Button
+					type="button"
+					size="sm"
+					className="gap-1"
+					disabled={!!newMemoDisabledReason}
+					title={newMemoDisabledReason}
+					onClick={onNewMemoClick}
+				>
+					<PlusIcon className="size-4" aria-hidden="true" />
+					{I18n.get("memo_candidates_new")}
+				</Button>
+			</div>
+		);
+	}
+
 	return (
 		<div className="flex min-h-0 flex-1 flex-col gap-2 py-2">
 			<p className="text-sm font-semibold">
-				{I18n.get("memo_candidates_title")}
-			</p>
-			<p className="text-xs text-muted-foreground">
-				{I18n.get("memo_candidates_description")}
+				{memos.length > 0
+					? I18n.get("memo_candidates_title", String(memos.length))
+					: I18n.get("memo_candidates_title_choose")}
 			</p>
 			<div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
-				{onNewMemoClick && (
-					<button
-						type="button"
-						className="flex items-center gap-2 rounded-md border border-dashed p-3 text-left text-sm hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-						onClick={onNewMemoClick}
-					>
-						<PlusIcon className="size-4 shrink-0" aria-hidden="true" />
-						{I18n.get("memo_candidates_new")}
-					</button>
-				)}
+				<button
+					type="button"
+					className="flex items-center gap-2 rounded-md border border-dashed p-3 text-left text-sm hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+					disabled={!!newMemoDisabledReason}
+					title={newMemoDisabledReason}
+					onClick={onNewMemoClick}
+				>
+					<PlusIcon className="size-4 shrink-0" aria-hidden="true" />
+					{I18n.get("memo_candidates_new")}
+				</button>
 				{memos.map((memo) => (
 					<MemoCandidateItem
 						key={memo.id}
 						memo={memo}
+						isEditing={memo.id === editingMemoId}
 						onMemoSelect={onMemoSelect}
 						onMemoDelete={onMemoDelete}
 						deleteDisabledReason={deleteDisabledReason}
@@ -75,6 +103,7 @@ export default function MemoCandidateList({
 						key={memo.id}
 						memo={memo}
 						urlLabel={getUrlLabel(memo.url)}
+						isEditing={memo.id === editingMemoId}
 						onMemoSelect={onMemoSelect}
 						onMemoDelete={onMemoDelete}
 						deleteDisabledReason={deleteDisabledReason}
@@ -92,6 +121,7 @@ export default function MemoCandidateList({
 const MemoCandidateItem = ({
 	memo,
 	urlLabel,
+	isEditing,
 	onMemoSelect,
 	onMemoDelete,
 	deleteDisabledReason,
@@ -102,7 +132,14 @@ const MemoCandidateItem = ({
 			className="w-full rounded-md p-3 pr-10 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 			onClick={() => onMemoSelect(memo.id)}
 		>
-			<span className="block truncate text-sm font-semibold">{memo.title}</span>
+			<span className="flex min-w-0 items-baseline gap-1">
+				<span className="truncate text-sm font-semibold">{memo.title}</span>
+				{isEditing && (
+					<span className="shrink-0 text-xs text-muted-foreground">
+						{I18n.get("memo_candidates_current")}
+					</span>
+				)}
+			</span>
 			{urlLabel && (
 				<span
 					className="mt-1 block truncate text-xs text-muted-foreground"
@@ -152,6 +189,8 @@ interface IFMemoCandidateItemProps {
 	memo: TMemo;
 	/** 다른 주소의 메모일 때 보여 줄 주소 구분 표시 */
 	urlLabel?: string;
+	/** 직전에 편집한 메모인지 */
+	isEditing: boolean;
 	onMemoSelect: (memoId: number) => void;
 	onMemoDelete: (memoId: number) => void;
 	deleteDisabledReason?: string;

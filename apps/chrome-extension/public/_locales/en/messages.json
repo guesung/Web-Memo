@@ -9,6 +9,15 @@
 		"message": "Note"
 	},
 	"memo_candidates_title": {
+		"message": "$count$ memos on this page",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "3"
+			}
+		}
+	},
+	"memo_candidates_title_choose": {
 		"message": "Choose a note for this page"
 	},
 	"memo_candidates_preserved_draft": {
@@ -16,9 +25,6 @@
 	},
 	"memo_candidates_selection_lost": {
 		"message": "The selected note is no longer available. Keep your draft and choose again."
-	},
-	"memo_candidates_description": {
-		"message": "This page has multiple notes. Choose one to review its content before editing."
 	},
 	"memo_candidates_delete": {
 		"message": "Delete memo"
@@ -29,6 +35,12 @@
 	"memo_candidates_new": {
 		"message": "Write a new memo"
 	},
+	"memo_candidates_current": {
+		"message": "· Editing"
+	},
+	"memo_candidates_empty": {
+		"message": "No memos on this page yet"
+	},
 	"memo_candidates_other_url": {
 		"message": "Memos from other addresses"
 	},
@@ -37,6 +49,15 @@
 	},
 	"memo_choose_other": {
 		"message": "Choose another note"
+	},
+	"memo_header_list": {
+		"message": "Memos on this page"
+	},
+	"memo_header_new": {
+		"message": "New memo"
+	},
+	"memo_header_new_offline": {
+		"message": "You can't create a new memo while offline"
 	},
 	"memo_offline_conflict": {
 		"message": "This memo changed elsewhere, so it was saved as a new memo"

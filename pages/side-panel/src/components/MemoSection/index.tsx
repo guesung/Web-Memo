@@ -4,6 +4,7 @@ import {
 	useSyncLoginStatus,
 } from "@src/hooks";
 import type { MemoInput } from "@src/types/Input";
+import { getOfflineControlDisabledReason } from "@src/utils";
 import type { IFOfflineMemoConflict } from "@src/utils/offlineMemoQueue";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
@@ -208,6 +209,13 @@ const AuthenticatedMemoSectionContent = ({
 		count: number;
 	} | null>(null);
 	const switchHandleRef = useRef<IFMemoFormSwitchHandle | null>(null);
+	// 직전에 편집한 메모. 목록의 '편집 중' 표시와 목록 버튼을 다시 눌렀을 때 돌아갈 곳에 쓴다.
+	const [lastEditedMemo, setLastEditedMemo] = useState<{
+		scope: string;
+		memoId: number;
+	} | null>(null);
+	// 열려 있는 폼이 전환 전 저장 중인지. 폼 밖 헤더 버튼을 막는다.
+	const [isFormBusy, setIsFormBusy] = useState(false);
 	const [preservedDraft, setPreservedDraft] = useState<{
 		scope: string;
 		value: MemoInput;
@@ -308,7 +316,6 @@ const AuthenticatedMemoSectionContent = ({
 		: !currentDraft && memos.length >= 1
 			? memos[0]
 			: undefined;
-	const hasMultipleMemos = memos.length > 1;
 	const isSelectedMemoMissing =
 		currentSelection?.memoId !== null &&
 		currentSelection?.memoId !== undefined &&
@@ -323,7 +330,24 @@ const AuthenticatedMemoSectionContent = ({
 		memos.find((memo) => memo.id !== editingMemoId && memo.category_id !== null)
 			?.category_id ?? null;
 
+	const isCandidateListVisible =
+		(hasOnlyOtherUrlMemos || isCandidateListRequested || !!currentDraft) &&
+		!currentSelection;
+	const lastEditedMemoId =
+		lastEditedMemo?.scope === editorScope ? lastEditedMemo.memoId : null;
+
+	const rememberEditingMemo = () => {
+		const editingMemoIdToRemember = currentSelection?.memoId ?? createdMemoId;
+		if (editingMemoIdToRemember !== null) {
+			setLastEditedMemo({
+				scope: editorScope,
+				memoId: editingMemoIdToRemember,
+			});
+		}
+	};
+
 	const openCandidateList = () => {
+		rememberEditingMemo();
 		setCandidateListScope(editorScope);
 		setSelection(null);
 	};
@@ -368,6 +392,15 @@ const AuthenticatedMemoSectionContent = ({
 		});
 	const isSyncing = syncStatus === "syncing";
 	const isSyncFailed = syncStatus === "syncFailed";
+	// 같은 URL의 id 없는 오프라인 항목은 대기열에서 한 칸으로 합쳐지므로, 메모가 있는 페이지에서는 새 메모를 막는다.
+	const newMemoDisabledReason =
+		memos.length > 0
+			? getOfflineControlDisabledReason({
+					isOffline: !isOnline,
+					isSyncing,
+					kind: "create",
+				})
+			: undefined;
 
 	const handleMemoSelect = (memoId: number) => {
 		setCandidateListScope(null);
@@ -433,6 +466,10 @@ const AuthenticatedMemoSectionContent = ({
 	 * 이미 새 메모 화면이면 아무것도 바꾸지 않고 본문에 초점만 둔다.
 	 */
 	const handleNewMemoClick = async () => {
+		if (newMemoDisabledReason) {
+			return;
+		}
+
 		const switchHandle = switchHandleRef.current;
 		if (switchHandle) {
 			if (currentSelection?.isNew) {
@@ -445,6 +482,7 @@ const AuthenticatedMemoSectionContent = ({
 			}
 		}
 
+		rememberEditingMemo();
 		setCandidateListScope(null);
 		setCreatedMemo(null);
 		setNewMemoSequence((previous) => ({
@@ -457,6 +495,29 @@ const AuthenticatedMemoSectionContent = ({
 			memo: null,
 			isNew: true,
 		});
+	};
+
+	/**
+	 * 헤더 목록 버튼. 편집 중이면 저장을 마치고 목록으로, 목록이면 직전에 편집한 메모로 돌아간다.
+	 * @description 직전 메모가 지워졌으면 가장 최근에 수정한 메모를 연다.
+	 */
+	const handleListClick = async () => {
+		if (isCandidateListVisible) {
+			const returnMemoId =
+				candidateMemos.find((candidate) => candidate.id === lastEditedMemoId)
+					?.id ?? memos[0]?.id;
+			if (returnMemoId !== undefined) {
+				handleMemoSelect(returnMemoId);
+			}
+			return;
+		}
+
+		const leaveResult = (await switchHandleRef.current?.leave()) ?? {
+			isLeavable: true,
+		};
+		if (leaveResult.isLeavable) {
+			handleOtherMemoClick(leaveResult.draft);
+		}
 	};
 
 	const handleMemoCreate = useCallback(
@@ -489,7 +550,21 @@ const AuthenticatedMemoSectionContent = ({
 
 	return (
 		<>
-			<MemoHeader memoData={activeMemo} />
+			<MemoHeader
+				memoData={activeMemo}
+				actions={
+					memos.length > 0
+						? {
+								memoCount: memos.length,
+								isListOpen: isCandidateListVisible,
+								isBusy: isFormBusy,
+								newMemoDisabledReason,
+								onListClick: () => void handleListClick(),
+								onNewMemoClick: () => void handleNewMemoClick(),
+							}
+						: undefined
+				}
+			/>
 			{currentOpenedPastMemo && (
 				<PastMemoView
 					memoId={currentOpenedPastMemo.memoId}
@@ -506,16 +581,14 @@ const AuthenticatedMemoSectionContent = ({
 			{/* 작성 중 내용과 자동 저장 상태를 지키려고 폼을 언마운트하지 않고 숨긴다. */}
 			<div className={cn(currentOpenedPastMemo ? "hidden" : "contents")}>
 				{currentDraft && <PreservedDraft draft={currentDraft} />}
-				{(hasMultipleMemos ||
-					hasOnlyOtherUrlMemos ||
-					isCandidateListRequested ||
-					currentDraft) &&
-				!currentSelection ? (
+				{isCandidateListVisible ? (
 					<MemoCandidateList
 						memos={memos}
 						otherUrlMemos={otherUrlMemos}
 						onMemoSelect={handleMemoSelect}
-						onNewMemoClick={memos.length === 0 ? handleNewMemoClick : undefined}
+						onNewMemoClick={() => void handleNewMemoClick()}
+						newMemoDisabledReason={newMemoDisabledReason}
+						editingMemoId={lastEditedMemoId}
 						onMemoDelete={handleMemoDelete}
 						isOffline={!isOnline}
 						isSyncing={isSyncing}
@@ -527,16 +600,10 @@ const AuthenticatedMemoSectionContent = ({
 						isNewMemo={currentSelection?.isNew}
 						onMemoCreate={handleMemoCreate}
 						switchHandleRef={switchHandleRef}
+						onBusyChange={setIsFormBusy}
 						selectedMemo={activeMemo}
 						isSelectedMemoMissing={
 							isSelectedMemoMissing || hasUnselectedCollision
-						}
-						onOtherMemoClick={
-							hasMultipleMemos ||
-							otherUrlMemos.length > 0 ||
-							isSelectedMemoMissing
-								? handleOtherMemoClick
-								: undefined
 						}
 						isSyncing={isSyncing}
 						isSyncFailed={isSyncFailed}

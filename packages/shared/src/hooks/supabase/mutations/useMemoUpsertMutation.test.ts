@@ -289,6 +289,23 @@ describe("메모 upsert 저장 중 Supabase 오류", () => {
 		expect(analytics.trackMemoUpdate).not.toHaveBeenCalled();
 	});
 
+	it("pageMemoCount가 오면 첫 작성 이벤트에 page_memo_count로 싣는다", async () => {
+		const url = "https://example.com";
+		insertMemo.mockResolvedValueOnce({ data: [{ id: 2 }], error: null });
+
+		await mutate({
+			url,
+			forceInsert: true,
+			pageMemoCount: 1,
+			data: { url, title: "제목" },
+		});
+
+		expect(analytics.trackEvent).toHaveBeenCalledWith({
+			name: "memo_first_write",
+			params: { page_memo_count: 1 },
+		});
+	});
+
 	it("새 메모에 계획 날짜가 있으면 첫 작성과 함께 날짜 배정도 기록한다", async () => {
 		const url = "https://example.com";
 		getMemoByUrl.mockResolvedValueOnce({ data: [], error: null });

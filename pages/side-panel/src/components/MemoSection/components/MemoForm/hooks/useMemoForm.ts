@@ -66,6 +66,8 @@ interface UseMemoFormProps {
 	isSyncing?: boolean;
 	/** 같은 페이지에 메모가 있어도 새로 만드는 중인지. 켜져 있으면 유일한 메모를 편집 대상으로 잡지 않고 첫 저장을 항상 insert로 보낸다 */
 	isNewMemo?: boolean;
+	/** 저장 시점에 이 페이지에 있는 메모 수. 첫 작성 이벤트에 싣는다 */
+	pageMemoCount?: number;
 	/** 첫 insert가 끝나 새 메모의 id가 정해졌을 때. 선택을 그 id로 옮기는 쪽이 쓴다 */
 	onMemoCreate?: (memoId: number) => void;
 }
@@ -77,6 +79,7 @@ export default function useMemoForm({
 	isMemoLocked = false,
 	isSyncing = false,
 	isNewMemo = false,
+	pageMemoCount,
 	onMemoCreate,
 }: UseMemoFormProps = {}) {
 	const { setValue, getValues } = useFormContext<MemoInput>();
@@ -480,6 +483,7 @@ export default function useMemoForm({
 						id: memoId,
 						url: tabInfo.url,
 						forceInsert: isNewMemo,
+						pageMemoCount,
 						analyticsSource: "side_panel",
 						analyticsUserId: saveUserId,
 						data: {
@@ -536,6 +540,7 @@ export default function useMemoForm({
 			userId,
 			pendingOfflineMemo.status,
 			isNewMemo,
+			pageMemoCount,
 			onMemoCreate,
 			saveFirstSavedMemoId,
 		],

@@ -190,6 +190,7 @@ const MemoFormContent = ({
 		isMemoLocked,
 		isSyncing,
 		isNewMemo,
+		pageMemoCount,
 		onMemoCreate,
 	});
 	const impressionField = register("impression", {

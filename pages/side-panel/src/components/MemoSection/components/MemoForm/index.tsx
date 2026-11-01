@@ -77,6 +77,7 @@ const MemoFormContent = ({
 	hasSyncNetworkError = false,
 	onRetrySync,
 	onPastMemoOpen,
+	pageMemoCount = 0,
 }: IFMemoFormProps) => {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const impressionRef = useRef<HTMLTextAreaElement | null>(null);
@@ -381,6 +382,7 @@ const MemoFormContent = ({
 			{!isMemoLocked && (
 				<PastMemoNotice
 					hasMemoData={!!memoData?.created_at}
+					pageMemoCount={pageMemoCount}
 					onDuplicateOpen={onPastMemoOpen}
 				/>
 			)}
@@ -815,6 +817,7 @@ const MemoForm = ({
 	hasSyncNetworkError,
 	onRetrySync,
 	onPastMemoOpen,
+	pageMemoCount,
 }: IFMemoFormProps) => {
 	const form = useForm<MemoInput>({
 		shouldUnregister: false,
@@ -846,6 +849,7 @@ const MemoForm = ({
 				hasSyncNetworkError={hasSyncNetworkError}
 				onRetrySync={onRetrySync}
 				onPastMemoOpen={onPastMemoOpen}
+				pageMemoCount={pageMemoCount}
 			/>
 		</FormProvider>
 	);
@@ -878,6 +882,8 @@ interface IFMemoFormProps {
 	onRetrySync?: () => void;
 	/** 과거 메모 알림에서 같은 글의 열기를 눌렀을 때. 사이드 패널 안에서 읽기 전용으로 보여 주는 쪽이 처리한다 */
 	onPastMemoOpen?: (duplicate: IFPastMemoDuplicate) => void;
+	/** 현재 주소에 저장된 메모 수. 1개 이상이면 과거 메모 판정을 부르지 않는다 */
+	pageMemoCount?: number;
 }
 
 interface IFMemoStatusToggleProps {

@@ -470,6 +470,7 @@ const AuthenticatedMemoSectionContent = ({
 						hasSyncNetworkError={lastFlushHadNetworkError}
 						onRetrySync={retrySync}
 						onPastMemoOpen={handlePastMemoOpen}
+						pageMemoCount={memos.length}
 					/>
 				)}
 			</div>

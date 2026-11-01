@@ -1,3 +1,7 @@
+import { execFileSync } from "node:child_process";
+import { appendFileSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
 	evaluatePatch,
@@ -89,4 +93,43 @@ describe("git 출력 파서", () => {
 			{ path: "b.sh", mode: "100755" },
 		]);
 	});
+});
+
+describe("check-triage-patch CLI", () => {
+	const script = resolve(".github/scripts/sentry/check-triage-patch.mjs");
+
+	const setupRepo = ({ excludeOutDir }: { excludeOutDir: boolean }) => {
+		const dir = mkdtempSync(join(tmpdir(), "triage-patch-"));
+		const run = (...args: string[]) => execFileSync("git", args, { cwd: dir });
+		run("init", "-q");
+		writeFileSync(join(dir, "a.ts"), "export const a = 1;\n");
+		run("add", "a.ts");
+		run("-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "init");
+		if (excludeOutDir) {
+			appendFileSync(join(dir, ".git/info/exclude"), ".sentry-triage/\n");
+		}
+		mkdirSync(join(dir, ".sentry-triage"));
+		writeFileSync(join(dir, ".sentry-triage/context.json"), "{}");
+		writeFileSync(join(dir, "a.ts"), "export const a = 2;\n");
+		writeFileSync(join(dir, "a.test.ts"), "// 회귀 테스트\n");
+		return dir;
+	};
+
+	it.each([true, false])(
+		"컨텍스트 폴더가 .git/info/exclude 에 있어도(%s) 실패하지 않고 diff 에서 뺀다",
+		(excludeOutDir) => {
+			const dir = setupRepo({ excludeOutDir });
+			const out = execFileSync("node", [script], { cwd: dir, encoding: "utf8" });
+			const verdict = JSON.parse(out.trim().split("\n").at(-1) ?? "{}");
+
+			expect(verdict.status).toBe("ready");
+			expect([...verdict.files].sort()).toEqual([
+				"a.test.ts",
+				"a.ts",
+			]);
+			expect(readFileSync(join(dir, ".sentry-triage/patch.diff"), "utf8")).not.toContain(
+				".sentry-triage",
+			);
+		},
+	);
 });

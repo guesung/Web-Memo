@@ -14,10 +14,16 @@ import { CORE_EVENTS, TRAFFIC_EVENTS, readEventStat } from "./ga4-data.mjs";
  * 전환율을 찍지 않습니다. side_panel_open 은 사이드 패널 전용(확장 Measurement
  * Protocol)이고 memo_write 는 packages/shared 훅에서 나가 웹·확장 양쪽에서
  * 발화합니다. 모집단이 달라 나누면 100%를 넘습니다.
+ *
+ * memo_first_write 는 memo_write 중 새 메모를 만든 사람만 따로 봅니다. 사이드 패널
+ * 저장과 하이라이트 생성에서만 발화하고 웹 블로그 화면·오프라인 대기열에서 만든 새
+ * 메모는 빠지므로, 실제 신규 작성자보다 적게 나옵니다. 새 메모 하나에 한 번 발화하므로
+ * 건수가 곧 새로 만든 메모 수입니다.
  */
 const FUNNEL_STEPS = [
 	{ eventName: "side_panel_open", label: "사이드 패널 열기" },
 	{ eventName: "memo_write", label: "메모 작성" },
+	{ eventName: "memo_first_write", label: "신규 메모 작성" },
 ];
 
 /**
@@ -83,16 +89,24 @@ const describeStat = ({ label, value, unit, average7 }) => {
 	return `${label}  *${formatCount(value)}${unit}*  (${detail})`;
 };
 
+/** 사람 수와 건수를 함께. 증감률은 사람 수 기준입니다 — 퍼널이 묻는 것은 "몇 명이 썼나"입니다. */
+const describeUsersWithCount = ({ label, users, count }) => {
+	const change = formatChange(users.yesterday, users.average7);
+	const detail = [
+		`7일 평균 ${formatAverage(users.average7)}명 · ${formatAverage(count.average7)}건`,
+		change,
+	]
+		.filter(Boolean)
+		.join(" · ");
+
+	return `${label}  *${formatCount(users.yesterday)}명 · ${formatCount(count.yesterday)}건*  (${detail})`;
+};
+
 const buildFunnelBlock = (events) => {
 	const lines = FUNNEL_STEPS.map(({ eventName, label }) => {
-		const { users } = readEventStat(events, eventName);
+		const { users, count } = readEventStat(events, eventName);
 
-		return describeStat({
-			label,
-			value: users.yesterday,
-			unit: "명",
-			average7: users.average7,
-		});
+		return describeUsersWithCount({ label, users, count });
 	});
 
 	return {
@@ -103,9 +117,9 @@ const buildFunnelBlock = (events) => {
 
 /**
  * 두 섹션은 묻는 것이 다릅니다.
- * 퍼널은 "몇 명이 썼나"라서 사람 수(activeUsers)를 세고, 핵심 이벤트는
- * "로깅이 살아 있나"라서 발생 건수(eventCount)를 셉니다. 그래서 퍼널에 있는
- * side_panel_open·memo_write 는 CORE_EVENTS 에서 빼 중복 등장을 없앴습니다.
+ * 퍼널은 "몇 명이 썼나"라서 사람 수(activeUsers)를 기준으로 건수를 곁들이고, 핵심
+ * 이벤트는 "로깅이 살아 있나"라서 발생 건수(eventCount)만 셉니다. 퍼널에 있는
+ * 이벤트는 CORE_EVENTS 에서 빼 중복 등장을 없앴습니다.
  */
 const buildCoreEventsBlock = (events) => {
 	const lines = CORE_EVENTS.map((eventName) => {

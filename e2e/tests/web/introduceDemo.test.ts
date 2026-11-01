@@ -270,4 +270,56 @@ test.describe("소개 페이지 메모 사용 흐름 데모", () => {
 			.poll(async () => (await memo.textContent())?.length ?? 0)
 			.toBeGreaterThan((pausedText ?? "").length);
 	});
+
+	test.describe("설치 링크 UTM 전달", () => {
+		const STORE_LINK = 'a[href^="https://chromewebstore.google.com"]';
+
+		test.beforeEach(async ({ context }) => {
+			await context.route("https://chromewebstore.google.com/**", (route) =>
+				route.abort(),
+			);
+		});
+
+		test("URL의 utm_*가 클릭한 웹스토어 링크에 붙는다", async ({ page }) => {
+			await page.goto(
+				`/ko${PATHS.introduce}?utm_source=threads&utm_medium=social&utm_campaign=launch`,
+			);
+			const install = page.locator(STORE_LINK).locator("visible=true").first();
+			await install.click();
+
+			const params = new URL((await install.getAttribute("href")) ?? "")
+				.searchParams;
+			expect(params.get("utm_source")).toBe("threads");
+			expect(params.get("utm_medium")).toBe("social");
+			expect(params.get("utm_campaign")).toBe("launch");
+		});
+
+		test("같은 세션에서 UTM 없는 페이지로 옮겨도 저장된 값을 붙인다", async ({
+			page,
+		}) => {
+			await page.goto(`/ko${PATHS.introduce}?utm_source=x`);
+			// 저장은 하이드레이션 뒤 useEffect에서 일어난다. 끝나기 전에 옮기면 저장값이 없다.
+			await expect
+				.poll(() =>
+					page.evaluate(() => sessionStorage.getItem("web-memo:campaign-utm")),
+				)
+				.not.toBeNull();
+			await page.goto(`/ko${PATHS.introduce}`);
+			const install = page.locator(STORE_LINK).locator("visible=true").first();
+			await install.click();
+
+			const params = new URL((await install.getAttribute("href")) ?? "")
+				.searchParams;
+			expect(params.get("utm_source")).toBe("x");
+		});
+
+		test("utm_source가 없으면 링크를 바꾸지 않는다", async ({ page }) => {
+			await page.goto(`/ko${PATHS.introduce}?utm_medium=social`);
+			const install = page.locator(STORE_LINK).locator("visible=true").first();
+			const before = await install.getAttribute("href");
+			await install.click();
+
+			await expect(install).toHaveAttribute("href", before ?? "");
+		});
+	});
 });

@@ -11,6 +11,8 @@ interface IFMemoUpsertVariables {
 	id?: MemoRow["id"];
 	url?: string;
 	data: MemoTable["Insert"];
+	/** true면 URL로 기존 메모를 찾지 않고 새로 만든다. id가 함께 오면 id가 우선한다. */
+	forceInsert?: boolean;
 	analyticsSource?: "side_panel";
 	analyticsUserId?: string;
 }
@@ -37,7 +39,14 @@ export default function useMemoUpsertMutation() {
 			operation: "upsert",
 			stage: "save",
 		},
-		mutationFn: async ({ id, url, data, analyticsSource, analyticsUserId }) => {
+		mutationFn: async ({
+			id,
+			url,
+			data,
+			forceInsert = false,
+			analyticsSource,
+			analyticsUserId,
+		}) => {
 			const targetUrl = url ?? data.url;
 			let existingMemo: MemoRow | undefined;
 
@@ -58,7 +67,7 @@ export default function useMemoUpsertMutation() {
 				) {
 					throw new Error("선택한 메모가 현재 페이지에 속하지 않습니다.");
 				}
-			} else if (targetUrl) {
+			} else if (targetUrl && !forceInsert) {
 				const result = await memoService.getMemoByUrl(targetUrl);
 				if (result.error) {
 					throw result.error;

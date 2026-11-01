@@ -60,6 +60,7 @@ describe("메모 upsert 저장 중 Supabase 오류", () => {
 		id?: number;
 		url?: string;
 		data: Record<string, unknown>;
+		forceInsert?: boolean;
 		analyticsSource?: "side_panel";
 		analyticsUserId?: string;
 	}) => {
@@ -318,5 +319,66 @@ describe("메모 upsert 저장 중 Supabase 오류", () => {
 
 		expect(queryClient.getQueryState(blogPageKey)?.isInvalidated).toBe(true);
 		expect(queryClient.getQueryState(blogSummaryKey)?.isInvalidated).toBe(true);
+	});
+
+	it("forceInsert면 URL 조회 없이 새 메모를 만든다", async () => {
+		const url = "https://example.com";
+		insertMemo.mockResolvedValueOnce({ data: [{ id: 3 }], error: null });
+
+		const result = await mutate({ url, data: { url }, forceInsert: true });
+
+		expect(getMemoByUrl).not.toHaveBeenCalled();
+		expect(updateMemo).not.toHaveBeenCalled();
+		expect(insertMemo).toHaveBeenCalledWith({ url });
+		expect(result).toEqual({ data: [{ id: 3 }], error: null });
+	});
+
+	it("같은 페이지 메모가 여러 개여도 forceInsert면 새로 만든다", async () => {
+		const url = "https://example.com";
+		getMemoByUrl.mockResolvedValue({
+			data: [
+				{ id: 1, url },
+				{ id: 2, url },
+			],
+			error: null,
+		});
+		insertMemo.mockResolvedValueOnce({ data: [{ id: 3 }], error: null });
+
+		await expect(
+			mutate({ url, data: { url }, forceInsert: true }),
+		).resolves.toEqual({ data: [{ id: 3 }], error: null });
+		expect(insertMemo).toHaveBeenCalledTimes(1);
+	});
+
+	it("forceInsert와 id가 함께 오면 id의 메모를 수정한다", async () => {
+		const url = "https://example.com";
+		getMemoById.mockResolvedValueOnce({
+			data: [{ id: 1, url, memo: "이전" }],
+			error: null,
+		});
+		updateMemo.mockResolvedValueOnce({ data: [{ id: 1 }], error: null });
+
+		await mutate({ id: 1, url, data: { memo: "새" }, forceInsert: true });
+
+		expect(updateMemo).toHaveBeenCalledTimes(1);
+		expect(insertMemo).not.toHaveBeenCalled();
+		expect(getMemoByUrl).not.toHaveBeenCalled();
+	});
+
+	it("forceInsert가 없으면 같은 페이지 메모가 2개 이상일 때 저장을 거부한다", async () => {
+		const url = "https://example.com";
+		getMemoByUrl.mockResolvedValueOnce({
+			data: [
+				{ id: 1, url },
+				{ id: 2, url },
+			],
+			error: null,
+		});
+
+		await expect(mutate({ url, data: { url } })).rejects.toThrow(
+			"수정할 메모를 선택해 주세요.",
+		);
+		expect(insertMemo).not.toHaveBeenCalled();
+		expect(updateMemo).not.toHaveBeenCalled();
 	});
 });

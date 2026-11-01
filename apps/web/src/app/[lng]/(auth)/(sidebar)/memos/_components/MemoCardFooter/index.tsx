@@ -27,6 +27,7 @@ interface IFMemoCardFooterProps
 		React.HTMLAttributes<HTMLDivElement> {
 	memo: GetMemoResponse;
 	isShowingOption?: boolean;
+	onDeleteSuccess?: () => void;
 	/** 카테고리 배지를 누르면 할 일. 카드는 목록 필터, 편집 모달은 카테고리 팝업 */
 	categoryBadgeAction?: "filter" | "popup";
 	/**
@@ -88,6 +89,7 @@ function MemoCardFooterContent({
 	lng,
 	children,
 	isShowingOption = true,
+	onDeleteSuccess,
 	categoryBadgeAction = "filter",
 	categoryPopover,
 	highlightCount,
@@ -238,6 +240,7 @@ function MemoCardFooterContent({
 						lng={lng}
 						onOpenChange={setIsDropdownOpen}
 						onCategoryPopupOpen={categoryPopover.open}
+						onDeleteSuccess={onDeleteSuccess}
 					/>
 				</span>
 				{children}

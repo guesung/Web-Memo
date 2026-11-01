@@ -42,11 +42,12 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | `chore-e2e-coverage.yml` | schedule, workflow_dispatch | 매주 일요일 10:23 KST 또는 수동 실행마다 | `e2e-coverage/maintain.mjs` |
 | `chore-ga-events.yml` | schedule, workflow_dispatch | 매주 수요일 09:41 KST 또는 수동 실행마다 | `ga-events/maintain.mjs` |
 | `chore-supabase-inventory.yml` | schedule, workflow_dispatch | 매일 08:00 KST 또는 수동 실행마다 | `supabase/generate-supabase-inventory.mjs` · `supabase/sync-supabase-inventory-pr.mjs` |
+| `chore-sentry-triage.yml` | workflow_dispatch | Sentry 웹훅 수신기가 `SENTRY_AI_TRIAGE_ENABLED=true`일 때 새 이슈·재발마다 디스패치하거나 수동 실행할 때마다 | `sentry/triage-inputs.mjs` · `sentry/triage-guard.mjs` · `sentry/fetch-sentry-context.mjs` · `sentry/check-triage-patch.mjs` · `sentry/build-pr-body.mjs` · `sentry/report-sentry-triage.mjs` |
 | `chore-blog-catalog.yml` | schedule, workflow_dispatch | 매일 03:17 KST 토스·당근 전체 재순회, 15분마다 재개 요청 확인, 3시간마다(:37) 긱뉴스 피드 수집 또는 수동 실행(소스 선택·당근 smoke·dry-run)마다 | `blog-reading/collect.mjs` |
 
 정기 실행 시각은 워크플로의 UTC cron을 한국 시간(KST)으로 환산한 예정 시각입니다. GitHub Actions 사정에 따라 실제 시작은 늦어질 수 있습니다.
 
-`chore-cleanup-unused.yml`·`chore-supabase-inventory.yml`·`audit-refactor.yml`은 `ref: master`로 체크아웃합니다. 작업 브랜치에서
+`chore-cleanup-unused.yml`·`chore-supabase-inventory.yml`·`audit-refactor.yml`·`chore-sentry-triage.yml`은 `ref: master`로 체크아웃합니다. 작업 브랜치에서
 dispatch해도 스크립트는 master의 것이 돕니다.
 `chore-e2e-coverage.yml`과 `chore-ga-events.yml`은 주간 실행에서 master를, 수동 실행에서 선택한 ref를 체크아웃합니다. `master` 외 ref의 수동 실행은 검증 결과만 남기고 PR을 게시하지 않습니다.
 

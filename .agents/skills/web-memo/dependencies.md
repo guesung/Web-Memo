@@ -23,6 +23,7 @@
 | `/web-memo:idea` ② | `/web-memo:interview` | 기획서 초안 + `--items` (planner의 `결정 필요`) | 확정 결정 4표 → 기획서에 반영 |
 | `/web-memo:design` ⑤ | `/web-memo:interview` | 기획서·설계서 초안 + `--items` (`## 논의 필요`) | 확정 결정 4표 → 설계서·디자인에 반영 |
 | `/web-memo:implement-loop` §0-5 · ② | `/web-memo:self-qa` | 설계서 (`--checklist-only` / `--run`) | QA 항목 생성·판정 결과 |
+| `/web-memo:improve-loop` | `/web-memo:commit`, `/web-memo:pr` | 효과 입증·회귀 검증을 통과한 변경과 공개 증거 | 커밋과 master 대상 일반 PR |
 
 `/web-memo:interview`와 `/web-memo:self-qa`는 **아무것도 고치지 않고 반환만 한다.** 문서에 쓰는 것은 부른 쪽 책임이다 — 같은 섹션을 둘이 쓰면 어느 쪽이 마지막인지 알 수 없다.
 
@@ -48,11 +49,15 @@
 
 ## MCP 의존
 
+`/web-memo:improve-loop`는 구현 전에 `notion-home`으로 업무 로그 카드/ID를 확보한다(없으면 생성). 접근 불가 시 `blocked`로 끝내며, 기존 PR 스킬의 카드 게이트를 우회하지 않는다. GitHub는 `gh`, 시간 측정은 Node 표준 라이브러리 도구를 쓴다. 독립 검증은 native `verifier`를 사용하고, 사용할 수 없으면 분리 검증임을 밝힌다. OMX Team·goal 런타임이나 전역 스킬은 필요하지 않다. Codex 진입점 `.codex/skills/web-memo-improve-loop`는 원본 스킬을 가리키는 심링크다.
+
 | MCP           | 쓰이는 곳                                                                        | 용도                                                      |
 | ------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `notion-home` | `/web-memo:idea`, `/web-memo:design`, `/web-memo:implement-loop`, `/web-memo:self-qa`, `/common:problem-log`, `/web-memo:blog-material` | 개인 업무 로그·QA 항목·개발 위키 DB(문제 해결 기록) 읽기·쓰기 (guesung) |
+| 개인 Notion 연결 ([접근 규칙](notion-access.md)) | `/web-memo:idea`, `/web-memo:design`, `/web-memo:implement-loop`, `/web-memo:self-qa`, `/common:problem-log`, `/web-memo:blog-material` | 개인 업무 로그·QA 항목·개발 위키 DB(문제 해결 기록) 읽기·쓰기 (guesung) |
 | `playwright`  | `/web-memo:self-qa` ② — `web-memo:qa-verifier`가 사용                                        | 브라우저 구동·DOM/스크린샷/콘솔/네트워크 관측             |
+
+`/web-memo:document`는 [Notion 접근 규칙](notion-access.md)에 따른 개인 Notion 연결로 프로젝트 문서를 기록한다. 업무 로그·QA 파이프라인을 호출하지 않는다. 대상과 뷰 필터는 `~/.agents/docs/notion-databases.md`의 `웹 메모 프로젝트 문서` 절을 따른다.
 
 회사판이 쓰던 `claude.ai Notion`(팀 DB)·`slack` 플러그인은 쓰지 않는다.
 
-DB 식별자·속성·접근 규칙은 [notion-databases.md](~/.agents/docs/notion-databases.md)가 SSOT다. 스킬 본문에는 ID를 두지 않는다.
+도구 선택은 [Notion 접근 규칙](notion-access.md)을 따른다. DB 식별자·속성·본문 규약은 [notion-databases.md](~/.agents/docs/notion-databases.md)가 SSOT다. 스킬 본문에는 ID를 두지 않는다.

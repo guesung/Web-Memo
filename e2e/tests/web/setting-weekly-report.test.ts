@@ -49,7 +49,7 @@ test.describe("설정 주간 리포트 (Mocked)", () => {
 		await expect(
 			page.getByRole("switch", { name: "리포트 메일 받기" }),
 		).toBeChecked();
-		expect(await emailInput(page).inputValue()).toMatch(EMAIL_PATTERN);
+		await expect(emailInput(page)).toHaveValue(EMAIL_PATTERN);
 		await expect(testButton(page)).toBeEnabled();
 		expect(store.settingUpserts).toEqual([]);
 	});
@@ -145,7 +145,10 @@ test.describe("설정 주간 리포트 (Mocked)", () => {
 			}),
 		);
 
+		await expect(emailInput(page)).toHaveValue("saved@example.com");
 		await emailInput(page).fill("new@example.com");
+		await expect(emailInput(page)).toHaveValue("new@example.com");
+		await expect(testButton(page)).toBeDisabled();
 		await emailInput(page).press("Enter");
 		await expect(
 			toastRegion(page).getByText("변경사항을 저장했어요"),

@@ -446,6 +446,95 @@ describe("Analytics 환경별 동작", () => {
 		expect(parameters).not.toHaveProperty("extension_version");
 	});
 
+	it("저장 시점과 다른 계정이면 새 계측과 개발 로그를 생략한다", async () => {
+		stubChromeStorage();
+		const analytics = await loadAnalytics({
+			buildEnv: "development",
+			isExtension: true,
+		});
+		analytics.setUserId("user-b");
+		await analytics.trackEvent(
+			{ name: "memo_editor_ready", params: { source: "side_panel" } },
+			"user-a",
+		);
+		expect(fetchMock).not.toHaveBeenCalled();
+		expect(console.info).not.toHaveBeenCalled();
+	});
+
+	it("저장 결과 전송이 끝나지 않아도 호출부를 기다리게 하지 않는다", async () => {
+		stubChromeStorage();
+		fetchMock.mockImplementation(() => new Promise(() => {}));
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+		analytics.setUserId("user-a");
+		expect(
+			analytics.trackMemoSaveResult({
+				userId: "user-a",
+				isSuccess: true,
+				source: "side_panel",
+				after: { id: 1, memo: "본문" },
+			}),
+		).toBeUndefined();
+		await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+	});
+
+	it("운영 전송 payload에는 새 저장 계약과 기존 문맥만 포함한다", async () => {
+		stubChromeStorage();
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: true,
+		});
+		analytics.setUserId("user-a");
+		analytics.trackMemoSaveResult({
+			userId: "user-a",
+			isSuccess: true,
+			source: "side_panel",
+			after: { id: 917, memo: "절대 보내면 안 되는 원문" },
+		});
+		await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+		const bodies = fetchMock.mock.calls.map(([, request]) =>
+			JSON.parse(request.body),
+		);
+		expect(bodies.map((body) => body.events[0].name)).toEqual([
+			"memo_save_result",
+			"memo_content_saved",
+		]);
+		for (const body of bodies) {
+			expect(body.user_id).toBe("user-a");
+			expect(body.events[0].params).toMatchObject({
+				build_env: "production",
+				extension_version: "1.2.3",
+				source: "side_panel",
+			});
+			expect(body.events[0].params).not.toHaveProperty("memo");
+			expect(body.events[0].params).not.toHaveProperty("url");
+			expect(body.events[0].params).not.toHaveProperty("memo_id");
+			expect(JSON.stringify(body)).not.toContain("절대 보내면 안 되는 원문");
+		}
+	});
+
+	it("저장 계측은 동기 예외·비동기 거절을 모두 처리한다", async () => {
+		const analytics = await loadAnalytics({
+			buildEnv: "production",
+			isExtension: false,
+		});
+		const track = vi.spyOn(analytics, "trackEvent");
+		const result = {
+			userId: "user-a",
+			isSuccess: false,
+			source: "side_panel" as const,
+		};
+		track.mockImplementationOnce(() => {
+			throw new Error("동기 계측 오류");
+		});
+		expect(() => analytics.trackMemoSaveResult(result)).not.toThrow();
+		track.mockRejectedValueOnce(new Error("전송 오류"));
+		analytics.trackMemoSaveResult(result);
+		await vi.waitFor(() => expect(console.warn).toHaveBeenCalledTimes(2));
+	});
+
 	it("웹에서는 user_id를 storage에 남기지 않는다", async () => {
 		const set = vi.fn();
 		stubChromeStorage({ set });

@@ -21,10 +21,12 @@ import MemoEmptyState from "./MemoEmptyState";
 import MemoGroup from "./MemoGroup";
 import { MemoListSkeleton } from "./MemoListSkeleton";
 import MemoSearchEmptyState from "./MemoSearchEmptyState";
+import { settleMemoReflow } from "./memoReflow";
 
 /** 메모를 브라우저 현지 작성일별 카드 그리드로 묶어 상세 화면으로 연결한다. */
 const MemoList = (props: IFMemoListProps) => {
 	const { t } = useTranslation(props.lng);
+	const listRef = useRef<HTMLDivElement>(null);
 
 	const { showImpression, showActionItem, truncateMemoContent } =
 		useMemoSettings();
@@ -57,6 +59,11 @@ const MemoList = (props: IFMemoListProps) => {
 	);
 	useEffect(() => {
 		if (isLayoutReady) {
+			requestAnimationFrame(() => {
+				if (listRef.current) {
+					settleMemoReflow(listRef.current, props.filterKey, props.searchQuery);
+				}
+			});
 			reportMemoLoadStage({
 				route: props.route,
 				navigationId: props.navigationId,
@@ -64,7 +71,14 @@ const MemoList = (props: IFMemoListProps) => {
 				outcome: props.loadOutcome,
 			});
 		}
-	}, [isLayoutReady, props.loadOutcome, props.route, props.navigationId]);
+	}, [
+		isLayoutReady,
+		props.filterKey,
+		props.searchQuery,
+		props.loadOutcome,
+		props.route,
+		props.navigationId,
+	]);
 	const loadMoreRef = useMemoListPagination(props, isLayoutReady);
 	const handleGroupRenderComplete = (key: string, memoIds: string) => {
 		setRenderedGroupMemoIds((previousGroups) => {
@@ -78,6 +92,7 @@ const MemoList = (props: IFMemoListProps) => {
 
 	return (
 		<div
+			ref={listRef}
 			data-testid="memo-list"
 			className="mx-auto w-full max-w-[1124px] space-y-8 pb-24"
 		>
@@ -190,6 +205,7 @@ const groupMemosByDate = (memos: GetMemoResponse[]) => {
 interface IFMemoListProps extends LanguageType {
 	groupBy: "date" | "domain";
 	memos: GetMemoResponse[];
+	filterKey: string;
 	highlightsByUrl: Map<string, HighlightRow[]>;
 	sourcesByMemo: Map<number, HighlightMemoLink>;
 	searchQuery: string;

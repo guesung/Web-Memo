@@ -11,6 +11,26 @@ const BASE_PARAMS = {
 };
 
 describe("getSaveStatus", () => {
+	it("storage write failure keeps retry visible while offline", () => {
+		expect(
+			getSaveStatus({ ...BASE_PARAMS, isOffline: true, saveStatus: "failed" }),
+		).toBe("failed");
+		expect(
+			getSaveStatus({
+				...BASE_PARAMS,
+				isOffline: true,
+				saveStatus: "retrying",
+			}),
+		).toBe("retrying");
+	});
+	it("does not show saved while queue state is unknown or failed", () => {
+		expect(
+			getSaveStatus({ ...BASE_PARAMS, pendingOfflineStatus: "loading" }),
+		).toBe("slow");
+		expect(
+			getSaveStatus({ ...BASE_PARAMS, pendingOfflineStatus: "error" }),
+		).toBe("failed");
+	});
 	it("대기 항목이 없고 온라인이면 useMemoForm의 saveStatus를 그대로 쓴다", () => {
 		expect(getSaveStatus({ ...BASE_PARAMS, saveStatus: "slow" })).toBe("slow");
 		expect(getSaveStatus({ ...BASE_PARAMS, saveStatus: "failed" })).toBe(

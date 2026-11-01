@@ -22,17 +22,35 @@ import {
 	Textarea,
 } from "@web-memo/ui";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+	type RefObject,
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from "react";
 import { useWatch } from "react-hook-form";
+import { isTypingTarget } from "../../_utils";
 import MemoCardFooter from "../MemoCardFooter";
 import CategoryPopover from "../MemoCardFooter/CategoryPopover";
 import useMemoCategoryPopover from "../MemoCardFooter/useMemoCategoryPopover";
 import MemoCardHeader from "../MemoCardHeader";
+import {
+	cardMotionFrames,
+	clearMemoCardOpen,
+	MEMO_CARD_MOTION_MS,
+	peekMemoCardOpen,
+	visibleMemoCardRect,
+} from "../MemoView/_utils/memoCardMotion";
 import { MemoSourceQuote } from "../MemoView/MemoSourceQuote";
 import { MemoDialogHighlights } from "./MemoDialogHighlights";
 import SaveStatusIndicator from "./SaveStatusIndicator";
 import { useMemoDialogEditor } from "./useMemoDialogEditor";
 import { useMemoHashCategory } from "./useMemoHashCategory";
+
+const MEMO_NAVIGATION_MOTION_MS = 180;
+type NavigationDirection = "prev" | "next";
 
 /** 카드 값으로 즉시 열고 상세 쿼리는 백그라운드에서 동기화한다. */
 export default function MemoDialog({
@@ -47,7 +65,73 @@ export default function MemoDialog({
 	const query = useQuery(memoQueryOptions({ supabaseClient, id: memoId }));
 	const latestMemo = query.data?.data?.find((memo) => memo.id === memoId);
 	const memo = initialMemo?.id === memoId ? initialMemo : latestMemo;
+	const displayedMemoId = memo?.id;
 	const searchParams = useSearchParams();
+	const dialogRef = useRef<HTMLDivElement | null>(null);
+	const lastScrolledMemoIdRef = useRef(memoId);
+	const [dialogElement, setDialogElement] = useState<HTMLDivElement | null>(
+		null,
+	);
+	const closeEditorRef = useRef<() => void>(() => {});
+	const closingRef = useRef(false);
+	const closingAnimationRef = useRef<Animation | null>(null);
+	const mountedRef = useRef(true);
+	const [isClosing, setIsClosing] = useState(false);
+	const [openingMemoId] = useState(memoId);
+	const [openingCardRect] = useState(() => peekMemoCardOpen(memoId));
+	const hasOpeningCard = Boolean(openingCardRect);
+	const openingAnimationStartedRef = useRef(false);
+	const [navigation, setNavigation] = useState<{
+		memoId: number;
+		direction: NavigationDirection;
+	} | null>(null);
+	const canAnimateCard =
+		hasOpeningCard && navigation === null && memoId === openingMemoId;
+	const attachDialog = useCallback((element: HTMLDivElement | null) => {
+		dialogRef.current = element;
+		if (element) setDialogElement(element);
+	}, []);
+
+	useLayoutEffect(() => {
+		if (
+			!dialogElement ||
+			displayedMemoId !== openingMemoId ||
+			openingAnimationStartedRef.current
+		)
+			return;
+		openingAnimationStartedRef.current = true;
+		clearMemoCardOpen(openingMemoId);
+		if (
+			!openingCardRect ||
+			!visibleMemoCardRect(openingMemoId) ||
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches
+		)
+			return;
+		const frames = cardMotionFrames(
+			dialogElement.getBoundingClientRect(),
+			openingCardRect,
+		);
+		if (!frames) return;
+		const animation = dialogElement.animate(frames, {
+			duration: MEMO_CARD_MOTION_MS,
+			easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+		});
+		return () => animation.cancel();
+	}, [dialogElement, displayedMemoId, openingMemoId, openingCardRect]);
+
+	useLayoutEffect(() => {
+		if (lastScrolledMemoIdRef.current === memoId) return;
+		lastScrolledMemoIdRef.current = memoId;
+		if (dialogRef.current) dialogRef.current.scrollTop = 0;
+	}, [memoId]);
+
+	useEffect(() => {
+		mountedRef.current = true;
+		return () => {
+			mountedRef.current = false;
+			closingAnimationRef.current?.cancel();
+		};
+	}, []);
 
 	function closeDialog() {
 		if (history.state?.openedMemoId === memoId) history.back();
@@ -58,7 +142,9 @@ export default function MemoDialog({
 	}
 
 	/** 기록을 쌓지 않고 id만 바꿔, 닫으면 몇 개를 넘겼든 바로 목록으로 돌아간다. */
-	function navigateDialog(nextId: number) {
+	function navigateDialog(nextId: number, direction: NavigationDirection) {
+		if (closingRef.current) return;
+		setNavigation({ memoId: nextId, direction });
 		searchParams.set("id", String(nextId));
 		const isOpenedFromList = history.state?.openedMemoId !== undefined;
 		history.replaceState(
@@ -68,47 +154,106 @@ export default function MemoDialog({
 		);
 	}
 
-	if (!memo) {
-		return (
-			<Dialog open>
-				<DialogContent
-					className="max-w-[600px]"
-					onClose={closeDialog}
-					aria-describedby={undefined}
-				>
-					<DialogTitle className="sr-only">{t("sideBar.memo")}</DialogTitle>
-					{query.isError || query.isSuccess ? (
-						<div role="alert" className="flex items-center gap-2">
-							<p>{t(query.isError ? "error.500.title" : "error.404.title")}</p>
-							{query.isError && (
-								<button
-									type="button"
-									onClick={() => void query.refetch()}
-									className="underline"
-								>
-									{t("error.500.retry")}
-								</button>
-							)}
-						</div>
-					) : (
-						<Loading aria-label={t("sideBar.memo")} />
-					)}
-				</DialogContent>
-			</Dialog>
-		);
+	function closeAndSave() {
+		if (closingRef.current) return;
+		closingRef.current = true;
+		closeEditorRef.current();
+		const dialog = dialogRef.current;
+		if (dialog) {
+			dialog.setAttribute("inert", "");
+			if (dialog.contains(document.activeElement)) {
+				(document.activeElement as HTMLElement).blur();
+			}
+		}
+		setIsClosing(true);
+		const card = canAnimateCard && visibleMemoCardRect(memoId);
+		if (
+			!dialog ||
+			!card ||
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches
+		) {
+			closeDialog();
+			return;
+		}
+		const frames = cardMotionFrames(dialog.getBoundingClientRect(), card);
+		if (!frames) {
+			closeDialog();
+			return;
+		}
+		const animation = dialog.animate([...frames].reverse(), {
+			duration: MEMO_CARD_MOTION_MS,
+			easing: "cubic-bezier(0.4, 0, 1, 1)",
+			fill: "forwards",
+		});
+		closingAnimationRef.current = animation;
+		const finishClose = () => {
+			if (
+				mountedRef.current &&
+				closingAnimationRef.current === animation &&
+				new URLSearchParams(window.location.search).get("id") === String(memoId)
+			) {
+				closeDialog();
+			}
+		};
+		animation.finished.then(finishClose, finishClose);
 	}
 
 	return (
-		<MemoDialogContent
-			key={memo.id}
-			lng={lng}
-			memo={memo}
-			latestMemo={latestMemo}
-			prevMemoId={prevMemoId}
-			nextMemoId={nextMemoId}
-			onClose={closeDialog}
-			onNavigate={navigateDialog}
-		/>
+		<Dialog open>
+			<DialogContent
+				ref={attachDialog}
+				className={cn(
+					memo
+						? "max-h-[90dvh] max-w-[720px] gap-0 overflow-y-auto bg-card p-0 sm:rounded-xl"
+						: "max-w-[600px]",
+					hasOpeningCard && "!animate-none",
+				)}
+				onClose={closeAndSave}
+				aria-describedby={undefined}
+				data-memo-motion={canAnimateCard ? "card" : "fallback"}
+				inert={isClosing}
+			>
+				{memo ? (
+					<MemoDialogContent
+						key={memo.id}
+						lng={lng}
+						memo={memo}
+						latestMemo={latestMemo}
+						prevMemoId={prevMemoId}
+						nextMemoId={nextMemoId}
+						closingRef={closingRef}
+						closeEditorRef={closeEditorRef}
+						navigationDirection={
+							navigation?.memoId === memo.id ? navigation.direction : undefined
+						}
+						onClose={closeDialog}
+						onNavigate={navigateDialog}
+					/>
+				) : (
+					<>
+						<DialogTitle className="sr-only">{t("sideBar.memo")}</DialogTitle>
+						{query.isError || query.isSuccess ? (
+							<div role="alert" className="flex items-center gap-2">
+								<p>
+									{t(query.isError ? "error.500.title" : "error.404.title")}
+								</p>
+								{query.isError && (
+									<button
+										type="button"
+										onClick={() => void query.refetch()}
+										className="underline"
+									>
+										{t("error.500.retry")}
+									</button>
+								)}
+							</div>
+						) : (
+							<Loading aria-label={t("sideBar.memo")} />
+						)}
+					</>
+				)}
+			</DialogContent>
+		</Dialog>
 	);
 }
 
@@ -118,6 +263,9 @@ function MemoDialogContent({
 	latestMemo,
 	prevMemoId,
 	nextMemoId,
+	closingRef,
+	closeEditorRef,
+	navigationDirection,
 	onClose,
 	onNavigate,
 }: ContentProps) {
@@ -125,8 +273,14 @@ function MemoDialogContent({
 	const { showImpression, showActionItem } = useSettingQuery();
 	const sources = useHighlightMemoLinks([memo.id], "memo");
 	const source = sources.data?.[0];
-	const { form, saveStatus, markEdited, changeTitle, flushDebounce } =
-		useMemoDialogEditor({ memo, latestMemo });
+	const {
+		form,
+		saveStatus,
+		markEdited,
+		changeTitle,
+		flushDebounce,
+		abortDebounce,
+	} = useMemoDialogEditor({ memo, latestMemo });
 	const { register, watch } = form;
 	// 본문 #과 푸터(배지·⋮)가 같은 팝업을 열도록 모달이 갖는다.
 	const categoryPopover = useMemoCategoryPopover({ lng, memo });
@@ -148,6 +302,7 @@ function MemoDialogContent({
 	);
 	const [focusField, setFocusField] = useState<TSubField | null>(null);
 	const memoRef = useRef<HTMLTextAreaElement | null>(null);
+	const bodyRef = useRef<HTMLDivElement | null>(null);
 	const impressionRef = useRef<HTMLTextAreaElement | null>(null);
 	const actionItemRef = useRef<HTMLTextAreaElement | null>(null);
 	const title = watch("title");
@@ -173,6 +328,45 @@ function MemoDialogContent({
 		}
 	});
 
+	useLayoutEffect(() => {
+		closeEditorRef.current = flushDebounce;
+		return () => {
+			closeEditorRef.current = () => {};
+		};
+	}, [closeEditorRef, flushDebounce]);
+
+	useLayoutEffect(() => {
+		const body = bodyRef.current;
+		if (
+			!body ||
+			!navigationDirection ||
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches
+		)
+			return;
+		const offset = navigationDirection === "next" ? 24 : -24;
+		const animation = body.animate(
+			[
+				{ transform: `translateX(${offset}px)`, opacity: 0 },
+				{ transform: "translateX(0)", opacity: 1 },
+			],
+			{ duration: MEMO_NAVIGATION_MOTION_MS, easing: "ease-out" },
+		);
+		return () => animation.cancel();
+	}, [navigationDirection]);
+
+	useLayoutEffect(() => {
+		if (!navigationDirection) return;
+		const button = bodyRef.current?.querySelector<HTMLButtonElement>(
+			`[data-testid="memo-dialog-${navigationDirection}"]`,
+		);
+		const fallback = bodyRef.current?.querySelector<HTMLButtonElement>(
+			`[data-testid="memo-dialog-${navigationDirection === "next" ? "prev" : "next"}"]`,
+		);
+		const focusTarget = button && !button.disabled ? button : fallback;
+		if (focusTarget && !focusTarget.disabled)
+			focusTarget.focus({ preventScroll: true });
+	}, [navigationDirection]);
+
 	useLayoutEffect(
 		function focusOpenedField() {
 			if (!focusField) return;
@@ -188,25 +382,29 @@ function MemoDialogContent({
 		setFocusField(field);
 	}
 
-	function closeAndSave() {
-		flushDebounce();
+	function closeAfterDelete() {
+		abortDebounce();
 		onClose();
 	}
 
-	function navigateTo(memoId?: number) {
-		if (memoId === undefined) return;
+	function navigateTo(
+		memoId: number | undefined,
+		direction: NavigationDirection,
+	) {
+		if (memoId === undefined || closingRef.current) return;
 		flushDebounce();
-		onNavigate(memoId);
+		onNavigate(memoId, direction);
 	}
 
 	useEffect(function navigateWithArrowKeys() {
 		const handleKeyDown = (event: KeyboardEvent) => {
+			if (closingRef.current) return;
 			if (event.defaultPrevented || event.isComposing) return;
 			if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
 				return;
 			if (isTypingTarget(event.target)) return;
-			if (event.key === "ArrowLeft") navigateTo(prevMemoId);
-			if (event.key === "ArrowRight") navigateTo(nextMemoId);
+			if (event.key === "ArrowLeft") navigateTo(prevMemoId, "prev");
+			if (event.key === "ArrowRight") navigateTo(nextMemoId, "next");
 		};
 
 		document.addEventListener("keydown", handleKeyDown);
@@ -214,161 +412,156 @@ function MemoDialogContent({
 	});
 
 	return (
-		<Dialog open>
-			<DialogContent
-				className="max-h-[90dvh] max-w-[720px] gap-0 overflow-y-auto bg-card p-0 sm:rounded-xl"
-				onClose={closeAndSave}
-				aria-describedby={undefined}
-			>
-				<DialogTitle className="sr-only">{title}</DialogTitle>
-				<MemoCardHeader
-					memo={{ ...memo, title }}
-					onTitleChange={changeTitle}
-					showsSourceDomain
-					className="border-b-0 px-6 pb-1 pt-5 pr-32"
-				/>
-				<div className="space-y-5 px-6 py-3">
-					{source && <MemoSourceQuote lng={lng} source={source} />}
-					{sources.isError && (
-						<div
-							role="alert"
-							className="flex items-center gap-2 text-xs text-destructive"
+		<div ref={bodyRef} className="relative" data-testid="memo-dialog-body">
+			<DialogTitle className="sr-only">{title}</DialogTitle>
+			<MemoCardHeader
+				memo={{ ...memo, title }}
+				onTitleChange={changeTitle}
+				showsSourceDomain
+				className="border-b-0 px-6 pb-1 pt-5 pr-32"
+			/>
+			<div className="space-y-5 px-6 py-3">
+				{source && <MemoSourceQuote lng={lng} source={source} />}
+				{sources.isError && (
+					<div
+						role="alert"
+						className="flex items-center gap-2 text-xs text-destructive"
+					>
+						<span>{t("highlight.memo.loadError")}</span>
+						<button
+							type="button"
+							onClick={() => void sources.refetch()}
+							className="underline"
 						>
-							<span>{t("highlight.memo.loadError")}</span>
-							<button
-								type="button"
-								onClick={() => void sources.refetch()}
-								className="underline"
-							>
-								{t("error.500.retry")}
-							</button>
-						</div>
-					)}
-					<Textarea
-						{...memoField}
-						ref={(element) => {
-							memoField.ref(element);
-							memoRef.current = element;
-						}}
-						onKeyDown={hashCategory.handleKeyDown}
-						layout={false}
-						className={cn(INLINE_TEXTAREA_CLASSNAME, "text-base leading-7")}
-						placeholder={t("memos.placeholder")}
-						data-testid="memo-textarea"
-					/>
-					{isImpressionVisible && (
-						<div className="space-y-1.5 border-t border-border pt-4">
-							<label
-								htmlFor="impression"
-								className="block text-xs font-semibold text-muted-foreground"
-							>
-								{t("memoSection.impression")}
-							</label>
-							<Textarea
-								{...impressionField}
-								id="impression"
-								ref={(element) => {
-									impressionField.ref(element);
-									impressionRef.current = element;
-								}}
-								layout={false}
-								className={cn(INLINE_TEXTAREA_CLASSNAME, "leading-6")}
-								placeholder={t("memoSection.impressionPlaceholder")}
-								data-testid="impression-textarea"
+							{t("error.500.retry")}
+						</button>
+					</div>
+				)}
+				<Textarea
+					{...memoField}
+					ref={(element) => {
+						memoField.ref(element);
+						memoRef.current = element;
+					}}
+					onKeyDown={hashCategory.handleKeyDown}
+					layout={false}
+					className={cn(INLINE_TEXTAREA_CLASSNAME, "text-base leading-7")}
+					placeholder={t("memos.placeholder")}
+					data-testid="memo-textarea"
+				/>
+				{isImpressionVisible && (
+					<div className="space-y-1.5 border-t border-border pt-4">
+						<label
+							htmlFor="impression"
+							className="block text-xs font-semibold text-muted-foreground"
+						>
+							{t("memoSection.impression")}
+						</label>
+						<Textarea
+							{...impressionField}
+							id="impression"
+							ref={(element) => {
+								impressionField.ref(element);
+								impressionRef.current = element;
+							}}
+							layout={false}
+							className={cn(INLINE_TEXTAREA_CLASSNAME, "leading-6")}
+							placeholder={t("memoSection.impressionPlaceholder")}
+							data-testid="impression-textarea"
+						/>
+					</div>
+				)}
+				{isActionItemVisible && (
+					<div className="space-y-1.5 border-t border-border pt-4">
+						<label
+							htmlFor="actionItem"
+							className="block text-xs font-semibold text-muted-foreground"
+						>
+							{t("memoSection.actionItem")}
+						</label>
+						<Textarea
+							{...actionItemField}
+							id="actionItem"
+							ref={(element) => {
+								actionItemField.ref(element);
+								actionItemRef.current = element;
+							}}
+							layout={false}
+							className={cn(INLINE_TEXTAREA_CLASSNAME, "leading-6")}
+							placeholder={t("memoSection.actionItemPlaceholder")}
+							data-testid="action-item-textarea"
+						/>
+					</div>
+				)}
+				{((showImpression && !isImpressionVisible) ||
+					(showActionItem && !isActionItemVisible)) && (
+					<div className="flex flex-wrap gap-2">
+						{showImpression && !isImpressionVisible && (
+							<AddFieldButton
+								label={t("memoSection.addImpression")}
+								onClick={() => openField("impression")}
+								testId="add-impression-button"
 							/>
-						</div>
-					)}
-					{isActionItemVisible && (
-						<div className="space-y-1.5 border-t border-border pt-4">
-							<label
-								htmlFor="actionItem"
-								className="block text-xs font-semibold text-muted-foreground"
-							>
-								{t("memoSection.actionItem")}
-							</label>
-							<Textarea
-								{...actionItemField}
-								id="actionItem"
-								ref={(element) => {
-									actionItemField.ref(element);
-									actionItemRef.current = element;
-								}}
-								layout={false}
-								className={cn(INLINE_TEXTAREA_CLASSNAME, "leading-6")}
-								placeholder={t("memoSection.actionItemPlaceholder")}
-								data-testid="action-item-textarea"
+						)}
+						{showActionItem && !isActionItemVisible && (
+							<AddFieldButton
+								label={t("memoSection.addActionItem")}
+								onClick={() => openField("actionItem")}
+								testId="add-action-item-button"
 							/>
-						</div>
-					)}
-					{((showImpression && !isImpressionVisible) ||
-						(showActionItem && !isActionItemVisible)) && (
-						<div className="flex flex-wrap gap-2">
-							{showImpression && !isImpressionVisible && (
-								<AddFieldButton
-									label={t("memoSection.addImpression")}
-									onClick={() => openField("impression")}
-									testId="add-impression-button"
-								/>
-							)}
-							{showActionItem && !isActionItemVisible && (
-								<AddFieldButton
-									label={t("memoSection.addActionItem")}
-									onClick={() => openField("actionItem")}
-									testId="add-action-item-button"
-								/>
-							)}
-						</div>
-					)}
-					<MemoDialogHighlights
-						lng={lng}
-						url={memo.url}
-						omitHighlightId={source?.highlight_id}
-					/>
-				</div>
-				<MemoCardFooter
-					memo={memo}
+						)}
+					</div>
+				)}
+				<MemoDialogHighlights
 					lng={lng}
-					categoryBadgeAction="popup"
-					categoryPopover={categoryPopover}
-					showsAbsoluteTime
-					labelsActiveToggles
-					timeAccessory={
-						<SaveStatusIndicator status={saveStatus} lng={lng} showsLabel />
-					}
-					className="px-6 py-3"
+					url={memo.url}
+					omitHighlightId={source?.highlight_id}
 				/>
-				<CategoryPopover lng={lng} popover={categoryPopover} />
-				{/* 위치는 헤더 옆이지만, 탭 순서는 본문과 푸터 다음에 둔다. */}
-				<div className="absolute right-12 top-3 z-10 flex items-center text-muted-foreground">
-					<IconTooltip label={t("memos.dialog.prev")}>
-						<Button
-							variant="ghost"
-							size="icon"
-							className="size-8"
-							aria-label={t("memos.dialog.prev")}
-							disabled={prevMemoId === undefined}
-							onClick={() => navigateTo(prevMemoId)}
-							data-testid="memo-dialog-prev"
-						>
-							<ChevronLeft className="size-4" />
-						</Button>
-					</IconTooltip>
-					<IconTooltip label={t("memos.dialog.next")}>
-						<Button
-							variant="ghost"
-							size="icon"
-							className="size-8"
-							aria-label={t("memos.dialog.next")}
-							disabled={nextMemoId === undefined}
-							onClick={() => navigateTo(nextMemoId)}
-							data-testid="memo-dialog-next"
-						>
-							<ChevronRight className="size-4" />
-						</Button>
-					</IconTooltip>
-				</div>
-			</DialogContent>
-		</Dialog>
+			</div>
+			<MemoCardFooter
+				memo={memo}
+				lng={lng}
+				categoryBadgeAction="popup"
+				categoryPopover={categoryPopover}
+				showsAbsoluteTime
+				labelsActiveToggles
+				onDeleteSuccess={closeAfterDelete}
+				timeAccessory={
+					<SaveStatusIndicator status={saveStatus} lng={lng} showsLabel />
+				}
+				className="px-6 py-3"
+			/>
+			<CategoryPopover lng={lng} popover={categoryPopover} />
+			{/* 위치는 헤더 옆이지만, 탭 순서는 본문과 푸터 다음에 둔다. */}
+			<div className="absolute right-12 top-3 z-10 flex items-center text-muted-foreground">
+				<IconTooltip label={t("memos.dialog.prev")}>
+					<Button
+						variant="ghost"
+						size="icon"
+						className="size-8"
+						aria-label={t("memos.dialog.prev")}
+						disabled={prevMemoId === undefined}
+						onClick={() => navigateTo(prevMemoId, "prev")}
+						data-testid="memo-dialog-prev"
+					>
+						<ChevronLeft className="size-4" />
+					</Button>
+				</IconTooltip>
+				<IconTooltip label={t("memos.dialog.next")}>
+					<Button
+						variant="ghost"
+						size="icon"
+						className="size-8"
+						aria-label={t("memos.dialog.next")}
+						disabled={nextMemoId === undefined}
+						onClick={() => navigateTo(nextMemoId, "next")}
+						data-testid="memo-dialog-next"
+					>
+						<ChevronRight className="size-4" />
+					</Button>
+				</IconTooltip>
+			</div>
+		</div>
 	);
 }
 
@@ -395,15 +588,6 @@ function AddFieldButton({
 	);
 }
 
-/** 화살표 키가 커서 이동에 쓰이는 곳이면 메모를 넘기지 않는다. */
-function isTypingTarget(target: EventTarget | null) {
-	if (!(target instanceof HTMLElement)) return false;
-	return (
-		target.isContentEditable ||
-		["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)
-	);
-}
-
 /**
  * 평소엔 글처럼 보이고, 호버하면 옅은 배경, 편집하면 입력 테두리를 드러내는 textarea.
  * @description 가장자리 여백만큼 음수 마진을 줘 글이 헤더 제목과 같은 선에서 시작한다.
@@ -426,6 +610,9 @@ interface ContentProps extends LanguageType {
 	latestMemo?: GetMemoResponse;
 	prevMemoId?: number;
 	nextMemoId?: number;
+	closingRef: RefObject<boolean>;
+	closeEditorRef: RefObject<() => void>;
+	navigationDirection?: NavigationDirection;
 	onClose: () => void;
-	onNavigate: (memoId: number) => void;
+	onNavigate: (memoId: number, direction: NavigationDirection) => void;
 }

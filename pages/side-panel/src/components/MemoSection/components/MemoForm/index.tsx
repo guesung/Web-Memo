@@ -8,8 +8,15 @@ import {
 } from "@src/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY, type TMemoStatusKey } from "@web-memo/shared/constants";
-import { useSettingQuery, useSupabaseUserQuery } from "@web-memo/shared/hooks";
-import { analytics } from "@web-memo/shared/modules/analytics";
+import {
+	useSettingQuery,
+	useSupabaseUserQuery,
+	useTabQuery,
+} from "@web-memo/shared/hooks";
+import {
+	analytics,
+	type TCategoryChangeSource,
+} from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import type { Database, IFPastMemoDuplicate } from "@web-memo/shared/types";
 import { parsePlanDateKey } from "@web-memo/shared/utils";
@@ -30,7 +37,13 @@ import {
 	PlusIcon,
 	StarIcon,
 } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import {
 	CategoryAddChip,
@@ -49,6 +62,7 @@ import {
 	useMemoFieldResize,
 	useMemoForm,
 } from "./hooks";
+import useMemoEditorReady from "./hooks/useMemoEditorReady";
 
 const MemoFormContent = ({
 	fieldResizeState,
@@ -63,11 +77,25 @@ const MemoFormContent = ({
 	hasSyncNetworkError = false,
 	onRetrySync,
 	onPastMemoOpen,
+	onServerSaveSuccess,
 }: IFMemoFormProps) => {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const impressionRef = useRef<HTMLTextAreaElement | null>(null);
 	const actionItemRef = useRef<HTMLTextAreaElement | null>(null);
 	const [isSwitching, setIsSwitching] = useState(false);
+	const [animateCategory, setAnimateCategory] = useState(false);
+	const [categoryMotionSequence, setCategoryMotionSequence] = useState(0);
+	const [categoryWidth, setCategoryWidth] = useState<number | undefined>();
+	const categoryResizeObserverRef = useRef<ResizeObserver | null>(null);
+	const setCategoryVisual = useCallback((visual: HTMLDivElement | null) => {
+		categoryResizeObserverRef.current?.disconnect();
+		if (!visual) return;
+		const updateWidth = () => setCategoryWidth(visual.offsetWidth);
+		const observer = new ResizeObserver(updateWidth);
+		observer.observe(visual);
+		categoryResizeObserverRef.current = observer;
+		updateWidth();
+	}, []);
 	const isOffline = !useOnlineStatus();
 	const queryClient = useQueryClient();
 	const { register, watch, getValues } = useFormContext<MemoInput>();
@@ -86,6 +114,14 @@ const MemoFormContent = ({
 	const setting = useSettingQuery();
 	const { showImpression, showActionItem } = setting;
 	const userId = user.data.user?.id;
+	const { data: tab } = useTabQuery();
+	useMemoEditorReady({
+		userId,
+		tab,
+		textareaRef,
+		isMemoLocked,
+		isMemoLoadFailed,
+	});
 
 	useEffect(() => {
 		const unsubscribeInternal = bridge.handle.SETTING_UPDATED((payload) => {
@@ -133,6 +169,7 @@ const MemoFormContent = ({
 		firstSavedMemoId,
 		saveStatus,
 		hasPendingOfflineItem,
+		pendingOfflineStatus,
 		handleSaveRetryClick,
 		isWritePending,
 		saveBeforeSwitch,
@@ -143,7 +180,12 @@ const MemoFormContent = ({
 		updateCategory,
 		toggleMemoStatus,
 		setPlannedDate,
-	} = useMemoForm({ selectedMemo, isMemoLocked, isSyncing });
+	} = useMemoForm({
+		selectedMemo,
+		isMemoLocked,
+		isSyncing,
+		onServerSaveSuccess,
+	});
 	useAutoFocusMemo({ textareaRef, isMemoLocked });
 	const impressionField = register("impression", {
 		onChange: (event) => handleImpressionChange(event.target.value),
@@ -171,6 +213,7 @@ const MemoFormContent = ({
 		saveStatus,
 		isOffline,
 		hasPendingOfflineItem,
+		pendingOfflineStatus,
 		hasSyncNetworkError,
 		isSyncFailed,
 	});
@@ -211,9 +254,22 @@ const MemoFormContent = ({
 		isCategoryCreating,
 	} = useMemoCategory({
 		textareaRef,
-		onCategoryChange: updateCategory,
+		onCategoryChange: (
+			categoryId: number | null,
+			source: TCategoryChangeSource,
+		) => {
+			setAnimateCategory(true);
+			setCategoryMotionSequence((sequence) => sequence + 1);
+			updateCategory(categoryId, source);
+		},
 		isMemoLocked,
 	});
+
+	useEffect(() => {
+		if (categoryMotionSequence === 0) return;
+		const timeout = setTimeout(() => setAnimateCategory(false), 180);
+		return () => clearTimeout(timeout);
+	}, [categoryMotionSequence]);
 
 	const {
 		isLoading: isSuggestingCategory,
@@ -598,20 +654,38 @@ const MemoFormContent = ({
 							/>
 						)}
 					</div>
-					<div className="flex items-center gap-2">
+					<div
+						data-testid="category-slot"
+						className={cn(
+							"flex shrink-0 items-center justify-end",
+							animateCategory &&
+								"transition-[width] duration-[180ms] ease-out motion-reduce:transition-none",
+						)}
+						style={{ width: categoryWidth }}
+					>
 						{currentCategory ? (
-							<CategoryBadge
-								category={currentCategory}
-								badgeButtonRef={categoryBadgeButtonRef}
-								onBadgeButtonClick={handleCategoryButtonClick}
-								onRemoveButtonClick={handleCategoryRemove}
-								isDisabled={isMemoLocked}
-								isDimmed={isMemoUiDimmed}
-								disabledReason={changeDisabledReason}
-							/>
+							<div
+								ref={setCategoryVisual}
+								key={currentCategory.id}
+								className={cn(
+									"w-max",
+									animateCategory && "category-chip-enter",
+								)}
+							>
+								<CategoryBadge
+									category={currentCategory}
+									badgeButtonRef={categoryBadgeButtonRef}
+									onBadgeButtonClick={handleCategoryButtonClick}
+									onRemoveButtonClick={handleCategoryRemove}
+									isDisabled={isMemoLocked}
+									isDimmed={isMemoUiDimmed}
+									disabledReason={changeDisabledReason}
+								/>
+							</div>
 						) : isSuggestingCategory ? (
 							// 추천 중에는 칩 자리를 대신해, 곧 카테고리가 붙는다는 걸 같은 자리에서 보여 준다.
 							<div
+								ref={setCategoryVisual}
 								data-testid="category-suggesting"
 								className={cn(
 									badgeVariants({ variant: "outline" }),
@@ -622,13 +696,22 @@ const MemoFormContent = ({
 								{I18n.get("category_suggesting")}
 							</div>
 						) : (
-							<CategoryAddChip
-								chipRef={categoryAddChipRef}
-								onChipClick={handleCategoryButtonClick}
-								isDisabled={isMemoLocked}
-								isDimmed={isMemoUiDimmed}
-								disabledReason={changeDisabledReason}
-							/>
+							<div
+								ref={setCategoryVisual}
+								key="add"
+								className={cn(
+									"w-max",
+									animateCategory && "category-chip-enter",
+								)}
+							>
+								<CategoryAddChip
+									chipRef={categoryAddChipRef}
+									onChipClick={handleCategoryButtonClick}
+									isDisabled={isMemoLocked}
+									isDimmed={isMemoUiDimmed}
+									disabledReason={changeDisabledReason}
+								/>
+							</div>
 						)}
 					</div>
 				</div>
@@ -770,6 +853,7 @@ const MemoForm = ({
 	hasSyncNetworkError,
 	onRetrySync,
 	onPastMemoOpen,
+	onServerSaveSuccess,
 }: IFMemoFormProps) => {
 	const form = useForm<MemoInput>({
 		shouldUnregister: false,
@@ -801,6 +885,7 @@ const MemoForm = ({
 				hasSyncNetworkError={hasSyncNetworkError}
 				onRetrySync={onRetrySync}
 				onPastMemoOpen={onPastMemoOpen}
+				onServerSaveSuccess={onServerSaveSuccess}
 			/>
 		</FormProvider>
 	);
@@ -833,6 +918,8 @@ interface IFMemoFormProps {
 	onRetrySync?: () => void;
 	/** 과거 메모 알림에서 같은 글의 열기를 눌렀을 때. 사이드 패널 안에서 읽기 전용으로 보여 주는 쪽이 처리한다 */
 	onPastMemoOpen?: (duplicate: IFPastMemoDuplicate) => void;
+	/** 서버가 메모 저장을 받아들였을 때. 오프라인 대기열 저장은 해당하지 않는다 */
+	onServerSaveSuccess?: () => void;
 }
 
 interface IFMemoStatusToggleProps {

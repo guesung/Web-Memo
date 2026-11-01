@@ -325,6 +325,15 @@ const readUserTotals = (report) =>
 		]),
 	);
 
+/** 이벤트 이름 → 발생 건수. readEventUsers 의 두 번째 지표(eventCount)입니다. */
+const readCountTotals = (report) =>
+	Object.fromEntries(
+		readRows(report).map(({ dimensions, metrics }) => [
+			dimensions[0],
+			metrics[1] ?? 0,
+		]),
+	);
+
 /** 지표가 한 칸뿐인 응답에서 그 값만 꺼냅니다. 행이 없으면 0 입니다. */
 const readSingleMetric = (report) => readRows(report)[0]?.metrics[0] ?? 0;
 
@@ -513,6 +522,133 @@ const buildFunnel = (funnelUsers) =>
 		};
 	});
 
+/** 유입 채널 블록에서 방문자 수 기준 상위로 보여 줄 행 수. */
+const CHANNEL_TOP_ROWS = 8;
+/** 상위에 없어도 항상 보여 줄 소스. 데이터가 없으면 `소스 / social` 0명 행으로 채웁니다. */
+const PINNED_CHANNEL_SOURCES = ["threads", "x"];
+const PINNED_CHANNEL_MEDIUM = "social";
+const INSTALL_CLICK_EVENT = "extension_install_click";
+
+const compareChannels = (a, b) =>
+	b.visitors - a.visitors ||
+	b.installClicks - a.installClicks ||
+	`${a.source} / ${a.medium}`.localeCompare(`${b.source} / ${b.medium}`);
+
+/**
+ * 방문자 보고서와 설치 클릭 보고서를 소스/매체 키로 합쳐 상위 N행 + 고정 소스 행으로 만듭니다.
+ *
+ * 설치 클릭만 있는 조합은 방문자 0명으로 포함합니다. 두 보고서가 모두 비면 고정 행도
+ * 만들지 않고 빈 배열을 돌려줍니다 — "유입 없음"과 "0명인 채널"을 구분하기 위해서입니다.
+ */
+export const buildChannelRows = (visitorsReport, installClicksReport) => {
+	const merged = new Map();
+	const upsert = (report, field) => {
+		for (const { dimensions, metrics } of readRows(report)) {
+			const [source = "(not set)", medium = "(not set)"] = dimensions;
+			const key = `${source}\u0000${medium}`;
+			const row = merged.get(key) ?? {
+				source,
+				medium,
+				visitors: 0,
+				installClicks: 0,
+			};
+
+			row[field] += metrics[0] ?? 0;
+			merged.set(key, row);
+		}
+	};
+
+	upsert(visitorsReport, "visitors");
+	upsert(installClicksReport, "installClicks");
+
+	if (merged.size === 0) {
+		return [];
+	}
+
+	const sorted = [...merged.values()].sort(compareChannels);
+	const top = sorted.slice(0, CHANNEL_TOP_ROWS);
+	const rest = sorted.slice(CHANNEL_TOP_ROWS);
+	const pinned = PINNED_CHANNEL_SOURCES.flatMap((source) => {
+		const isSource = (row) => row.source.toLowerCase() === source;
+
+		if (top.some(isSource)) {
+			return [];
+		}
+
+		const found = rest.filter(isSource);
+
+		return found.length > 0
+			? found
+			: [
+					{
+						source,
+						medium: PINNED_CHANNEL_MEDIUM,
+						visitors: 0,
+						installClicks: 0,
+					},
+				];
+	});
+
+	return [...top, ...pinned];
+};
+
+/**
+ * 유입 채널 조회. 실패해도 리포트 전체를 막지 않고 실패 상태로 돌려줍니다.
+ * 채널은 보조 블록이라 이 조회 때문에 나머지 주간 리포트가 못 나가면 손해가 더 큽니다.
+ */
+const fetchChannels = async ({ accessToken, propertyId, start, end }) => {
+	const dimensions = [{ name: "sessionSource" }, { name: "sessionMedium" }];
+	const dateRanges = [{ startDate: start, endDate: end }];
+
+	try {
+		const [visitors, installClicks] = await Promise.all([
+			runReport({
+				accessToken,
+				propertyId,
+				body: {
+					dateRanges,
+					dimensions,
+					metrics: [{ name: "activeUsers" }],
+					dimensionFilter: HOST_NAME_FILTER,
+					limit: REPORT_ROW_LIMIT,
+				},
+			}),
+			runReport({
+				accessToken,
+				propertyId,
+				body: {
+					dateRanges,
+					dimensions,
+					metrics: [{ name: "totalUsers" }],
+					dimensionFilter: {
+						andGroup: {
+							expressions: [
+								{
+									filter: {
+										fieldName: "eventName",
+										stringFilter: {
+											matchType: "EXACT",
+											value: INSTALL_CLICK_EVENT,
+										},
+									},
+								},
+								PRODUCTION_EVENT_FILTER,
+							],
+						},
+					},
+					limit: REPORT_ROW_LIMIT,
+				},
+			}),
+		]);
+
+		return { status: "ok", rows: buildChannelRows(visitors, installClicks) };
+	} catch (error) {
+		console.warn(`유입 채널 조회 실패: ${error?.message ?? error}`);
+
+		return { status: "failed", rows: [] };
+	}
+};
+
 /**
  * 지난주 사용 현황을 다섯 번의 runReport 와 한 번의 runFunnelReport 로 모읍니다.
  *
@@ -520,6 +656,7 @@ const buildFunnel = (funnelUsers) =>
  * ③ 지난주 활성 사용자        ④ 전주 활성 사용자
  * ⑤ 최근 14일 이전에 한 번이라도 관측된 이벤트 (신규 판정용)
  * ⑥ 지난주 순서 강제 퍼널 (설치 → … → 메모 작성)
+ * ⑦ 지난주 유입 채널 (소스/매체별 방문자·설치 클릭 보고서 2개. 실패해도 나머지는 계속)
  *
  * 커스텀 이벤트와 퍼널은 호스트 허용 목록과 production 조건으로 거릅니다.
  * 자동 수집 이벤트에 기대는 활성 사용자는 호스트 허용 목록만 적용합니다.
@@ -546,7 +683,8 @@ export const fetchWeeklyGa4Report = async ({
 			body: {
 				dateRanges: [{ startDate, endDate }],
 				dimensions: [{ name: "eventName" }],
-				metrics: [{ name: "totalUsers" }],
+				// 건수는 신규 메모 작성 줄(새 메모 수)에서만 씁니다. 사람 수가 기준이라 첫 지표로 둡니다.
+				metrics: [{ name: "totalUsers" }, { name: "eventCount" }],
 				dimensionFilter: PRODUCTION_EVENT_FILTER,
 				limit: REPORT_ROW_LIMIT,
 			},
@@ -559,6 +697,7 @@ export const fetchWeeklyGa4Report = async ({
 		previousUsers,
 		priorObservation,
 		funnelReport,
+		channels,
 	] = await Promise.all([
 		readEventUsers(start, end),
 		readEventUsers(previousStart, previousEnd),
@@ -593,10 +732,13 @@ export const fetchWeeklyGa4Report = async ({
 				funnel: { steps: FUNNEL_EVENTS.map(buildFunnelStep) },
 			},
 		}),
+		fetchChannels({ accessToken, propertyId, start, end }),
 	]);
 
 	const userTotals = readUserTotals(current);
 	const previousTotals = readUserTotals(previous);
+	const countTotals = readCountTotals(current);
+	const previousCountTotals = readCountTotals(previous);
 	const activeUsers = readSingleMetric(currentUsers);
 	const observedBefore = new Set(
 		readRows(priorObservation).map(({ dimensions }) => dimensions[0]),
@@ -618,10 +760,13 @@ export const fetchWeeklyGa4Report = async ({
 				eventName,
 				users: userTotals[eventName] ?? 0,
 				previousUsers: previousTotals[eventName] ?? 0,
+				count: countTotals[eventName] ?? 0,
+				previousCount: previousCountTotals[eventName] ?? 0,
 			}))
 			.filter(({ users }) => users > 0)
 			.sort((a, b) => b.users - a.users),
 		funnel: buildFunnel(readFunnelUsers(funnelReport)),
+		channels,
 		unused: classifyUnusedFeatures({
 			eventNames,
 			userTotals,

@@ -21,6 +21,7 @@ import { HighlightService, normalizeUrl } from "@web-memo/shared/utils";
 import { getSupabaseClient, I18n, Tab } from "@web-memo/shared/utils/extension";
 import { initSentry } from "@web-memo/shared/utils";
 import { analytics } from "@web-memo/shared/modules/analytics";
+import { configurePanelBehavior } from "./configurePanelBehavior";
 import { openInstallGuideTab } from "./openInstallGuideTab";
 import { registerUninstallUrl } from "./registerUninstallUrl";
 
@@ -45,7 +46,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 		}
 	}
 
-	chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+	await configurePanelBehavior();
 	const language = await ChromeSyncStorage.get(STORAGE_KEYS.language);
 	const uiLanguage = I18n.getUILanguage();
 	if (!language) ChromeSyncStorage.set(STORAGE_KEYS.language, uiLanguage);

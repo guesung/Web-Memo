@@ -1,0 +1,4 @@
+interface:
+  display_name: "웹 메모 서비스 개선 루프"
+  short_description: "성능·안정성 문제 하나를 최대 3회 실험하고 전후 증거를 담은 PR로 제출"
+  default_prompt: "$web-memo-improve-loop 화면 변화 없는 개선 후보 하나를 찾아 개선 전후 증거와 검증 결과가 담긴 PR로 제출해줘."

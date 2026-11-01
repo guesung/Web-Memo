@@ -80,6 +80,10 @@ const render = async () => {
 
 beforeEach(() => {
 	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+	vi.stubGlobal(
+		"matchMedia",
+		vi.fn(() => ({ matches: false })),
+	);
 	vi.clearAllMocks();
 	Object.assign(mocks, {
 		showSummary: true,

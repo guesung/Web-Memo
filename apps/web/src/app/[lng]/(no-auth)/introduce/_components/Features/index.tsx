@@ -104,7 +104,7 @@ const Features = async ({ lng, background }: IFFeaturesProps) => {
 											href={feature.href}
 											className="mt-4 inline-flex items-center gap-1.5 text-sm underline-offset-4 hover:underline"
 										>
-											{t("common.learn_more")}
+											{t("introduce.features.memo.link_text")}
 											<ArrowRight className="h-3.5 w-3.5" />
 										</LocalizedLink>
 									) : null}

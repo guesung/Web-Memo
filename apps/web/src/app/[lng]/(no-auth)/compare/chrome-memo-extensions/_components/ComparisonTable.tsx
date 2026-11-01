@@ -1,9 +1,5 @@
-import {
-	COMPARE_CRITERIA,
-	COMPARE_PAGE_COPY,
-	COMPARE_PRODUCTS,
-} from "../_constants";
 import type { TSupportStatus } from "../_types";
+import type { TComparisonContent } from "../_utils";
 import SupportMark from "./SupportMark";
 
 /**
@@ -14,16 +10,16 @@ import SupportMark from "./SupportMark";
  * `<caption>`은 스크롤 영역 안에서 잘리지 않도록 화면 읽기 도구용으로만 두고,
  * 같은 문구를 표 위에 한 번 더 보인다.
  */
-const ComparisonTable = () => {
+const ComparisonTable = ({ content }: { content: TComparisonContent }) => {
 	const { caption, loginNote, criterionHeader, scrollHint } =
-		COMPARE_PAGE_COPY.comparison;
+		content.comparison;
 
 	return (
 		<div>
 			<ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
 				{LEGEND_STATUSES.map((status) => (
 					<li key={status}>
-						<SupportMark status={status} />
+						<SupportMark status={status} labels={content.statuses} />
 					</li>
 				))}
 			</ul>
@@ -46,7 +42,7 @@ const ComparisonTable = () => {
 							>
 								{criterionHeader}
 							</th>
-							{COMPARE_PRODUCTS.map((product) => (
+							{content.products.map((product) => (
 								<th
 									key={product.key}
 									scope="col"
@@ -58,7 +54,7 @@ const ComparisonTable = () => {
 						</tr>
 					</thead>
 					<tbody>
-						{COMPARE_CRITERIA.map((criterion) => (
+						{content.criteria.map((criterion) => (
 							<tr key={criterion.key} className="border-border border-t">
 								<th
 									scope="row"
@@ -66,7 +62,7 @@ const ComparisonTable = () => {
 								>
 									{criterion.label}
 								</th>
-								{COMPARE_PRODUCTS.map((product) => {
+								{content.products.map((product) => {
 									const cell = criterion.cells[product.key];
 
 									return (
@@ -76,6 +72,7 @@ const ComparisonTable = () => {
 										>
 											<SupportMark
 												status={cell.status}
+												labels={content.statuses}
 												description={cell.description}
 											/>
 										</td>

@@ -25,6 +25,46 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 캠페인은 정기 `weekly_memo_report` / 테스트 `weekly_memo_report_test`, `utm_content`는 누른 자리
 (`organize` · `view_all` · `footer_web` · `footer_setting` · `empty_open`)입니다. 메모 원문 링크에는 붙이지 않습니다.
 
+## 홍보 링크 UTM 규약
+
+Threads·X 게시물과 유료 광고에서 웹으로 보내는 링크는 아래 규약으로 만듭니다. 채널을 GA4 "트래픽 획득"과
+주간 리포트의 유입 채널 블록에서 따로 보려면 값이 이 목록과 정확히 같아야 합니다(대소문자 포함).
+
+| 파라미터 | 값 | 예 |
+| --- | --- | --- |
+| `utm_source` | `threads` · `x` (광고도 게재된 플랫폼 이름) | `threads` |
+| `utm_medium` | 자연 게시 `social` · 유료 광고 `paid_social` | `social` |
+| `utm_campaign` | 월 단위 `promo_YYYYMM` | `promo_202611` |
+| `utm_content` | 게시물·광고 소재 식별자 (선택) | `t01` |
+| `utm_term` | 광고 키워드 (선택) | — |
+
+```
+https://www.webmemo.xyz/ko/introduce?utm_source=threads&utm_medium=social&utm_campaign=promo_202611&utm_content=t01
+```
+
+### 웹스토어로 넘기기
+
+비로그인 페이지의 설치 버튼(`TrackInstallClick`으로 감싼 웹스토어 링크)은 클릭하는 순간 UTM을 웹스토어
+링크에 그대로 붙입니다(`(no-auth)/_utils/campaignUtm.ts`). 순서는 현재 URL의 utm_* → 이번 세션에
+저장된 값(`sessionStorage` `web-memo:campaign-utm`, 마지막 접촉으로 묶음 전체를 덮어씀) → 없으면 그대로입니다.
+`utm_source`가 없으면 저장하지도 붙이지도 않습니다. 서버가 렌더링한 href는 바뀌지 않으므로 페이지는 정적으로 남습니다.
+로그인 후 화면·Footer·JsonLD의 웹스토어 링크에는 붙이지 않습니다.
+
+웹스토어 개발자 대시보드는 UTM이 붙은 리스팅 조회를 source/medium/campaign으로 나눠 보여 줍니다. **실제 설치를
+채널별로 보려면 대시보드의 Google Analytics 연동(opt-in)이 켜져 있어야 합니다** — 켜면 utm 값이 설치 이벤트의
+세션 소스/매체로 GA에 넘어갑니다. 확장의 `extension_installed`(Measurement Protocol)는 웹 세션과 이어지지
+않으므로 이 경로가 채널별 설치를 볼 유일한 방법입니다.
+
+### 주간 리포트 유입 채널 블록
+
+주간 Slack 리포트(`report-weekly-ga.mjs`)는 퍼널 블록 다음에 **유입 채널** 블록을 냅니다.
+
+- 행: `소스 / 매체 — 방문자 n명 · 설치 클릭 n명`. 방문자는 세션 소스/매체별 활성 사용자, 설치 클릭은
+  운영 필터를 건 `extension_install_click` 사용자 수입니다.
+- 방문자 수 내림차순 상위 8행 + `threads`·`x` 행은 항상 표시합니다(데이터가 없으면 `/ social` 0명 행).
+- 조회 결과가 없으면 `유입 데이터 없음`, 조회가 실패하면 `유입 데이터 조회 실패` 한 줄만 내고 나머지 리포트는 그대로 보냅니다.
+- 지난주 비교와 GA 시트 기록은 하지 않습니다. 광고비는 작업 카드에 손으로 적고, 설치 클릭 1건당 비용은 이 블록 숫자로 계산합니다.
+
 ## 이벤트 명세와 분석 방법의 경계
 
 이벤트별 발생·제외 조건, 필수/선택 속성, 집계 단위·중복 제거, 호출 코드·테스트,

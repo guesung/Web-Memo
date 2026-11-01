@@ -77,6 +77,7 @@ const MemoFormContent = ({
 	hasSyncNetworkError = false,
 	onRetrySync,
 	onPastMemoOpen,
+	onServerSaveSuccess,
 	pageMemoCount = 0,
 	siblingCategoryId,
 	isNewMemo = false,
@@ -189,6 +190,7 @@ const MemoFormContent = ({
 		selectedMemo,
 		isMemoLocked,
 		isSyncing,
+		onServerSaveSuccess,
 		isNewMemo,
 		pageMemoCount,
 		onMemoCreate,
@@ -844,6 +846,7 @@ const MemoForm = ({
 	hasSyncNetworkError,
 	onRetrySync,
 	onPastMemoOpen,
+	onServerSaveSuccess,
 	pageMemoCount,
 	siblingCategoryId,
 	isNewMemo,
@@ -880,6 +883,7 @@ const MemoForm = ({
 				hasSyncNetworkError={hasSyncNetworkError}
 				onRetrySync={onRetrySync}
 				onPastMemoOpen={onPastMemoOpen}
+				onServerSaveSuccess={onServerSaveSuccess}
 				pageMemoCount={pageMemoCount}
 				siblingCategoryId={siblingCategoryId}
 				isNewMemo={isNewMemo}
@@ -917,6 +921,8 @@ interface IFMemoFormProps {
 	onRetrySync?: () => void;
 	/** 과거 메모 알림에서 같은 글의 열기를 눌렀을 때. 사이드 패널 안에서 읽기 전용으로 보여 주는 쪽이 처리한다 */
 	onPastMemoOpen?: (duplicate: IFPastMemoDuplicate) => void;
+	/** 서버가 메모 저장을 받아들였을 때. 오프라인 대기열 저장은 해당하지 않는다 */
+	onServerSaveSuccess?: () => void;
 	/** 현재 주소에 저장된 메모 수. 1개 이상이면 과거 메모 판정을 부르지 않는다 */
 	pageMemoCount?: number;
 	/** 같은 페이지 다른 메모의 카테고리 id. 있으면 첫 저장 후 AI 대신 이 카테고리를 제안한다 */

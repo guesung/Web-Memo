@@ -27,6 +27,8 @@ import { cn, ErrorBoundary, ToastAction, toast } from "@web-memo/ui";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import LoginSection from "../LoginSection";
 import NoticeBanner from "../NoticeBanner";
+import ReviewPromptBanner from "../ReviewPromptBanner";
+import useReviewPrompt from "../ReviewPromptBanner/useReviewPrompt";
 import MemoCandidateList from "./components/MemoCandidateList";
 import MemoForm, { type IFMemoFormSwitchHandle } from "./components/MemoForm";
 import { MemoFormSkeleton } from "./components/MemoForm/components";
@@ -45,6 +47,7 @@ import {
 export default function MemoSection({
 	memoHeight,
 	animateHeight,
+	isAiTabOpen,
 }: MemoSectionProps) {
 	const loginBoundaryRef = useRef<ErrorBoundary>(null);
 	const tracking = useRef(new PastMemoTracking()).current;
@@ -124,14 +127,20 @@ export default function MemoSection({
 		>
 			<ErrorBoundary ref={loginBoundaryRef} FallbackComponent={LoginFallback}>
 				<Suspense fallback={<MemoFormSkeleton />}>
-					<MemoSectionContent tracking={tracking} />
+					<MemoSectionContent tracking={tracking} isAiTabOpen={isAiTabOpen} />
 				</Suspense>
 			</ErrorBoundary>
 		</section>
 	);
 }
 
-const MemoSectionContent = ({ tracking }: { tracking: PastMemoTracking }) => {
+const MemoSectionContent = ({
+	tracking,
+	isAiTabOpen,
+}: {
+	tracking: PastMemoTracking;
+	isAiTabOpen: boolean;
+}) => {
 	const { user } = useSupabaseUserQuery();
 	const { data: tab } = useTabQuery();
 	const scope = `${tab?.id}:${tab?.url ? getPageKey(tab.url) : ""}`;
@@ -155,6 +164,7 @@ const MemoSectionContent = ({ tracking }: { tracking: PastMemoTracking }) => {
 			<AuthenticatedMemoSectionContent
 				key={user.data.user.id}
 				tracking={tracking}
+				isAiTabOpen={isAiTabOpen}
 			/>
 		</>
 	);
@@ -162,13 +172,16 @@ const MemoSectionContent = ({ tracking }: { tracking: PastMemoTracking }) => {
 
 const AuthenticatedMemoSectionContent = ({
 	tracking,
+	isAiTabOpen,
 }: {
 	tracking: PastMemoTracking;
+	isAiTabOpen: boolean;
 }) => {
 	const fieldResizeState = useMemoFieldRatios();
 	const { data: tab } = useTabQuery();
 	const { user } = useSupabaseUserQuery();
 	const userId = user.data.user?.id;
+	const reviewPrompt = useReviewPrompt({ userId, isAiTabOpen });
 	// 후보 조회를 기다리는 동안 폼 전체를 스켈레톤으로 바꾸지 않도록 Suspense 없이 읽는다.
 	const {
 		memos,
@@ -539,6 +552,14 @@ const AuthenticatedMemoSectionContent = ({
 		openCandidateList();
 	};
 
+	const reviewPromptBanner = reviewPrompt.isVisible && (
+		<ReviewPromptBanner
+			onClose={reviewPrompt.handleClose}
+			onOpenReview={reviewPrompt.handleOpenReview}
+			onNeverShow={reviewPrompt.handleNeverShow}
+		/>
+	);
+
 	// 후보를 받기 전에는 목록·선택 로직을 돌리지 않고 잠긴 폼을 그린다. key가 같아 도착 뒤에도 같은 폼을 이어 쓴다.
 	if (isMemoLocked) {
 		return (
@@ -551,6 +572,7 @@ const AuthenticatedMemoSectionContent = ({
 					isMemoLoadFailed={isMemoLoadFailed}
 					onMemoRetryClick={refetchMemoCandidates}
 				/>
+				{reviewPromptBanner}
 			</>
 		);
 	}
@@ -617,11 +639,13 @@ const AuthenticatedMemoSectionContent = ({
 						hasSyncNetworkError={lastFlushHadNetworkError}
 						onRetrySync={retrySync}
 						onPastMemoOpen={handlePastMemoOpen}
+						onServerSaveSuccess={reviewPrompt.notifySaved}
 						pageMemoCount={memos.length}
 						siblingCategoryId={siblingCategoryId}
 					/>
 				)}
 			</div>
+			{reviewPromptBanner}
 		</>
 	);
 };
@@ -640,4 +664,6 @@ const PreservedDraft = ({ draft }: { draft: MemoInput }) => (
 interface MemoSectionProps {
 	memoHeight: number;
 	animateHeight: boolean;
+	/** AI 탭이 열려 있는지. 열려 있으면 리뷰 요청 배너를 새로 띄우지 않는다 */
+	isAiTabOpen: boolean;
 }

@@ -13,6 +13,7 @@ vi.mock("../shared/google-auth.mjs", () => ({
 import {
 	HOST_NAME_FILTER,
 	HOST_NAME_FUNNEL_FILTER,
+	PRODUCTION_EVENT_FILTER,
 	runFunnelReport,
 	runReport,
 } from "./ga4-client.mjs";
@@ -62,9 +63,23 @@ const funnelResponse = (users: number[], metricHeaders = ["activeUsers"]) => ({
 	},
 });
 
+/** mockGa 가 채널 보고서에 돌려줄 응답. 지표(activeUsers=방문자, totalUsers=설치 클릭)별. */
+let channelReports = {};
+
+const channelResponse = (rows: [string, string, number][]) => ({
+	rows: rows.map(([source, medium, value]) => ({
+		dimensionValues: [{ value: source }, { value: medium }],
+		metricValues: [{ value: String(value) }],
+	})),
+});
+
 const mockGa = ({ funnel }) => {
 	runReport.mockImplementation(async ({ body }) => {
 		const metric = body.metrics[0].name;
+
+		if (body.dimensions?.[0].name === "sessionSource") {
+			return channelReports[metric] ?? {};
+		}
 
 		if (metric === "activeUsers") {
 			return { rows: [{ metricValues: [{ value: "430" }] }] };
@@ -89,6 +104,7 @@ const fetchReport = () =>
 
 beforeEach(() => {
 	vi.clearAllMocks();
+	channelReports = {};
 });
 
 describe("주간 퍼널 단계", () => {
@@ -218,7 +234,7 @@ describe("fetchWeeklyGa4Report 의 집계 조건", () => {
 			(body) => body.dimensions?.[0].name === "eventName",
 		);
 		const activeRequests = requestBodies.filter(
-			(body) => body.metrics[0].name === "activeUsers",
+			(body) => body.metrics[0].name === "activeUsers" && !body.dimensions,
 		);
 
 		expect(eventRequests.map((body) => body.dateRanges)).toEqual([
@@ -549,5 +565,197 @@ describe("shouldFetchEvents", () => {
 		expect(shouldFetchEvents({ start: "2026-08-31" })).toBe(false);
 		expect(shouldFetchEvents({ start: "2026-09-07" })).toBe(true);
 		expect(shouldFetchEvents({ start: "2026-09-14" })).toBe(true);
+	});
+});
+
+describe("유입 채널", () => {
+	const rowsOf = async () => (await fetchReport()).channels.rows;
+	const labels = (rows) =>
+		rows.map(
+			({ source, medium, visitors, installClicks }) =>
+				`${source}/${medium}:${visitors}:${installClicks}`,
+		);
+
+	it("방문자와 설치 클릭 보고서를 같은 조건으로 두 번 요청한다", async () => {
+		mockGa({ funnel: {} });
+
+		await fetchReport();
+
+		const bodies = runReport.mock.calls
+			.map(([request]) => request.body)
+			.filter((body) => body.dimensions?.[0].name === "sessionSource");
+
+		expect(bodies).toHaveLength(2);
+		expect(bodies[0].dimensions.map(({ name }) => name)).toEqual([
+			"sessionSource",
+			"sessionMedium",
+		]);
+		const visitors = bodies.find((body) => body.metrics[0].name === "activeUsers");
+		const clicks = bodies.find((body) => body.metrics[0].name === "totalUsers");
+
+		expect(visitors.dimensionFilter).toEqual(HOST_NAME_FILTER);
+		expect(clicks.dimensionFilter.andGroup.expressions[0].filter).toEqual({
+			fieldName: "eventName",
+			stringFilter: { matchType: "EXACT", value: "extension_install_click" },
+		});
+		expect(clicks.dimensionFilter.andGroup.expressions[1]).toEqual(
+			PRODUCTION_EVENT_FILTER,
+		);
+	});
+
+	it("소스/매체 키로 합치고 설치 클릭만 있는 조합은 방문자 0명으로 포함한다", async () => {
+		channelReports = {
+			activeUsers: channelResponse([
+				["google", "organic", 50],
+				["threads", "social", 10],
+				["x", "social", 5],
+			]),
+			totalUsers: channelResponse([
+				["threads", "social", 3],
+				["newsletter", "email", 2],
+			]),
+		};
+		mockGa({ funnel: {} });
+
+		expect(labels(await rowsOf())).toEqual([
+			"google/organic:50:0",
+			"threads/social:10:3",
+			"x/social:5:0",
+			"newsletter/email:0:2",
+		]);
+	});
+
+	it("방문자 내림차순, 동률이면 설치 클릭 내림차순, 그다음 이름순으로 정렬한다", async () => {
+		channelReports = {
+			activeUsers: channelResponse([
+				["b", "m", 5],
+				["a", "m", 5],
+				["c", "m", 5],
+				["d", "m", 9],
+				["threads", "social", 1],
+				["x", "social", 1],
+			]),
+			totalUsers: channelResponse([["c", "m", 4]]),
+		};
+		mockGa({ funnel: {} });
+
+		expect(labels(await rowsOf()).slice(0, 4)).toEqual([
+			"d/m:9:0",
+			"c/m:5:4",
+			"a/m:5:0",
+			"b/m:5:0",
+		]);
+	});
+
+	it("상위 8행에 없는 threads·x 는 아래에 매체 조합마다 붙이고 상위 8에 있으면 중복하지 않는다", async () => {
+		channelReports = {
+			activeUsers: channelResponse([
+				...Array.from({ length: 8 }, (_, i): [string, string, number] => [
+					`s${i}`,
+					"m",
+					100 - i,
+				]),
+				["threads", "social", 2],
+				["threads", "paid", 1],
+				["x", "social", 1],
+			]),
+		};
+		mockGa({ funnel: {} });
+
+		expect(labels(await rowsOf()).slice(8)).toEqual([
+			"threads/social:2:0",
+			"threads/paid:1:0",
+			"x/social:1:0",
+		]);
+
+		channelReports = {
+			activeUsers: channelResponse([
+				["threads", "social", 9],
+				["x", "social", 8],
+			]),
+		};
+
+		expect(labels(await rowsOf())).toEqual(["threads/social:9:0", "x/social:8:0"]);
+	});
+
+	it("threads 데이터가 하나도 없으면 threads / social 0명 행을 채운다", async () => {
+		channelReports = { activeUsers: channelResponse([["google", "organic", 7]]) };
+		mockGa({ funnel: {} });
+
+		expect(labels(await rowsOf())).toEqual([
+			"google/organic:7:0",
+			"threads/social:0:0",
+			"x/social:0:0",
+		]);
+	});
+
+	it("두 보고서가 모두 비면 고정 행 없이 빈 배열이다", async () => {
+		mockGa({ funnel: {} });
+
+		expect((await fetchReport()).channels).toEqual({ status: "ok", rows: [] });
+	});
+
+	it("채널 조회가 실패해도 리포트는 실패하지 않고 실패 상태만 남긴다", async () => {
+		const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+		mockGa({ funnel: {} });
+		const base = runReport.getMockImplementation();
+
+		runReport.mockImplementation(async (request) => {
+			if (request.body.metrics[0].name === "totalUsers" && request.body.dimensions?.[0].name === "sessionSource") {
+				throw new Error("quota");
+			}
+
+			return base(request);
+		});
+
+		const report = await fetchReport();
+
+		expect(report.channels).toEqual({ status: "failed", rows: [] });
+		expect(report.activeUsers.current).toBe(430);
+		expect(warn).toHaveBeenCalled();
+		warn.mockRestore();
+	});
+});
+
+describe("유입 채널 블록", () => {
+	const channelText = async (channels) => {
+		mockGa({ funnel: funnelResponse([413, 27, 6, 3, 1, 1]) });
+
+		const report = { ...(await fetchReport()), channels };
+		const blocks = buildWeeklyReportPayload({ report }).blocks;
+
+		return {
+			blocks,
+			text: blocks
+				.map((block) => block.text?.text ?? "")
+				.find((text) => text.startsWith("*유입 채널*")),
+		};
+	};
+
+	it("퍼널 블록 바로 뒤에 행 형식대로 그린다", async () => {
+		const { blocks, text } = await channelText({
+			status: "ok",
+			rows: [{ source: "threads", medium: "social", visitors: 12, installClicks: 3 }],
+		});
+		const index = blocks.findIndex((block) => block.text?.text.startsWith("*유입 채널*"));
+
+		expect(blocks[index - 1].text.text.startsWith("*퍼널*")).toBe(true);
+		expect(text).toBe("*유입 채널*\nthreads / social — 방문자 12명 · 설치 클릭 3명");
+	});
+
+	it("행이 없으면 유입 데이터 없음, 실패면 조회 실패 한 줄만 싣는다", async () => {
+		expect((await channelText({ status: "ok", rows: [] })).text).toBe(
+			"*유입 채널*\n_유입 데이터 없음_",
+		);
+		expect((await channelText({ status: "failed", rows: [] })).text).toBe(
+			"*유입 채널*\n_유입 데이터 조회 실패_",
+		);
+	});
+
+	it("channels 가 없으면(백필) 블록을 생략한다", async () => {
+		const { text } = await channelText(undefined);
+
+		expect(text).toBeUndefined();
 	});
 });

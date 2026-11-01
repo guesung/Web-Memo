@@ -219,7 +219,10 @@ export type TAnalyticsEvent =
 	| { name: "guide_finish" }
 	| { name: "extension_setting_change"; params: { keys: string } }
 	| { name: "guide_step"; params: { step_name: string } }
-	| { name: "memo_first_write"; params?: { source?: "highlight"; page_memo_count?: number } }
+	| {
+			name: "memo_first_write";
+			params?: { source?: "highlight"; page_memo_count?: number };
+	  }
 	| { name: "export_run"; params: { format: ExportFormat } }
 	| { name: "search_no_result"; params: { has_domain_filter: boolean } }
 	| {

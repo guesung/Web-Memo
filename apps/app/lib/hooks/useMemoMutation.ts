@@ -2,6 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import type { MemoRow, MemoTable } from "@web-memo/shared/types";
 import { getPageKey } from "@web-memo/shared/utils/url";
+import { buildMemoWriteFields } from "@/lib/analytics/analyticsCore";
+import { trackAppEvent } from "@/lib/analytics/appAnalytics";
 import { memoService, supabase } from "@/lib/supabase/client";
 
 /** 페이지 후보 중 명시적으로 선택된 메모 또는 유일한 메모를 반환한다. */
@@ -93,10 +95,19 @@ export function useMemoUpsertMutation() {
 				throw new Error("메모 저장 결과를 확인하지 못했습니다.");
 			}
 
-			return result;
+			return { ...result, isExisting: Boolean(existing) };
 		},
-		onSuccess: (_data, variables) =>
-			invalidateMemoPage(queryClient, variables.url),
+		onSuccess: (data, variables) => {
+			invalidateMemoPage(queryClient, variables.url);
+			if (data.isExisting) {
+				void trackAppEvent({
+					name: "memo_write",
+					params: { fields: buildMemoWriteFields(variables) },
+				});
+			} else {
+				void trackAppEvent({ name: "memo_first_write" });
+			}
+		},
 		onError: (_error, variables) =>
 			invalidateMemoPage(queryClient, variables.url),
 	});
@@ -147,7 +158,18 @@ const toggleMemoFlag = async (
 		throw new Error("메모 상태 변경 결과를 확인하지 못했습니다.");
 	}
 
-	return result;
+	return { ...result, enabled: existing ? !existing[flag] : true };
+};
+
+/** 토글 성공 뒤 memo_status_toggle을 보낸다. */
+const trackStatusToggle = (
+	status: "wish" | "star" | "reading",
+	enabled: boolean,
+) => {
+	void trackAppEvent({
+		name: "memo_status_toggle",
+		params: { status, enabled },
+	});
 };
 
 /** 선택한 메모의 위시 상태를 전환한다. */
@@ -157,8 +179,10 @@ export function useMemoWishToggleMutation() {
 	return useMutation({
 		mutationFn: (data: IFMemoToggleData & { currentIsWish: boolean }) =>
 			toggleMemoFlag(data, "isWish"),
-		onSuccess: (_data, variables) =>
-			invalidateMemoPage(queryClient, variables.url),
+		onSuccess: (data, variables) => {
+			invalidateMemoPage(queryClient, variables.url);
+			trackStatusToggle("wish", data.enabled);
+		},
 	});
 }
 
@@ -169,8 +193,10 @@ export function useMemoReadingToggleMutation() {
 	return useMutation({
 		mutationFn: (data: IFMemoToggleData & { currentIsReading: boolean }) =>
 			toggleMemoFlag(data, "isReading"),
-		onSuccess: (_data, variables) =>
-			invalidateMemoPage(queryClient, variables.url),
+		onSuccess: (data, variables) => {
+			invalidateMemoPage(queryClient, variables.url);
+			trackStatusToggle("reading", data.enabled);
+		},
 	});
 }
 
@@ -181,7 +207,9 @@ export function useMemoStarToggleMutation() {
 	return useMutation({
 		mutationFn: (data: IFMemoToggleData & { currentIsStar: boolean }) =>
 			toggleMemoFlag(data, "isStar"),
-		onSuccess: (_data, variables) =>
-			invalidateMemoPage(queryClient, variables.url),
+		onSuccess: (data, variables) => {
+			invalidateMemoPage(queryClient, variables.url);
+			trackStatusToggle("star", data.enabled);
+		},
 	});
 }

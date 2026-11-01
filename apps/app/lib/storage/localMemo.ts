@@ -11,8 +11,14 @@ export async function getMemoByUrl(url: string): Promise<LocalMemo[]> {
 	return pageCandidates(await readLocalMemos(), url);
 }
 
-export function upsertMemo(params: LocalMemoUpsert): Promise<LocalMemo> {
-	return changeLocalMemos((memos) => {
+/**
+ * 메모를 저장하고, 기존 메모를 고친 것인지 함께 알려 준다.
+ * @description 새로 만든 메모와 수정을 GA 이벤트에서 가르려고 존재 여부를 돌려준다.
+ */
+export function upsertMemoWithExisting(
+	params: LocalMemoUpsert,
+): Promise<{ memo: LocalMemo; isExisting: boolean }> {
+	return changeLocalMemos<{ memo: LocalMemo; isExisting: boolean }>((memos) => {
 		const existing = resolveCandidate(
 			memos,
 			params.url,
@@ -33,7 +39,7 @@ export function upsertMemo(params: LocalMemoUpsert): Promise<LocalMemo> {
 			if (params.isReading !== undefined) existing.isReading = params.isReading;
 			existing.updatedAt = now;
 			existing.synced = false;
-			return { memos, result: existing };
+			return { memos, result: { memo: existing, isExisting: true } };
 		}
 		const created = createMemo(
 			{
@@ -49,8 +55,17 @@ export function upsertMemo(params: LocalMemoUpsert): Promise<LocalMemo> {
 			},
 			now,
 		);
-		return { memos: [...memos, created], result: created };
+		return {
+			memos: [...memos, created],
+			result: { memo: created, isExisting: false },
+		};
 	});
+}
+
+export async function upsertMemo(params: LocalMemoUpsert): Promise<LocalMemo> {
+	const { memo } = await upsertMemoWithExisting(params);
+
+	return memo;
 }
 
 export function toggleWishByUrl(

@@ -17,6 +17,12 @@ vi.mock("@tanstack/react-query", () => ({
 	},
 	useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }));
+vi.mock("@/lib/analytics/appAnalytics", () => ({
+	trackAppEvent: vi.fn(),
+}));
+vi.mock("@/lib/analytics/analyticsCore", () => ({
+	buildMemoWriteFields: vi.fn(),
+}));
 vi.mock("@/lib/supabase/client", () => ({
 	memoService: mocks,
 	supabase: { auth: { getSession: mocks.getSession } },
@@ -52,7 +58,11 @@ it("후보가 없는 예상 신규 대상은 반환된 ID를 확인한다", asyn
 			expectedNew: true,
 			expectedOwnerId: "owner",
 		} as never),
-	).resolves.toEqual({ data: [{ id: 42 }], error: null });
+	).resolves.toEqual({
+		data: [{ id: 42 }],
+		error: null,
+		isExisting: false,
+	});
 	expect(mocks.insertMemo).toHaveBeenCalledWith({
 		url: "https://example.com",
 		memo: "edit",

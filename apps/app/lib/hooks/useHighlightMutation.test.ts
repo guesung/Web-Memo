@@ -26,6 +26,9 @@ vi.mock("@tanstack/react-query", () => ({
 	},
 	useQueryClient: () => ({ invalidateQueries: mocks.invalidateQueries }),
 }));
+vi.mock("@/lib/analytics/appAnalytics", () => ({
+	trackAppEvent: vi.fn(),
+}));
 vi.mock("@/lib/auth/AuthProvider", () => ({
 	useAuth: () => ({ session: { user: { id: "owner" } } }),
 }));

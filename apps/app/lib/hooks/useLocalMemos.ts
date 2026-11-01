@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getPageKey } from "@web-memo/shared/utils/url";
+import { buildMemoWriteFields } from "@/lib/analytics/analyticsCore";
+import { trackAppEvent } from "@/lib/analytics/appAnalytics";
 import {
 	deleteMemo,
 	getAllMemos,
@@ -7,7 +9,7 @@ import {
 	toggleReadingByUrl,
 	toggleStarByUrl,
 	toggleWishByUrl,
-	upsertMemo,
+	upsertMemoWithExisting,
 } from "@/lib/storage/localMemo";
 import { syncMemosToSupabase } from "@/lib/storage/syncService";
 
@@ -36,8 +38,22 @@ export function useLocalMemoUpsert() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: upsertMemo,
-		onSuccess: (_data, variables) => {
+		mutationFn: async (
+			params: Parameters<typeof upsertMemoWithExisting>[0],
+		) => {
+			const { memo, isExisting } = await upsertMemoWithExisting(params);
+
+			return { ...memo, isExisting };
+		},
+		onSuccess: (data, variables) => {
+			if (data.isExisting) {
+				void trackAppEvent({
+					name: "memo_write",
+					params: { fields: buildMemoWriteFields(variables) },
+				});
+			} else {
+				void trackAppEvent({ name: "memo_first_write" });
+			}
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos() });
 			queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.localMemoByUrl(variables.url),
@@ -61,7 +77,11 @@ export function useLocalMemoWishToggle() {
 			favIconUrl?: string;
 			selectedId?: string;
 		}) => toggleWishByUrl(url, title, favIconUrl, selectedId),
-		onSuccess: (_data, { url }) => {
+		onSuccess: (data, { url }) => {
+			void trackAppEvent({
+				name: "memo_status_toggle",
+				params: { status: "wish", enabled: Boolean(data.isWish) },
+			});
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos() });
 			queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.localMemoByUrl(url),
@@ -85,7 +105,11 @@ export function useLocalMemoStarToggle() {
 			favIconUrl?: string;
 			selectedId?: string;
 		}) => toggleStarByUrl(url, title, favIconUrl, selectedId),
-		onSuccess: (_data, { url }) => {
+		onSuccess: (data, { url }) => {
+			void trackAppEvent({
+				name: "memo_status_toggle",
+				params: { status: "star", enabled: Boolean(data.isStar) },
+			});
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos() });
 			queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.localMemoByUrl(url),
@@ -109,7 +133,11 @@ export function useLocalMemoReadingToggle() {
 			favIconUrl?: string;
 			selectedId?: string;
 		}) => toggleReadingByUrl(url, title, favIconUrl, selectedId),
-		onSuccess: (_data, { url }) => {
+		onSuccess: (data, { url }) => {
+			void trackAppEvent({
+				name: "memo_status_toggle",
+				params: { status: "reading", enabled: Boolean(data.isReading) },
+			});
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.localMemos() });
 			queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.localMemoByUrl(url),

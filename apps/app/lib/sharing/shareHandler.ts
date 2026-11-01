@@ -1,6 +1,7 @@
 import type { MemoRow } from "@web-memo/shared/types";
 import type { MemoService } from "@web-memo/shared/utils/services";
 import { getPageKey } from "@web-memo/shared/utils/url";
+import { trackAppEvent } from "@/lib/analytics/appAnalytics";
 import { appendMemoText } from "@/lib/sharing/memoAppend";
 import { extractPageMetadata } from "@/lib/sharing/pageMetadata";
 import {
@@ -210,6 +211,10 @@ export async function handleSharedUrl(
 	}
 
 	await resolvePendingSharedUrl(url);
+	void trackAppEvent({
+		name: "memo_status_toggle",
+		params: { status: "wish", enabled: true, source: "share_intent" },
+	});
 
 	return { saved: true, title };
 }

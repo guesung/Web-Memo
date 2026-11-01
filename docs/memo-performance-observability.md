@@ -1,5 +1,7 @@
 # 메모 화면 지연 관측
 
+목록·검색·필터·추가 로딩의 로컬 재현과 통계 경계는 [메모 목록 성능 진단](memo-list-performance-diagnosis.md)을 참고합니다. 로컬의 `observed_content_ready`는 합성 결과와 DOM 배치 안정 proxy이며, 아래 Faro `content_ready`와 구분합니다.
+
 이 문서는 `webmemo.xyz`의 로그인 후 메모 화면을 Grafana에서 관측하는 설정과 판정 기준입니다. 대상 경로는 `/memos`, `/memos/wish`, `/memos/star`, `/memos/reading`이며 언어 접두사는 제거해 기록합니다. 브라우저의 기존 Sentry 성능 추적과 오류 보고는 유지합니다.
 
 ## 수집 구성

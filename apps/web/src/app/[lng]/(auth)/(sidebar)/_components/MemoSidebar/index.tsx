@@ -1,7 +1,9 @@
 import { HeaderMargin } from "@src/components/Header";
 import type { LanguageType } from "@src/modules/i18n";
 import { Sidebar, SidebarContent, SidebarSeparator } from "@web-memo/ui";
+import { Suspense } from "react";
 import styles from "./memoSidebar.module.css";
+import SidebarCategorySkeleton from "./SidebarCategorySkeleton";
 import SidebarFooterSection from "./SidebarFooterSection";
 import SidebarMainSection from "./SidebarMainSection";
 import SidebarTrashSection from "./SidebarTrashSection";
@@ -21,7 +23,9 @@ export default function MemoSidebar({ lng }: LanguageType) {
 
 				<SidebarSeparator className="mx-0 bg-gradient-to-r from-transparent via-border to-transparent" />
 
-				<SidebarCategorySection lng={lng} />
+				<Suspense fallback={<SidebarCategorySkeleton />}>
+					<SidebarCategorySection lng={lng} />
+				</Suspense>
 			</SidebarContent>
 			<SidebarFooterSection lng={lng} />
 		</Sidebar>

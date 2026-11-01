@@ -5,7 +5,6 @@ import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type {
 	GetMemoResponse,
 	HighlightMemoLink,
-	HighlightRow,
 } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
 import { Card, CardContent } from "@web-memo/ui";
@@ -24,13 +23,14 @@ import MemoCardHeader from "../MemoCardHeader";
 import type { SearchFormValues } from "../MemoSearchFormProvider";
 import useIsContentClamped from "./_hooks/useIsContentClamped";
 import { captureMemoCardOpen } from "./_utils/memoCardMotion";
+import MemoBodyText from "./MemoBodyText";
 import { MemoSourceQuote } from "./MemoSourceQuote";
 import { holdScrollPosition } from "./scrollPositionHold";
 
 /** 메모 카드 표시와 선택 속성. */
 interface IFMemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	memo: GetMemoResponse;
-	highlights?: HighlightRow[];
+	highlightCount?: number;
 	source?: HighlightMemoLink;
 	isSelectingMode?: boolean;
 	selectMemoItem?: (id: number) => void;
@@ -59,7 +59,7 @@ interface IFMemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 function MemoItem({
 	lng,
 	memo,
-	highlights,
+	highlightCount,
 	source,
 	selectMemoItem,
 	isSelectingMode,
@@ -223,7 +223,7 @@ function MemoItem({
 								data-clamp
 								className={cn({ "line-clamp-3": isContentTruncated })}
 							>
-								{memo.memo}
+								<MemoBodyText text={memo.memo} />
 							</p>
 						</CardContent>
 					)}
@@ -236,7 +236,7 @@ function MemoItem({
 								data-clamp
 								className={cn({ "line-clamp-2": isContentTruncated })}
 							>
-								{memo.impression}
+								<MemoBodyText text={memo.impression} />
 							</p>
 						</CardContent>
 					)}
@@ -249,7 +249,7 @@ function MemoItem({
 								data-clamp
 								className={cn({ "line-clamp-2": isContentTruncated })}
 							>
-								{memo.actionItem}
+								<MemoBodyText text={memo.actionItem} />
 							</p>
 						</CardContent>
 					)}
@@ -276,8 +276,8 @@ function MemoItem({
 							memo={memo}
 							lng={lng}
 							highlightCount={
-								!isReadOnly && (highlights?.length ?? 0) > 0
-									? highlights?.length
+								!isReadOnly && (highlightCount ?? 0) > 0
+									? highlightCount
 									: undefined
 							}
 							isShowingOption={isMemoHovering && !isSelectingMode}

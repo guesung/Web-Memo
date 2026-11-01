@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
+import { trackAppEvent } from "@/lib/analytics/appAnalytics";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useLocalMemoDelete } from "@/lib/hooks/useLocalMemos";
 import { useDeleteMemoMutation } from "@/lib/hooks/useMemoMutation";
@@ -22,10 +23,24 @@ export function useDeleteWithUndo() {
 				clearTimeout(deleteTimerRef.current);
 			}
 			setDeletedMemo(item);
+			const handleDeleteSuccess = () => {
+				void trackAppEvent({
+					name: "memo_delete",
+					params: { memo_count: 1 },
+				});
+			};
 			if (isLoggedIn) {
-				deleteSupabase.mutate(item.id as number);
+				deleteSupabase.mutate(item.id as number, {
+					onSuccess: (result) => {
+						if (!result.error) {
+							handleDeleteSuccess();
+						}
+					},
+				});
 			} else {
-				deleteLocal.mutate(item.id as string);
+				deleteLocal.mutate(item.id as string, {
+					onSuccess: handleDeleteSuccess,
+				});
 			}
 			deleteTimerRef.current = setTimeout(() => setDeletedMemo(null), 3000);
 		},

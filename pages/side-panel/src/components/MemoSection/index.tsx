@@ -27,7 +27,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import LoginSection from "../LoginSection";
 import NoticeBanner from "../NoticeBanner";
 import MemoCandidateList from "./components/MemoCandidateList";
-import MemoForm from "./components/MemoForm";
+import MemoForm, { type IFMemoFormSwitchHandle } from "./components/MemoForm";
 import { MemoFormSkeleton } from "./components/MemoForm/components";
 import { useMemoFieldRatios } from "./components/MemoForm/hooks/useMemoFieldResize";
 import MemoHeader from "./components/MemoHeader";
@@ -194,7 +194,20 @@ const AuthenticatedMemoSectionContent = ({
 		scope: string;
 		memoId: number | null;
 		memo: Database["memo"]["Tables"]["memo"]["Row"] | null;
+		/** 같은 페이지에 메모가 있어도 새로 만드는 중. 첫 저장이 끝나 목록에 나타나면 그 메모 선택으로 바뀐다 */
+		isNew?: boolean;
 	} | null>(null);
+	// 새 메모의 첫 insert로 정해진 id. 조회 캐시가 따라오면 선택을 이 id로 옮긴다.
+	const [createdMemo, setCreatedMemo] = useState<{
+		scope: string;
+		memoId: number;
+	} | null>(null);
+	// 새 메모를 시작할 때마다 올려 폼을 새로 만든다. 직전 메모의 입력·저장 상태가 새 메모에 남지 않게 한다.
+	const [newMemoSequence, setNewMemoSequence] = useState<{
+		scope: string;
+		count: number;
+	} | null>(null);
+	const switchHandleRef = useRef<IFMemoFormSwitchHandle | null>(null);
 	const [preservedDraft, setPreservedDraft] = useState<{
 		scope: string;
 		value: MemoInput;
@@ -220,6 +233,13 @@ const AuthenticatedMemoSectionContent = ({
 	const currentSelection = selection?.scope === editorScope ? selection : null;
 	const currentDraft =
 		preservedDraft?.scope === editorScope ? preservedDraft.value : null;
+	const createdMemoId =
+		createdMemo?.scope === editorScope ? createdMemo.memoId : null;
+	const createdMemoRow = memos.find((memo) => memo.id === createdMemoId);
+	const formKey =
+		newMemoSequence?.scope === editorScope
+			? `${editorScope}:new-${newMemoSequence.count}`
+			: editorScope;
 
 	useEffect(() => {
 		if (selection && selection.scope !== editorScope) {
@@ -231,12 +251,12 @@ const AuthenticatedMemoSectionContent = ({
 		if (isMemoLocked) {
 			return;
 		}
+		// 현재 주소에 메모가 있으면 가장 최근 수정한 메모를 연다. 메모가 없으면 새 메모로 시작한다.
 		// 현재 주소에 메모가 없고 다른 주소의 메모만 있으면 자동으로 고르지 않고 후보 화면을 띄운다.
 		if (
 			!selection &&
 			!currentDraft &&
 			!isCandidateListRequested &&
-			memos.length <= 1 &&
 			!hasOnlyOtherUrlMemos
 		) {
 			setSelection({
@@ -246,8 +266,18 @@ const AuthenticatedMemoSectionContent = ({
 			});
 			return;
 		}
+		// 새 메모의 첫 저장이 조회 캐시에 반영되면 그 메모를 선택한다.
+		if (currentSelection?.isNew && createdMemoRow) {
+			setSelection({
+				scope: editorScope,
+				memoId: createdMemoRow.id,
+				memo: createdMemoRow,
+			});
+			return;
+		}
 		if (
 			currentSelection?.memoId === null &&
+			!currentSelection.isNew &&
 			memos.length === 1 &&
 			!isCandidateListRequested
 		) {
@@ -266,6 +296,7 @@ const AuthenticatedMemoSectionContent = ({
 		hasOnlyOtherUrlMemos,
 		isCandidateListRequested,
 		isMemoLocked,
+		createdMemoRow,
 	]);
 
 	const candidateMemos = [...memos, ...otherUrlMemos];
@@ -274,20 +305,23 @@ const AuthenticatedMemoSectionContent = ({
 	);
 	const activeMemo = currentSelection
 		? (selectedMemo ?? currentSelection.memo ?? undefined)
-		: !currentDraft && memos.length === 1
+		: !currentDraft && memos.length >= 1
 			? memos[0]
 			: undefined;
-	const siblingCategoryId =
-		memos.find(
-			(memo) => memo.id !== activeMemo?.id && memo.category_id !== null,
-		)?.category_id ?? null;
 	const hasMultipleMemos = memos.length > 1;
 	const isSelectedMemoMissing =
 		currentSelection?.memoId !== null &&
 		currentSelection?.memoId !== undefined &&
 		!selectedMemo;
 	const hasUnselectedCollision =
-		currentSelection?.memoId === null && memos.length > 1;
+		currentSelection?.memoId === null &&
+		!currentSelection.isNew &&
+		memos.length > 1;
+	// 지금 편집하는 메모(새 메모는 첫 저장으로 만들어진 메모)를 뺀 최근 수정 메모 중 카테고리가 있는 첫 메모의 카테고리
+	const editingMemoId = activeMemo?.id ?? createdMemoId;
+	const siblingCategoryId =
+		memos.find((memo) => memo.id !== editingMemoId && memo.category_id !== null)
+			?.category_id ?? null;
 
 	const openCandidateList = () => {
 		setCandidateListScope(editorScope);
@@ -393,10 +427,42 @@ const AuthenticatedMemoSectionContent = ({
 		});
 	};
 
-	const handleNewMemoClick = () => {
+	/**
+	 * 새 메모를 시작한다.
+	 * @description 열려 있는 폼이 있으면 그 메모를 먼저 저장하고, 저장에 실패하면 시작하지 않는다.
+	 * 이미 새 메모 화면이면 아무것도 바꾸지 않고 본문에 초점만 둔다.
+	 */
+	const handleNewMemoClick = async () => {
+		const switchHandle = switchHandleRef.current;
+		if (switchHandle) {
+			if (currentSelection?.isNew) {
+				switchHandle.focusBody();
+				return;
+			}
+			const leaveResult = await switchHandle.leave();
+			if (!leaveResult.isLeavable) {
+				return;
+			}
+		}
+
 		setCandidateListScope(null);
-		setSelection({ scope: editorScope, memoId: null, memo: null });
+		setCreatedMemo(null);
+		setNewMemoSequence((previous) => ({
+			scope: editorScope,
+			count: previous?.scope === editorScope ? previous.count + 1 : 1,
+		}));
+		setSelection({
+			scope: editorScope,
+			memoId: null,
+			memo: null,
+			isNew: true,
+		});
 	};
+
+	const handleMemoCreate = useCallback(
+		(memoId: number) => setCreatedMemo({ scope: editorScope, memoId }),
+		[editorScope],
+	);
 
 	const handleOtherMemoClick = (draft?: MemoInput) => {
 		if (draft) {
@@ -456,8 +522,11 @@ const AuthenticatedMemoSectionContent = ({
 					/>
 				) : (
 					<MemoForm
-						key={editorScope}
+						key={formKey}
 						fieldResizeState={fieldResizeState}
+						isNewMemo={currentSelection?.isNew}
+						onMemoCreate={handleMemoCreate}
+						switchHandleRef={switchHandleRef}
 						selectedMemo={activeMemo}
 						isSelectedMemoMissing={
 							isSelectedMemoMissing || hasUnselectedCollision

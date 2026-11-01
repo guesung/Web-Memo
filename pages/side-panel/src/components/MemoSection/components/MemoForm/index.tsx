@@ -38,6 +38,7 @@ import {
 	StarIcon,
 } from "lucide-react";
 import {
+	type MutableRefObject,
 	useCallback,
 	useEffect,
 	useLayoutEffect,
@@ -79,6 +80,9 @@ const MemoFormContent = ({
 	onPastMemoOpen,
 	pageMemoCount = 0,
 	siblingCategoryId,
+	isNewMemo = false,
+	onMemoCreate,
+	switchHandleRef,
 }: IFMemoFormProps) => {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const impressionRef = useRef<HTMLTextAreaElement | null>(null);
@@ -181,7 +185,13 @@ const MemoFormContent = ({
 		updateCategory,
 		toggleMemoStatus,
 		setPlannedDate,
-	} = useMemoForm({ selectedMemo, isMemoLocked, isSyncing });
+	} = useMemoForm({
+		selectedMemo,
+		isMemoLocked,
+		isSyncing,
+		isNewMemo,
+		onMemoCreate,
+	});
 	const impressionField = register("impression", {
 		onChange: (event) => handleImpressionChange(event.target.value),
 	});
@@ -213,24 +223,53 @@ const MemoFormContent = ({
 		isSyncFailed,
 	});
 
-	const handleOtherMemoClick = async () => {
-		if (!onOtherMemoClick || isMemoLocked || isWritePending || isSwitching) {
-			return;
+	/**
+	 * 지금 메모를 떠나도 되도록 저장을 마친다.
+	 * @description 저장에 실패하면 떠나지 않는다. 선택한 메모가 사라졌으면 저장 없이 입력 중인 값을 초안으로 넘긴다.
+	 */
+	const leaveMemo = async (): Promise<IFMemoLeaveResult> => {
+		if (isMemoLocked || isWritePending || isSwitching) {
+			return { isLeavable: false };
 		}
 		if (isSelectedMemoMissing) {
-			onOtherMemoClick(getValues());
-			return;
+			return { isLeavable: true, draft: getValues() };
 		}
 
 		setIsSwitching(true);
 		const isSaved = await saveBeforeSwitch();
-		if (isSaved) {
-			onOtherMemoClick();
+		if (!isSaved) {
+			setIsSwitching(false);
+		}
+
+		return { isLeavable: isSaved };
+	};
+
+	const handleOtherMemoClick = async () => {
+		if (!onOtherMemoClick) {
 			return;
 		}
 
-		setIsSwitching(false);
+		const leaveResult = await leaveMemo();
+		if (leaveResult.isLeavable) {
+			onOtherMemoClick(leaveResult.draft);
+		}
 	};
+
+	// 같은 페이지 안 전환은 폼을 다시 만들지 않으므로, 전환하는 쪽(헤더)이 이 폼을 거쳐 저장하게 한다.
+	useEffect(() => {
+		if (!switchHandleRef) {
+			return;
+		}
+
+		switchHandleRef.current = {
+			leave: leaveMemo,
+			focusBody: () => textareaRef.current?.focus(),
+		};
+
+		return () => {
+			switchHandleRef.current = null;
+		};
+	});
 
 	const {
 		categories,
@@ -826,6 +865,9 @@ const MemoForm = ({
 	onPastMemoOpen,
 	pageMemoCount,
 	siblingCategoryId,
+	isNewMemo,
+	onMemoCreate,
+	switchHandleRef,
 }: IFMemoFormProps) => {
 	const form = useForm<MemoInput>({
 		shouldUnregister: false,
@@ -859,6 +901,9 @@ const MemoForm = ({
 				onPastMemoOpen={onPastMemoOpen}
 				pageMemoCount={pageMemoCount}
 				siblingCategoryId={siblingCategoryId}
+				isNewMemo={isNewMemo}
+				onMemoCreate={onMemoCreate}
+				switchHandleRef={switchHandleRef}
 			/>
 		</FormProvider>
 	);
@@ -895,6 +940,28 @@ interface IFMemoFormProps {
 	pageMemoCount?: number;
 	/** 같은 페이지 다른 메모의 카테고리 id. 있으면 첫 저장 후 AI 대신 이 카테고리를 제안한다 */
 	siblingCategoryId?: number | null;
+	/** 같은 페이지에 메모가 있어도 새로 만드는 중인지. 기존 메모를 편집 대상으로 잡지 않고 첫 저장을 insert로 보낸다 */
+	isNewMemo?: boolean;
+	/** 새 메모의 첫 insert가 끝나 id가 정해졌을 때 */
+	onMemoCreate?: (memoId: number) => void;
+	/** 전환하는 쪽이 이 폼의 저장·초점 기능을 호출하도록 폼이 채워 두는 ref */
+	switchHandleRef?: MutableRefObject<IFMemoFormSwitchHandle | null>;
+}
+
+/** 메모를 떠나기 전 저장 결과 */
+export interface IFMemoLeaveResult {
+	/** 저장을 마쳐 다른 화면으로 넘어가도 되는지 */
+	isLeavable: boolean;
+	/** 선택한 메모가 사라진 채 떠날 때 보존할 입력 중인 값 */
+	draft?: MemoInput;
+}
+
+/** 폼 바깥(헤더)이 전환 전에 부르는 폼 기능 */
+export interface IFMemoFormSwitchHandle {
+	/** 저장을 마치고 떠나도 되는지 알려 준다. 저장에 실패하면 isLeavable이 false다 */
+	leave: () => Promise<IFMemoLeaveResult>;
+	/** 본문 입력에 초점을 둔다 */
+	focusBody: () => void;
 }
 
 interface IFMemoStatusToggleProps {

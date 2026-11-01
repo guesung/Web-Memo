@@ -64,6 +64,10 @@ interface UseMemoFormProps {
 	isMemoLocked?: boolean;
 	/** 오프라인 대기열을 서버로 올리는 중인지. 켜져 있으면 카테고리·상태 토글을 막는다 */
 	isSyncing?: boolean;
+	/** 같은 페이지에 메모가 있어도 새로 만드는 중인지. 켜져 있으면 유일한 메모를 편집 대상으로 잡지 않고 첫 저장을 항상 insert로 보낸다 */
+	isNewMemo?: boolean;
+	/** 첫 insert가 끝나 새 메모의 id가 정해졌을 때. 선택을 그 id로 옮기는 쪽이 쓴다 */
+	onMemoCreate?: (memoId: number) => void;
 }
 
 /** 선택한 메모의 폼 값과 저장 순서를 관리한다. */
@@ -72,6 +76,8 @@ export default function useMemoForm({
 	selectedMemo,
 	isMemoLocked = false,
 	isSyncing = false,
+	isNewMemo = false,
+	onMemoCreate,
 }: UseMemoFormProps = {}) {
 	const { setValue, getValues } = useFormContext<MemoInput>();
 	const { debounce, abortDebounce } = useDebounce();
@@ -104,8 +110,9 @@ export default function useMemoForm({
 	});
 	const onlyMemo =
 		memoQueryData?.data?.length === 1 ? memoQueryData.data[0] : undefined;
-	// 잠긴 동안에는 캐시에 남은 메모도 편집 대상으로 삼지 않는다.
-	const memoData = isMemoLocked ? undefined : (selectedMemo ?? onlyMemo);
+	// 잠긴 동안에는 캐시에 남은 메모도 편집 대상으로 삼지 않는다. 새 메모는 같은 페이지의 기존 메모를 대상으로 잡지 않는다.
+	const memoData =
+		isMemoLocked || isNewMemo ? undefined : (selectedMemo ?? onlyMemo);
 	const pendingOfflineMemo = usePendingOfflineMemo({
 		userId,
 		memoId: memoData?.id,
@@ -124,15 +131,32 @@ export default function useMemoForm({
 		pageUrl: tab?.url,
 		pageTitle: tab?.title,
 	});
+	const [firstSavedMemoId, setFirstSavedMemoId] = useState<number | null>(null);
+	// 첫 insert가 끝난 뒤 조회 캐시가 따라오기 전의 저장(대기 중이던 재호출 포함)이 또 insert하지 않도록 id를 ref로도 쥔다.
+	const firstSavedMemoIdRef = useRef<number | null>(null);
+	const saveFirstSavedMemoId = useCallback((memoId: number | null) => {
+		firstSavedMemoIdRef.current = memoId;
+		setFirstSavedMemoId(memoId);
+	}, []);
+	/** 아직 만들어지지 않은 새 메모가 본문(느낀 점·액션 아이템 포함)이 빈 상태인지 */
+	const isBlankNewMemo = () => {
+		if (!isNewMemo || firstSavedMemoIdRef.current !== null) {
+			return false;
+		}
+		const { memo, impression, actionItem } = getValues();
+
+		return ![memo, impression, actionItem].some((text) => text?.trim());
+	};
+
 	const titlePageRef = useRef("");
 	useEffect(() => {
 		const pageKey = `${tab?.id}:${tab?.url}`;
 		if (titlePageRef.current !== pageKey) {
 			abortTitleDebounce();
-			setFirstSavedMemoId(null);
+			saveFirstSavedMemoId(null);
 			titlePageRef.current = pageKey;
 		}
-	}, [tab?.id, tab?.url, abortTitleDebounce]);
+	}, [tab?.id, tab?.url, abortTitleDebounce, saveFirstSavedMemoId]);
 	const { mutate: upsertMemo } = useMemoUpsertMutation();
 	const { mutate: patchMemo } = useMemoPatchMutation();
 	// 동시 upsert를 막는 내부 큐 게이트. ref로 두는 이유는 onSuccess 안에서 대기 저장을
@@ -141,7 +165,6 @@ export default function useMemoForm({
 	// "다른 메모 선택" 버튼을 막는 반응형 상태. 동시 저장을 막는 게이트 자체는 isSavingRef가 맡는다.
 	const [isWritePending, setIsWritePending] = useState(false);
 	const [saveStatus, setSaveStatus] = useState<TSaveStatus>("empty");
-	const [firstSavedMemoId, setFirstSavedMemoId] = useState<number | null>(null);
 	// 저장이 1초를 넘기면 진행 중(slow) 또는 다시 시도 중(retrying) 표시로 넘어간다.
 	const slowSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const initializedMemoIdRef = useRef<number | null>(null);
@@ -348,7 +371,11 @@ export default function useMemoForm({
 				failSave();
 				return false;
 			}
-			const memoId = overrides?.memoId ?? memoData?.id;
+			const memoId =
+				overrides?.memoId ??
+				memoData?.id ??
+				firstSavedMemoIdRef.current ??
+				undefined;
 
 			// 데이터는 안전하게 남았으니(로컬 대기열 또는 서버) 저장 큐를 마저 비우고 성공으로 알린다.
 			const completeSaveAsSaved = (
@@ -452,6 +479,7 @@ export default function useMemoForm({
 					{
 						id: memoId,
 						url: tabInfo.url,
+						forceInsert: isNewMemo,
 						analyticsSource: "side_panel",
 						analyticsUserId: saveUserId,
 						data: {
@@ -476,7 +504,8 @@ export default function useMemoForm({
 								return;
 							}
 							if (memoId === undefined && result?.data?.[0]?.id) {
-								setFirstSavedMemoId(result.data[0].id);
+								saveFirstSavedMemoId(result.data[0].id);
+								onMemoCreate?.(result.data[0].id);
 							}
 							completeSaveAsSaved(resolveIsSaved);
 						},
@@ -506,6 +535,9 @@ export default function useMemoForm({
 			isOnline,
 			userId,
 			pendingOfflineMemo.status,
+			isNewMemo,
+			onMemoCreate,
+			saveFirstSavedMemoId,
 		],
 	);
 
@@ -539,7 +571,10 @@ export default function useMemoForm({
 		hasEditedMemoRef.current = true;
 		hasUnsavedChangeRef.current = true;
 		titleSync.handleTitleInputChange(text);
-		debounceTitle(() => saveMemo({ title: text }));
+		// 새 메모는 제목만 바꾼 채로는 빈 메모를 만들지 않는다. 본문이 채워지면 그 저장에 제목이 함께 나간다.
+		debounceTitle(() =>
+			isBlankNewMemo() ? undefined : saveMemo({ title: text }),
+		);
 	};
 
 	const handleMemoChange = useCallback(
@@ -706,6 +741,12 @@ export default function useMemoForm({
 	const saveBeforeSwitch = async () => {
 		if (isMemoLocked || isSavingRef.current) {
 			return false;
+		}
+		// 본문이 빈 새 메모는 떠날 때 만들지 않는다. 대기 중인 제목 저장도 함께 취소한다.
+		if (isBlankNewMemo()) {
+			abortDebounce();
+			abortTitleDebounce();
+			return true;
 		}
 		// 바뀐 내용이 없으면 저장 왕복 없이 바로 넘어간다. 아무것도 쓰지 않은 새 메모가 빈 행으로 저장되는 것도 막는다.
 		if (!hasUnsavedChangeRef.current) {

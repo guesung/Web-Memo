@@ -24,6 +24,7 @@ import MemoCardHeader from "../MemoCardHeader";
 import type { SearchFormValues } from "../MemoSearchFormProvider";
 import useIsContentClamped from "./_hooks/useIsContentClamped";
 import { captureMemoCardOpen } from "./_utils/memoCardMotion";
+import MemoBodyText from "./MemoBodyText";
 import { MemoSourceQuote } from "./MemoSourceQuote";
 import { holdScrollPosition } from "./scrollPositionHold";
 
@@ -223,7 +224,7 @@ function MemoItem({
 								data-clamp
 								className={cn({ "line-clamp-3": isContentTruncated })}
 							>
-								{memo.memo}
+								<MemoBodyText text={memo.memo} />
 							</p>
 						</CardContent>
 					)}
@@ -236,7 +237,7 @@ function MemoItem({
 								data-clamp
 								className={cn({ "line-clamp-2": isContentTruncated })}
 							>
-								{memo.impression}
+								<MemoBodyText text={memo.impression} />
 							</p>
 						</CardContent>
 					)}
@@ -249,7 +250,7 @@ function MemoItem({
 								data-clamp
 								className={cn({ "line-clamp-2": isContentTruncated })}
 							>
-								{memo.actionItem}
+								<MemoBodyText text={memo.actionItem} />
 							</p>
 						</CardContent>
 					)}

@@ -21,6 +21,7 @@ import {
 	createHighlightEditor,
 	type IFHighlightEditState,
 } from "./createHighlightEditor";
+import { isReceiverMissingError } from "./isReceiverMissingError";
 import { startHighlightRestore } from "./restoreHighlights";
 import { showHighlightFocus } from "./showHighlightFocus";
 import { useHighlightBubbleGate } from "./useHighlightBubbleGate";
@@ -96,7 +97,14 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 					renderer: options.renderer,
 				});
 			} catch (error) {
-				/** 조회 실패에도 첫 생성 툴바를 유지한다. */
+				/**
+				 * 조회 실패에도 첫 생성 툴바를 유지한다.
+				 * 수신자 부재는 보고하지 않는다. 이 경로 오류의 87%가 background와 연결되지 않은
+				 * 일시적 상태였고, 다음 페이지 진입 때 복원을 다시 시도한다.
+				 */
+				if (isReceiverMissingError(error)) {
+					return;
+				}
 				reportContentUiError({
 					error,
 					feature: "highlight",

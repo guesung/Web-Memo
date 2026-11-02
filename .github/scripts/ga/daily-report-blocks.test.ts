@@ -53,7 +53,7 @@ describe("buildDailyReportPayload 구글 검색 블록", () => {
 		const texts = blockTexts(payload);
 		const coreIndex = texts.findIndex((text) => text.startsWith("*핵심 이벤트*"));
 
-		expect(texts[coreIndex + 1]).toBe(
+		expect(texts[coreIndex + 1]).toContain(
 			"*구글 검색 유입*  (어제 / 7일 평균)\n방문자  *12명*  (7일 평균 8.4 · +43%)",
 		);
 	});
@@ -65,5 +65,53 @@ describe("buildDailyReportPayload 구글 검색 블록", () => {
 		});
 
 		expect(blockTexts(payload).join("\n")).toContain("방문자  조회 실패");
+	});
+});
+
+describe("buildDailyReportPayload 검색어 줄", () => {
+	const build = (searchQueries) =>
+		blockTexts(
+			buildDailyReportPayload({
+				report: {
+					...baseReport,
+					googleSearch: { status: "ok", yesterday: 1, average7: 1 },
+				},
+				runUrl: null,
+				searchQueries,
+			}),
+		).join("\n");
+
+	it("ok 는 기간 헤더와 검색어별 클릭·노출을 적고 특수문자를 이스케이프한다", () => {
+		const text = build({
+			status: "ok",
+			startDate: "2026-10-24",
+			endDate: "2026-10-30",
+			queries: [
+				{ query: "web memo", clicks: 1200, impressions: 3400 },
+				{ query: "a<b>&`c`", clicks: 1, impressions: 2 },
+			],
+		});
+
+		expect(text).toContain("검색어 상위 2 (Search Console, 10-24~10-30)");
+		expect(text).toContain("• `web memo`  클릭 1,200 · 노출 3,400");
+		expect(text).toContain("• `a&lt;b&gt;&amp;'c'`  클릭 1 · 노출 2");
+	});
+
+	it("ok 인데 0행이면 데이터 없음", () => {
+		expect(
+			build({ status: "ok", startDate: "2026-10-24", endDate: "2026-10-30", queries: [] }),
+		).toContain("검색어  해당 기간 데이터 없음");
+	});
+
+	it("failed 는 조회 실패", () => {
+		expect(build({ status: "failed" })).toContain("검색어  조회 실패");
+	});
+
+	it("skipped 와 인자 없음은 연동 안 됨", () => {
+		for (const input of [{ status: "skipped" }, undefined]) {
+			expect(build(input)).toContain(
+				"검색어  연동 안 됨 (GSC_SERVICE_ACCOUNT_JSON 없음)",
+			);
+		}
 	});
 });

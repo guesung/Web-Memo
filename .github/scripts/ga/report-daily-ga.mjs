@@ -9,11 +9,13 @@
  * 로컬 실행 (SLACK_REPORT_WEBHOOK_URL 없이 돌리면 보낼 페이로드를 stdout에 찍습니다):
  *   GA4_PROPERTY_ID=471860782 \
  *   GA4_SERVICE_ACCOUNT_JSON="$(cat ~/ga4-service-account.json)" \
+ *   GSC_SERVICE_ACCOUNT_JSON="$(cat ~/gsc-service-account.json)" \   # 선택: 없으면 검색어 줄이 '연동 안 됨'
  *   node .github/scripts/ga/report-daily-ga.mjs
  */
 
 import { buildDailyReportPayload } from "./daily-report-blocks.mjs";
 import { fetchDailyGa4Report } from "./ga4-data.mjs";
+import { fetchTopSearchQueries } from "./gsc-daily.mjs";
 import { requireEnv } from "../shared/run-context.mjs";
 import { postToSlack } from "../shared/slack-blocks.mjs";
 
@@ -24,9 +26,16 @@ const main = async () => {
 	const runId = process.env.GITHUB_RUN_ID;
 	const serverUrl = process.env.GITHUB_SERVER_URL ?? "https://github.com";
 
-	const report = await fetchDailyGa4Report({ serviceAccountJson, propertyId });
+	// 선택 env. 없어도 리포트는 가고 검색어 줄만 '연동 안 됨'으로 나갑니다.
+	const [report, searchQueries] = await Promise.all([
+		fetchDailyGa4Report({ serviceAccountJson, propertyId }),
+		fetchTopSearchQueries({
+			serviceAccountJson: process.env.GSC_SERVICE_ACCOUNT_JSON,
+		}),
+	]);
 	const payload = buildDailyReportPayload({
 		report,
+		searchQueries,
 		// 로컬 실행에는 런이 없습니다. 링크 없이 나머지만 싣습니다.
 		runUrl:
 			repository && runId

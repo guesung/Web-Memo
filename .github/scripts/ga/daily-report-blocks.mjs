@@ -142,8 +142,40 @@ const buildCoreEventsBlock = (events) => {
 	};
 };
 
-/** 구글 검색(organic) 유입 사용자. 조회 실패는 0명과 구분되게 따로 적습니다. */
-const buildGoogleSearchBlock = (googleSearch) => {
+/** Slack mrkdwn 에서 특수 의미를 갖는 문자를 이스케이프합니다. 코드 스팬을 깨는 백틱은 뺍니다. */
+const escapeMrkdwn = (text) =>
+	text
+		.replaceAll("&", "&amp;")
+		.replaceAll("<", "&lt;")
+		.replaceAll(">", "&gt;")
+		.replaceAll("`", "'");
+
+const describeSearchQueries = (searchQueries) => {
+	switch (searchQueries?.status) {
+		case "ok": {
+			if (searchQueries.queries.length === 0) {
+				return ["검색어  해당 기간 데이터 없음"];
+			}
+
+			const { startDate, endDate, queries } = searchQueries;
+
+			return [
+				`검색어 상위 ${queries.length} (Search Console, ${startDate.slice(5)}~${endDate.slice(5)})`,
+				...queries.map(
+					({ query, clicks, impressions }) =>
+						`• \`${escapeMrkdwn(query)}\`  클릭 ${formatCount(clicks)} · 노출 ${formatCount(impressions)}`,
+				),
+			];
+		}
+		case "failed":
+			return ["검색어  조회 실패"];
+		default:
+			return ["검색어  연동 안 됨 (GSC_SERVICE_ACCOUNT_JSON 없음)"];
+	}
+};
+
+/** 구글 검색(organic) 유입 사용자와 상위 검색어. 조회 실패는 0명과 구분되게 따로 적습니다. */
+const buildGoogleSearchBlock = (googleSearch, searchQueries) => {
 	const line =
 		googleSearch?.status === "ok"
 			? describeStat({
@@ -158,7 +190,11 @@ const buildGoogleSearchBlock = (googleSearch) => {
 		type: "section",
 		text: {
 			type: "mrkdwn",
-			text: ["*구글 검색 유입*  (어제 / 7일 평균)", line].join("\n"),
+			text: [
+				"*구글 검색 유입*  (어제 / 7일 평균)",
+				line,
+				...describeSearchQueries(searchQueries),
+			].join("\n"),
 		},
 	};
 };
@@ -230,7 +266,7 @@ const buildContextBlock = ({
 };
 
 /** 하루치 집계 결과를 그대로 받아 보낼 페이로드로 만듭니다. */
-export const buildDailyReportPayload = ({ report, runUrl }) => {
+export const buildDailyReportPayload = ({ report, runUrl, searchQueries }) => {
 	const {
 		targetDate,
 		events,
@@ -256,7 +292,7 @@ export const buildDailyReportPayload = ({ report, runUrl }) => {
 			},
 			buildFunnelBlock(events),
 			buildCoreEventsBlock(events),
-			buildGoogleSearchBlock(googleSearch),
+			buildGoogleSearchBlock(googleSearch, searchQueries),
 			{ type: "divider" },
 			// 걸린 게 없는 날은 빈 자리를 남기지 않고 블록째 뺍니다.
 			...(outliers.length > 0 ? [buildOutlierBlock(outliers)] : []),

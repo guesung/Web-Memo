@@ -4,6 +4,9 @@ GitHub Actions 워크플로와, 워크플로가 부르는 스크립트가 있는
 이 문서는 **어느 워크플로가 어느 스크립트를 부르는지**를 한곳에 모은 대응표입니다.
 워크플로나 스크립트를 추가·이동·삭제하면 이 표도 같은 PR에서 고칩니다.
 
+워크플로를 고쳤으면 `actionlint`(`brew install actionlint`)로 정적 검사합니다. 설정은
+[`actionlint.yaml`](actionlint.yaml)에 있고, actionlint가 아직 모르는 러너 라벨·입력만 무시합니다.
+
 ## 워크플로
 
 GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않습니다. 그래서 폴더 대신

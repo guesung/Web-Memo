@@ -1,0 +1,16 @@
+# actionlint 설정. 로컬에서 `actionlint`로 워크플로를 정적 검사할 때 읽습니다.
+#
+# 아래 무시 항목은 모두 actionlint의 내장 메타데이터가 GitHub보다 늦어서 생기는 오탐입니다.
+# actionlint가 따라잡으면 지웁니다.
+self-hosted-runner:
+  # GitHub 호스티드 러너지만 actionlint 1.7.12의 라벨 목록에 아직 없습니다.
+  labels:
+    - ubuntu-26.04
+paths:
+  .github/workflows/**/*.{yml,yaml}:
+    ignore:
+      # concurrency.queue는 GitHub이 지원하지만 actionlint 스키마에 없습니다.
+      - 'unexpected key "queue" for "concurrency" section'
+      # actions/create-github-app-token v3은 client-id가 정식 입력이고 app-id는 deprecated입니다.
+      - 'input "client-id" is not defined in action "actions/create-github-app-token@v3"'
+      - 'missing input "app-id" which is required by action "actions/create-github-app-token@v3"'

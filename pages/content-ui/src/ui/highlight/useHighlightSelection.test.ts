@@ -6,6 +6,7 @@ import type { HighlightRow } from "@web-memo/shared/types";
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { reportContentUiError } from "../../utils/reportError";
 import { useHighlightSelection } from "./useHighlightSelection";
 
 const mocks = vi.hoisted(() => ({
@@ -277,5 +278,44 @@ it.each(["success", "failure"])(
 		await act(async () => {
 			root.unmount();
 		});
+	},
+);
+
+it.each([
+	["Could not establish connection. Receiving end does not exist.", false],
+	[
+		"A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received",
+		true,
+	],
+])(
+	"복원 조회가 '%s'로 실패하면 보고 여부는 %s",
+	async (message, isReported) => {
+		vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+		document.body.innerHTML = "<div id='root'></div>";
+		mocks.query.mockRejectedValue(new Error(message));
+		const options = {
+			renderer: {
+				add: vi.fn(),
+				remove: vi.fn(),
+				setColor: vi.fn(),
+				hitTest: vi.fn(() => null),
+				clear: vi.fn(),
+			},
+			notesById: new Map<number, string>(),
+		};
+		const TestHook = () => {
+			useHighlightSelection(options);
+			return null;
+		};
+		const root = createRoot(document.getElementById("root") as HTMLElement);
+		await act(async () => root.render(createElement(TestHook)));
+		if (isReported) {
+			expect(reportContentUiError).toHaveBeenCalledWith(
+				expect.objectContaining({ operation: "restore", stage: "load" }),
+			);
+		} else {
+			expect(reportContentUiError).not.toHaveBeenCalled();
+		}
+		await act(async () => root.unmount());
 	},
 );

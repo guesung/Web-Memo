@@ -211,21 +211,34 @@ describe("background tab update filtering", () => {
 				},
 			},
 		});
-		const unhandled = vi.fn();
-		process.on("unhandledRejection", unhandled);
+		// vitest 워커에서는 unhandledRejection이 안정적으로 발화하지 않고, vi.fn은
+		// 반환 promise에 스스로 핸들러를 붙인다. 그래서 일반 함수가 thenable을 돌려주게 하고,
+		// 누군가 then으로 reject를 처리했는지(await/catch)로 검증한다.
+		let handled = 0;
+		let calls = 0;
+		const { bridge } = await import("@web-memo/shared/modules/extension-bridge");
+		Object.assign(bridge.request, {
+			UPDATE_SIDE_PANEL: () => {
+				calls++;
+				return {
+					then(_resolve: unknown, reject?: (reason: unknown) => void) {
+						handled++;
+						reject?.(new Error("Receiving end does not exist"));
+					},
+				};
+			},
+		});
 		try {
-			mocks.update.mockRejectedValue(new Error("Receiving end does not exist"));
 			await import("./index");
 			if (!onUpdated || !onActivated)
 				throw new Error("tab listeners not registered");
 			const activeTab = { id: 1, active: true } as chrome.tabs.Tab;
 			await onActivated({ tabId: 1, windowId: 1 });
 			await onUpdated(1, { url: "https://example.com" }, activeTab);
-			await new Promise((resolve) => setTimeout(resolve, 0));
-			expect(mocks.update).toHaveBeenCalledTimes(2);
-			expect(unhandled).not.toHaveBeenCalled();
+			await Promise.resolve();
+			expect(calls).toBe(2);
+			expect(handled).toBe(2);
 		} finally {
-			process.off("unhandledRejection", unhandled);
 			vi.unstubAllGlobals();
 		}
 	});

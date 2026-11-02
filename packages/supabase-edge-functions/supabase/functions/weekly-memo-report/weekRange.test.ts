@@ -1,40 +1,91 @@
 import { describe, expect, test } from "vitest";
-import { formatKoreanDate, getWeekRange } from "./weekRange";
+import {
+  formatKoreanDate,
+  getCompletedWeekRange,
+  getCurrentWeekRange,
+  getWeekRangeFromStartDate,
+} from "./weekRange";
 
-describe("getWeekRange", () => {
-  test("일요일 20:00 KST 발송 시각은 그 주 월요일 00:00 KST부터다", () => {
-    const range = getWeekRange(new Date("2026-10-11T11:00:00Z"));
+describe("getCompletedWeekRange", () => {
+  test("토 10:00 KST 정각 발송은 직전 토 10:00부터 이번 토 10:00까지다", () => {
+    const range = getCompletedWeekRange(new Date("2026-11-07T01:00:00Z"));
 
-    expect(range.weekStartUtc.toISOString()).toBe("2026-10-04T15:00:00.000Z");
-    expect(range.weekStart).toBe("2026-10-05");
-    expect(range.rangeLabel).toBe("10월 5일(월) ~ 10월 11일(일)");
+    expect(range.startUtc.toISOString()).toBe("2026-10-31T01:00:00.000Z");
+    expect(range.endUtc.toISOString()).toBe("2026-11-07T01:00:00.000Z");
+    expect(range.weekStart).toBe("2026-10-31");
+    expect(range.rangeLabel).toBe("10월 31일(토) ~ 11월 7일(토)");
   });
 
-  test("일요일 23:59 KST는 아직 같은 주다", () => {
-    const range = getWeekRange(new Date("2026-10-11T14:59:59Z"));
+  test("토 09:59 KST는 아직 이전 기간이 끝난 상태다", () => {
+    const range = getCompletedWeekRange(new Date("2026-11-07T00:59:59Z"));
 
-    expect(range.weekStart).toBe("2026-10-05");
+    expect(range.weekStart).toBe("2026-10-24");
+    expect(range.endUtc.toISOString()).toBe("2026-10-31T01:00:00.000Z");
   });
 
-  test("월요일 00:00 KST부터 다음 주다", () => {
-    const range = getWeekRange(new Date("2026-10-11T15:00:00Z"));
+  test("크론이 늦어 토 11:30 KST에 실행돼도 같은 기간이다", () => {
+    const range = getCompletedWeekRange(new Date("2026-11-07T02:30:00Z"));
 
-    expect(range.weekStartUtc.toISOString()).toBe("2026-10-11T15:00:00.000Z");
-    expect(range.weekStart).toBe("2026-10-12");
-    expect(range.rangeLabel).toBe("10월 12일(월) ~ 10월 18일(일)");
+    expect(range.weekStart).toBe("2026-10-31");
+    expect(range.endUtc.toISOString()).toBe("2026-11-07T01:00:00.000Z");
   });
 
-  test("월요일 00:00 KST 직전(UTC 일요일 14:59)은 이전 주다", () => {
-    const range = getWeekRange(new Date("2026-10-04T14:59:59Z"));
+  test("다음 경계 직전(금 23:59 KST)까지 같은 기간이다", () => {
+    const range = getCompletedWeekRange(new Date("2026-11-13T14:59:59Z"));
 
-    expect(range.weekStart).toBe("2026-09-28");
+    expect(range.weekStart).toBe("2026-10-31");
   });
 
-  test("월 경계를 넘는 주의 기간 표기", () => {
-    const range = getWeekRange(new Date("2026-11-01T11:00:00Z"));
+  test("월 경계를 넘는 기간의 표기", () => {
+    const range = getCompletedWeekRange(new Date("2026-11-08T00:00:00Z"));
 
-    expect(range.weekStart).toBe("2026-10-26");
-    expect(range.rangeLabel).toBe("10월 26일(월) ~ 11월 1일(일)");
+    expect(range.rangeLabel).toBe("10월 31일(토) ~ 11월 7일(토)");
+  });
+});
+
+describe("getCurrentWeekRange", () => {
+  test("월요일은 직전 토 10:00부터 시작하는 진행 중 기간이다", () => {
+    const range = getCurrentWeekRange(new Date("2026-11-09T03:00:00Z"));
+
+    expect(range.startUtc.toISOString()).toBe("2026-11-07T01:00:00.000Z");
+    expect(range.weekStart).toBe("2026-11-07");
+    expect(range.rangeLabel).toBe("11월 7일(토) ~ 11월 14일(토)");
+  });
+
+  test("토 09:59 KST는 이전 기간, 10:00 KST부터 새 기간이다", () => {
+    expect(
+      getCurrentWeekRange(new Date("2026-11-07T00:59:59Z")).weekStart,
+    ).toBe("2026-10-31");
+    expect(getCurrentWeekRange(new Date("2026-11-07T01:00:00Z")).weekStart).toBe(
+      "2026-11-07",
+    );
+  });
+});
+
+describe("getWeekRangeFromStartDate", () => {
+  test("토요일 날짜는 그 날 10:00 KST에 시작하는 기간이다", () => {
+    const range = getWeekRangeFromStartDate("2026-10-31");
+
+    expect(range.startUtc.toISOString()).toBe("2026-10-31T01:00:00.000Z");
+    expect(range.endUtc.toISOString()).toBe("2026-11-07T01:00:00.000Z");
+    expect(range.weekStart).toBe("2026-10-31");
+    expect(range.rangeLabel).toBe("10월 31일(토) ~ 11월 7일(토)");
+  });
+
+  test("토요일이 아닌 날짜는 그 날이 속한 기간으로 맞춘다", () => {
+    expect(getWeekRangeFromStartDate("2026-11-04").weekStart).toBe(
+      "2026-10-31",
+    );
+    expect(getWeekRangeFromStartDate("2026-11-06").weekStart).toBe(
+      "2026-10-31",
+    );
+    expect(getWeekRangeFromStartDate("2026-11-07").weekStart).toBe(
+      "2026-11-07",
+    );
+  });
+
+  test("존재하지 않는 날짜는 에러다", () => {
+    expect(() => getWeekRangeFromStartDate("2026-13-45")).toThrow();
   });
 });
 

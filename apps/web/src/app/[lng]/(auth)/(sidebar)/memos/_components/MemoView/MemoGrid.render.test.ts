@@ -122,6 +122,7 @@ describe("MemoGrid 카드 렌더 경계", () => {
 				sourcesByMemo: new Map(),
 				filterKey: "all",
 				searchQuery: "",
+				filterKey: "all",
 				domain: undefined,
 				hasNextPage: false,
 				isFetchingNextPage: false,

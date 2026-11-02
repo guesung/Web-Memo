@@ -187,4 +187,46 @@ describe("background tab update filtering", () => {
 			vi.unstubAllGlobals();
 		}
 	});
+
+	it("UPDATE_SIDE_PANEL이 reject해도 unhandled rejection이 생기지 않는다", async () => {
+		let onActivated:
+			| Parameters<typeof chrome.tabs.onActivated.addListener>[0]
+			| undefined;
+		let onUpdated:
+			| Parameters<typeof chrome.tabs.onUpdated.addListener>[0]
+			| undefined;
+		vi.stubGlobal("chrome", {
+			runtime: { onInstalled: { addListener: vi.fn() } },
+			contextMenus: { onClicked: { addListener: vi.fn() } },
+			tabs: {
+				onUpdated: {
+					addListener: (listener: typeof onUpdated) => {
+						onUpdated = listener;
+					},
+				},
+				onActivated: {
+					addListener: (listener: typeof onActivated) => {
+						onActivated = listener;
+					},
+				},
+			},
+		});
+		const unhandled = vi.fn();
+		process.on("unhandledRejection", unhandled);
+		try {
+			mocks.update.mockRejectedValue(new Error("Receiving end does not exist"));
+			await import("./index");
+			if (!onUpdated || !onActivated)
+				throw new Error("tab listeners not registered");
+			const activeTab = { id: 1, active: true } as chrome.tabs.Tab;
+			await onActivated({ tabId: 1, windowId: 1 });
+			await onUpdated(1, { url: "https://example.com" }, activeTab);
+			await new Promise((resolve) => setTimeout(resolve, 0));
+			expect(mocks.update).toHaveBeenCalledTimes(2);
+			expect(unhandled).not.toHaveBeenCalled();
+		} finally {
+			process.off("unhandledRejection", unhandled);
+			vi.unstubAllGlobals();
+		}
+	});
 });

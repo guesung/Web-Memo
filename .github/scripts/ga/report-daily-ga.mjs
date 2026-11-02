@@ -9,8 +9,10 @@
  * 로컬 실행 (SLACK_REPORT_WEBHOOK_URL 없이 돌리면 보낼 페이로드를 stdout에 찍습니다):
  *   GA4_PROPERTY_ID=471860782 \
  *   GA4_SERVICE_ACCOUNT_JSON="$(cat ~/ga4-service-account.json)" \
- *   GSC_SERVICE_ACCOUNT_JSON="$(cat ~/gsc-service-account.json)" \   # 선택: 없으면 검색어 줄이 '연동 안 됨'
+ *   GSC_SERVICE_ACCOUNT_JSON="$(cat ~/gsc-service-account.json)" \
  *   node .github/scripts/ga/report-daily-ga.mjs
+ *
+ * GSC_SERVICE_ACCOUNT_JSON 은 선택입니다. 없으면 검색어 줄이 '연동 안 됨'으로 나갑니다.
  */
 
 import { buildDailyReportPayload } from "./daily-report-blocks.mjs";

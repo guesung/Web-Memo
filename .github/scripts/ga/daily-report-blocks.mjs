@@ -142,6 +142,27 @@ const buildCoreEventsBlock = (events) => {
 	};
 };
 
+/** 구글 검색(organic) 유입 사용자. 조회 실패는 0명과 구분되게 따로 적습니다. */
+const buildGoogleSearchBlock = (googleSearch) => {
+	const line =
+		googleSearch?.status === "ok"
+			? describeStat({
+					label: "방문자",
+					value: googleSearch.yesterday,
+					unit: "명",
+					average7: googleSearch.average7,
+				})
+			: "방문자  조회 실패";
+
+	return {
+		type: "section",
+		text: {
+			type: "mrkdwn",
+			text: ["*구글 검색 유입*  (어제 / 7일 평균)", line].join("\n"),
+		},
+	};
+};
+
 const buildOutlierBlock = (outliers) => {
 	const lines = outliers.map(({ eventName, yesterday, average7, kind }) => {
 		const change = formatChange(yesterday, average7);
@@ -218,6 +239,7 @@ export const buildDailyReportPayload = ({ report, runUrl }) => {
 		observationStart,
 		observationTruncated,
 		trafficTotals,
+		googleSearch,
 	} = report;
 	const headline = `어제의 웹 메모 — ${formatHeaderDate(targetDate)}`;
 
@@ -234,6 +256,7 @@ export const buildDailyReportPayload = ({ report, runUrl }) => {
 			},
 			buildFunnelBlock(events),
 			buildCoreEventsBlock(events),
+			buildGoogleSearchBlock(googleSearch),
 			{ type: "divider" },
 			// 걸린 게 없는 날은 빈 자리를 남기지 않고 블록째 뺍니다.
 			...(outliers.length > 0 ? [buildOutlierBlock(outliers)] : []),

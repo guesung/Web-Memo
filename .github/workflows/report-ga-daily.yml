@@ -48,6 +48,8 @@ jobs:
         env:
           SLACK_REPORT_WEBHOOK_URL: ${{ secrets.SLACK_REPORT_WEBHOOK_URL }}
           GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
+          # 선택. 없어도 리포트는 가고 검색어 줄만 '연동 안 됨'으로 나갑니다.
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
           # Data API 가 요구하는 것은 속성 ID(숫자)입니다. packages/shared 의
           # G-6HHNP7KJM5 는 gtag 용 측정 ID라 여기 넣으면 403/404 가 납니다.
           # 속성 ID는 비밀이 아닙니다. 시크릿에 넣으면 로그에서 가려져 디버깅만 어려워집니다.

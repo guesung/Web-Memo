@@ -17,6 +17,7 @@
 
 import {
 	GA4_SCOPE,
+	HOST_NAME_FILTER,
 	REPORT_ROW_LIMIT,
 	readRows,
 	runReport,
@@ -237,6 +238,97 @@ const aggregateDaily = (rows, targetDate) => {
 	return events;
 };
 
+/**
+ * 구글 검색(organic) 유입 사용자의 어제 값과 7일 평균. 순수 함수입니다.
+ *
+ * rows 는 date 차원 하나에 activeUsers 하나를 가진 readRows 결과입니다.
+ * aggregateDaily 와 같이 평균 분모는 행이 있던 날 수가 아니라 항상 7 입니다.
+ */
+export const summarizeGoogleSearchVisitors = (rows, targetDate) => {
+	const weekStart = shiftDate(targetDate, -MOVING_AVERAGE_DAYS);
+	let yesterday = 0;
+	let total = 0;
+
+	for (const { dimensions, metrics } of rows) {
+		const [rawDate] = dimensions;
+		const date = `${rawDate.slice(0, 4)}-${rawDate.slice(4, 6)}-${rawDate.slice(6, 8)}`;
+		const [users] = metrics;
+
+		if (date === targetDate) {
+			yesterday += users;
+
+			continue;
+		}
+
+		if (date >= weekStart && date < targetDate) total += users;
+	}
+
+	return { yesterday, average7: total / MOVING_AVERAGE_DAYS };
+};
+
+/**
+ * 구글 검색 유입 사용자 수.
+ *
+ * ⚠️ 이 숫자는 build_env=production 필터가 아니라 호스트 필터(HOST_NAME_FILTER) 기준입니다.
+ * sessionSource 는 gtag 자동 수집 값이라 build_env 가 붙지 않아, 그 필터를 걸면 전부 빠집니다.
+ * 다른 지표(production 필터)와 같은 모수가 아닙니다.
+ *
+ * 이 조회가 실패해도 리포트 전체를 막지 않습니다. 0명과 구분되도록 failed 로 돌려줍니다.
+ */
+export const fetchGoogleSearchVisitors = async ({
+	accessToken,
+	propertyId,
+	targetDate,
+}) => {
+	try {
+		const report = await runReport({
+			accessToken,
+			propertyId,
+			body: {
+				dateRanges: [
+					{
+						startDate: shiftDate(targetDate, -MOVING_AVERAGE_DAYS),
+						endDate: targetDate,
+					},
+				],
+				dimensions: [{ name: "date" }],
+				metrics: [{ name: "activeUsers" }],
+				dimensionFilter: {
+					andGroup: {
+						expressions: [
+							{
+								filter: {
+									fieldName: "sessionSource",
+									stringFilter: { matchType: "EXACT", value: "google" },
+								},
+							},
+							{
+								filter: {
+									fieldName: "sessionMedium",
+									stringFilter: { matchType: "EXACT", value: "organic" },
+								},
+							},
+							HOST_NAME_FILTER,
+						],
+					},
+				},
+				limit: REPORT_ROW_LIMIT,
+			},
+		});
+
+		return {
+			status: "ok",
+			...summarizeGoogleSearchVisitors(readRows(report), targetDate),
+		};
+	} catch (error) {
+		console.warn(
+			`::warning::구글 검색 유입 조회 실패: ${error instanceof Error ? error.message : String(error)}`,
+		);
+
+		return { status: "failed" };
+	}
+};
+
 /** 값이 없는 이벤트는 "0건"과 같습니다. 호출부가 매번 옵셔널 체이닝을 하지 않게 채워 줍니다. */
 export const readEventStat = (events, eventName) =>
 	events[eventName] ?? {
@@ -294,6 +386,7 @@ export const detectOutliers = (events) =>
  * ① 어제 + 직전 7일의 이벤트별 사용자·발생 수 (운영 트래픽만)
  * ② 관측 시작일 이후 한 번이라도 나온 이벤트 이름 (미출시 판정용)
  * ③ 유입 참고치. gtag 자동 이벤트라 build_env 가 없어 필터 없이 봅니다
+ * ④ 구글 검색 유입 사용자 (호스트 필터 기준, 실패해도 나머지는 계속)
  */
 export const fetchDailyGa4Report = async ({
 	serviceAccountJson,
@@ -306,7 +399,7 @@ export const fetchDailyGa4Report = async ({
 	});
 	const weekStart = shiftDate(targetDate, -MOVING_AVERAGE_DAYS);
 
-	const [daily, lifetime, traffic, observationStart] = await Promise.all([
+	const [daily, lifetime, traffic, observationStart, googleSearch] = await Promise.all([
 		runReport({
 			accessToken,
 			propertyId,
@@ -346,6 +439,7 @@ export const fetchDailyGa4Report = async ({
 			},
 		}),
 		readObservationStart({ accessToken, propertyId, targetDate }),
+		fetchGoogleSearchVisitors({ accessToken, propertyId, targetDate }),
 	]);
 
 	const events = aggregateDaily(readRows(daily), targetDate);
@@ -372,5 +466,6 @@ export const fetchDailyGa4Report = async ({
 		observationTruncated:
 			observationStart !== null && observationStart > OBSERVATION_SINCE,
 		trafficTotals,
+		googleSearch,
 	};
 };

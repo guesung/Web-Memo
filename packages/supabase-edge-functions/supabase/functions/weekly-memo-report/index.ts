@@ -5,7 +5,11 @@ import {
   buildWeeklyReportSubject,
   type IFReportMemo,
 } from "./template.ts";
-import { getWeekRange } from "./weekRange.ts";
+import {
+  getCompletedWeekRange,
+  getCurrentWeekRange,
+  getWeekRangeFromStartDate,
+} from "./weekRange.ts";
 
 const SENDER = "웹 메모 <hello@webmemo.xyz>";
 const REPLY_TO = "gueit214@naver.com";
@@ -56,7 +60,7 @@ const isValidEmail = (email: string | null | undefined): email is string =>
   Boolean(email) && EMAIL_PATTERN.test(email as string);
 
 /**
- * 주 시작(월 00:00 KST)부터 rangeEnd까지의 메모를 최신순으로 전부 읽는다
+ * 기간 시작(토 10:00 KST)부터 rangeEnd까지(포함)의 메모를 최신순으로 전부 읽는다
  * @description 본문 없이 페이지만 저장한 것과 위시리스트는 회고할 내용이 없어 뺀다
  */
 const fetchWeekMemos = async (
@@ -254,34 +258,33 @@ const resolveReportEmail = async (
   return isValidEmail(loginEmail) ? loginEmail : null;
 };
 
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const WEEK_START_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 interface IFRegularOptions {
-  /** 지난 주를 다시 보낼 때 그 주의 KST 월요일(YYYY-MM-DD). 없으면 이번 주 */
+  /** 지난 기간을 다시 보낼 때 그 기간 시작 토요일의 KST 날짜(YYYY-MM-DD). 없으면 가장 최근에 끝난 기간 */
   weekStart?: string;
   /** 한 사용자에게만 보낼 때의 user_id. 없으면 대상 전원 */
   userId?: string;
 }
 
 /**
- * 정기 모드: 이번 주 메모를 쓴 사용자 중 리포트를 끄지 않은 사람에게 보낸다
- * @description 수동 재발송용으로 weekStart·userId를 받으면 그 주 전체를 그 사용자에게만 보낸다
+ * 정기 모드: 가장 최근에 끝난 기간(토 10:00 KST ~ 다음 토 10:00 KST)에 메모를 쓴 사용자 중 리포트를 끄지 않은 사람에게 보낸다
+ * @description 수동 재발송용으로 weekStart·userId를 받으면 그 기간 전체를 그 사용자에게만 보낸다
  */
 const runRegular = async (options: IFRegularOptions = {}) => {
   const now = new Date();
-  const baseDate = WEEK_START_PATTERN.test(options.weekStart ?? "")
-    ? new Date(`${options.weekStart}T00:00:00+09:00`)
-    : now;
-  const { weekStartUtc, weekStart, rangeLabel } = getWeekRange(baseDate);
-  const rangeEnd = new Date(
-    Math.min(now.getTime(), weekStartUtc.getTime() + WEEK_MS - 1),
-  );
+  const { startUtc, endUtc, weekStart, rangeLabel } = WEEK_START_PATTERN.test(
+    options.weekStart ?? "",
+  )
+    ? getWeekRangeFromStartDate(options.weekStart as string)
+    : getCompletedWeekRange(now);
+  // 끝난 기간은 now로 자르지 않는다. 쿼리가 lte라 미포함 끝(endUtc)보다 1ms 앞에서 닫는다
+  const rangeEnd = new Date(endUtc.getTime() - 1);
   let sent = 0;
   let skipped = 0;
   let failed = 0;
 
-  const userIds = (await fetchWeekAuthorIds(weekStartUtc, rangeEnd)).filter(
+  const userIds = (await fetchWeekAuthorIds(startUtc, rangeEnd)).filter(
     (userId) => !options.userId || userId === options.userId,
   );
   const settings = await fetchSettingsByUserId(userIds);
@@ -306,7 +309,7 @@ const runRegular = async (options: IFRegularOptions = {}) => {
 
       const { memos, total } = await fetchWeekMemos(
         userId,
-        weekStartUtc,
+        startUtc,
         rangeEnd,
       );
 
@@ -393,7 +396,7 @@ const runTest = async (req: Request) => {
 
   const userId = userData.user.id;
   const now = new Date();
-  const { weekStartUtc, weekStart, rangeLabel } = getWeekRange(now);
+  const { startUtc, weekStart, rangeLabel } = getCurrentWeekRange(now);
 
   const since = new Date(
     now.getTime() - TEST_RATE_LIMIT_SECONDS * 1000,
@@ -434,7 +437,7 @@ const runTest = async (req: Request) => {
     return jsonResponse({ error: "invalid_email" }, 400);
   }
 
-  const { memos, total } = await fetchWeekMemos(userId, weekStartUtc, now);
+  const { memos, total } = await fetchWeekMemos(userId, startUtc, now);
 
   try {
     await sendReportEmail({

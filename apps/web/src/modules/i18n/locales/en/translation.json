@@ -491,7 +491,7 @@
 		"showImpressionSection": "Show the impression field when writing a memo",
 		"showActionItemSection": "Show the action items field when writing a memo",
 		"sectionWeeklyReport": "Weekly report",
-		"sectionWeeklyReportDescription": "Every Sunday evening, we email you the memos you wrote that week",
+		"sectionWeeklyReportDescription": "Every Saturday at 10 AM (KST), we email you the memos you wrote over the past week",
 		"weeklyReportEnable": "Get the report email",
 		"weeklyReportEnableDescription": "We skip weeks without memos",
 		"weeklyReportEmail": "Email address",

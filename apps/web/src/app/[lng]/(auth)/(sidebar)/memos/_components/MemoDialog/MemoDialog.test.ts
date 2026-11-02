@@ -28,10 +28,7 @@ const MOCKS = vi.hoisted(() => ({
 }));
 vi.mock("@src/modules/i18n/util.client", () => ({
 	default: () => ({
-		t: (key: string, options?: { count: number }) =>
-			key === "highlight.memo.relatedCount"
-				? `하이라이트 ${options?.count}개`
-				: key,
+		t: (key: string) => key,
 	}),
 }));
 vi.mock("@tanstack/react-query", () => ({
@@ -268,7 +265,7 @@ describe("메모 상세 즉시 표시와 동기화", () => {
 });
 
 describe("메모 상세 하이라이트", () => {
-	it("결과가 없으면 영역이 없고, 결과는 기본 접힘에서 클릭으로 펼친다", async () => {
+	it("결과가 없으면 영역이 없고, 결과는 상세에 바로 표시한다", async () => {
 		await render();
 		expect(container.querySelector("[aria-expanded]")).toBeNull();
 		MOCKS.highlights.mockReturnValue({
@@ -282,20 +279,18 @@ describe("메모 상세 하이라이트", () => {
 			refetchHighlights: MOCKS.refetch,
 		});
 		await render();
-		const button =
-			container.querySelector<HTMLButtonElement>("[aria-expanded]");
-		expect(button?.getAttribute("aria-expanded")).toBe("false");
-		expect(button?.textContent).toBe("하이라이트 1개");
-		expect(container.querySelector("mark")).toBeNull();
-		await act(async () => button?.click());
+		expect(container.querySelector("[aria-expanded]")).toBeNull();
 		expect(container.querySelector("mark")?.textContent).toBe("선택한 원문");
+		expect(
+			container.querySelector('section[aria-label="highlight.memo.related"]'),
+		).not.toBeNull();
 		const html = container.innerHTML;
 		expect(html.indexOf("action-item-textarea")).toBeLessThan(
 			html.indexOf("<mark"),
 		);
 		expect(html.indexOf("<mark")).toBeLessThan(html.indexOf("save-status"));
 	});
-	it("조회 실패를 알리고 재시도하며 ID 전환 때 접힘으로 돌아간다", async () => {
+	it("조회 실패를 알리고 재시도하며 ID 전환 때 새 결과를 표시한다", async () => {
 		MOCKS.highlights.mockReturnValue({
 			highlightsByUrl: new Map(),
 			isHighlightLoadError: true,
@@ -318,13 +313,9 @@ describe("메모 상세 하이라이트", () => {
 			refetchHighlights: MOCKS.refetch,
 		});
 		await render();
-		await act(async () =>
-			container.querySelector<HTMLButtonElement>("[aria-expanded]")?.click(),
-		);
-		await render(2);
-		expect(
-			container.querySelector("[aria-expanded]")?.getAttribute("aria-expanded"),
-		).toBe("false");
+		expect(container.querySelector("mark")?.textContent).toBe("인용");
+		await render(2, { memo: { url: "https://example.com/second" } });
+		expect(container.querySelector("mark")).toBeNull();
 	});
 });
 

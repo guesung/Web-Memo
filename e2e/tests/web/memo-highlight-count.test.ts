@@ -39,35 +39,29 @@ test.beforeEach(async ({ page }) => {
 	});
 });
 
-test("카드에는 인용문 대신 양수인 하이라이트 개수만 표시한다.", async ({
-	page,
-}) => {
+test("카드에는 첫 인용문과 나머지 개수를 표시한다.", async ({ page }) => {
 	const noQuoteCard = page.locator(".memo-item", { hasText: NO_QUOTE });
 	const oneQuoteCard = page.locator(".memo-item", { hasText: ONE_QUOTE });
 	const manyQuotesCard = page.locator(".memo-item", { hasText: MANY_QUOTES });
 
 	await expect(noQuoteCard).toBeVisible();
-	await expect(noQuoteCard).not.toContainText("Highlights (");
-	await expect(oneQuoteCard).toContainText("Highlights (1)");
-	await expect(manyQuotesCard).toContainText("Highlights (2)");
-	await expect(oneQuoteCard).not.toContainText(FIRST_QUOTE);
-	await expect(manyQuotesCard).not.toContainText(SECOND_QUOTE);
+	await expect(noQuoteCard.locator("mark")).toHaveCount(0);
+	await expect(oneQuoteCard.locator("mark")).toHaveText(FIRST_QUOTE);
+	await expect(oneQuoteCard).not.toContainText("+1 more");
+	await expect(manyQuotesCard.locator("mark")).toHaveText(SECOND_QUOTE);
+	await expect(manyQuotesCard).toContainText("+1 more");
 	await expect(manyQuotesCard).not.toContainText(THIRD_QUOTE);
 });
 
-test("카드에서 제거한 인용문은 상세 다이얼로그에서 계속 읽을 수 있다.", async ({
+test("카드 미리보기의 인용문 전체를 상세 다이얼로그에서 바로 읽을 수 있다.", async ({
 	page,
 }) => {
 	await page.locator(".memo-item", { hasText: MANY_QUOTES }).click();
 	const dialog = page.getByRole("dialog");
 	await expect(dialog).toBeVisible();
-	const expandHighlights = dialog.getByRole("button", {
-		name: "Other highlights on this page (2)",
-	});
 	await expect(
-		expandHighlights.or(dialog.getByText(SECOND_QUOTE)).first(),
+		dialog.getByRole("region", { name: "Other highlights on this page" }),
 	).toBeVisible();
-	if (await expandHighlights.isVisible()) await expandHighlights.click();
 	await expect(dialog.getByText(SECOND_QUOTE)).toBeVisible();
 	await expect(dialog.getByText(THIRD_QUOTE)).toBeVisible();
 });

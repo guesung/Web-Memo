@@ -1,6 +1,5 @@
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
-import { useState } from "react";
 import { useMemoHighlights } from "../MemoView/_hooks/useMemoHighlights";
 import { MemoHighlights } from "../MemoView/MemoHighlights";
 
@@ -10,7 +9,6 @@ export function MemoDialogHighlights({
 	omitHighlightId,
 }: HighlightsProps) {
 	const { t } = useTranslation(lng);
-	const [isExpanded, setExpanded] = useState(false);
 	const { highlightsByUrl, isHighlightLoadError, refetchHighlights } =
 		useMemoHighlights([url]);
 	const highlights = (highlightsByUrl.get(url) ?? []).filter(
@@ -37,23 +35,11 @@ export function MemoDialogHighlights({
 	if (highlights.length === 0) return null;
 
 	return (
-		<div>
-			<button
-				type="button"
-				aria-expanded={isExpanded}
-				onClick={() => setExpanded((expanded) => !expanded)}
-				className="text-xs font-semibold text-muted-foreground"
-			>
-				{t("highlight.memo.relatedCount", { count: highlights.length })}
-			</button>
-			{isExpanded && (
-				<MemoHighlights
-					highlights={highlights}
-					label={t("highlight.memo.related")}
-					className="pt-2"
-				/>
-			)}
-		</div>
+		<MemoHighlights
+			highlights={highlights}
+			label={t("highlight.memo.related")}
+			className="pt-2"
+		/>
 	);
 }
 

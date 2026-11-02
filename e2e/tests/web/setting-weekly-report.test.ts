@@ -65,7 +65,9 @@ test.describe("설정 주간 리포트 (Mocked)", () => {
 		};
 		const [categoryTop, reportTop, dataTop] = await Promise.all([
 			getTop("메모를 묶는 카테고리를 관리해요"),
-			getTop("매주 토요일 오전 10시, 지난 일주일 동안 쓴 메모를 메일로 보내 드려요"),
+			getTop(
+				"매주 토요일 오전 10시, 지난 일주일 동안 쓴 메모를 메일로 보내 드려요",
+			),
 			getTop("메모 전체를 파일로 내려받아요"),
 		]);
 

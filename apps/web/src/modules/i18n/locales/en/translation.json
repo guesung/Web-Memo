@@ -402,12 +402,12 @@
 				"description": "Use the button above, the Web Memo icon in the toolbar, or Alt+S."
 			},
 			"write": {
-				"title": "Sign in from the panel",
-				"description": "Start right away with your Google or Kakao account."
+				"title": "Sign in to save",
+				"description": "Press Sign in in the panel to start with your Google or Kakao account."
 			},
 			"save": {
-				"title": "Drag and take notes",
-				"description": "Drag a sentence to highlight it, or type in the panel to save notes per page."
+				"title": "Highlight, then jot it down",
+				"description": "Drag a sentence to highlight it, then write down what comes to mind right away."
 			}
 		},
 		"openPanel": {

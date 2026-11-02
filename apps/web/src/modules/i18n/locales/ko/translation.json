@@ -397,12 +397,12 @@
 				"description": "위 버튼, 툴바의 Web Memo 아이콘, Alt+S 중 편한 방법으로 열어요."
 			},
 			"write": {
-				"title": "패널에서 로그인해요",
-				"description": "Google이나 카카오 계정으로 바로 시작해요."
+				"title": "로그인하고 저장해요",
+				"description": "패널의 로그인 버튼을 누르면 Google·카카오 계정으로 바로 시작해요."
 			},
 			"save": {
-				"title": "드래그하고 메모해요",
-				"description": "문장을 드래그하면 하이라이트, 패널에 적으면 페이지별로 저장돼요."
+				"title": "밑줄 긋고 생각을 적어요",
+				"description": "문장을 드래그해 하이라이트하고, 떠오른 생각은 바로 메모로 남겨요."
 			}
 		},
 		"openPanel": {

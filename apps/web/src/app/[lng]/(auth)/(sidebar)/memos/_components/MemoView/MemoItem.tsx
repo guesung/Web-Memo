@@ -5,6 +5,7 @@ import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type {
 	GetMemoResponse,
 	HighlightMemoLink,
+	HighlightRow,
 } from "@web-memo/shared/types";
 import { cn } from "@web-memo/shared/utils";
 import { Card, CardContent } from "@web-memo/ui";
@@ -24,13 +25,14 @@ import type { SearchFormValues } from "../MemoSearchFormProvider";
 import useIsContentClamped from "./_hooks/useIsContentClamped";
 import { captureMemoCardOpen } from "./_utils/memoCardMotion";
 import MemoBodyText from "./MemoBodyText";
+import { MemoHighlights } from "./MemoHighlights";
 import { MemoSourceQuote } from "./MemoSourceQuote";
 import { holdScrollPosition } from "./scrollPositionHold";
 
 /** 메모 카드 표시와 선택 속성. */
 interface IFMemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 	memo: GetMemoResponse;
-	highlightCount?: number;
+	highlights?: HighlightRow[];
 	source?: HighlightMemoLink;
 	isSelectingMode?: boolean;
 	selectMemoItem?: (id: number) => void;
@@ -59,7 +61,7 @@ interface IFMemoItemProps extends HTMLAttributes<HTMLElement>, LanguageType {
 function MemoItem({
 	lng,
 	memo,
-	highlightCount,
+	highlights,
 	source,
 	selectMemoItem,
 	isSelectingMode,
@@ -253,6 +255,20 @@ function MemoItem({
 							</p>
 						</CardContent>
 					)}
+					{!isReadOnly && (
+						<MemoHighlights
+							highlights={highlights}
+							label={t("highlight.memo.related")}
+							isPreview
+							moreLabel={
+								(highlights?.length ?? 0) > 1
+									? t("memoSection.highlightMore", {
+											count: (highlights?.length ?? 0) - 1,
+										})
+									: undefined
+							}
+						/>
+					)}
 					{isExpandButtonVisible && (
 						<button
 							type="button"
@@ -275,11 +291,6 @@ function MemoItem({
 							className="px-4 py-2"
 							memo={memo}
 							lng={lng}
-							highlightCount={
-								!isReadOnly && (highlightCount ?? 0) > 0
-									? highlightCount
-									: undefined
-							}
 							isShowingOption={isMemoHovering && !isSelectingMode}
 							hidesInactiveActions
 						/>
@@ -291,5 +302,29 @@ function MemoItem({
 	);
 }
 
-/** 메모 카드의 불필요한 재렌더링을 방지한다. */
-export default memo(MemoItem);
+/** 하이라이트 조회에서 배열이 새로 만들어져도 미리보기가 같으면 카드를 유지한다. */
+const areMemoItemPropsEqual = (
+	previous: IFMemoItemProps,
+	next: IFMemoItemProps,
+) => {
+	const previousHighlights = previous.highlights;
+	const nextHighlights = next.highlights;
+	if (
+		previousHighlights?.length !== nextHighlights?.length ||
+		previousHighlights?.[0]?.id !== nextHighlights?.[0]?.id ||
+		previousHighlights?.[0]?.exact_text !== nextHighlights?.[0]?.exact_text ||
+		previousHighlights?.[0]?.color !== nextHighlights?.[0]?.color
+	) {
+		return false;
+	}
+
+	const previousKeys = Object.keys(previous) as (keyof IFMemoItemProps)[];
+	return (
+		previousKeys.length === Object.keys(next).length &&
+		previousKeys.every(
+			(key) => key === "highlights" || Object.is(previous[key], next[key]),
+		)
+	);
+};
+
+export default memo(MemoItem, areMemoItemPropsEqual);

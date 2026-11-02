@@ -533,7 +533,7 @@
 	"memoSection": {
 		"expand": "펼치기",
 		"collapse": "접기",
-		"highlightCount": "하이라이트 {{count}}개",
+		"highlightMore": "외 {{count}}개",
 		"memo": "메모",
 		"impression": "느낀 점",
 		"impressionPlaceholder": "이 페이지에서 느낀 점을 적어보세요",
@@ -704,8 +704,7 @@
 			"source": "원문 보기",
 			"viewHighlight": "연결된 하이라이트 보기",
 			"deletedHighlight": "하이라이트가 삭제되었습니다.",
-			"related": "같은 페이지의 다른 하이라이트",
-			"relatedCount": "같은 페이지의 다른 하이라이트 {{count}}개"
+			"related": "같은 페이지의 다른 하이라이트"
 		},
 		"panelOpenError": "사이드 패널을 열지 못했어요. 확장 프로그램을 확인해 주세요.",
 		"openSourceAndPanel": "원문과 메모 패널 열기",

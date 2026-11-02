@@ -306,7 +306,7 @@ export default function MemoGrid({
 						data-grid-groupkey={Math.floor(index / 20)}
 						index={index}
 						memo={memo}
-						highlightCount={highlightsByUrl.get(memo.url)?.length}
+						highlights={highlightsByUrl.get(memo.url)}
 						source={sourcesByMemo.get(memo.id)}
 						isMemoSelected={checkMemoSelected(memo.id)}
 						selectMemoItem={handleSelectMemoItem}

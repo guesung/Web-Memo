@@ -7,6 +7,7 @@ import {
 } from "./highlightMemo";
 import { handleGetLoginStatus } from "./getLoginStatus";
 import { handleFocusHighlight, notifyHighlightChange } from "./highlightPanel";
+import { notifyQuietly } from "./notifyQuietly";
 import { handleOpenSidePanelFromWeb } from "./openSidePanelFromWeb";
 import "webextension-polyfill";
 
@@ -101,7 +102,7 @@ if (chrome.contextMenus)
 
 chrome.tabs.onActivated.addListener(async () => {
 	// 활성화된 탭이 변경되었을 때 사이드 패널을 업데이트한다.
-	bridge.request.UPDATE_SIDE_PANEL();
+	void notifyQuietly(() => bridge.request.UPDATE_SIDE_PANEL());
 });
 chrome.tabs.onUpdated.addListener(async (_tabId, changeInfo, tab) => {
 	if (
@@ -113,7 +114,7 @@ chrome.tabs.onUpdated.addListener(async (_tabId, changeInfo, tab) => {
 	)
 		return;
 	// 페이지를 이동했을 때 사이드 패널을 업데이트한다.
-	bridge.request.UPDATE_SIDE_PANEL();
+	void notifyQuietly(() => bridge.request.UPDATE_SIDE_PANEL());
 });
 
 // content-ui에서 메시지를 전달받아 사이드 패널을 연다.

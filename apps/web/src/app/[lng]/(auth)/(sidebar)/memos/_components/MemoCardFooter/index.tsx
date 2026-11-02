@@ -35,7 +35,6 @@ interface IFMemoCardFooterProps
 	 * 없으면 푸터가 직접 만든다.
 	 */
 	categoryPopover?: TMemoCategoryPopover;
-	highlightCount?: number;
 	/** 수정 시각 오른쪽에 붙일 요소. 편집 모달은 저장 상태 아이콘을 둔다 */
 	timeAccessory?: React.ReactNode;
 	/** 꺼진 상태 버튼을 평소에 숨기고 마우스를 올렸을 때만 보인다. 목록 카드가 켠다 */
@@ -92,7 +91,6 @@ function MemoCardFooterContent({
 	onDeleteSuccess,
 	categoryBadgeAction = "filter",
 	categoryPopover,
-	highlightCount,
 	timeAccessory,
 	hidesInactiveActions = false,
 	showsAbsoluteTime = false,
@@ -198,14 +196,6 @@ function MemoCardFooterContent({
 							/>
 						</>
 					)}
-					{highlightCount !== undefined && highlightCount > 0 ? (
-						<>
-							<MetaSeparator />
-							<span className="min-w-0 truncate font-medium text-primary">
-								{t("memoSection.highlightCount", { count: highlightCount })}
-							</span>
-						</>
-					) : null}
 				</div>
 			</div>
 

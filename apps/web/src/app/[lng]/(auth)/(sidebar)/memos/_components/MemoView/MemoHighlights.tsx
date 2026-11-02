@@ -9,7 +9,7 @@ export const MemoHighlights = ({
 	highlights = [],
 	label,
 	isPreview = false,
-	countLabel,
+	moreLabel,
 	className,
 }: IFMemoHighlightsProps) => {
 	if (highlights.length === 0) {
@@ -23,33 +23,38 @@ export const MemoHighlights = ({
 			className={className ?? (isPreview ? "px-4 py-2" : "px-5 pb-3")}
 			aria-label={label}
 		>
-			<p className="mb-1 text-xs font-semibold text-muted-foreground">
-				{isPreview ? (countLabel ?? label) : label}
-			</p>
-			<ul className="space-y-2">
-				{visibleHighlights.map((highlight) => (
-					<li
-						key={highlight.id}
-						data-clamp={isPreview || undefined}
-						className={`text-sm leading-6 whitespace-pre-wrap break-words${isPreview ? " line-clamp-2" : ""}`}
-					>
-						<mark
-							className={`box-decoration-clone rounded-sm px-1 ${highlight.color === "yellow" ? "bg-highlight-yellow text-highlight-yellow-foreground" : "text-foreground"}`}
-							style={
-								highlight.color === "yellow"
-									? undefined
-									: {
-											backgroundColor:
-												HIGHLIGHT_COLOR_STYLE[highlight.color as HighlightColor]
-													.background,
-										}
-							}
+			<div className={isPreview ? "flex items-center gap-2" : undefined}>
+				<ul className={isPreview ? "min-w-0 flex-1" : "space-y-2"}>
+					{visibleHighlights.map((highlight) => (
+						<li
+							key={highlight.id}
+							data-clamp={isPreview || undefined}
+							className={`text-sm leading-6 whitespace-pre-wrap break-words${isPreview ? " line-clamp-1" : ""}`}
 						>
-							{highlight.exact_text}
-						</mark>
-					</li>
-				))}
-			</ul>
+							<mark
+								className={`box-decoration-clone rounded-sm px-1 ${highlight.color === "yellow" ? "bg-highlight-yellow text-highlight-yellow-foreground" : "text-foreground"}`}
+								style={
+									highlight.color === "yellow"
+										? undefined
+										: {
+												backgroundColor:
+													HIGHLIGHT_COLOR_STYLE[
+														highlight.color as HighlightColor
+													].background,
+											}
+								}
+							>
+								{highlight.exact_text}
+							</mark>
+						</li>
+					))}
+				</ul>
+				{isPreview && highlights.length > 1 && moreLabel && (
+					<span className="shrink-0 text-xs text-muted-foreground">
+						{moreLabel}
+					</span>
+				)}
+			</div>
 		</section>
 	);
 };
@@ -60,8 +65,8 @@ interface IFMemoHighlightsProps {
 	label: string;
 	/** 표시 제한과 별개로 목록과 상세 화면의 여백을 지정한다. */
 	className?: string;
-	/** 목록에서는 첫 인용문을 두 줄로 제한한다. */
+	/** 목록에서는 첫 인용문을 한 줄로 제한한다. */
 	isPreview?: boolean;
-	/** 목록에 표시할 전체 하이라이트 개수 문구. */
-	countLabel?: string;
+	/** 목록에서 첫 인용문 오른쪽에 표시할 나머지 개수 문구. */
+	moreLabel?: string;
 }

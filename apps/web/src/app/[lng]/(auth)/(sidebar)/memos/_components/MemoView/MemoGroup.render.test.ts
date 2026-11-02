@@ -33,8 +33,7 @@ vi.mock("../MemoCardHeader", () => ({
 	},
 }));
 vi.mock("../MemoCardFooter", () => ({
-	default: ({ highlightCount }: { highlightCount?: number }) =>
-		createElement("span", null, `highlight-count:${highlightCount ?? 0}`),
+	default: () => null,
 }));
 vi.mock("./_hooks/useIsContentClamped", () => ({
 	default: () => ({ containerRef: () => {}, isContentClamped: false }),
@@ -109,7 +108,7 @@ describe("MemoGroup 카드 렌더 경계", () => {
 		expect(headerRender).toHaveBeenCalledTimes(21);
 	});
 
-	it("개수·인용문·본문 변경은 해당 카드에, 표시 설정 변경은 모든 카드에 반영한다", () => {
+	it("미리보기 개수·인용문·본문 변경은 해당 카드에, 표시 설정 변경은 모든 카드에 반영한다", () => {
 		container = document.createElement("div");
 		root = createRoot(container);
 		const twoMemos = memos.slice(0, 2);
@@ -121,7 +120,7 @@ describe("MemoGroup 카드 렌더 경계", () => {
 		changedCounts.set(twoMemos[0].url, [highlight, highlight]);
 		act(() => root.render(renderGroup(twoMemos, changedCounts)));
 		expect(headerRender.mock.calls.map(([id]) => id)).toEqual([1]);
-		expect(container.textContent).toContain("highlight-count:2");
+		expect(container.textContent).toContain("memoSection.highlightMore");
 		headerRender.mockClear();
 
 		const source = {

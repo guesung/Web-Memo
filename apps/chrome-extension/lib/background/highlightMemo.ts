@@ -12,6 +12,7 @@ import {
 	SupabaseSessionRequiredError,
 } from "@web-memo/shared/utils/extension";
 import { getValidatedHighlightUrl } from "./getValidatedHighlightUrl";
+import { notifyQuietly } from "./notifyQuietly";
 import { reportBackgroundError } from "./reportBackgroundError";
 
 function reportFailure(operation: string) {
@@ -122,13 +123,11 @@ export async function handleGetHighlightMemoLinks(
 
 async function bridgeRefresh() {
 	// 알림 실패가 이미 커밋된 메모 저장을 실패로 바꾸지 않게 한다.
-	try {
-		await chrome.runtime.sendMessage({
+	await notifyQuietly(() =>
+		chrome.runtime.sendMessage({
 			type: "REFETCH_THE_MEMO_LIST_FROM_EXTENSION",
-		});
-	} catch {
-		/* 수신 화면이 닫혀 있을 수 있다. */
-	}
+		}),
+	);
 }
 
 async function openSavedMemo(memoId: number, deletedAt: string | null) {

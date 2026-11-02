@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+	bumpVersion,
 	compareSemver,
 	parseSemver,
 	rejectVersionInput,
@@ -145,5 +146,27 @@ describe("replaceVersionInJson", () => {
 				nextVersion: "1.0.1",
 			}),
 		).toThrow(/2곳/);
+	});
+});
+
+describe("bumpVersion", () => {
+	it("patch는 마지막 자리만 올린다", () => {
+		expect(bumpVersion("1.11.5", "patch")).toBe("1.11.6");
+	});
+
+	it("patch를 숫자로 올려 9 다음은 10이다", () => {
+		expect(bumpVersion("1.10.9", "patch")).toBe("1.10.10");
+	});
+
+	it("minor는 patch를 0으로 되돌린다", () => {
+		expect(bumpVersion("1.11.5", "minor")).toBe("1.12.0");
+	});
+
+	it("major는 minor·patch를 0으로 되돌린다", () => {
+		expect(bumpVersion("1.11.5", "major")).toBe("2.0.0");
+	});
+
+	it("semver가 아니면 던진다", () => {
+		expect(() => bumpVersion("1.2", "patch")).toThrow("semver");
 	});
 });

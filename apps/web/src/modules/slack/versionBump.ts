@@ -150,56 +150,46 @@ export const buildBumpCommitMessage = ({
 };
 
 /**
- * 버전 파일을 고쳐 master에 커밋 하나를 쌓고 그 SHA를 돌려줍니다.
+ * 기준 커밋 위에 버전 파일만 바꾼 커밋 하나를 만들어 SHA를 돌려줍니다. 브랜치는 건드리지 않습니다.
  *
- * @description Contents API(`PUT /contents/{path}`)는 파일마다 커밋을 하나씩 만들어,
- * 앱·확장을 함께 올리면 커밋이 둘로 갈립니다. 그래서 파일이 하나일 때도 Git Data API로
- * 통일합니다 — 분기를 두면 두 경로 중 한쪽만 실제로 검증됩니다.
+ * @description master에 직접 쌓는 경로(`commitVersionBump`)와 다음 버전 PR 브랜치를 갱신하는
+ * 경로(`nextVersionPr`)가 같은 blob → tree → commit 흐름을 씁니다. 파일은 모두 `baseCommitSha`
+ * 시점에서 읽어 트리가 어느 한 커밋의 것이 되게 합니다.
  *
- * 실패는 삼키지 않고 그대로 던집니다. 조용히 넘기면 버전이 안 올라간 산출물이
- * 스토어에 올라가고, 그 시점에는 되돌릴 방법이 없습니다.
+ * @param expectedCurrentVersion 넘기면 기준 커밋의 실제 버전과 대조해 다르면 던집니다 —
+ *   앞서 확인한 버전과 다른 파일 위에 커밋을 만들지 않기 위해서입니다.
  */
-export const commitVersionBump = async ({
-	appVersion,
-	extensionVersion,
-	requestedBy,
-	expectedBaseSha,
-}: IFVersionBumpInput): Promise<string> => {
-	const targets = [
-		...(appVersion ? [{ file: VERSION_FILES.app, version: appVersion }] : []),
-		...(extensionVersion
-			? [{ file: VERSION_FILES.extension, version: extensionVersion }]
-			: []),
-	];
-
-	if (targets.length === 0) {
-		throw new Error("올릴 버전이 하나도 없습니다");
-	}
-
-	// 검증은 응답 전에, 커밋은 응답 뒤에 일어납니다. 그 사이 master가 움직였다면
-	// 사용자가 화면에서 고르고 통과시킨 것과 다른 트리가 배포됩니다 — 모달은 이미
-	// 닫혀 개입할 지점이 없으므로, 아무것도 만들기 전에 여기서 멈춥니다.
-	// `git/refs` PATCH의 force: false로도 막히지만 그때는 blob·tree·commit을 다 만든
-	// 뒤라 쓰레기 오브젝트가 남습니다.
-	const baseCommitSha = await fetchDefaultBranchSha();
-
-	if (baseCommitSha !== expectedBaseSha) {
-		throw new Error(
-			`검증 이후 master가 ${baseCommitSha.slice(0, 7)}로 움직여 버전 커밋을 만들지 않았습니다 — 다시 시도하세요`,
-		);
-	}
-
+export const createBumpCommit = async ({
+	bumps,
+	message,
+	baseCommitSha,
+}: {
+	bumps: Array<{
+		track: TVersionTrack;
+		version: string;
+		expectedCurrentVersion?: string;
+	}>;
+	message: string;
+	baseCommitSha: string;
+}): Promise<string> => {
 	const baseCommit = await requestGithub<{ tree: { sha: string } }>(
 		`/git/commits/${baseCommitSha}`,
 	);
 
 	const treeEntries = await Promise.all(
-		targets.map(async ({ file, version }) => {
+		bumps.map(async ({ track, version, expectedCurrentVersion }) => {
+			const file = VERSION_FILES[track];
 			const source = await fetchFileSource(file.path, baseCommitSha);
 			const currentVersion = file.read(JSON.parse(source));
 
 			if (!currentVersion) {
 				throw new Error(`${file.path}에서 현재 버전을 읽지 못했습니다`);
+			}
+
+			if (expectedCurrentVersion && currentVersion !== expectedCurrentVersion) {
+				throw new Error(
+					`${file.path}의 버전이 ${currentVersion}로 확인한 값(${expectedCurrentVersion})과 달라 커밋을 만들지 않았습니다 — 다시 시도하세요`,
+				);
 			}
 
 			const { sha } = await requestGithub<{ sha: string }>("/git/blobs", {
@@ -225,22 +215,67 @@ export const commitVersionBump = async ({
 
 	const commit = await requestGithub<{ sha: string }>("/git/commits", {
 		method: "POST",
-		body: {
-			message: buildBumpCommitMessage({
-				appVersion,
-				extensionVersion,
-				requestedBy,
-			}),
-			tree: tree.sha,
-			parents: [baseCommitSha],
-		},
+		body: { message, tree: tree.sha, parents: [baseCommitSha] },
+	});
+
+	return commit.sha;
+};
+
+/**
+ * 버전 파일을 고쳐 master에 커밋 하나를 쌓고 그 SHA를 돌려줍니다.
+ *
+ * @description Contents API(`PUT /contents/{path}`)는 파일마다 커밋을 하나씩 만들어,
+ * 앱·확장을 함께 올리면 커밋이 둘로 갈립니다. 그래서 파일이 하나일 때도 Git Data API로
+ * 통일합니다 — 분기를 두면 두 경로 중 한쪽만 실제로 검증됩니다.
+ *
+ * 실패는 삼키지 않고 그대로 던집니다. 조용히 넘기면 버전이 안 올라간 산출물이
+ * 스토어에 올라가고, 그 시점에는 되돌릴 방법이 없습니다.
+ */
+export const commitVersionBump = async ({
+	appVersion,
+	extensionVersion,
+	requestedBy,
+	expectedBaseSha,
+}: IFVersionBumpInput): Promise<string> => {
+	const targets = [
+		...(appVersion ? [{ track: "app" as const, version: appVersion }] : []),
+		...(extensionVersion
+			? [{ track: "extension" as const, version: extensionVersion }]
+			: []),
+	];
+
+	if (targets.length === 0) {
+		throw new Error("올릴 버전이 하나도 없습니다");
+	}
+
+	// 검증은 응답 전에, 커밋은 응답 뒤에 일어납니다. 그 사이 master가 움직였다면
+	// 사용자가 화면에서 고르고 통과시킨 것과 다른 트리가 배포됩니다 — 모달은 이미
+	// 닫혀 개입할 지점이 없으므로, 아무것도 만들기 전에 여기서 멈춥니다.
+	// `git/refs` PATCH의 force: false로도 막히지만 그때는 blob·tree·commit을 다 만든
+	// 뒤라 쓰레기 오브젝트가 남습니다.
+	const baseCommitSha = await fetchDefaultBranchSha();
+
+	if (baseCommitSha !== expectedBaseSha) {
+		throw new Error(
+			`검증 이후 master가 ${baseCommitSha.slice(0, 7)}로 움직여 버전 커밋을 만들지 않았습니다 — 다시 시도하세요`,
+		);
+	}
+
+	const commitSha = await createBumpCommit({
+		bumps: targets.map(({ track, version }) => ({ track, version })),
+		message: buildBumpCommitMessage({
+			appVersion,
+			extensionVersion,
+			requestedBy,
+		}),
+		baseCommitSha,
 	});
 
 	// force를 쓰지 않습니다 — 그 사이 master가 움직였다면 실패하는 편이 맞습니다.
 	await requestGithub(`/git/refs/heads/${GITHUB_DEFAULT_BRANCH}`, {
 		method: "PATCH",
-		body: { sha: commit.sha },
+		body: { sha: commitSha },
 	});
 
-	return commit.sha;
+	return commitSha;
 };

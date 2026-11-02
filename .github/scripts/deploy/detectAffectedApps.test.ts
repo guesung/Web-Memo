@@ -79,7 +79,7 @@ describe("앱 영향 판정 스크립트", () => {
 		);
 		writeFileSync(
 			join(fixtureDirectory, "bin/npx"),
-			'#!/usr/bin/env bash\nset -eu\nprintf "%s\\n" "$*" >> calls\nif [[ "$*" == *"--filter"* || "$*" == *"-F "* ]]; then exit 64; fi\nif [[ "${FAIL_TURBO:-}" == "true" ]]; then exit 42; fi\ncat packages.json\n',
+			'#!/usr/bin/env bash\nset -eu\nprintf "%s\\n" "$*" >> calls\nprintf "%s" "${TURBO_SCM_HEAD:-}" > turbohead\nif [[ "$*" == *"--filter"* || "$*" == *"-F "* ]]; then exit 64; fi\nif [[ "${FAIL_TURBO:-}" == "true" ]]; then exit 42; fi\ncat packages.json\n',
 			{ mode: 0o755 },
 		);
 		commitFixture();
@@ -148,5 +148,42 @@ describe("앱 영향 판정 스크립트", () => {
 
 		expect(runDetector([]).status).toBe(0);
 		expect(readOutput()).toBe("app=true\nextension=true\nweb=true\n");
+	});
+
+	it("HEAD_REF가 없으면 TURBO_SCM_HEAD를 넘기지 않는다", () => {
+		writeFileSync(join(fixtureDirectory, "README.md"), "updated");
+		commitFixture();
+
+		expect(runDetector(["@web-memo/web"]).status).toBe(0);
+		expect(readFileSync(join(fixtureDirectory, "turbohead"), "utf8")).toBe("");
+	});
+
+	it("HEAD_REF가 있으면 turbo가 BASE_REF..HEAD_REF를 판정하도록 넘긴다", () => {
+		writeFileSync(join(fixtureDirectory, "README.md"), "updated");
+		commitFixture();
+		const headRef = execFileSync("git", ["rev-parse", "HEAD"], {
+			cwd: fixtureDirectory,
+			encoding: "utf8",
+		}).trim();
+		writeFileSync(join(fixtureDirectory, "README.md"), "later");
+		commitFixture();
+
+		expect(runDetector(["@web-memo/web"], { HEAD_REF: headRef }).status).toBe(
+			0,
+		);
+		expect(readFileSync(join(fixtureDirectory, "turbohead"), "utf8")).toBe(
+			headRef,
+		);
+		expect(readOutput()).toBe("app=false\nextension=false\nweb=true\n");
+	});
+
+	it("의존성·워크플로 변경 판정도 HEAD가 아니라 HEAD_REF까지만 본다", () => {
+		writeFileSync(join(fixtureDirectory, "pnpm-lock.yaml"), "updated");
+		writeFileSync(join(fixtureDirectory, ".github/workflows/cd-app.yml"), "x");
+		commitFixture();
+
+		// HEAD_REF가 기준과 같으면 그 뒤의 lockfile·워크플로 변경은 보지 않는다
+		expect(runDetector([], { HEAD_REF: baseRef }).status).toBe(0);
+		expect(readOutput()).toBe("app=false\nextension=false\nweb=false\n");
 	});
 });

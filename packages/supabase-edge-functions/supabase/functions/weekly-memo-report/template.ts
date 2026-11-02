@@ -212,7 +212,7 @@ const buildFooterHtml = (isTest: boolean) => {
     `<span style="color:${COLOR.muted};">이 메일에 바로 답장해 주시면 직접 읽고 반영할게요.</span>` +
     "</td></tr></table></td></tr>" +
     `<tr><td style="padding:24px 24px 0;font-size:12px;line-height:1.8;color:${COLOR.muted};">` +
-    `${isTest ? "테스트로 보낸 메일이에요." : "매주 일요일 저녁 8시에 보내 드려요."}<br>` +
+    `${isTest ? "테스트로 보낸 메일이에요." : "매주 토요일 오전 10시에 보내 드려요."}<br>` +
     `<a href="${withUtm(MEMOS_URL, { content: "footer_web", isTest })}" style="${footerLinkStyle}">웹에서 보기</a> &nbsp;·&nbsp; ` +
     `<a href="${withUtm(SETTING_URL, { content: "footer_setting", isTest })}" style="${footerLinkStyle}">리포트 설정 · 수신 거부</a>` +
     "</td></tr>"
@@ -277,7 +277,7 @@ export const buildWeeklyReportHtml = ({
       header +
         `<tr><td style="padding:28px 24px 8px;">` +
         `<div style="font-size:24px;line-height:1.4;font-weight:800;letter-spacing:-0.4px;">이번 주엔 아직 메모가 없어요</div>` +
-        `<p style="margin:12px 0 0;font-size:15px;line-height:1.8;color:${COLOR.body};">메모를 남기면 일요일 저녁에 이 주소로 모아 보내 드려요.</p>` +
+        `<p style="margin:12px 0 0;font-size:15px;line-height:1.8;color:${COLOR.body};">메모를 남기면 토요일 오전 10시에 이 주소로 모아 보내 드려요.</p>` +
         `<p style="margin:12px 0 0;font-size:14px;"><a href="${withUtm(MEMOS_URL, { content: "empty_open", isTest })}" style="${accentLinkStyle}">웹 메모 열기 →</a></p>` +
         "</td></tr>" +
         buildFooterHtml(true),

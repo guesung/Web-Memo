@@ -196,7 +196,7 @@ describe("buildWeeklyReportHtml", () => {
       memos: [memo()],
     });
 
-    expect(regular).toContain("매주 일요일 저녁 8시에 보내 드려요.");
+    expect(regular).toContain("매주 토요일 오전 10시에 보내 드려요.");
     expect(regular).not.toContain("[테스트]");
     expect(test).toContain("[테스트]");
     expect(test).toContain("테스트로 보낸 메일이에요.");
@@ -211,6 +211,9 @@ describe("buildWeeklyReportHtml", () => {
     });
 
     expect(html).toContain("이번 주엔 아직 메모가 없어요");
+    expect(html).toContain(
+      "메모를 남기면 토요일 오전 10시에 이 주소로 모아 보내 드려요.",
+    );
     expect(html).toContain("웹 메모 열기 →");
     expect(html).not.toContain("웹에서 정리하기");
   });

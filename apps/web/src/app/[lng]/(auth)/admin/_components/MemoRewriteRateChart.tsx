@@ -129,7 +129,8 @@ export default function MemoRewriteRateChart({
 							connectNulls={false}
 							stroke="var(--color-confirmedRate)"
 							strokeWidth={2}
-							dot={{ r: 3 }}
+							dot={{ r: 3, fill: "var(--color-confirmedRate)" }}
+							activeDot={{ r: 5, fill: "var(--color-confirmedRate)" }}
 							isAnimationActive={false}
 						/>
 						<Line
@@ -152,6 +153,16 @@ export default function MemoRewriteRateChart({
 						/>
 					</LineChart>
 				</ChartContainer>
+				<p className="mt-2 text-xs text-muted-foreground">
+					<span aria-hidden="true" className="text-[hsl(var(--chart-1))]">
+						●
+					</span>{" "}
+					{t("admin.retention.confirmed")} ·{" "}
+					<span aria-hidden="true" className="text-[hsl(var(--chart-1))]">
+						○
+					</span>{" "}
+					{t("admin.retention.observing")}
+				</p>
 				<ol
 					className="mt-3 max-h-32 space-y-1 overflow-y-auto text-xs"
 					aria-label={t("admin.retention.rewrite_values")}

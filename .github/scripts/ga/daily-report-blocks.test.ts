@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 
 import { buildDailyReportPayload } from "./daily-report-blocks.mjs";
-import { summarizeGoogleSearchVisitors } from "./ga4-data.mjs";
+import { CORE_EVENTS, summarizeGoogleSearchVisitors } from "./ga4-data.mjs";
 
 const baseReport = {
 	targetDate: "2026-10-31",
@@ -16,6 +16,74 @@ const baseReport = {
 
 const blockTexts = (payload) =>
 	payload.blocks.map((block) => block.text?.text ?? "");
+
+const eventStat = (users, count) => ({
+	users: { yesterday: users[0], average7: users[1] },
+	count: { yesterday: count[0], average7: count[1] },
+});
+
+const buildReportTexts = (events = {}) =>
+	blockTexts(
+		buildDailyReportPayload({
+			report: { ...baseReport, events },
+			runUrl: null,
+		}),
+	);
+
+describe("buildDailyReportPayload 핵심 이벤트 블록", () => {
+	it("기존 8종의 순서와 라벨로 사용자 수·발생 건수·각 7일 평균을 표시한다", () => {
+		const labels = [
+			"메모 열기",
+			"메모 검색",
+			"요약 성공",
+			"요약 실패",
+			"채팅 전송",
+			"로그인",
+			"가입",
+			"확장 설치",
+		];
+		const events = Object.fromEntries(
+			CORE_EVENTS.map((name, index) => [
+				name,
+				eventStat([index + 1, index + 0.5], [index + 11, index + 10.5]),
+			]),
+		);
+		const core = buildReportTexts(events).find((text) => text.startsWith("*핵심 이벤트*"));
+
+		expect(core.split("\n").slice(1)).toEqual(
+			labels.map(
+				(label, index) =>
+					`${label}  *${index + 1}명 · ${index + 11}건*  (7일 평균 ${(index + 0.5).toFixed(1)}명 · ${(index + 10.5).toFixed(1)}건 · +${Math.round((0.5 / (index + 10.5)) * 100)}%)`,
+			),
+		);
+	});
+
+	it("사용자가 늘고 건수가 줄어도 건수 기준 증감률을 표시한다", () => {
+		const events = { memo_open: eventStat([20, 10], [5, 10]) };
+		const core = buildReportTexts(events).find((text) => text.startsWith("*핵심 이벤트*"));
+
+		expect(core).toContain("메모 열기  *20명 · 5건*  (7일 평균 10.0명 · 10.0건 · -50%)");
+	});
+
+	it("누락 이벤트와 0 평균은 0명·0건으로 표시하고 증감률을 생략한다", () => {
+		const core = buildReportTexts({ memo_open: eventStat([0, 0], [0, 0]) }).find(
+			(text) => text.startsWith("*핵심 이벤트*"),
+		);
+
+		expect(core).toContain("메모 열기  *0명 · 0건*  (7일 평균 0.0명 · 0.0건)");
+		expect(core).toContain("메모 검색  *0명 · 0건*  (7일 평균 0.0명 · 0.0건)");
+	});
+
+	it("퍼널은 사용자 기준 증감률을 유지한다", () => {
+		const funnel = buildReportTexts({
+			side_panel_open: eventStat([20, 10], [5, 10]),
+		}).find((text) => text.startsWith("*퍼널*"));
+
+		expect(funnel).toContain(
+			"사이드 패널 열기  *20명 · 5건*  (7일 평균 10.0명 · 10.0건 · +100%)",
+		);
+	});
+});
 
 describe("summarizeGoogleSearchVisitors", () => {
 	it("어제 값과 직전 7일 평균을 분모 7로 계산한다", () => {

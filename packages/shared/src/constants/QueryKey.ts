@@ -80,6 +80,11 @@ export const QUERY_KEY = {
 	setting: () => ["setting"],
 	/** 대시보드 통계. `includeAdmin`이 다르면 다른 캐시여야 토글이 재조회를 일으킨다. */
 	adminStats: (includeAdmin = false) => ["adminStats", includeAdmin],
+	memoRetention: (range = "recent12", granularity = "month") => [
+		"memoRetention",
+		range,
+		granularity,
+	],
 	activeUsersStats: (includeAdmin = false) => [
 		"activeUsersStats",
 		includeAdmin,

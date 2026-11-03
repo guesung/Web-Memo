@@ -102,6 +102,19 @@ const describeUsersWithCount = ({ label, users, count }) => {
 	return `${label}  *${formatCount(users.yesterday)}명 · ${formatCount(count.yesterday)}건*  (${detail})`;
 };
 
+/** 핵심 이벤트는 사용자 수와 건수를 함께 보여주되 증감률은 발생 건수 기준입니다. */
+const describeCoreEvent = ({ label, users, count }) => {
+	const change = formatChange(count.yesterday, count.average7);
+	const detail = [
+		`7일 평균 ${formatAverage(users.average7)}명 · ${formatAverage(count.average7)}건`,
+		change,
+	]
+		.filter(Boolean)
+		.join(" · ");
+
+	return `${label}  *${formatCount(users.yesterday)}명 · ${formatCount(count.yesterday)}건*  (${detail})`;
+};
+
 const buildFunnelBlock = (events) => {
 	const lines = FUNNEL_STEPS.map(({ eventName, label }) => {
 		const { users, count } = readEventStat(events, eventName);
@@ -117,19 +130,18 @@ const buildFunnelBlock = (events) => {
 
 /**
  * 두 섹션은 묻는 것이 다릅니다.
- * 퍼널은 "몇 명이 썼나"라서 사람 수(activeUsers)를 기준으로 건수를 곁들이고, 핵심
- * 이벤트는 "로깅이 살아 있나"라서 발생 건수(eventCount)만 셉니다. 퍼널에 있는
- * 이벤트는 CORE_EVENTS 에서 빼 중복 등장을 없앴습니다.
+ * 퍼널은 "몇 명이 썼나"라서 사람 수(activeUsers)로 증감률을 계산하고, 핵심
+ * 이벤트는 "로깅이 살아 있나"라서 발생 건수(eventCount)로 계산합니다.
+ * 퍼널에 있는 이벤트는 CORE_EVENTS 에서 빼 중복 등장을 없앴습니다.
  */
 const buildCoreEventsBlock = (events) => {
 	const lines = CORE_EVENTS.map((eventName) => {
-		const { count } = readEventStat(events, eventName);
+		const { users, count } = readEventStat(events, eventName);
 
-		return describeStat({
+		return describeCoreEvent({
 			label: EVENT_LABELS[eventName] ?? eventName,
-			value: count.yesterday,
-			unit: "건",
-			average7: count.average7,
+			users,
+			count,
 		});
 	});
 
@@ -138,6 +150,63 @@ const buildCoreEventsBlock = (events) => {
 		text: {
 			type: "mrkdwn",
 			text: ["*핵심 이벤트*  (어제 / 7일 평균)", ...lines].join("\n"),
+		},
+	};
+};
+
+/** Slack mrkdwn 에서 특수 의미를 갖는 문자를 이스케이프합니다. 코드 스팬을 깨는 백틱은 뺍니다. */
+const escapeMrkdwn = (text) =>
+	text
+		.replaceAll("&", "&amp;")
+		.replaceAll("<", "&lt;")
+		.replaceAll(">", "&gt;")
+		.replaceAll("`", "'");
+
+const describeSearchQueries = (searchQueries) => {
+	switch (searchQueries?.status) {
+		case "ok": {
+			if (searchQueries.queries.length === 0) {
+				return ["검색어  해당 기간 데이터 없음"];
+			}
+
+			const { startDate, endDate, queries } = searchQueries;
+
+			return [
+				`검색어 상위 ${queries.length} (Search Console, ${startDate.slice(5)}~${endDate.slice(5)})`,
+				...queries.map(
+					({ query, clicks, impressions }) =>
+						`• \`${escapeMrkdwn(query)}\`  클릭 ${formatCount(clicks)} · 노출 ${formatCount(impressions)}`,
+				),
+			];
+		}
+		case "failed":
+			return ["검색어  조회 실패"];
+		default:
+			return ["검색어  연동 안 됨 (GSC_SERVICE_ACCOUNT_JSON 없음)"];
+	}
+};
+
+/** 구글 검색(organic) 유입 사용자와 상위 검색어. 조회 실패는 0명과 구분되게 따로 적습니다. */
+const buildGoogleSearchBlock = (googleSearch, searchQueries) => {
+	const line =
+		googleSearch?.status === "ok"
+			? describeStat({
+					label: "방문자",
+					value: googleSearch.yesterday,
+					unit: "명",
+					average7: googleSearch.average7,
+				})
+			: "방문자  조회 실패";
+
+	return {
+		type: "section",
+		text: {
+			type: "mrkdwn",
+			text: [
+				"*구글 검색 유입*  (어제 / 7일 평균)",
+				line,
+				...describeSearchQueries(searchQueries),
+			].join("\n"),
 		},
 	};
 };
@@ -209,7 +278,7 @@ const buildContextBlock = ({
 };
 
 /** 하루치 집계 결과를 그대로 받아 보낼 페이로드로 만듭니다. */
-export const buildDailyReportPayload = ({ report, runUrl }) => {
+export const buildDailyReportPayload = ({ report, runUrl, searchQueries }) => {
 	const {
 		targetDate,
 		events,
@@ -218,6 +287,7 @@ export const buildDailyReportPayload = ({ report, runUrl }) => {
 		observationStart,
 		observationTruncated,
 		trafficTotals,
+		googleSearch,
 	} = report;
 	const headline = `어제의 웹 메모 — ${formatHeaderDate(targetDate)}`;
 
@@ -234,6 +304,7 @@ export const buildDailyReportPayload = ({ report, runUrl }) => {
 			},
 			buildFunnelBlock(events),
 			buildCoreEventsBlock(events),
+			buildGoogleSearchBlock(googleSearch, searchQueries),
 			{ type: "divider" },
 			// 걸린 게 없는 날은 빈 자리를 남기지 않고 블록째 뺍니다.
 			...(outliers.length > 0 ? [buildOutlierBlock(outliers)] : []),

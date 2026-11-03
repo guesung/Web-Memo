@@ -1,5 +1,9 @@
 import { SUPABASE } from "../../constants";
-import type { MemoSupabaseClient } from "../../types";
+import type {
+	MemoRetentionParams,
+	MemoRetentionStats,
+	MemoSupabaseClient,
+} from "../../types";
 
 /** 관리자 조회에 사용하는 IFAdminStats 데이터 계약이다. */
 export interface IFAdminStats {
@@ -176,5 +180,22 @@ export class AdminService {
 			.eq("user_id", userId)
 			.single();
 		return (data as { role?: string } | null)?.role === "admin";
+	};
+
+	getMemoRetentionStats = async ({
+		range = "recent12",
+		granularity = "month",
+	}: MemoRetentionParams = {}): Promise<MemoRetentionStats> => {
+		const { data, error } = await this.supabaseClient
+			.schema(SUPABASE.schema.memo)
+			.rpc("get_memo_retention_stats", {
+				p_range: range,
+				p_granularity: granularity,
+			});
+
+		if (error) throw new Error(error.message);
+		if (!data) throw new Error("Memo retention response is empty");
+
+		return data as unknown as MemoRetentionStats;
 	};
 }

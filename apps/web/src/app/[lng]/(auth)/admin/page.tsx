@@ -14,6 +14,7 @@ import {
 	ActivityChart,
 	GaActiveUsersChart,
 	IncludeAdminToggle,
+	RetentionSection,
 	StatsCards,
 	UserGrowthChart,
 } from "./_components";
@@ -82,6 +83,7 @@ export default async function AdminPage({ params, searchParams }: PageProps) {
 					</Suspense>
 				</HydrationBoundaryWrapper>
 			</div>
+			<RetentionSection lng={lng} />
 		</>
 	);
 }

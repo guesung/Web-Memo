@@ -4,5 +4,6 @@ export { default as AdminSidebar } from "./AdminSidebar";
 export { default as GaActiveUsersChart } from "./GaActiveUsersChart";
 export { default as GaChartEmptyState } from "./GaChartEmptyState";
 export { default as IncludeAdminToggle } from "./IncludeAdminToggle";
+export { default as RetentionSection } from "./RetentionSection";
 export { default as StatsCards } from "./StatsCards";
 export { default as UserGrowthChart } from "./UserGrowthChart";

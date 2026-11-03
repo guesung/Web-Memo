@@ -102,6 +102,19 @@ const describeUsersWithCount = ({ label, users, count }) => {
 	return `${label}  *${formatCount(users.yesterday)}명 · ${formatCount(count.yesterday)}건*  (${detail})`;
 };
 
+/** 핵심 이벤트는 사용자 수와 건수를 함께 보여주되 증감률은 발생 건수 기준입니다. */
+const describeCoreEvent = ({ label, users, count }) => {
+	const change = formatChange(count.yesterday, count.average7);
+	const detail = [
+		`7일 평균 ${formatAverage(users.average7)}명 · ${formatAverage(count.average7)}건`,
+		change,
+	]
+		.filter(Boolean)
+		.join(" · ");
+
+	return `${label}  *${formatCount(users.yesterday)}명 · ${formatCount(count.yesterday)}건*  (${detail})`;
+};
+
 const buildFunnelBlock = (events) => {
 	const lines = FUNNEL_STEPS.map(({ eventName, label }) => {
 		const { users, count } = readEventStat(events, eventName);
@@ -117,19 +130,18 @@ const buildFunnelBlock = (events) => {
 
 /**
  * 두 섹션은 묻는 것이 다릅니다.
- * 퍼널은 "몇 명이 썼나"라서 사람 수(activeUsers)를 기준으로 건수를 곁들이고, 핵심
- * 이벤트는 "로깅이 살아 있나"라서 발생 건수(eventCount)만 셉니다. 퍼널에 있는
- * 이벤트는 CORE_EVENTS 에서 빼 중복 등장을 없앴습니다.
+ * 퍼널은 "몇 명이 썼나"라서 사람 수(activeUsers)로 증감률을 계산하고, 핵심
+ * 이벤트는 "로깅이 살아 있나"라서 발생 건수(eventCount)로 계산합니다.
+ * 퍼널에 있는 이벤트는 CORE_EVENTS 에서 빼 중복 등장을 없앴습니다.
  */
 const buildCoreEventsBlock = (events) => {
 	const lines = CORE_EVENTS.map((eventName) => {
-		const { count } = readEventStat(events, eventName);
+		const { users, count } = readEventStat(events, eventName);
 
-		return describeStat({
+		return describeCoreEvent({
 			label: EVENT_LABELS[eventName] ?? eventName,
-			value: count.yesterday,
-			unit: "건",
-			average7: count.average7,
+			users,
+			count,
 		});
 	});
 

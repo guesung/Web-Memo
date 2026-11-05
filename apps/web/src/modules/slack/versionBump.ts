@@ -7,7 +7,7 @@ import {
 } from "./githubApi";
 import { replaceVersionInJson } from "./version";
 
-/** 버전을 갖는 배포 트랙. 웹은 버전이 없습니다(docs/versioning.md). */
+/** 버전을 갖는 배포 트랙. 웹은 버전이 없습니다(노션 「버전 관리」(https://app.notion.com/p/40f89de02fde8100a8bcc728cedf2ef5)). */
 export type TVersionTrack = "app" | "extension";
 
 /** 버전 트랙 하나의 단일 진실 원천 파일. */
@@ -17,7 +17,7 @@ interface IFVersionFile {
 	read: (json: unknown) => string | undefined;
 }
 
-/** 버전 트랙별 단일 진실 원천 파일. docs/versioning.md의 표와 일대일입니다. */
+/** 버전 트랙별 단일 진실 원천 파일. 노션 「버전 관리」(https://app.notion.com/p/40f89de02fde8100a8bcc728cedf2ef5)의 표와 일대일입니다. */
 const VERSION_FILES: Record<TVersionTrack, IFVersionFile> = {
 	app: {
 		path: "apps/app/app.json",

@@ -35,7 +35,7 @@ argument-hint: '[PR 제목·본문 추가 지시 (선택)]'
 
 ## 승인된 디자인 시안 싣기
 
-레포 [AGENTS.md](../../../../../AGENTS.md#ui-변경-전-시각-디자인-확인)는 UI 구현 전에 시각 목업 승인을 요구하고, `/web-memo:design` ①-V는 그 시안을 Artifact로 게시한다. 그런데 Artifact는 비공개 링크라 PR을 보는 사람은 열 수 없고, 시간이 지나면 어떤 화면을 승인했는지 PR에서 확인할 길이 없다. 그래서 승인된 시안은 링크와 함께 **레포에 커밋한 스크린샷**으로 본문에 싣는다.
+레포 [AGENTS.md](../../../../../AGENTS.md#ui-변경-전-시각-디자인-확인)는 UI 구현 전에 시각 목업 승인을 요구하고, `/web-memo:design` ①-V는 그 시안을 Artifact로 게시한다. 그런데 Artifact는 비공개 링크라 PR을 보는 사람은 열 수 없고, 시간이 지나면 어떤 화면을 승인했는지 PR에서 확인할 길이 없다. 그래서 승인된 시안은 링크와 함께 **`assets/mockups` 브랜치에 커밋한 스크린샷**으로 본문에 싣는다.
 
 1. **대상인지 판정한다.** `git diff --name-only origin/<base>...HEAD`에 사용자가 보는 화면을 바꾸는 파일(`apps/web/`·`apps/app/`·`apps/chrome-extension/`·`pages/`·`packages/ui/` 등의 화면 코드)이 없으면 이 절을 건너뛰고 섹션도 넣지 않는다.
 2. **시안을 찾는다.** 아래 순서로 처음 찾은 것을 쓴다.
@@ -45,16 +45,33 @@ argument-hint: '[PR 제목·본문 추가 지시 (선택)]'
 4. **스크린샷을 만든다.**
    - `Artifact` `read`로 시안 HTML을 받는다. `시안:`이 로컬 HTML 경로면 그 파일을 쓴다.
    - Playwright로 그 HTML을 열어 전체 페이지를 PNG로 캡처한다(`browser_take_screenshot`의 `fullPage`). 폭은 시안이 그린 화면 폭을 따른다.
-   - `docs/mockups/<브랜치명 slug>.png`에 저장한다. 같은 파일이 이미 있으면 덮어쓴다 — 시안이 다시 승인됐다는 뜻이다.
-   - `docs: 승인된 디자인 시안 추가`로 커밋하고 `git push`한다. 이 커밋은 PR 생성(6단계) 전에 올린다.
-5. **본문에 넣는다.** PR 본문에서는 상대 경로 이미지가 보이지 않으므로, 방금 push한 커밋 SHA로 고정한 raw URL을 쓴다.
+   - 작업 브랜치에는 커밋하지 않는다. 시안 이미지는 master와 이력을 공유하지 않는 전용 브랜치 `assets/mockups`에만 쌓는다 — 레포 문서는 노션이 원본이라 `docs/`에 이미지를 두지 않는다. 체크아웃·worktree 없이 plumbing으로 올린다.
+     ```bash
+     MSG="docs: <브랜치명 slug> 승인된 디자인 시안"
+     # fetch는 임시 인덱스를 지정하기 전에 한다 — 빈 인덱스 파일이 잡혀 있으면 fetch가 실패해 부모 없는 커밋으로 빠진다
+     git fetch origin "+refs/heads/assets/mockups:refs/remotes/origin/assets/mockups" 2>/dev/null && HAS_BRANCH=1 || HAS_BRANCH=
+     export GIT_INDEX_FILE=$(mktemp)
+     if [ -n "$HAS_BRANCH" ]; then
+       git read-tree origin/assets/mockups
+       git update-index --add --cacheinfo "100644,$(git hash-object -w <캡처.png>),<브랜치명 slug>.png"
+       COMMIT=$(git commit-tree "$(git write-tree)" -p origin/assets/mockups -m "$MSG")
+     else   # 첫 시안: 부모 없는 커밋으로 브랜치를 연다
+       git read-tree --empty
+       git update-index --add --cacheinfo "100644,$(git hash-object -w <캡처.png>),<브랜치명 slug>.png"
+       COMMIT=$(git commit-tree "$(git write-tree)" -m "$MSG")
+     fi
+     unset GIT_INDEX_FILE
+     git push origin "${COMMIT}:refs/heads/assets/mockups"   # 중괄호 필수 — zsh는 $COMMIT:r을 수식자로 읽는다
+     ```
+     같은 이름의 파일이 이미 있으면 덮어쓴다 — 시안이 다시 승인됐다는 뜻이다. 이 push는 PR 생성(6단계) 전에 한다.
+5. **본문에 넣는다.** PR 본문에서는 상대 경로 이미지가 보이지 않으므로, 방금 push한 `$COMMIT`으로 고정한 raw URL을 쓴다.
    ```
    ## 디자인 시안
 
    - 시안: <Artifact URL>
    - 승인: <도장 일시> · 사람 승인
 
-   ![디자인 시안](https://raw.githubusercontent.com/<owner>/<repo>/<커밋 SHA>/docs/mockups/<파일>.png)
+   ![디자인 시안](https://raw.githubusercontent.com/<owner>/<repo>/<$COMMIT>/<브랜치명 slug>.png)
    ```
 6. **시안이 없거나 승인 기록이 없으면** PR은 막지 않는다. `## 디자인 시안` 섹션에 `승인된 시안 없음 — <사유>`(예: 시안 링크 없음, `(시안 포함)` 도장 없음, 캡처 실패) 한 줄을 남기고 9단계 출력에도 같은 줄을 덧붙인다. 링크는 있는데 캡처만 실패했으면 링크와 승인 줄은 남기고 이미지 자리에 실패 사유를 적는다.
 

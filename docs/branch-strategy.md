@@ -92,7 +92,7 @@ git checkout feat/memo-search   # 작업 브랜치로 복귀
 2. **Slack에서 배포합니다.** `master` 빌드가 끝나면 스토어 현황과 배포 버튼이
    담긴 메시지가 Slack에 옵니다. 원하는 대상 버튼을 누르면 그 커밋이 배포되고,
    **다른 버전…**을 누르면 대상과 리비전을 골라 배포합니다. 전체 흐름과 설정은
-   [release-flow.md](release-flow.md)를 참고하세요.
+   [노션 「Slack에서 배포하기」](https://app.notion.com/p/40f89de02fde81f88baae972931fbc56)를 참고하세요.
    - `app` — iOS 빌드 + TestFlight 제출
    - `extension` — 빌드 + Chrome 웹 스토어 업로드(심사를 통과하면 바로 게시)
    - `web` — Vercel 프로덕션 배포

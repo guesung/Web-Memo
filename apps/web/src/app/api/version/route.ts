@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 /**
  * 배포된 웹 인스턴스가 스스로 밝히는 빌드 식별자.
  *
- * 웹은 버전 번호를 갖지 않으므로(docs/versioning.md) 커밋 SHA가 유일한 식별자입니다.
+ * 웹은 버전 번호를 갖지 않으므로(노션 「버전 관리」(https://app.notion.com/p/40f89de02fde8100a8bcc728cedf2ef5)) 커밋 SHA가 유일한 식별자입니다.
  * Vercel API로 배포를 역추적하는 대신 이 엔드포인트를 두는 이유는, 별칭이 바뀌거나
  * 롤백이 있어도 "지금 응답하는 인스턴스"의 진실이 하나로 유지되기 때문입니다.
  *

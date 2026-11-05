@@ -146,7 +146,7 @@ jobs:
       ref: ${{ inputs.ref }}
 
   # 배포가 성공한 트랙의 "다음 버전" PR을 열어 둡니다(트랙당 PR 하나, 자동 머지 없음).
-  # 버전은 실제 배포 때만 움직입니다(docs/versioning.md). 이 PR은 Slack에서 버전 올려 배포를 고를 때 머지됩니다.
+  # 버전은 실제 배포 때만 움직입니다(노션 「버전 관리」(https://app.notion.com/p/40f89de02fde8100a8bcc728cedf2ef5)). 이 PR은 Slack에서 버전 올려 배포를 고를 때 머지됩니다.
   # 알림 잡과 별개라 이 잡이 실패해도 릴리스 결과 알림은 영향이 없고, 이 잡만 빨갛게 드러납니다.
   # GITHUB_TOKEN으로 연 PR은 다른 워크플로를 트리거하지 않아 CI가 안 도므로 GitHub App 토큰을 씁니다.
   next-version-extension:
@@ -189,7 +189,7 @@ jobs:
         run: node .github/scripts/deploy/sync-next-version-pr.mjs
 
   # 배포가 성공한 트랙의 "다음 버전" PR을 열어 둡니다(트랙당 PR 하나, 자동 머지 없음).
-  # 버전은 실제 배포 때만 움직입니다(docs/versioning.md). 이 PR은 Slack에서 버전 올려 배포를 고를 때 머지됩니다.
+  # 버전은 실제 배포 때만 움직입니다(노션 「버전 관리」(https://app.notion.com/p/40f89de02fde8100a8bcc728cedf2ef5)). 이 PR은 Slack에서 버전 올려 배포를 고를 때 머지됩니다.
   # 알림 잡과 별개라 이 잡이 실패해도 릴리스 결과 알림은 영향이 없고, 이 잡만 빨갛게 드러납니다.
   # GITHUB_TOKEN으로 연 PR은 다른 워크플로를 트리거하지 않아 CI가 안 도므로 GitHub App 토큰을 씁니다.
   next-version-app:

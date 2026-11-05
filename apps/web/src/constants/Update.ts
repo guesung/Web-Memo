@@ -3,7 +3,7 @@
  * @description
  * `version`은 `translation.json`의 `updates.versions` 키와 정확히 일치해야 합니다.
  * 이 목록이 제품 릴리스 버전의 단일 진실 원천이며, 확장/앱의 배포 버전과는 별개입니다.
- * (docs/versioning.md 참고)
+ * (노션 「버전 관리」(https://app.notion.com/p/40f89de02fde8100a8bcc728cedf2ef5) 참고)
  */
 export const UPDATE_LIST = [
 	{

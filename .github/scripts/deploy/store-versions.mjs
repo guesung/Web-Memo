@@ -204,7 +204,7 @@ export const fetchExtensionVersions = async ({
 /**
  * 웹: 배포된 인스턴스가 /api/version으로 스스로 밝히는 커밋.
  *
- * 웹은 버전 번호가 없습니다(docs/versioning.md). Vercel API로 배포를 역추적하는 대신
+ * 웹은 버전 번호가 없습니다(노션 「버전 관리」(https://app.notion.com/p/40f89de02fde8100a8bcc728cedf2ef5)). Vercel API로 배포를 역추적하는 대신
  * 실제로 응답하는 인스턴스에게 물어봅니다 — 별칭·롤백 어느 쪽이든 진실이 하나입니다.
  */
 export const fetchWebVersion = async ({ webUrl }) => {

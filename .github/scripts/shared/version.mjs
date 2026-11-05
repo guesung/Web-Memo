@@ -1,7 +1,7 @@
 /**
  * semver 파싱·비교·증가와 JSON 원문의 버전 치환.
  *
- * apps/web/src/modules/slack/version.ts와 같은 규칙입니다(프리릴리스 태그 없음, docs/versioning.md).
+ * apps/web/src/modules/slack/version.ts와 같은 규칙입니다(프리릴리스 태그 없음, 노션 「버전 관리」(https://app.notion.com/p/40f89de02fde8100a8bcc728cedf2ef5)).
  * 그쪽은 TS라 워크플로 스크립트(.mjs)가 import할 수 없어 규칙만 맞춰 둡니다.
  */
 

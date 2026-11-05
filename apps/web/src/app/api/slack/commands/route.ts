@@ -11,7 +11,7 @@ import { type NextRequest, NextResponse } from "next/server";
  *   https://<프로덕션 도메인>/api/slack/commands
  *
  * @description 스토어 조회에 필요한 자격 증명은 GitHub Actions에만 두기로 했으므로
- * (docs/release-flow.md 참고) 여기서는 versions.yml을 킥하기만 하고, 실제 결과는
+ * (노션 「Slack에서 배포하기」(https://app.notion.com/p/40f89de02fde81f88baae972931fbc56) 참고) 여기서는 versions.yml을 킥하기만 하고, 실제 결과는
  * 워크플로가 채널에 게시합니다. 그래서 즉시 응답은 "조회 중"이 됩니다.
  */
 

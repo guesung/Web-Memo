@@ -166,7 +166,7 @@ const DEPLOY_TARGETS = [
 	},
 ];
 
-// 버전 트랙이 있는 대상만 "버전 올려 배포"를 단다. 웹은 버전이 없다(docs/versioning.md).
+// 버전 트랙이 있는 대상만 "버전 올려 배포"를 단다. 웹은 버전이 없다(노션 「버전 관리」(https://app.notion.com/p/40f89de02fde8100a8bcc728cedf2ef5)).
 const BUMP_TARGETS = [
 	{ target: "extension", label: "🧩 확장", readVersion: readExtensionVersion },
 	{ target: "app", label: "📱 앱", readVersion: () => readAppConfig().version },

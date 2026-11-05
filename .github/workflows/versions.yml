@@ -4,7 +4,7 @@ name: Versions
 # Slack의 슬래시 커맨드가 apps/web의 /api/slack/commands를 거쳐 이 워크플로를 킥합니다.
 #
 # 조회 자격 증명(ASC 키, Play 서비스 계정, 크롬 웹 스토어 토큰)을 Vercel에 복제하지 않기
-# 위해 조회를 여기서 돌립니다. 자세한 배경은 docs/release-flow.md 참고.
+# 위해 조회를 여기서 돌립니다. 자세한 배경은 노션 「Slack에서 배포하기」(https://app.notion.com/p/40f89de02fde81f88baae972931fbc56) 참고.
 on:
   workflow_dispatch:
     inputs:

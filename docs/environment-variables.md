@@ -200,7 +200,7 @@ Expo는 `EXPO_PUBLIC_` 접두사가 없는 환경변수를 번들에 인라인�
 | Vercel | 프로젝트에 도메인 연결 + DNS. 프로덕션은 `www.webmemo.xyz`, 스테이징 alias는 `staging.webmemo.xyz` |
 | GitHub Secrets | `STAGING_WEB_URL_WITHOUT_PROTOCOL`을 새 스테이징 도메인으로 (`cd-web.yml`의 alias) |
 | Supabase Auth | URL Configuration → Site URL을 `https://www.webmemo.xyz`로, Redirect URLs에 `https://www.webmemo.xyz/**`와 `https://staging.webmemo.xyz/**` 추가 |
-| Slack 앱 | Interactivity·슬래시 커맨드 Request URL (`docs/release-flow.md` 참고) |
+| Slack 앱 | Interactivity·슬래시 커맨드 Request URL (노션 「Slack에서 배포하기」(https://app.notion.com/p/40f89de02fde81f88baae972931fbc56) 참고) |
 
 **Google·Kakao·Apple 개발자 콘솔은 건드릴 것이 없습니다.** 로그인은
 `signInWithOAuth`로 Supabase를 거치므로, 각 제공자에 등록된 리디렉션 URI는
@@ -260,7 +260,7 @@ pnpm dev                             # .env.development (기본값)
 GitHub Actions의 `cd-web.yml`은 배포 대상에 맞춰 `BUILD_ENV`를 넣지만, 대시보드의 수동 재배포 등은 그
 워크플로를 거치지 않습니다. `vercel.json`의 `git.deploymentEnabled: false`가 모든 브랜치의
 Git 연동 자동 배포를 막으므로 작업 브랜치의 PR Preview도 자동 생성되지 않습니다.
-상용 배포는 Slack 버튼 → `release.yml` 경로를 사용합니다([release-flow.md](release-flow.md) 참고).
+상용 배포는 Slack 버튼 → `release.yml` 경로를 사용합니다([노션 「Slack에서 배포하기」](https://app.notion.com/p/40f89de02fde81f88baae972931fbc56) 참고).
 그래서 Vercel 프로젝트 환경변수에 `BUILD_ENV`를 직접 등록해 둡니다
 (Production = `production`, Preview = `staging`, [3절](#3-vercel-프로젝트-환경변수--배포된-웹의-런타임-값) 참고).
 빠지면 `development`로 구워져 운영 사이트의 랜딩 주소창 목업·sitemap·canonical이

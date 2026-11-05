@@ -25,6 +25,7 @@ import { analytics } from "@web-memo/shared/modules/analytics";
 import { configurePanelBehavior } from "./configurePanelBehavior";
 import { openInstallGuideTab } from "./openInstallGuideTab";
 import { registerUninstallUrl } from "./registerUninstallUrl";
+import { reportBackgroundError } from "./reportBackgroundError";
 
 void initSentry();
 
@@ -47,14 +48,42 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 		}
 	}
 
-	await configurePanelBehavior();
-	const language = await ChromeSyncStorage.get(STORAGE_KEYS.language);
-	const uiLanguage = I18n.getUILanguage();
-	if (!language) ChromeSyncStorage.set(STORAGE_KEYS.language, uiLanguage);
+	let stage = "configure_panel";
+	try {
+		await configurePanelBehavior();
+		stage = "language_get";
+		let language: string | undefined;
+		try {
+			language = await ChromeSyncStorage.get<string | undefined>(
+				STORAGE_KEYS.language,
+			);
+		} catch (error) {
+			if (
+				error instanceof Error &&
+				error.cause instanceof Error &&
+				error.cause.message === "The browser is shutting down."
+			)
+				return;
+			throw error;
+		}
+		const uiLanguage = I18n.getUILanguage();
+		if (!language) {
+			stage = "language_set";
+			await ChromeSyncStorage.set(STORAGE_KEYS.language, uiLanguage);
+		}
 
-	// 처음 설치했을 때만 로그인 전 가이드를 엽니다. 업데이트에서는 열지 않습니다.
-	if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-		await openInstallGuideTab();
+		// 처음 설치했을 때만 로그인 전 가이드를 엽니다. 업데이트에서는 열지 않습니다.
+		if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
+			stage = "install_guide";
+			await openInstallGuideTab();
+		}
+	} catch (error) {
+		reportBackgroundError({
+			error,
+			feature: "extension",
+			operation: "initialize",
+			stage,
+		});
 	}
 });
 

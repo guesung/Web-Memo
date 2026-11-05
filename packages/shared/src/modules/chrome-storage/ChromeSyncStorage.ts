@@ -10,6 +10,7 @@ export default class ChromeSyncStorage {
 			const message = I18n.get("error_get_storage");
 			throw new Error(
 				`${message}: ${error instanceof Error ? error.message : String(error)}`,
+				{ cause: error },
 			);
 		}
 	}

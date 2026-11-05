@@ -51,6 +51,7 @@ vi.mock("./openInstallGuideTab", () => ({ openInstallGuideTab: vi.fn() }));
 vi.mock("./registerUninstallUrl", () => ({
 	registerUninstallUrl: mocks.registerUninstallUrl,
 }));
+vi.mock("./reportBackgroundError", () => ({ reportBackgroundError: vi.fn() }));
 
 beforeEach(() => {
 	vi.resetModules();

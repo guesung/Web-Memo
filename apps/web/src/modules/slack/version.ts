@@ -5,7 +5,7 @@
  * 배포 여부를 가르는 판정이라 네트워크 없이 테스트로 고정할 수 있어야 합니다.
  */
 
-/** 파싱된 semver 세 자리. 이 레포는 프리릴리스 태그를 쓰지 않습니다(docs/versioning.md). */
+/** 파싱된 semver 세 자리. 이 레포는 프리릴리스 태그를 쓰지 않습니다(노션 「버전 관리」(https://app.notion.com/p/40f89de02fde8100a8bcc728cedf2ef5)). */
 type TSemver = [major: number, minor: number, patch: number];
 
 const SEMVER_PATTERN = /^(\d+)\.(\d+)\.(\d+)$/;

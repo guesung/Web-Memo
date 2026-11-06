@@ -2,7 +2,7 @@
 #
 # 대원칙은 docs/frontend-guidelines.md(가독성·예측 가능성·응집도·결합도)이고, 이 원장의 규칙은
 # 그 대원칙을 이 레포에서 어떻게 지키는지 정한 것입니다. 둘이 부딪히면 이 원장이 우선합니다.
-# docs/code-conventions-legacy.md는 아직 검토하지 않은 옛 규칙을 모아 둔 참고 자료일 뿐 강제하지 않습니다.
+# 노션 「코드 컨벤션 — 미검토 규칙 (참고용)」(https://app.notion.com/p/40f89de02fde81ac9734db9c077b6e45)는 아직 검토하지 않은 옛 규칙을 모아 둔 참고 자료일 뿐 강제하지 않습니다.
 #
 # 형식은 PR CI가 검사합니다. 로컬에서는 아래 명령으로 확인하세요.
 #   node .github/scripts/conventions/check-code-conventions.mjs

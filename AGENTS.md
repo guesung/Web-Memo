@@ -13,6 +13,11 @@
 
 세부 문서는 `docs/`에 있으며, 해당 절에서 링크합니다.
 
+`docs/`에는 **코드·CI·에이전트가 경로로 읽는 문서만** 둡니다(컨벤션 원장, 스크립트가 생성·검사하는
+문서, `/web-memo` 에이전트가 읽는 문서, 커밋·브랜치 규칙). 그 밖의 설명·운영 기록·설계/진단 기록·디자인
+시안은 노션 [「웹 메모 - 문서」 DB](https://app.notion.com/p/40f89de02fde807a83c9cd95f0b95929)가
+원본이며, 새 문서도 그곳에 씁니다. 레포에는 노션 링크만 남깁니다.
+
 ---
 
 ## 🎯 서비스 개요
@@ -77,7 +82,7 @@ const UNSUPPORTED_SUMMARY_PAGES = [
 - **빌드**: Turbo 2.1.1, Vite 5.3.3, Cross-env, Rimraf
 - **테스트**: Vitest, Playwright 1.47.0
 - **코드 품질**: Biome 2.0.0
-- **모니터링**: Sentry ([docs/sentry.md](docs/sentry.md))
+- **모니터링**: Sentry ([노션 「Sentry 설정 현황」](https://app.notion.com/p/40f89de02fde81b6a606cdc183f84997))
 - **유틸리티**: dayjs(날짜), es-hangul(한글 처리), youtube-transcript(자막), OpenAI API
 - **패키지 매니저/런타임**: pnpm 10.23.0, Node.js 24 (`.nvmrc`, 루트 `engines`)
 
@@ -224,7 +229,7 @@ pnpm test:jest -- path/to/test.ts        # 단일 테스트 파일
 
 1. [`docs/code-conventions.yaml`](docs/code-conventions.yaml) — 세부 규칙 원장. 대원칙과 부딪히면 원장이 우선합니다
 2. [`docs/frontend-guidelines.md`](docs/frontend-guidelines.md) — 대원칙(가독성·예측 가능성·응집도·결합도)과 권장 패턴
-3. [`docs/code-conventions-legacy.md`](docs/code-conventions-legacy.md) — 아직 검토하지 않은 옛 규칙. **참고용이며 강제하지 않습니다**
+3. [노션 「코드 컨벤션 — 미검토 규칙 (참고용)」](https://app.notion.com/p/40f89de02fde81ac9734db9c077b6e45) — 아직 검토하지 않은 옛 규칙. **참고용이며 강제하지 않습니다**
 
 전역 지침(`~/.agents/AGENTS.md` 등)에 코딩 규칙이 있어도 이 레포에서는 위 순서를 따릅니다.
 규칙을 추가·폐기하는 절차와 필드 설명은 원장 머리 주석에 있습니다. 원장 형식은 PR CI가 검사합니다.
@@ -423,9 +428,9 @@ GitHub 작업을 시작하기 전에 `gh auth status --active --hostname github.
 - 커밋 컨벤션: [docs/commit-convention.md](docs/commit-convention.md)
 - 브랜치 전략: [docs/branch-strategy.md](docs/branch-strategy.md)
 - 환경 변수: [docs/environment-variables.md](docs/environment-variables.md)
-- Sentry: [docs/sentry.md](docs/sentry.md) — 두 프로젝트(확장·웹) 구분, 인바운드 필터,
+- Sentry: [노션 「Sentry 설정 현황」](https://app.notion.com/p/40f89de02fde81b6a606cdc183f84997) — 두 프로젝트(확장·웹) 구분, 인바운드 필터,
   알림 웹훅처럼 대시보드에만 있는 설정
-- 버전 관리: [docs/versioning.md](docs/versioning.md) — 확장·앱·릴리스 노트가
+- 버전 관리: [노션 「버전 관리」](https://app.notion.com/p/40f89de02fde8100a8bcc728cedf2ef5) — 확장·앱·릴리스 노트가
   **각각 독립된 버전 트랙**이며, `apps/chrome-extension` 외의 `package.json`에는
   `version` 필드를 두지 않습니다
 

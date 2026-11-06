@@ -13,7 +13,7 @@
   `도입 버전·일자 미확인`은 추측하지 않았다는 뜻이며 현재 미배포라는 뜻이 아닙니다.
 - **분석 방법·등록 현황:** [analytics.md](analytics.md). 필터·퍼널·코호트·관찰 기간은 그곳에서 관리합니다.
 - **별도 성능 계측:** Faro/Sentry의 `memo_page_latency` 등은 GA 이벤트가 아니며
-  [메모 화면 지연 관측](memo-performance-observability.md)을 따릅니다.
+  [메모 화면 지연 관측](https://app.notion.com/p/40f89de02fde811dbf94e5bb1f9d69f8)을 따릅니다.
 
 ## 읽는 방법
 

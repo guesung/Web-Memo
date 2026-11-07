@@ -172,7 +172,50 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 		await expect(sidePanelPage.getByTestId("category-badge")).toHaveCount(0);
 
 		// 4. 수락한 뒤에만 배지에 적용한다.
+		// 배지는 폼 값으로 즉시 바뀌므로 PATCH와 그 뒤의 재조회까지 기다려 다음 조작과 겹치지 않게 한다.
+		const waitForCategoryPatch = (categoryId: number | null) =>
+			sidePanelPage.waitForResponse((response) => {
+				if (
+					response.request().method() !== "PATCH" ||
+					!response.url().includes("/rest/v1/memo")
+				) {
+					return false;
+				}
+				const request = response.request().postDataJSON();
+				return (
+					Object.keys(request).length === 1 &&
+					request.category_id === categoryId
+				);
+			});
+		const waitForCategoryQuery = (categoryId: number | null) =>
+			sidePanelPage.waitForResponse(async (response) => {
+				if (
+					response.request().method() !== "GET" ||
+					!response.url().includes("/rest/v1/memo") ||
+					!response.ok()
+				) {
+					return false;
+				}
+				const rows = await response.json();
+				return (
+					Array.isArray(rows) &&
+					rows.some(
+						(row: { url: string; category_id: number | null }) =>
+							row.url === pageAUrl && row.category_id === categoryId,
+					)
+				);
+			});
+		const acceptedCategoryPatch = waitForCategoryPatch(categoryId);
+		const acceptedCategoryQuery = waitForCategoryQuery(categoryId);
 		await sidePanelPage.getByTestId("category-suggestion-accept").click();
+		const acceptedCategoryResponse = await acceptedCategoryPatch;
+		expect(acceptedCategoryResponse.ok()).toBe(true);
+		expect(await acceptedCategoryResponse.json()).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ category_id: categoryId }),
+			]),
+		);
+		await acceptedCategoryQuery;
 		await expect(sidePanelPage.getByTestId("category-badge")).toContainText(
 			categoryName,
 			{
@@ -181,11 +224,19 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 		);
 
 		// 5. 카테고리를 제거하고 메모를 더 입력하면 다시 추천한다.
+		const removedCategoryPatch = waitForCategoryPatch(null);
+		const removedCategoryQuery = waitForCategoryQuery(null);
 		await sidePanelPage
 			.getByTestId("category-badge")
 			.locator("button")
 			.last()
 			.click();
+		const removedCategoryResponse = await removedCategoryPatch;
+		expect(removedCategoryResponse.ok()).toBe(true);
+		expect(await removedCategoryResponse.json()).toEqual(
+			expect.arrayContaining([expect.objectContaining({ category_id: null })]),
+		);
+		await removedCategoryQuery;
 		await expect(sidePanelPage.getByTestId("category-badge")).toHaveCount(0);
 		await fillMemo(sidePanelPage, `${memoText} updated`);
 		await expect(

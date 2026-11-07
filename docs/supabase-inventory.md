@@ -353,7 +353,7 @@
 | `status` | `text` |
 | `created_at` | `timestamp with time zone` |
 
-#### DB 함수 (44개)
+#### DB 함수 (45개)
 
 | 함수 | 반환 타입 |
 | --- | --- |
@@ -386,6 +386,7 @@
 | `get_highlight_counts(target_urls text[])` | `TABLE(url text, count integer)` |
 | `get_highlight_counts_by_page_keys(target_page_keys text[])` | `TABLE(page_key text, count integer)` |
 | `get_memo_count()` | `integer` |
+| `get_memo_retention_stats(p_range text, p_granularity text)` | `jsonb` |
 | `get_public_stats()` | `json` |
 | `get_user_growth(days_ago integer, include_admin boolean)` | `json` |
 | `has_blog_memo_text(p_text text)` | `boolean` |

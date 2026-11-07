@@ -36,19 +36,19 @@
 - name: TURBO_TOKEN
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/ci.yml, .github/workflows/cd-extension.yml, .github/workflows/chore-cleanup-unused.yml, .github/workflows/e2e.yml]
+  consumers: [.github/workflows/ci.yml, .github/workflows/cd-extension.yml, .github/workflows/chore-cleanup-unused.yml, .github/workflows/e2e.yml, .github/workflows/chore-e2e-coverage.yml, .github/workflows/chore-ga-events.yml]
   impact: "Turborepo 원격 캐시를 못 써 CI가 느려진다"
 
 - name: TURBO_TEAM
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/ci.yml, .github/workflows/cd-extension.yml, .github/workflows/chore-cleanup-unused.yml, .github/workflows/e2e.yml]
+  consumers: [.github/workflows/ci.yml, .github/workflows/cd-extension.yml, .github/workflows/chore-cleanup-unused.yml, .github/workflows/e2e.yml, .github/workflows/chore-e2e-coverage.yml, .github/workflows/chore-ga-events.yml]
   impact: "Turborepo 원격 캐시 팀을 못 찾아 CI가 느려진다"
 
 - name: VERCEL_TOKEN
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/cd-web.yml, .github/workflows/e2e.yml, .github/workflows/audit-env-registry.yml]
+  consumers: [.github/workflows/cd-web.yml, .github/workflows/e2e.yml, .github/workflows/audit-env-registry.yml, .github/workflows/chore-e2e-coverage.yml]
   impact: "vercel pull, build, deploy, alias가 인증에 실패해 웹 배포가 멈추고, e2e가 웹 서버 환경 변수를 받지 못한다"
 
 - name: STAGING_WEB_URL_WITHOUT_PROTOCOL
@@ -102,7 +102,7 @@
 - name: CLAUDE_CODE_OAUTH_TOKEN
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/audit-refactor.yml, .github/workflows/report-seo.yml, .github/workflows/chore-ga-events.yml, .github/workflows/chore-sentry-triage.yml]
+  consumers: [.github/workflows/audit-refactor.yml, .github/workflows/report-seo.yml, .github/workflows/chore-ga-events.yml, .github/workflows/chore-sentry-triage.yml, .github/workflows/chore-e2e-coverage.yml]
   impact: "주간 리팩토링 점검과 SEO AI 리포트, GA 이벤트 점검, Sentry AI 분석이 인증에 실패한다. 리팩토링 점검은 노션 카드와 Slack 알림이 오지 않고, SEO는 기존 기계 판정 알림으로 대신한다. 구독 토큰이라 만료·한도 소진으로도 실패한다"
 
 - name: NOTION_TOKEN
@@ -114,7 +114,7 @@
 - name: SLACK_WEBHOOK_URL
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/chore-ga-events.yml, .github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/workflows/audit-refactor.yml, .github/workflows/release-notify.yml, .github/workflows/versions.yml, .github/workflows/audit-env-registry.yml, .github/workflows/report-seo.yml, .github/workflows/audit-ga-cid-adoption.yml, .github/workflows/notify-extension-published.yml]
+  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/chore-ga-events.yml, .github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/workflows/audit-refactor.yml, .github/workflows/release-notify.yml, .github/workflows/versions.yml, .github/workflows/audit-env-registry.yml, .github/workflows/report-seo.yml, .github/workflows/audit-ga-cid-adoption.yml, .github/workflows/notify-extension-published.yml, .github/workflows/chore-e2e-coverage.yml]
   impact: "빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다"
 
 - name: SLACK_REPORT_WEBHOOK_URL
@@ -145,13 +145,13 @@
 - name: APP_ID
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/chore-cleanup-unused.yml, .github/workflows/audit-env-registry.yml, .github/workflows/chore-supabase-inventory.yml, .github/workflows/chore-ga-events.yml, .github/workflows/chore-sentry-triage.yml, .github/workflows/release-notify.yml, .github/workflows/release.yml]
+  consumers: [.github/workflows/chore-cleanup-unused.yml, .github/workflows/audit-env-registry.yml, .github/workflows/chore-supabase-inventory.yml, .github/workflows/chore-ga-events.yml, .github/workflows/chore-sentry-triage.yml, .github/workflows/release-notify.yml, .github/workflows/release.yml, .github/workflows/chore-e2e-coverage.yml, .github/workflows/report-seo.yml]
   impact: "GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 릴리스 배포 기록(deploy-log 브랜치)이 남지 않고 배포 뒤 다음 버전 PR이 열리지 않으며(릴리스 알림에는 "기록 실패"가 표시된다), 등록 현황 감사가 GitHub Secrets를 조회하지 못한다"
 
 - name: APP_PRIVATE_KEY
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/chore-cleanup-unused.yml, .github/workflows/audit-env-registry.yml, .github/workflows/chore-supabase-inventory.yml, .github/workflows/chore-ga-events.yml, .github/workflows/chore-sentry-triage.yml, .github/workflows/release-notify.yml, .github/workflows/release.yml]
+  consumers: [.github/workflows/chore-cleanup-unused.yml, .github/workflows/audit-env-registry.yml, .github/workflows/chore-supabase-inventory.yml, .github/workflows/chore-ga-events.yml, .github/workflows/chore-sentry-triage.yml, .github/workflows/release-notify.yml, .github/workflows/release.yml, .github/workflows/chore-e2e-coverage.yml, .github/workflows/report-seo.yml]
   impact: "GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 릴리스 배포 기록(deploy-log 브랜치)이 남지 않고 배포 뒤 다음 버전 PR이 열리지 않으며(릴리스 알림에는 "기록 실패"가 표시된다), 등록 현황 감사가 GitHub Secrets를 조회하지 못한다"
   note: "등록 현황 감사가 쓰려면 GitHub App에 Secrets: read 권한이, 배포 기록이 deploy-log 브랜치에, 다음 버전 PR이 chore/next-version-* 브랜치에 push하려면 Contents: write 권한이, PR을 열고 고치려면 Pull requests: write 권한이 있어야 한다"
 
@@ -174,6 +174,14 @@
   consumers: [apps/web/src/modules/sentry/config.ts, .github/workflows/chore-sentry-triage.yml, .github/scripts/sentry/fetch-sentry-context.mjs]
   impact: "Sentry 알림에 대표 이벤트 상세(환경·릴리스·브라우저·스택·breadcrumb)가 빠지고, AI 분석이 웹훅 입력만으로 진행된다"
   note: "SENTRY_AUTH_TOKEN(소스맵 업로드)과 다른 조회 전용 토큰이다. event:read·project:read만 준다. 서로 읽지 못해 양쪽에 같은 값을 등록한다"
+
+- name: SENTRY_TRIAGE_DAILY_LIMIT
+  kind: config
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/chore-sentry-triage.yml, .github/scripts/sentry/triage-guard.mjs]
+  impact: "없으면 Sentry 자동 분석이 하루(UTC) 3회까지만 돈다"
+  note: "GitHub Actions 변수(vars)다. 비밀이 아니라 실행 상한값이다"
 
 - name: SLACK_BOT_TOKEN
   kind: secret
@@ -339,7 +347,7 @@
 - name: WEB_URL
   kind: config
   stores: [envpkg, supabase]
-  consumers: [packages/env/src/config.ts, packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts]
+  consumers: [packages/env/src/config.ts, packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts, packages/supabase-edge-functions/supabase/functions/_shared/webUrl.ts]
   impact: "envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 피드백 알림에서 관리자 링크 줄만 빠진다"
   note: "Supabase secret은 packages/env의 production 값(https://www.webmemo.xyz)과 같아야 한다"
 
@@ -361,6 +369,21 @@
   consumers: [packages/supabase-edge-functions/supabase/functions/daily-article-reminder/blogDigest.ts]
   impact: "정확히 true일 때만 긱뉴스 새 글 묶음 알림이 켜진다. 없거나 다른 값이면 묶음 알림 분기를 건너뛴다(위시 리마인더는 그대로)"
   note: "Edge Function secret이며 기본은 꺼짐이다. 앱의 알림 도착 처리를 배포한 뒤 true로 켠다"
+
+- name: UNSUBSCRIBE_SECRET
+  kind: secret
+  stores: [supabase]
+  consumers: [packages/supabase-edge-functions/supabase/functions/_shared/reportToken.ts]
+  impact: "주간 메일의 수신 거부·클릭 기록 토큰을 서명하지 못해 report·resurface 발송이 시작 전에 실패하고, 수신 거부·클릭 링크가 모두 홈으로만 간다"
+  note: "32자 이상 무작위 값. 바꾸면 이미 보낸 메일의 수신 거부·클릭 링크가 무효가 된다"
+
+- name: RESURFACE_ENABLED
+  kind: config
+  stores: [supabase]
+  required: false
+  consumers: [packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
+  impact: "정확히 true일 때만 크론이 다시 꺼내기(resurface) 메일을 보낸다. 없거나 다른 값이면 크론 resurface는 건너뛰고, resurfaceLimit를 준 수동 호출만 보낸다"
+  note: "Edge Function secret이며 기본은 꺼짐이다. 본인 테스트·50명 단계를 거친 뒤 true로 켠다"
 
 - name: RESEND_API_KEY
   kind: secret
@@ -386,12 +409,12 @@
 
 - name: SUPABASE_URL
   kind: platform
-  consumers: [packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts, packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts, packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
+  consumers: [packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts, packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts, packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-report-click/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-report-unsubscribe/index.ts]
   note: "Supabase가 Edge Function에 주입한다"
 
 - name: SUPABASE_SERVICE_ROLE_KEY
   kind: platform
-  consumers: [packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts, packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts, packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
+  consumers: [packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts, packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts, packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-report-click/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-report-unsubscribe/index.ts]
   note: "Supabase가 Edge Function에 주입한다. Vercel에는 등록하지 않는다"
 
 - name: SUPABASE_ANON_KEY

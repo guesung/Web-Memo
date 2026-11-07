@@ -2,6 +2,7 @@
 
 import type { LanguageType } from "@src/modules/i18n";
 import getTranslation from "@src/modules/i18n/util.server";
+import { LOGIN_NEXT_PARAM } from "@src/modules/supabase/nextPath";
 import {
 	signInWithEmail,
 	signInWithOAuth,
@@ -18,7 +19,7 @@ import PersonalInformationInfo from "../PersonalInformationInfo";
 import TrackLoginStartForm from "../TrackLoginStartForm";
 
 /** 웹 메모 소개와 로그인 제공자 버튼을 표시합니다. */
-const LoginSection = async ({ lng }: IFLoginSectionProps) => {
+const LoginSection = async ({ lng, nextPath }: IFLoginSectionProps) => {
 	const { t } = await getTranslation(lng);
 
 	const providers: TLoginProvider[] = [
@@ -65,6 +66,9 @@ const LoginSection = async ({ lng }: IFLoginSectionProps) => {
 			</div>
 
 			<TrackLoginStartForm className="flex w-full flex-col gap-3">
+				{nextPath && (
+					<input type="hidden" name={LOGIN_NEXT_PARAM} value={nextPath} />
+				)}
 				<LoginProviderButtons providers={providers} />
 
 				{!isProduction() && (
@@ -92,4 +96,7 @@ const LoginSection = async ({ lng }: IFLoginSectionProps) => {
 export default LoginSection;
 
 /** LoginSection의 props입니다. */
-interface IFLoginSectionProps extends LanguageType {}
+interface IFLoginSectionProps extends LanguageType {
+	/** 로그인 뒤 돌아갈 검증된 경로. 없으면 기본 화면으로 이동합니다 */
+	nextPath: string | null;
+}

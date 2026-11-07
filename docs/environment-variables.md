@@ -46,14 +46,14 @@
 
 <!-- env-manifest:start -->
 
-### GitHub Secrets (29개)
+### GitHub Secrets (30개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
-| `APP_ID` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 릴리스 배포 기록(deploy-log 브랜치)이 남지 않고 배포 뒤 다음 버전 PR이 열리지 않으며(릴리스 알림에는 "기록 실패"가 표시된다), 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/chore-sentry-triage.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/release.yml` |
-| `APP_PRIVATE_KEY` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 릴리스 배포 기록(deploy-log 브랜치)이 남지 않고 배포 뒤 다음 버전 PR이 열리지 않으며(릴리스 알림에는 "기록 실패"가 표시된다), 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/chore-sentry-triage.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/release.yml` |
+| `APP_ID` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 릴리스 배포 기록(deploy-log 브랜치)이 남지 않고 배포 뒤 다음 버전 PR이 열리지 않으며(릴리스 알림에는 "기록 실패"가 표시된다), 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/chore-sentry-triage.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/release.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/report-seo.yml` |
+| `APP_PRIVATE_KEY` | GitHub App 토큰을 만들지 못해 미사용 파일 정리 PR과 Supabase 인벤토리 갱신 PR이 생기지 않고, 릴리스 배포 기록(deploy-log 브랜치)이 남지 않고 배포 뒤 다음 버전 PR이 열리지 않으며(릴리스 알림에는 "기록 실패"가 표시된다), 등록 현황 감사가 GitHub Secrets를 조회하지 못한다 | `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/chore-sentry-triage.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/release.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/report-seo.yml` |
 | `BLOG_CATALOG_INGEST_SECRET` | 블로그 정주행 카탈로그 수집이 멈춘다. GitHub에 없으면 수집기가 시작하지 못하고, Supabase에 없으면 수집 엔드포인트가 500으로 모든 요청을 거절해 토스·당근·긱뉴스의 새 글과 재개 요청이 반영되지 않는다(이미 수집된 글 조회는 그대로다) | `.github/workflows/chore-blog-catalog.yml`, `.github/scripts/blog-reading/collect.mjs`, `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts` |
-| `CLAUDE_CODE_OAUTH_TOKEN` | 주간 리팩토링 점검과 SEO AI 리포트, GA 이벤트 점검, Sentry AI 분석이 인증에 실패한다. 리팩토링 점검은 노션 카드와 Slack 알림이 오지 않고, SEO는 기존 기계 판정 알림으로 대신한다. 구독 토큰이라 만료·한도 소진으로도 실패한다 | `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/chore-sentry-triage.yml` |
+| `CLAUDE_CODE_OAUTH_TOKEN` | 주간 리팩토링 점검과 SEO AI 리포트, GA 이벤트 점검, Sentry AI 분석이 인증에 실패한다. 리팩토링 점검은 노션 카드와 Slack 알림이 오지 않고, SEO는 기존 기계 판정 알림으로 대신한다. 구독 토큰이라 만료·한도 소진으로도 실패한다 | `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/chore-sentry-triage.yml`, `.github/workflows/chore-e2e-coverage.yml` |
 | `CLIENT_ID` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `CLIENT_SECRET` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `EXPO_ANDROID_SERVICE_ACCOUNT_JSON` | master 릴리스(release.yml)의 Google Play 내부 테스트 제출과 현황 조회가 실패한다 | `.github/workflows/cd-app.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
@@ -67,18 +67,19 @@
 | `REFRESH_TOKEN` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `SENTRY_API_TOKEN` (선택) | Sentry 알림에 대표 이벤트 상세(환경·릴리스·브라우저·스택·breadcrumb)가 빠지고, AI 분석이 웹훅 입력만으로 진행된다 | `apps/web/src/modules/sentry/config.ts`, `.github/workflows/chore-sentry-triage.yml`, `.github/scripts/sentry/fetch-sentry-context.mjs` |
 | `SENTRY_AUTH_TOKEN` | Sentry 소스맵 업로드가 조용히 실패한다. 빌드는 통과하므로 스택 트레이스가 난독화된 채 보여야 알게 된다 | `.github/workflows/cd-extension.yml`, `.github/workflows/cd-app.yml`, `apps/web/next.config.mjs`, `packages/vite-config/lib/withPageConfig.mjs` |
+| `SENTRY_TRIAGE_DAILY_LIMIT` (선택) | 없으면 Sentry 자동 분석이 하루(UTC) 3회까지만 돈다 | `.github/workflows/chore-sentry-triage.yml`, `.github/scripts/sentry/triage-guard.mjs` |
 | `SEO_SHEET_ID` (선택) | SEO·GSC 장기 이력이 Google Sheets에 쌓이지 않는다(공개 SEO 검사와 원본 아티팩트는 유지된다) | `.github/workflows/report-seo.yml` |
 | `SLACK_BOT_TOKEN` | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts`, `.github/workflows/report-seo.yml`, `.github/workflows/chore-sentry-triage.yml`, `.github/scripts/sentry/report-sentry-triage.mjs` |
 | `SLACK_CHANNEL_ID` | 머지 스레드가 생기지 않고 웹훅 알림으로 폴백한다 | `.github/workflows/ci.yml` |
 | `SLACK_REPORT_CHANNEL_ID` | SEO AI 리포트를 스레드로 보내지 못하고 기존 기계 판정 알림으로 대신한다. 봇(SLACK_BOT_TOKEN)이 이 채널에 초대돼 있어야 한다 | `.github/workflows/report-seo.yml` |
 | `SLACK_REPORT_WEBHOOK_URL` | GA 리포트, 주간 리팩토링 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다 | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml` |
-| `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/versions.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/audit-ga-cid-adoption.yml`, `.github/workflows/notify-extension-published.yml` |
+| `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/versions.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/audit-ga-cid-adoption.yml`, `.github/workflows/notify-extension-published.yml`, `.github/workflows/chore-e2e-coverage.yml` |
 | `STAGING_WEB_URL_WITHOUT_PROTOCOL` | 스테이징 배포에 alias 도메인이 붙지 않는다 | `.github/workflows/cd-web.yml` |
 | `SUPABASE_ACCESS_TOKEN` | 등록 현황 감사가 Supabase secrets를 조회하지 못하고 Supabase 인벤토리 문서가 갱신되지 않는다 | `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml` |
 | `SUPABASE_REPORT_SERVICE_ROLE_KEY` | 주간 GA 리포트에서 메모 리텐션 섹션과 시트의 리텐션 칸만 빠진다(경고만 남고 나머지 리포트는 그대로 간다) | `.github/workflows/report-ga-weekly.yml`, `.github/scripts/ga/report-weekly-ga.mjs` |
-| `TURBO_TEAM` | Turborepo 원격 캐시 팀을 못 찾아 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml` |
-| `TURBO_TOKEN` | Turborepo 원격 캐시를 못 써 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml` |
-| `VERCEL_TOKEN` | vercel pull, build, deploy, alias가 인증에 실패해 웹 배포가 멈추고, e2e가 웹 서버 환경 변수를 받지 못한다 | `.github/workflows/cd-web.yml`, `.github/workflows/e2e.yml`, `.github/workflows/audit-env-registry.yml` |
+| `TURBO_TEAM` | Turborepo 원격 캐시 팀을 못 찾아 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/chore-ga-events.yml` |
+| `TURBO_TOKEN` | Turborepo 원격 캐시를 못 써 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/chore-ga-events.yml` |
+| `VERCEL_TOKEN` | vercel pull, build, deploy, alias가 인증에 실패해 웹 배포가 멈추고, e2e가 웹 서버 환경 변수를 받지 못한다 | `.github/workflows/cd-web.yml`, `.github/workflows/e2e.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-e2e-coverage.yml` |
 
 ### Vercel 프로젝트 환경변수 (19개)
 
@@ -104,7 +105,7 @@
 | `UPSTASH_REDIS_REST_TOKEN` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/modules/ratelimit/rateLimit.ts` |
 | `UPSTASH_REDIS_REST_URL` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/modules/ratelimit/rateLimit.ts` |
 
-### Supabase Edge Function secrets (7개)
+### Supabase Edge Function secrets (9개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
@@ -112,15 +113,17 @@
 | `BLOG_DIGEST_ENABLED` (선택) | 정확히 true일 때만 긱뉴스 새 글 묶음 알림이 켜진다. 없거나 다른 값이면 묶음 알림 분기를 건너뛴다(위시 리마인더는 그대로) | `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/blogDigest.ts` |
 | `CRON_SECRET` | DB 트리거·pg_cron이 부르는 함수의 호출자 확인이 실패해 가입 메일·가입 알림·아티클 리마인더가 401로 끝난다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
 | `RESEND_API_KEY` | 가입 안내 메일이 발송되지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
+| `RESURFACE_ENABLED` (선택) | 정확히 true일 때만 크론이 다시 꺼내기(resurface) 메일을 보낸다. 없거나 다른 값이면 크론 resurface는 건너뛰고, resurfaceLimit를 준 수동 호출만 보낸다 | `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
 | `SLACK_FEEDBACK_WEBHOOK_URL` | 피드백 Slack 알림이 오지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts` |
 | `SLACK_SIGNUP_WEBHOOK_URL` | 신규 가입 Slack 알림이 오지 않는다. 함수가 예외를 던지고 로그에만 남는다 | `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts` |
-| `WEB_URL` | envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 피드백 알림에서 관리자 링크 줄만 빠진다 | `packages/env/src/config.ts`, `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts` |
+| `UNSUBSCRIBE_SECRET` | 주간 메일의 수신 거부·클릭 기록 토큰을 서명하지 못해 report·resurface 발송이 시작 전에 실패하고, 수신 거부·클릭 링크가 모두 홈으로만 간다 | `packages/supabase-edge-functions/supabase/functions/_shared/reportToken.ts` |
+| `WEB_URL` | envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 피드백 알림에서 관리자 링크 줄만 빠진다 | `packages/env/src/config.ts`, `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts`, `packages/supabase-edge-functions/supabase/functions/_shared/webUrl.ts` |
 
 ### `packages/env/.env.{환경}` (1개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
-| `WEB_URL` | envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 피드백 알림에서 관리자 링크 줄만 빠진다 | `packages/env/src/config.ts`, `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts` |
+| `WEB_URL` | envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 피드백 알림에서 관리자 링크 줄만 빠진다 | `packages/env/src/config.ts`, `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts`, `packages/supabase-edge-functions/supabase/functions/_shared/webUrl.ts` |
 
 ### 플랫폼이 주입하는 값 (등록하지 않음)
 
@@ -145,8 +148,8 @@
 | `PROBE_BASE_URL` | 운영 프로브의 대상 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 운영 도메인을 본다. 등록하지 않는다 | `e2e/playwright.probe.config.ts` |
 | `PW_CHROMIUM_ATTACH_TO_OTHER` | Playwright가 넣는 내부 플래그 | `e2e/tests/fixtures/extension.ts` |
 | `SUPABASE_ANON_KEY` | Supabase가 Edge Function에 주입한다. 테스트 발송에서 사용자 토큰을 auth.getUser로 검증할 때만 쓴다 | `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase가 Edge Function에 주입한다. Vercel에는 등록하지 않는다 | `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
-| `SUPABASE_URL` | Supabase가 Edge Function에 주입한다 | `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase가 Edge Function에 주입한다. Vercel에는 등록하지 않는다 | `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-report-click/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-report-unsubscribe/index.ts` |
+| `SUPABASE_URL` | Supabase가 Edge Function에 주입한다 | `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-report-click/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-report-unsubscribe/index.ts` |
 | `VERCEL` | Vercel 빌드와 런타임이 넣는다 | `apps/web/src/modules/slack/afterResponse.ts`, `packages/env/tsup.config.ts` |
 | `VERCEL_ENV` | Vercel이 배포 환경(production, preview, development)을 넣는다 | `apps/web/src/app/api/version/route.ts` |
 | `VERCEL_GIT_COMMIT_REF` | Vercel이 넣는다 | `apps/web/src/app/api/version/route.ts` |

@@ -27,6 +27,7 @@ export const GENERATED_PAGE_PATHS = {
 	memosWish: "/memos/wish",
 	privacy: "/privacy",
 	uninstall: "/uninstall",
+	unsubscribe: "/unsubscribe",
 	useCasesDeveloper: "/use-cases/developer",
 	useCasesJobHunting: "/use-cases/job-hunting",
 	useCasesLearning: "/use-cases/learning",

@@ -10,6 +10,7 @@ import { Suspense } from "react";
 import {
 	InitSentryUserInfo,
 	MemoSidebar,
+	TrackEmailReturn,
 	TrackLoginSuccess,
 	TrackViewChange,
 } from "./_components";
@@ -53,6 +54,10 @@ export default async function Layout({ children, params }: LayoutProps) {
 
 				<Suspense>
 					<TrackViewChange />
+				</Suspense>
+
+				<Suspense>
+					<TrackEmailReturn />
 				</Suspense>
 			</SidebarProvider>
 		</CategoryHydrationBoundary>

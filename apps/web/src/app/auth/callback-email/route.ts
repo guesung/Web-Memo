@@ -1,3 +1,7 @@
+import {
+	LOGIN_NEXT_COOKIE,
+	sanitizeNextPath,
+} from "@src/modules/supabase/nextPath";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { PATHS, SUPABASE } from "@web-memo/shared/constants";
 import { isProduction } from "@web-memo/shared/utils";
@@ -36,7 +40,17 @@ export async function GET(request: Request) {
 		},
 	);
 
-	return NextResponse.redirect(
-		`${requestUrl.origin}${PATHS.memos}?login=email`,
-	);
+	const nextPath = sanitizeNextPath(cookieStore.get(LOGIN_NEXT_COOKIE)?.value);
+	cookieStore.delete(LOGIN_NEXT_COOKIE);
+
+	if (!nextPath) {
+		return NextResponse.redirect(
+			`${requestUrl.origin}${PATHS.memos}?login=email`,
+		);
+	}
+
+	const redirectUrl = new URL(`${requestUrl.origin}${nextPath}`);
+	redirectUrl.searchParams.set("login", "email");
+
+	return NextResponse.redirect(redirectUrl);
 }

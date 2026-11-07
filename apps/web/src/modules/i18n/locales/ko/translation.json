@@ -1916,6 +1916,27 @@
 		"ok": "완전히 삭제",
 		"cancel": "취소"
 	},
+	"unsubscribe": {
+		"metaTitle": "메일 수신 거부 | 웹 메모",
+		"title": "주간 메모 메일을 그만 받을까요?",
+		"description": "버튼을 누르면 주간 리포트와 예전 메모 메일이 더 이상 오지 않아요. 설정에서 언제든 다시 켤 수 있어요.",
+		"confirm": "메일 그만 받기",
+		"pending": "처리 중",
+		"success": {
+			"title": "메일 수신을 껐어요",
+			"description": "주간 리포트와 예전 메모 메일이 더 이상 오지 않아요.",
+			"enableAgain": "설정에서 다시 켜기"
+		},
+		"error": {
+			"title": "처리하지 못했어요",
+			"description": "다시 시도해 주세요",
+			"retry": "다시 시도"
+		},
+		"invalidLink": {
+			"title": "링크가 올바르지 않아요",
+			"description": "메일에 있는 수신 거부 링크를 다시 눌러 주세요."
+		}
+	},
 	"uninstall": {
 		"metaTitle": "웹 메모를 지우셨군요 | 웹 메모",
 		"title": "웹 메모를 지우셨군요",

@@ -25,6 +25,56 @@ test.describe("로그인 기능", () => {
 		await expect(page).toHaveURL(new RegExp(PATHS.login));
 	});
 
+	test("로그인 없이 쿼리가 붙은 보호 페이지에 접속하면, 원래 경로와 쿼리를 next에 담아 로그인 페이지로 이동한다.", async ({
+		page,
+	}) => {
+		const originalPath = `/ko${PATHS.memos}?id=123&utm_source=weekly_report&utm_medium=email&utm_campaign=weekly_memo_resurface&utm_content=memo_1`;
+
+		await page.goto(originalPath);
+		await page.waitForURL(new RegExp(PATHS.login));
+
+		const url = new URL(page.url());
+		expect(url.pathname).toBe(`/ko${PATHS.login}`);
+		expect(url.searchParams.get("next")).toBe(originalPath);
+		expect(url.searchParams.has("id")).toBe(false);
+	});
+
+	test("next가 있는 로그인 뒤에는 원래 경로의 id와 UTM 쿼리가 그대로 남는다.", async ({
+		page,
+	}) => {
+		const nextPath = `/ko${PATHS.memos}?id=123&utm_source=weekly_report&utm_content=memo_1`;
+
+		await page.goto(`/ko${PATHS.login}?next=${encodeURIComponent(nextPath)}`);
+		await page.getByTestId("test-login-button").click();
+		await page.waitForURL(/utm_source=weekly_report/);
+
+		const url = new URL(page.url());
+		expect(url.pathname).toBe(`/ko${PATHS.memos}`);
+		expect(url.searchParams.get("id")).toBe("123");
+		expect(url.searchParams.get("utm_content")).toBe("memo_1");
+	});
+
+	for (const unsafeNext of [
+		"https://evil.com/steal",
+		"//evil.com",
+		"/\\evil.com",
+	]) {
+		test(`외부로 나가는 next(${unsafeNext})는 버려지고 기본 이동을 유지한다.`, async ({
+			page,
+		}) => {
+			await page.goto(
+				`/ko${PATHS.login}?next=${encodeURIComponent(unsafeNext)}`,
+			);
+			await expect(page.getByTestId("test-login-button")).toBeVisible();
+			await expect(page.locator('input[name="next"]')).toHaveCount(0);
+
+			await page.getByTestId("test-login-button").click();
+			await page.waitForURL(new RegExp(PATHS.memos));
+
+			expect(new URL(page.url()).hostname).not.toBe("evil.com");
+		});
+	}
+
 	test("로그인 오류로 돌아오면 안내와 재시도 버튼을 표시한다.", async ({
 		page,
 	}) => {

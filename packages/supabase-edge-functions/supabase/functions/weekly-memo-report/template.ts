@@ -1,30 +1,67 @@
+import { formatMemoAge } from "./resurface.ts";
 import { formatKoreanDate } from "./weekRange.ts";
 
 const WEB_URL = "https://webmemo.xyz";
 const MEMOS_URL = `${WEB_URL}/ko/memos`;
 const SETTING_URL = `${WEB_URL}/ko/memos/setting`;
 
+const DEFAULT_CAMPAIGN = "weekly_memo_report";
+
 /**
- * 웹 메모 링크에 UTM을 붙인다
+ * 웹 메모 링크에 UTM을 붙인 URL(이스케이프 전)을 만든다
  * @description 메일에서 들어온 방문을 GA4 유입 경로(소스·매체·캠페인)로 가르기 위해서다.
  * 메모 원문 링크에는 붙이지 않는다 — 우리 GA에 남지 않고 상대 사이트 URL만 바뀐다.
  */
-export const withUtm = (
+export const buildUtmUrl = (
   url: string,
-  { content, isTest }: { content: string; isTest: boolean },
+  {
+    content,
+    isTest,
+    campaign = DEFAULT_CAMPAIGN,
+  }: { content: string; isTest: boolean; campaign?: string },
 ) => {
   const target = new URL(url);
 
   target.searchParams.set("utm_source", "weekly_report");
   target.searchParams.set("utm_medium", "email");
-  target.searchParams.set(
-    "utm_campaign",
-    isTest ? "weekly_memo_report_test" : "weekly_memo_report",
-  );
+  target.searchParams.set("utm_campaign", isTest ? `${campaign}_test` : campaign);
   target.searchParams.set("utm_content", content);
 
-  return escapeHtml(target.toString());
+  return target.toString();
 };
+
+/** href에 넣을 수 있게 UTM을 붙이고 이스케이프한다 */
+export const withUtm = (
+  url: string,
+  options: { content: string; isTest: boolean; campaign?: string },
+) => escapeHtml(buildUtmUrl(url, options));
+
+/**
+ * 클릭 기록을 거치는 링크로 바꾸는 함수. 목적지(UTM 포함, 이스케이프 전)와 링크 위치를 받아 이스케이프 전 URL을 돌려준다
+ * @description 테스트 메일은 기록하지 않으므로 넘기지 않는다(목적지로 바로 간다)
+ */
+export type TTrackLink = (destination: string, position: string) => string;
+
+/**
+ * 메일 안의 "우리 링크" 하나를 만드는 함수. UTM을 붙이고, 추적 함수가 있으면 클릭 경유 URL로 바꾼다
+ */
+export const createLinkBuilder =
+  ({
+    isTest,
+    trackLink,
+    campaign,
+  }: {
+    isTest: boolean;
+    trackLink?: TTrackLink;
+    campaign?: string;
+  }) =>
+  (url: string, content: string) => {
+    const destination = buildUtmUrl(url, { content, isTest, campaign });
+
+    return escapeHtml(trackLink ? trackLink(destination, content) : destination);
+  };
+
+export type TLinkBuilder = ReturnType<typeof createLinkBuilder>;
 
 export interface IFReportMemo {
   title: string;
@@ -202,7 +239,12 @@ const buildHeaderHtml = ({
   `<td align="right" style="font-size:12px;color:${COLOR.muted};white-space:nowrap;">${escapeHtml(rangeLabel)}</td>` +
   "</tr></table></td></tr>";
 
-const buildFooterHtml = (isTest: boolean) => {
+const buildFooterHtml = (
+  isTest: boolean,
+  unsubscribeUrl: string,
+  link: TLinkBuilder,
+  scheduleText = "매주 토요일 오전 10시에 보내 드려요.",
+) => {
   const footerLinkStyle = `color:${COLOR.muted};text-decoration:underline;`;
 
   return (
@@ -212,9 +254,10 @@ const buildFooterHtml = (isTest: boolean) => {
     `<span style="color:${COLOR.muted};">이 메일에 바로 답장해 주시면 직접 읽고 반영할게요.</span>` +
     "</td></tr></table></td></tr>" +
     `<tr><td style="padding:24px 24px 0;font-size:12px;line-height:1.8;color:${COLOR.muted};">` +
-    `${isTest ? "테스트로 보낸 메일이에요." : "매주 토요일 오전 10시에 보내 드려요."}<br>` +
-    `<a href="${withUtm(MEMOS_URL, { content: "footer_web", isTest })}" style="${footerLinkStyle}">웹에서 보기</a> &nbsp;·&nbsp; ` +
-    `<a href="${withUtm(SETTING_URL, { content: "footer_setting", isTest })}" style="${footerLinkStyle}">리포트 설정 · 수신 거부</a>` +
+    `${isTest ? "테스트로 보낸 메일이에요." : scheduleText}<br>` +
+    `<a href="${link(MEMOS_URL, "footer_web")}" style="${footerLinkStyle}">웹에서 보기</a> &nbsp;·&nbsp; ` +
+    `<a href="${link(SETTING_URL, "footer_setting")}" style="${footerLinkStyle}">리포트 설정</a> &nbsp;·&nbsp; ` +
+    `<a href="${escapeHtml(unsubscribeUrl)}" style="${footerLinkStyle}">수신 거부</a>` +
     "</td></tr>"
   );
 };
@@ -262,12 +305,19 @@ export const buildWeeklyReportHtml = ({
   total,
   rangeLabel,
   isTest,
+  unsubscribeUrl,
+  trackLink,
 }: {
   memos: IFReportMemo[];
   total: number;
   rangeLabel: string;
   isTest: boolean;
+  /** 푸터 "수신 거부" 링크. 로그인 없이 열리는 웹 확인 페이지 주소(토큰 포함) */
+  unsubscribeUrl: string;
+  /** 우리 링크를 클릭 기록 경유 URL로 바꾸는 함수. 테스트 메일은 넘기지 않는다 */
+  trackLink?: TTrackLink;
 }) => {
+  const link = createLinkBuilder({ isTest, trackLink });
   const header = buildHeaderHtml({ rangeLabel, isTest });
   const accentLinkStyle = `color:${COLOR.link};text-decoration:none;font-weight:600;`;
 
@@ -278,9 +328,9 @@ export const buildWeeklyReportHtml = ({
         `<tr><td style="padding:28px 24px 8px;">` +
         `<div style="font-size:24px;line-height:1.4;font-weight:800;letter-spacing:-0.4px;">이번 주엔 아직 메모가 없어요</div>` +
         `<p style="margin:12px 0 0;font-size:15px;line-height:1.8;color:${COLOR.body};">메모를 남기면 토요일 오전 10시에 이 주소로 모아 보내 드려요.</p>` +
-        `<p style="margin:12px 0 0;font-size:14px;"><a href="${withUtm(MEMOS_URL, { content: "empty_open", isTest })}" style="${accentLinkStyle}">웹 메모 열기 →</a></p>` +
+        `<p style="margin:12px 0 0;font-size:14px;"><a href="${link(MEMOS_URL, "empty_open")}" style="${accentLinkStyle}">웹 메모 열기 →</a></p>` +
         "</td></tr>" +
-        buildFooterHtml(true),
+        buildFooterHtml(true, unsubscribeUrl, link),
     );
   }
 
@@ -296,11 +346,130 @@ export const buildWeeklyReportHtml = ({
       `<table ${TABLE_ATTRS} width="100%"><tr><td style="border:1px solid ${COLOR.line};border-radius:8px;padding:16px 18px;">` +
       `<div style="font-size:15px;font-weight:700;">웹에서 정리하기</div>` +
       `<div style="margin-top:4px;font-size:14px;line-height:1.6;color:${COLOR.muted};">이번 주 메모를 카테고리로 묶거나 다시 다듬어 보세요.</div>` +
-      `<div style="margin-top:8px;font-size:14px;"><a href="${withUtm(MEMOS_URL, { content: "organize", isTest })}" style="${accentLinkStyle}">메모 정리하러 가기 →</a></div>` +
+      `<div style="margin-top:8px;font-size:14px;"><a href="${link(MEMOS_URL, "organize")}" style="${accentLinkStyle}">메모 정리하러 가기 →</a></div>` +
       "</td></tr></table></td></tr>" +
       `<tr><td style="padding:32px 24px 12px;font-size:13px;font-weight:700;color:${COLOR.muted};letter-spacing:0.2px;">이번 주 메모 : ${escapeHtml(rangeLabel)}</td></tr>` +
       memos.map(buildMemoItemHtml).join("") +
-      `<tr><td style="padding:16px 24px 0;border-top:1px solid ${COLOR.line};font-size:14px;"><a href="${withUtm(MEMOS_URL, { content: "view_all", isTest })}" style="${accentLinkStyle}">웹에서 전체 보기 →</a></td></tr>` +
-      buildFooterHtml(isTest),
+      `<tr><td style="padding:16px 24px 0;border-top:1px solid ${COLOR.line};font-size:14px;"><a href="${link(MEMOS_URL, "view_all")}" style="${accentLinkStyle}">웹에서 전체 보기 →</a></td></tr>` +
+      buildFooterHtml(isTest, unsubscribeUrl, link),
+  );
+};
+
+// ---------------------------------------------------------------------------
+// resurface: 이번 주 메모를 안 쓴 사람에게 예전 메모를 다시 보여주는 메일
+// ---------------------------------------------------------------------------
+
+export const RESURFACE_CAMPAIGN = "weekly_memo_resurface";
+const RESURFACE_EXCERPT_LENGTH = 200;
+
+export interface IFResurfaceMemo extends IFReportMemo {
+  id: number;
+}
+
+/**
+ * resurface 메일 제목. 가장 오래된 메모 기준 경과 시간으로 쓴다 (예: "3주 전에 남긴 메모 3개")
+ * @description 메모가 한 시기에 몰려 있지 않으면 "3주 전부터"로 써서 거짓 표현을 피한다
+ */
+export const buildResurfaceSubject = ({
+  memos,
+  now,
+  isTest,
+}: {
+  memos: IFResurfaceMemo[];
+  now: Date;
+  isTest: boolean;
+}) => {
+  const ages = memos.flatMap((memo) =>
+    memo.created_at ? [formatMemoAge(memo.created_at, now)] : [],
+  );
+  const oldest = [...memos]
+    .filter((memo) => memo.created_at)
+    .sort(
+      (a, b) =>
+        new Date(a.created_at as string).getTime() -
+        new Date(b.created_at as string).getTime(),
+    )[0];
+  const subject = oldest?.created_at
+    ? `${formatMemoAge(oldest.created_at, now)}${new Set(ages).size > 1 ? "부터" : "에"} 남긴 메모 ${memos.length}개`
+    : `예전에 남긴 메모 ${memos.length}개`;
+
+  return isTest ? `[테스트] ${subject}` : subject;
+};
+
+/** 본문 발췌. 코드 포인트 기준으로 자르고 잘렸으면 말줄임표를 붙인다 */
+export const toMemoExcerpt = (memo: string, length = RESURFACE_EXCERPT_LENGTH) => {
+  const chars = Array.from(memo.trim());
+
+  return chars.length > length
+    ? `${chars.slice(0, length).join("").trimEnd()}…`
+    : chars.join("");
+};
+
+const buildResurfaceItemHtml = (
+  memo: IFResurfaceMemo,
+  index: number,
+  link: TLinkBuilder,
+) => {
+  const hostname = parseHostname(memo.url);
+  const titleText = escapeHtml(memo.title.trim() || hostname || memo.url);
+  const date = memo.created_at ? formatKoreanDate(new Date(memo.created_at)) : "";
+  const meta = [hostname, date].filter(Boolean).map(escapeHtml).join(" · ");
+  const excerpt = escapeHtml(toMemoExcerpt(memo.memo)).replace(/\r?\n/g, "<br>");
+  const openLink = link(`${MEMOS_URL}?id=${memo.id}`, `memo_${index + 1}`);
+  const originalLink = isHttpUrl(memo.url)
+    ? ` &nbsp;·&nbsp; <a href="${escapeHtml(memo.url)}" style="color:${COLOR.muted};text-decoration:underline;">원문 페이지</a>`
+    : "";
+
+  return (
+    `<tr><td style="padding:20px 24px;border-top:1px solid ${COLOR.line};">` +
+    `<table ${TABLE_ATTRS} width="100%"><tr>` +
+    `<td width="36" valign="top" style="font-size:15px;font-weight:700;color:${COLOR.link};font-variant-numeric:tabular-nums;padding-top:1px;">${String(index + 1).padStart(2, "0")}</td>` +
+    `<td valign="top">` +
+    (meta ? `<div style="font-size:12px;color:${COLOR.muted};">${meta}</div>` : "") +
+    `<div style="margin-top:2px;font-size:16px;line-height:1.5;font-weight:700;">${titleText}</div>` +
+    (excerpt
+      ? `<div style="margin-top:6px;font-size:14px;line-height:1.7;color:${COLOR.body};word-break:break-word;overflow-wrap:anywhere;">${excerpt}</div>`
+      : "") +
+    `<div style="margin-top:10px;font-size:13px;"><a href="${openLink}" style="color:${COLOR.link};text-decoration:none;font-weight:600;">메모 열기 →</a>${originalLink}</div>` +
+    "</td></tr></table></td></tr>"
+  );
+};
+
+/**
+ * resurface 메일 본문을 만든다. 레이아웃은 주간 리포트와 같은 table + 인라인 스타일이다
+ */
+export const buildResurfaceHtml = ({
+  memos,
+  isTest,
+  unsubscribeUrl,
+  trackLink,
+}: {
+  memos: IFResurfaceMemo[];
+  isTest: boolean;
+  unsubscribeUrl: string;
+  /** 우리 링크를 클릭 기록 경유 URL로 바꾸는 함수. 테스트 메일은 넘기지 않는다 */
+  trackLink?: TTrackLink;
+}) => {
+  const link = createLinkBuilder({
+    isTest,
+    trackLink,
+    campaign: RESURFACE_CAMPAIGN,
+  });
+  const accentLinkStyle = `color:${COLOR.link};text-decoration:none;font-weight:600;`;
+
+  return wrapHtml(
+    buildHeaderHtml({ rangeLabel: "다시 보기", isTest }) +
+      `<tr><td style="padding:28px 24px 8px;">` +
+      `<div style="font-size:24px;line-height:1.4;font-weight:800;letter-spacing:-0.4px;">예전에 남긴 메모 ${memos.length}개를 다시 꺼내 봤어요</div>` +
+      `<p style="margin:12px 0 0;font-size:15px;line-height:1.8;color:${COLOR.body};">이번 주엔 새 메모가 없었어요. 대신 그동안 남겨 둔 메모 중에서 골랐어요. 오랜만에 다시 읽어 보세요.</p>` +
+      "</td></tr>" +
+      memos.map((memo, index) => buildResurfaceItemHtml(memo, index, link)).join("") +
+      `<tr><td style="padding:16px 24px 0;border-top:1px solid ${COLOR.line};font-size:14px;"><a href="${link(MEMOS_URL, "view_all")}" style="${accentLinkStyle}">웹에서 전체 보기 →</a></td></tr>` +
+      buildFooterHtml(
+        isTest,
+        unsubscribeUrl,
+        link,
+        "이번 주에 메모를 남기지 않은 분께 예전 메모를 골라 보내 드려요.",
+      ),
   );
 };

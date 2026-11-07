@@ -1,4 +1,8 @@
 import { DEFAULT_LANGUAGE, getLanguage } from "@src/modules/i18n";
+import {
+	LOGIN_NEXT_COOKIE,
+	sanitizeNextPath,
+} from "@src/modules/supabase/nextPath";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { PATHS, SUPABASE } from "@web-memo/shared/constants";
 import { cookies } from "next/headers";
@@ -66,8 +70,16 @@ export async function GET(request: NextRequest) {
 		const createdAt = new Date(sessionData.session.user.created_at).getTime();
 		const isSignUp = Date.now() - createdAt < SIGN_UP_THRESHOLD_MSEC;
 
+		// 로그인 시작 때 맡겨 둔 원래 경로가 있으면 거기로(id·UTM 쿼리 포함), 없으면 기본 이동.
+		const nextPath = sanitizeNextPath(
+			cookieStore.get(LOGIN_NEXT_COOKIE)?.value,
+		);
+		cookieStore.delete(LOGIN_NEXT_COOKIE);
+
 		const redirectUrl = new URL(
-			`${requestUrl.origin}/${language}${PATHS.memos}`,
+			nextPath
+				? `${requestUrl.origin}${nextPath}`
+				: `${requestUrl.origin}/${language}${PATHS.memos}`,
 		);
 		redirectUrl.searchParams.set("login", loginMethod ?? "unknown");
 		if (isSignUp) redirectUrl.searchParams.set("signup", "true");

@@ -16,7 +16,7 @@ vi.mock("@src/modules/supabase/util.server", () => ({
 }));
 
 vi.mock("next/headers", () => ({
-	cookies: () => ({ set: setCookie }),
+	cookies: () => ({ set: setCookie, get: () => undefined, delete: vi.fn() }),
 }));
 
 import { GET } from "./route";

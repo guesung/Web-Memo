@@ -254,6 +254,14 @@ export type TAnalyticsEvent =
 			name: "notice_return";
 			params: { notice_id: number; days_since_view: number };
 	  }
+	| {
+			name: "email_return";
+			params: {
+				campaign: "weekly_memo_resurface" | "weekly_memo_report";
+				/** utm_content 값. 메일 안 클릭 위치(memo_1~memo_3, organize, view_all 등) */
+				content: string;
+			};
+	  }
 	| { name: "notice_dismiss"; params: { notice_id: number } }
 	| { name: "review_prompt_view"; params: { shown_count: number } }
 	| { name: "review_prompt_open"; params: { shown_count: number } }
@@ -429,6 +437,7 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	highlight_bubble_dismiss: "engagement",
 	notice_view: "engagement",
 	notice_return: "engagement",
+	email_return: "engagement",
 	notice_dismiss: "engagement",
 	review_prompt_view: "engagement",
 	review_prompt_open: "engagement",

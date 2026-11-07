@@ -1,10 +1,14 @@
 import { describe, expect, test } from "vitest";
 import {
+  buildResurfaceHtml,
+  buildResurfaceSubject,
   buildWeekSummary,
   buildWeeklyReportHtml,
   type IFReportMemo,
   withUtm,
 } from "./template";
+
+const UNSUBSCRIBE_URL = "https://www.webmemo.xyz/ko/unsubscribe?token=u.sig";
 
 const memo = (overrides: Partial<IFReportMemo> = {}): IFReportMemo => ({
   title: "제목",
@@ -92,7 +96,11 @@ describe("buildWeekSummary", () => {
 });
 
 describe("buildWeeklyReportHtml", () => {
-  const base = { rangeLabel: "10월 13일(월) ~ 10월 19일(일)", isTest: false };
+  const base = {
+    rangeLabel: "10월 13일(월) ~ 10월 19일(일)",
+    isTest: false,
+    unsubscribeUrl: UNSUBSCRIBE_URL,
+  };
 
   test("제목·본문·URL을 이스케이프한다", () => {
     const html = buildWeeklyReportHtml({
@@ -192,6 +200,7 @@ describe("buildWeeklyReportHtml", () => {
     const test = buildWeeklyReportHtml({
       ...base,
       isTest: true,
+      unsubscribeUrl: UNSUBSCRIBE_URL,
       total: 1,
       memos: [memo()],
     });
@@ -206,6 +215,7 @@ describe("buildWeeklyReportHtml", () => {
     const html = buildWeeklyReportHtml({
       ...base,
       isTest: true,
+      unsubscribeUrl: UNSUBSCRIBE_URL,
       total: 0,
       memos: [],
     });
@@ -244,12 +254,51 @@ describe("withUtm", () => {
   });
 });
 
+describe("클릭 경유 링크", () => {
+  const trackLink = (destination: string, position: string) =>
+    `https://p.supabase.co/functions/v1/weekly-report-click?pos=${position}&to=${encodeURIComponent(destination)}`;
+  const tracked = buildWeeklyReportHtml({
+    memos: [memo({ url: "https://a.com/x" })],
+    total: 1,
+    rangeLabel: "10월 12일(월) ~ 10월 18일(일)",
+    isTest: false,
+    unsubscribeUrl: UNSUBSCRIBE_URL,
+    trackLink,
+  });
+
+  test("우리 링크는 모두 클릭 함수를 거치고 목적지에 UTM이 남는다", () => {
+    for (const position of ["organize", "view_all", "footer_web", "footer_setting"]) {
+      expect(tracked).toContain(`weekly-report-click?pos=${position}&amp;to=`);
+    }
+    expect(tracked).toContain(encodeURIComponent("utm_content=view_all"));
+  });
+
+  test("원문 링크와 수신 거부 링크는 경유하지 않는다", () => {
+    expect(tracked).toContain('href="https://a.com/x"');
+    expect(tracked).toContain(`href="${UNSUBSCRIBE_URL}"`);
+  });
+
+  test("trackLink가 없으면(테스트 메일) 목적지로 바로 간다", () => {
+    const direct = buildWeeklyReportHtml({
+      memos: [memo()],
+      total: 1,
+      rangeLabel: "x",
+      isTest: true,
+      unsubscribeUrl: UNSUBSCRIBE_URL,
+    });
+
+    expect(direct).not.toContain("weekly-report-click");
+    expect(direct).toContain("utm_campaign=weekly_memo_report_test");
+  });
+});
+
 describe("buildWeeklyReportHtml 링크", () => {
   const html = buildWeeklyReportHtml({
     memos: [memo({ url: "https://a.com/x" })],
     total: 1,
     rangeLabel: "10월 12일(월) ~ 10월 18일(일)",
     isTest: false,
+    unsubscribeUrl: UNSUBSCRIBE_URL,
   });
 
   test("웹 메모 링크는 버튼 위치별 utm_content를 단다", () => {
@@ -258,7 +307,65 @@ describe("buildWeeklyReportHtml 링크", () => {
     }
   });
 
+  test("푸터 수신 거부 링크는 웹 확인 페이지로 가고 UTM이 없다", () => {
+    expect(html).toContain(`href="${UNSUBSCRIBE_URL}"`);
+    expect(html).toContain("수신 거부</a>");
+  });
+
   test("메모 원문 링크에는 UTM을 붙이지 않는다", () => {
     expect(html).toContain('href="https://a.com/x"');
+  });
+});
+
+describe("resurface 메일", () => {
+  const NOW = new Date("2026-11-07T01:00:00Z");
+  const resurfaceMemos = [
+    { ...memo({ url: "https://a.com/x", title: "첫째", created_at: "2026-10-14T03:00:00Z" }), id: 11 },
+    { ...memo({ url: "https://b.com/y", title: "둘째", created_at: "2026-09-01T03:00:00Z" }), id: 12 },
+  ];
+  const trackLink = (destination: string, position: string) =>
+    `https://p.supabase.co/functions/v1/weekly-report-click?pos=${position}&to=${encodeURIComponent(destination)}`;
+
+  test("제목은 가장 오래된 메모 기준 경과 시간이고, 시기가 섞이면 '부터'를 쓴다", () => {
+    expect(
+      buildResurfaceSubject({ memos: [resurfaceMemos[0]], now: NOW, isTest: false }),
+    ).toBe("3주 전에 남긴 메모 1개");
+    expect(
+      buildResurfaceSubject({ memos: resurfaceMemos, now: NOW, isTest: false }),
+    ).toBe("2개월 전부터 남긴 메모 2개");
+    expect(
+      buildResurfaceSubject({ memos: [resurfaceMemos[0]], now: NOW, isTest: true }),
+    ).toBe("[테스트] 3주 전에 남긴 메모 1개");
+  });
+
+  test("메모마다 /ko/memos?id=<id> 링크를 memo_N 위치와 resurface 캠페인 UTM으로 단다", () => {
+    const html = buildResurfaceHtml({
+      memos: resurfaceMemos,
+      isTest: false,
+      unsubscribeUrl: UNSUBSCRIBE_URL,
+      trackLink,
+    });
+
+    for (const [index, id] of [[1, 11], [2, 12]]) {
+      expect(html).toContain(`pos=memo_${index}&amp;`);
+      expect(html).toContain(encodeURIComponent(`https://webmemo.xyz/ko/memos?id=${id}&utm_source=weekly_report&utm_medium=email&utm_campaign=weekly_memo_resurface&utm_content=memo_${index}`));
+    }
+    expect(html).toContain('href="https://a.com/x"');
+    expect(html).toContain(`href="${UNSUBSCRIBE_URL}"`);
+    expect(html).not.toContain("<style");
+  });
+
+  test("본문은 발췌로 줄이고 사용자 입력은 이스케이프한다", () => {
+    const html = buildResurfaceHtml({
+      memos: [{ ...resurfaceMemos[0], title: "<b>x</b>", memo: `${"가".repeat(300)}<script>` }],
+      isTest: true,
+      unsubscribeUrl: UNSUBSCRIBE_URL,
+    });
+
+    expect(html).toContain("&lt;b&gt;x&lt;/b&gt;");
+    expect(html).not.toContain("<script>");
+    expect(html).toContain(`${"가".repeat(200)}…`);
+    expect(html).not.toContain("가".repeat(201));
+    expect(html).toContain("utm_campaign=weekly_memo_resurface_test");
   });
 });

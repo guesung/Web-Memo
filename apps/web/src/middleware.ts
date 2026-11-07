@@ -45,6 +45,7 @@ const NOINDEX_PATHS = [
 	PATHS.favorites,
 	PATHS.admin,
 	PATHS.uninstall,
+	PATHS.unsubscribe,
 ];
 
 /**

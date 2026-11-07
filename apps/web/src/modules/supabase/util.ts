@@ -4,6 +4,7 @@ import type { Database, MemoSupabaseClient } from "@web-memo/shared/types";
 import { AuthService } from "@web-memo/shared/utils/services";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { LOGIN_NEXT_PARAM } from "./nextPath";
 
 /**
  * 비로그인 상태로 접근하면 로그인 페이지로 돌려보낼 경로들.
@@ -65,7 +66,11 @@ export async function updateAuthorization(request: NextRequest) {
 
 	if (!isUserLogin && isNeedAuthPage) {
 		const url = request.nextUrl.clone();
+		// 로그인 뒤 원래 화면(쿼리 포함)으로 돌아올 수 있게 경로를 next에 담고, 원래 쿼리는 비운다.
+		const originalPath = `${request.nextUrl.pathname}${request.nextUrl.search}`;
 		url.pathname = `/${request.nextUrl.pathname.split("/")[1]}${PATHS.login}`;
+		url.search = "";
+		url.searchParams.set(LOGIN_NEXT_PARAM, originalPath);
 		return NextResponse.redirect(url);
 	}
 

@@ -907,6 +907,10 @@ export type Database = {
 				}[];
 			};
 			get_memo_count: { Args: never; Returns: number };
+			get_memo_retention_stats: {
+				Args: { p_granularity: string; p_range: string };
+				Returns: Json;
+			};
 			get_public_stats: { Args: never; Returns: Json };
 			get_user_growth: {
 				Args: { days_ago?: number; include_admin?: boolean };

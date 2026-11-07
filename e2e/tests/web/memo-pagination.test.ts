@@ -15,9 +15,20 @@ const SEEDED_COUNT = 25;
 
 test.describe("메모 무한 스크롤 (Mocked)", () => {
 	let store: MockSupabaseStore;
+	let finishedInitialAuxiliaryRequests: URL[];
 	test.beforeEach(async ({ page }) => {
 		resetMockIds();
 		store = new MockSupabaseStore();
+		finishedInitialAuxiliaryRequests = [];
+		page.on("requestfinished", (request) => {
+			const url = new URL(request.url());
+			if (
+				url.pathname.endsWith("/highlight") ||
+				url.pathname.endsWith("/highlight_memo_source")
+			) {
+				finishedInitialAuxiliaryRequests.push(url);
+			}
+		});
 
 		for (let order = 1; order <= SEEDED_COUNT; order++) {
 			store.addMemo(
@@ -76,6 +87,38 @@ test.describe("메모 무한 스크롤 (Mocked)", () => {
 		page,
 	}) => {
 		await expect(page.locator(".memo-item")).toHaveCount(PAGE_SIZE);
+		await expect
+			.poll(() => {
+				const paths = finishedInitialAuxiliaryRequests.map(
+					(url) => url.pathname,
+				);
+				return [
+					paths.filter((path) => path.endsWith("/highlight")).length,
+					paths.filter((path) => path.endsWith("/highlight_memo_source"))
+						.length,
+				];
+			})
+			.toEqual([1, 1]);
+		const initialHighlightRequest = finishedInitialAuxiliaryRequests.find(
+			(url) => url.pathname.endsWith("/highlight"),
+		);
+		const initialSourceRequest = finishedInitialAuxiliaryRequests.find((url) =>
+			url.pathname.endsWith("/highlight_memo_source"),
+		);
+		expect(initialHighlightRequest?.searchParams.get("page_key")).toMatch(
+			/page-1(?:\D|$)/,
+		);
+		expect(initialHighlightRequest?.searchParams.get("page_key")).toMatch(
+			/page-20(?:\D|$)/,
+		);
+		expect(initialHighlightRequest?.searchParams.get("page_key")).not.toMatch(
+			/page-21(?:\D|$)/,
+		);
+		expect(initialSourceRequest?.searchParams.get("memo_id")).toMatch(/\b1\b/);
+		expect(initialSourceRequest?.searchParams.get("memo_id")).toMatch(/\b20\b/);
+		expect(initialSourceRequest?.searchParams.get("memo_id")).not.toMatch(
+			/\b21\b/,
+		);
 		const auxiliaryRequests: URL[] = [];
 		page.on("request", (request) => {
 			const url = new URL(request.url());

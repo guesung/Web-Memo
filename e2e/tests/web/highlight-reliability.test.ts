@@ -87,14 +87,15 @@ test("같은 URL에 자동 생성된 빈 메모도 그리드와 상세에서 하
 	});
 	const card = page.locator(".memo-item", { hasText: "Auto blank memo" });
 	await expect(card).toBeVisible();
-	await expect(card.getByText("Highlights (1)")).toBeVisible();
+	await expect(
+		card.getByRole("region", { name: "Other highlights on this page" }),
+	).toContainText(highlight.exact_text);
 	await card.click();
 	const dialog = page.getByRole("dialog");
 	await expect(dialog.getByTestId("memo-textarea")).toHaveValue("");
-	await dialog
-		.getByRole("button", { name: "Other highlights on this page (1)" })
-		.click();
-	await expect(dialog.getByText(highlight.exact_text)).toBeVisible();
+	await expect(
+		dialog.getByRole("region", { name: "Other highlights on this page" }),
+	).toContainText(highlight.exact_text);
 });
 
 test("초기 조회를 기다릴 때 빈 상태 대신 목록 스켈레톤을 보여준다.", async ({

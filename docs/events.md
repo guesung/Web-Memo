@@ -6,7 +6,7 @@
 
 - **코드 계약:** [type.ts](../packages/shared/src/modules/analytics/type.ts)의 `TAnalyticsEvent`와 `EVENT_CATEGORY`.
 - **발생 동작:** 아래 호출부 코드가 원천입니다. 타입에 이름이 있어도 실행 경로가 없을 수 있습니다.
-- **문서 검토 기준:** 2026-10-28, master `445ea702`의 81종 명세에 PR #788의 신규 3종을 통합해 총 84개 이름을 기술했습니다. 소개 데모 수동 조작 1종과 웹스토어 리뷰 요청 4종(DB-1264)을 더해 현재 89개입니다.
+- **문서 검토 기준:** 2026-10-28, master `445ea702`의 81종 명세에 PR #788의 신규 3종을 통합해 총 84개 이름을 기술했습니다. 소개 데모 수동 조작 1종과 웹스토어 리뷰 요청 4종(DB-1264), 주간 메일 복귀 1종(DB-1301)을 더해 현재 90개입니다.
   기존 81종 문서화는 제품 동작을 바꾸지 않았으며, 신규 3종은 PR #788의 구현을 기준으로 기술했습니다.
   아래 한계는 AS-IS 기록이며, 오류 판정·개인정보 공백을 바람직한 동작으로 승인하는 것은 아닙니다.
 - **운영 확인과 구분:** 코드·테스트를 읽은 사실은 테스트 실행·배포·운영 수신의 증거가 아닙니다.
@@ -259,6 +259,15 @@
 - **단위·중복:** 컴포넌트 ref의 normalizedUrl+kind당 1회. source·개별 추천 ID는 중복 키가 아니며 리마운트하면 기억이 사라진다.
 - **근거·테스트:** [PastMemoNotice.tsx](../pages/side-panel/src/components/MemoSection/components/MemoForm/components/PastMemoNotice.tsx); 테스트: [PastMemoNotice.test.ts](../pages/side-panel/src/components/MemoSection/components/MemoForm/components/PastMemoNotice.test.ts).
 - **한계·이력:** 실제 읽은 노출이 아니며 관련 목록의 각 항목 노출 수가 아니다. 도입 버전·일자 미확인.
+
+### `email_return`
+
+- **질문:** 주간 메일(report·resurface)을 받은 사람이 실제로 웹으로 돌아오는가. 안 쓴 사람(resurface)과 쓴 사람(report) 중 누가 더 돌아오고, 어느 링크 자리에서 돌아오는가.
+- **발생·제외:** 로그인 상태에서 `utm_source=weekly_report`가 붙은 인증 영역(`(auth)/(sidebar)`) 페이지가 마운트될 때. 로그아웃 상태로 메일 링크를 누른 사람은 로그인 뒤 `next` 복귀 경로로 UTM이 보존돼 같은 자리에서 잡힌다. 이미 로그인한 채 바로 온 사람도 같다. `utm_campaign`이 `weekly_memo_resurface`·`weekly_memo_report`가 아니면(테스트 `*_test` 등) 보내지 않는다.
+- **속성:** `campaign: "weekly_memo_resurface" | "weekly_memo_report"`, `content: string`(`utm_content` — `memo_1`~`memo_3`, `organize`, `view_all`, `footer_setting` 등. 없으면 `"none"`). 메모 ID·이메일·토큰은 넣지 않는다. 분류는 `engagement`다.
+- **단위·중복:** 탭 세션당 `campaign:content` 조합 1회(`sessionStorage` 키 `email_return:<campaign>:<content>`). 저장소 접근이 막히면 중복 방지 없이 보낸다. 며칠 뒤 같은 링크를 다시 누르면 다시 찍히므로 분석은 사용자 고유 수로 본다.
+- **근거·테스트:** [TrackEmailReturn](../apps/web/src/app/[lng]/(auth)/(sidebar)/_components/TrackEmailReturn/index.tsx), 같은 폴더 `index.test.ts`.
+- **한계·이력:** DB-1301. 클릭 자체는 서버 `memo.weekly_report_click` 테이블이 원천이며 GA에 중복하지 않는다. 대조군(holdout)은 메일이 없어 이 이벤트가 생길 수 없으므로 sent vs holdout 비교는 DB 배정 기록 + `memo_open`·새 메모로 한다. 메일 링크의 `?id=` 직접 도착은 카드 클릭이 아니라 `memo_open`에 찍히지 않는다.
 
 ### `past_memo_open`
 

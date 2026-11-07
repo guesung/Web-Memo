@@ -23,8 +23,11 @@ GA4 속성 설정과 대조한 결과입니다. 코드와 이 문서가 어긋�
 
 주간 메모 리포트 메일의 웹 메모 링크에는 UTM이 붙습니다(`weekly-memo-report/template.ts`의 `withUtm`).
 커스텀 이벤트가 아니라 GA4 유입 경로로 집계되므로 "트래픽 획득"에서 소스 `weekly_report` · 매체 `email`로 봅니다.
-캠페인은 정기 `weekly_memo_report` / 테스트 `weekly_memo_report_test`, `utm_content`는 누른 자리
-(`organize` · `view_all` · `footer_web` · `footer_setting` · `empty_open`)입니다. 메모 원문 링크에는 붙이지 않습니다.
+캠페인은 정기 `weekly_memo_report` · 다시 꺼내기 `weekly_memo_resurface` / 테스트는 각각 `_test`, `utm_content`는 누른 자리
+(`organize` · `view_all` · `footer_web` · `footer_setting` · `empty_open` · 다시 꺼내기 메모 카드 `memo_1`~`memo_3`)입니다.
+메모의 **원문 페이지** 링크에는 붙이지 않습니다. 우리 링크는 모두 `weekly-report-click` 엣지 함수를 거쳐
+`memo.weekly_report_click`에 기록된 뒤 302되고, 로그인 뒤 도착은 커스텀 이벤트 `email_return`(campaign·content)으로도 잡습니다.
+로그인 화면을 거치면 UTM이 `next` 안으로 들어가 세션 유입이 `weekly_report`로 안 잡힐 수 있으니 유입 경로보다 `email_return`을 기준으로 봅니다.
 
 ## 홍보 링크 UTM 규약
 

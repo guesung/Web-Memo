@@ -6,7 +6,7 @@ import { createPublicPageMetadata } from "../../../_utils";
 export const metadataKorean = createPublicPageMetadata({
 	language: "ko",
 	path: "/use-cases/news-reading",
-	title: "뉴스 & 아티클 정리 - 읽으면서 메모하기 | 웹 메모",
+	title: "읽기 중 메모하기 - 뉴스 & 아티클 정리 | 웹 메모",
 	description:
 		"뉴스, 블로그, 아티클을 읽으면서 중요한 내용을 바로 메모하세요. 인사이트를 체계적으로 정리하고 나중에 쉽게 찾아볼 수 있습니다.",
 });
@@ -15,7 +15,7 @@ export const createMetadataEnglish = (title: string) =>
 	createPublicPageMetadata({
 		language: "en",
 		path: "/use-cases/news-reading",
-		title,
+		title: `Take Notes While Reading | ${title}`,
 		description:
 			"Take notes while reading news, blogs, and articles. Organize insights systematically and find them easily later.",
 	});

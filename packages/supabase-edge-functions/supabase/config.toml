@@ -263,3 +263,11 @@ verify_jwt = false
 # 이 줄이 없으면 플래그 없이 배포할 때 다시 켜져 크론 호출이 전부 401이 된다.
 [functions.weekly-memo-report]
 verify_jwt = false
+
+# 메일 속 수신 거부·클릭 링크는 로그인 없이 열린다. 인증은 UNSUBSCRIBE_SECRET으로 서명한 토큰이 맡는다.
+# 이 줄이 없으면 플래그 없이 배포할 때 다시 켜져 메일의 링크가 전부 401이 된다.
+[functions.weekly-report-unsubscribe]
+verify_jwt = false
+
+[functions.weekly-report-click]
+verify_jwt = false

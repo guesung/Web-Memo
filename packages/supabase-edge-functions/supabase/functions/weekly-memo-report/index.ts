@@ -6,6 +6,11 @@ import {
   type IFReportMemo,
 } from "./template.ts";
 import {
+  readTokenSecret,
+  signUnsubscribeToken,
+} from "../_shared/reportToken.ts";
+import { readWebUrl } from "../_shared/webUrl.ts";
+import {
   getCompletedWeekRange,
   getCurrentWeekRange,
   getWeekRangeFromStartDate,
@@ -88,6 +93,25 @@ const fetchWeekMemos = async (
   return { memos, total: memos.length };
 };
 
+interface IFUnsubscribeLinks {
+  /** 푸터·List-Unsubscribe 두 번째 항목: 웹 확인 페이지 */
+  pageUrl: string;
+  /** List-Unsubscribe 첫 항목: One-Click POST를 받는 엣지 함수 */
+  oneClickUrl: string;
+}
+
+/**
+ * 사용자별 수신 거부 링크를 만든다. UNSUBSCRIBE_SECRET이 없으면 throw한다 — 거부 수단 없는 메일은 보내지 않는다
+ */
+const buildUnsubscribeLinks = (userId: string): IFUnsubscribeLinks => {
+  const token = encodeURIComponent(signUnsubscribeToken(userId, readTokenSecret()));
+
+  return {
+    pageUrl: `${readWebUrl()}/ko/unsubscribe?token=${token}`,
+    oneClickUrl: `${Deno.env.get("SUPABASE_URL")}/functions/v1/weekly-report-unsubscribe?token=${token}`,
+  };
+};
+
 /**
  * Resend로 리포트 메일을 보낸다. 실패하면 throw한다.
  */
@@ -95,10 +119,12 @@ const sendReportEmail = async ({
   to,
   subject,
   html,
+  unsubscribe,
 }: {
   to: string;
   subject: string;
   html: string;
+  unsubscribe: IFUnsubscribeLinks;
 }) => {
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
 
@@ -120,6 +146,11 @@ const sendReportEmail = async ({
       reply_to: REPLY_TO,
       subject,
       html,
+      // RFC 8058 One-Click: 메일 클라이언트의 "구독 취소" 버튼이 POST로 바로 부른다
+      headers: {
+        "List-Unsubscribe": `<${unsubscribe.oneClickUrl}>, <${unsubscribe.pageUrl}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
     }),
   });
 
@@ -284,6 +315,9 @@ const runRegular = async (options: IFRegularOptions = {}) => {
   let skipped = 0;
   let failed = 0;
 
+  // 수신 거부 링크를 만들 수 없으면 사용자마다 실패 기록을 쌓지 말고 시작 전에 멈춘다
+  readTokenSecret();
+
   const userIds = (await fetchWeekAuthorIds(startUtc, rangeEnd)).filter(
     (userId) => !options.userId || userId === options.userId,
   );
@@ -319,10 +353,19 @@ const runRegular = async (options: IFRegularOptions = {}) => {
       }
 
       try {
+        const unsubscribe = buildUnsubscribeLinks(userId);
+
         await sendReportEmail({
           to: email,
           subject: buildWeeklyReportSubject({ count: total, isTest: false }),
-          html: buildWeeklyReportHtml({ memos, total, rangeLabel, isTest: false }),
+          html: buildWeeklyReportHtml({
+            memos,
+            total,
+            rangeLabel,
+            isTest: false,
+            unsubscribeUrl: unsubscribe.pageUrl,
+          }),
+          unsubscribe,
         });
       } catch (error) {
         console.error("주간 리포트 발송 실패:", userId, error);
@@ -440,10 +483,19 @@ const runTest = async (req: Request) => {
   const { memos, total } = await fetchWeekMemos(userId, startUtc, now);
 
   try {
+    const unsubscribe = buildUnsubscribeLinks(userId);
+
     await sendReportEmail({
       to: email,
       subject: buildWeeklyReportSubject({ count: total, isTest: true }),
-      html: buildWeeklyReportHtml({ memos, total, rangeLabel, isTest: true }),
+      html: buildWeeklyReportHtml({
+        memos,
+        total,
+        rangeLabel,
+        isTest: true,
+        unsubscribeUrl: unsubscribe.pageUrl,
+      }),
+      unsubscribe,
     });
   } catch (error) {
     console.error("테스트 리포트 발송 실패:", userId, error);

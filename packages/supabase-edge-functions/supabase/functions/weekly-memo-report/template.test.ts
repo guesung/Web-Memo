@@ -6,6 +6,8 @@ import {
   withUtm,
 } from "./template";
 
+const UNSUBSCRIBE_URL = "https://www.webmemo.xyz/ko/unsubscribe?token=u.sig";
+
 const memo = (overrides: Partial<IFReportMemo> = {}): IFReportMemo => ({
   title: "제목",
   url: "https://a.com/x",
@@ -92,7 +94,11 @@ describe("buildWeekSummary", () => {
 });
 
 describe("buildWeeklyReportHtml", () => {
-  const base = { rangeLabel: "10월 13일(월) ~ 10월 19일(일)", isTest: false };
+  const base = {
+    rangeLabel: "10월 13일(월) ~ 10월 19일(일)",
+    isTest: false,
+    unsubscribeUrl: UNSUBSCRIBE_URL,
+  };
 
   test("제목·본문·URL을 이스케이프한다", () => {
     const html = buildWeeklyReportHtml({
@@ -192,6 +198,7 @@ describe("buildWeeklyReportHtml", () => {
     const test = buildWeeklyReportHtml({
       ...base,
       isTest: true,
+      unsubscribeUrl: UNSUBSCRIBE_URL,
       total: 1,
       memos: [memo()],
     });
@@ -206,6 +213,7 @@ describe("buildWeeklyReportHtml", () => {
     const html = buildWeeklyReportHtml({
       ...base,
       isTest: true,
+      unsubscribeUrl: UNSUBSCRIBE_URL,
       total: 0,
       memos: [],
     });
@@ -250,12 +258,18 @@ describe("buildWeeklyReportHtml 링크", () => {
     total: 1,
     rangeLabel: "10월 12일(월) ~ 10월 18일(일)",
     isTest: false,
+    unsubscribeUrl: UNSUBSCRIBE_URL,
   });
 
   test("웹 메모 링크는 버튼 위치별 utm_content를 단다", () => {
     for (const content of ["organize", "view_all", "footer_web", "footer_setting"]) {
       expect(html).toContain(`utm_content=${content}"`);
     }
+  });
+
+  test("푸터 수신 거부 링크는 웹 확인 페이지로 가고 UTM이 없다", () => {
+    expect(html).toContain(`href="${UNSUBSCRIBE_URL}"`);
+    expect(html).toContain("수신 거부</a>");
   });
 
   test("메모 원문 링크에는 UTM을 붙이지 않는다", () => {

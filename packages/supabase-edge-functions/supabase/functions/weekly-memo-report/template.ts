@@ -202,7 +202,7 @@ const buildHeaderHtml = ({
   `<td align="right" style="font-size:12px;color:${COLOR.muted};white-space:nowrap;">${escapeHtml(rangeLabel)}</td>` +
   "</tr></table></td></tr>";
 
-const buildFooterHtml = (isTest: boolean) => {
+const buildFooterHtml = (isTest: boolean, unsubscribeUrl: string) => {
   const footerLinkStyle = `color:${COLOR.muted};text-decoration:underline;`;
 
   return (
@@ -214,7 +214,8 @@ const buildFooterHtml = (isTest: boolean) => {
     `<tr><td style="padding:24px 24px 0;font-size:12px;line-height:1.8;color:${COLOR.muted};">` +
     `${isTest ? "테스트로 보낸 메일이에요." : "매주 토요일 오전 10시에 보내 드려요."}<br>` +
     `<a href="${withUtm(MEMOS_URL, { content: "footer_web", isTest })}" style="${footerLinkStyle}">웹에서 보기</a> &nbsp;·&nbsp; ` +
-    `<a href="${withUtm(SETTING_URL, { content: "footer_setting", isTest })}" style="${footerLinkStyle}">리포트 설정 · 수신 거부</a>` +
+    `<a href="${withUtm(SETTING_URL, { content: "footer_setting", isTest })}" style="${footerLinkStyle}">리포트 설정</a> &nbsp;·&nbsp; ` +
+    `<a href="${escapeHtml(unsubscribeUrl)}" style="${footerLinkStyle}">수신 거부</a>` +
     "</td></tr>"
   );
 };
@@ -262,11 +263,14 @@ export const buildWeeklyReportHtml = ({
   total,
   rangeLabel,
   isTest,
+  unsubscribeUrl,
 }: {
   memos: IFReportMemo[];
   total: number;
   rangeLabel: string;
   isTest: boolean;
+  /** 푸터 "수신 거부" 링크. 로그인 없이 열리는 웹 확인 페이지 주소(토큰 포함) */
+  unsubscribeUrl: string;
 }) => {
   const header = buildHeaderHtml({ rangeLabel, isTest });
   const accentLinkStyle = `color:${COLOR.link};text-decoration:none;font-weight:600;`;
@@ -280,7 +284,7 @@ export const buildWeeklyReportHtml = ({
         `<p style="margin:12px 0 0;font-size:15px;line-height:1.8;color:${COLOR.body};">메모를 남기면 토요일 오전 10시에 이 주소로 모아 보내 드려요.</p>` +
         `<p style="margin:12px 0 0;font-size:14px;"><a href="${withUtm(MEMOS_URL, { content: "empty_open", isTest })}" style="${accentLinkStyle}">웹 메모 열기 →</a></p>` +
         "</td></tr>" +
-        buildFooterHtml(true),
+        buildFooterHtml(true, unsubscribeUrl),
     );
   }
 
@@ -301,6 +305,6 @@ export const buildWeeklyReportHtml = ({
       `<tr><td style="padding:32px 24px 12px;font-size:13px;font-weight:700;color:${COLOR.muted};letter-spacing:0.2px;">이번 주 메모 : ${escapeHtml(rangeLabel)}</td></tr>` +
       memos.map(buildMemoItemHtml).join("") +
       `<tr><td style="padding:16px 24px 0;border-top:1px solid ${COLOR.line};font-size:14px;"><a href="${withUtm(MEMOS_URL, { content: "view_all", isTest })}" style="${accentLinkStyle}">웹에서 전체 보기 →</a></td></tr>` +
-      buildFooterHtml(isTest),
+      buildFooterHtml(isTest, unsubscribeUrl),
   );
 };

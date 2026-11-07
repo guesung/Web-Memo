@@ -1890,6 +1890,27 @@
 		"ok": "Delete permanently",
 		"cancel": "Cancel"
 	},
+	"unsubscribe": {
+		"metaTitle": "Unsubscribe from emails | Web Memo",
+		"title": "Stop receiving weekly memo emails?",
+		"description": "Once you press the button, you will no longer get the weekly report or old memo emails. You can turn them back on in settings anytime.",
+		"confirm": "Stop emails",
+		"pending": "Processing",
+		"success": {
+			"title": "Emails are turned off",
+			"description": "You will no longer get the weekly report or old memo emails.",
+			"enableAgain": "Turn back on in settings"
+		},
+		"error": {
+			"title": "We couldn't process this",
+			"description": "Please try again",
+			"retry": "Try again"
+		},
+		"invalidLink": {
+			"title": "This link is not valid",
+			"description": "Please use the unsubscribe link in the email again."
+		}
+	},
 	"uninstall": {
 		"metaTitle": "You removed Web Memo | Web Memo",
 		"title": "You removed Web Memo",

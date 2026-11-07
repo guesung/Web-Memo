@@ -1,6 +1,8 @@
 // 주간 리포트 메일의 수신 거부·클릭 링크가 쓰는 HMAC 토큰.
 // Deno(Edge Function)와 Node(Vitest) 양쪽에서 실행되므로 node:crypto의 동기 HMAC을 쓴다.
+// Buffer는 Deno 전역에 없으므로 node:buffer에서 명시적으로 가져온다(전역으로 쓰면 엣지 런타임에서 ReferenceError).
 // 목적 문자열을 서명 입력 앞에 붙여 도메인을 나눈다 — 수신 거부 토큰으로 클릭 토큰을 위조할 수 없다.
+import { Buffer } from "node:buffer";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 const UNSUBSCRIBE_PURPOSE = "weekly-report-unsubscribe";

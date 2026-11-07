@@ -252,6 +252,44 @@ describe("withUtm", () => {
   });
 });
 
+describe("클릭 경유 링크", () => {
+  const trackLink = (destination: string, position: string) =>
+    `https://p.supabase.co/functions/v1/weekly-report-click?pos=${position}&to=${encodeURIComponent(destination)}`;
+  const tracked = buildWeeklyReportHtml({
+    memos: [memo({ url: "https://a.com/x" })],
+    total: 1,
+    rangeLabel: "10월 12일(월) ~ 10월 18일(일)",
+    isTest: false,
+    unsubscribeUrl: UNSUBSCRIBE_URL,
+    trackLink,
+  });
+
+  test("우리 링크는 모두 클릭 함수를 거치고 목적지에 UTM이 남는다", () => {
+    for (const position of ["organize", "view_all", "footer_web", "footer_setting"]) {
+      expect(tracked).toContain(`weekly-report-click?pos=${position}&amp;to=`);
+    }
+    expect(tracked).toContain(encodeURIComponent("utm_content=view_all"));
+  });
+
+  test("원문 링크와 수신 거부 링크는 경유하지 않는다", () => {
+    expect(tracked).toContain('href="https://a.com/x"');
+    expect(tracked).toContain(`href="${UNSUBSCRIBE_URL}"`);
+  });
+
+  test("trackLink가 없으면(테스트 메일) 목적지로 바로 간다", () => {
+    const direct = buildWeeklyReportHtml({
+      memos: [memo()],
+      total: 1,
+      rangeLabel: "x",
+      isTest: true,
+      unsubscribeUrl: UNSUBSCRIBE_URL,
+    });
+
+    expect(direct).not.toContain("weekly-report-click");
+    expect(direct).toContain("utm_campaign=weekly_memo_report_test");
+  });
+});
+
 describe("buildWeeklyReportHtml 링크", () => {
   const html = buildWeeklyReportHtml({
     memos: [memo({ url: "https://a.com/x" })],

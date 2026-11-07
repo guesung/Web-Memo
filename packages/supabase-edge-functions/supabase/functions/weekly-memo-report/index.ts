@@ -4,10 +4,13 @@ import {
   buildWeeklyReportHtml,
   buildWeeklyReportSubject,
   type IFReportMemo,
+  type TTrackLink,
 } from "./template.ts";
 import {
   readTokenSecret,
+  signClickToken,
   signUnsubscribeToken,
+  type TReportKind,
 } from "../_shared/reportToken.ts";
 import { readWebUrl } from "../_shared/webUrl.ts";
 import {
@@ -111,6 +114,30 @@ const buildUnsubscribeLinks = (userId: string): IFUnsubscribeLinks => {
     oneClickUrl: `${Deno.env.get("SUPABASE_URL")}/functions/v1/weekly-report-unsubscribe?token=${token}`,
   };
 };
+
+/**
+ * 메일 안의 우리 링크를 클릭 기록 함수(weekly-report-click) 경유 URL로 바꾸는 함수를 만든다
+ */
+const createTrackLink =
+  ({
+    userId,
+    weekStart,
+    kind,
+    secret,
+  }: {
+    userId: string;
+    weekStart: string;
+    kind: TReportKind;
+    secret: string;
+  }): TTrackLink =>
+  (destination, position) => {
+    const token = signClickToken(
+      { userId, weekStart, kind, position, destination },
+      secret,
+    );
+
+    return `${Deno.env.get("SUPABASE_URL")}/functions/v1/weekly-report-click?t=${encodeURIComponent(token)}`;
+  };
 
 /**
  * Resend로 리포트 메일을 보낸다. 실패하면 throw한다.
@@ -316,7 +343,7 @@ const runRegular = async (options: IFRegularOptions = {}) => {
   let failed = 0;
 
   // 수신 거부 링크를 만들 수 없으면 사용자마다 실패 기록을 쌓지 말고 시작 전에 멈춘다
-  readTokenSecret();
+  const tokenSecret = readTokenSecret();
 
   const userIds = (await fetchWeekAuthorIds(startUtc, rangeEnd)).filter(
     (userId) => !options.userId || userId === options.userId,
@@ -364,6 +391,12 @@ const runRegular = async (options: IFRegularOptions = {}) => {
             rangeLabel,
             isTest: false,
             unsubscribeUrl: unsubscribe.pageUrl,
+            trackLink: createTrackLink({
+              userId,
+              weekStart,
+              kind: "report",
+              secret: tokenSecret,
+            }),
           }),
           unsubscribe,
         });

@@ -4,27 +4,63 @@ const WEB_URL = "https://webmemo.xyz";
 const MEMOS_URL = `${WEB_URL}/ko/memos`;
 const SETTING_URL = `${WEB_URL}/ko/memos/setting`;
 
+const DEFAULT_CAMPAIGN = "weekly_memo_report";
+
 /**
- * 웹 메모 링크에 UTM을 붙인다
+ * 웹 메모 링크에 UTM을 붙인 URL(이스케이프 전)을 만든다
  * @description 메일에서 들어온 방문을 GA4 유입 경로(소스·매체·캠페인)로 가르기 위해서다.
  * 메모 원문 링크에는 붙이지 않는다 — 우리 GA에 남지 않고 상대 사이트 URL만 바뀐다.
  */
-export const withUtm = (
+export const buildUtmUrl = (
   url: string,
-  { content, isTest }: { content: string; isTest: boolean },
+  {
+    content,
+    isTest,
+    campaign = DEFAULT_CAMPAIGN,
+  }: { content: string; isTest: boolean; campaign?: string },
 ) => {
   const target = new URL(url);
 
   target.searchParams.set("utm_source", "weekly_report");
   target.searchParams.set("utm_medium", "email");
-  target.searchParams.set(
-    "utm_campaign",
-    isTest ? "weekly_memo_report_test" : "weekly_memo_report",
-  );
+  target.searchParams.set("utm_campaign", isTest ? `${campaign}_test` : campaign);
   target.searchParams.set("utm_content", content);
 
-  return escapeHtml(target.toString());
+  return target.toString();
 };
+
+/** href에 넣을 수 있게 UTM을 붙이고 이스케이프한다 */
+export const withUtm = (
+  url: string,
+  options: { content: string; isTest: boolean; campaign?: string },
+) => escapeHtml(buildUtmUrl(url, options));
+
+/**
+ * 클릭 기록을 거치는 링크로 바꾸는 함수. 목적지(UTM 포함, 이스케이프 전)와 링크 위치를 받아 이스케이프 전 URL을 돌려준다
+ * @description 테스트 메일은 기록하지 않으므로 넘기지 않는다(목적지로 바로 간다)
+ */
+export type TTrackLink = (destination: string, position: string) => string;
+
+/**
+ * 메일 안의 "우리 링크" 하나를 만드는 함수. UTM을 붙이고, 추적 함수가 있으면 클릭 경유 URL로 바꾼다
+ */
+export const createLinkBuilder =
+  ({
+    isTest,
+    trackLink,
+    campaign,
+  }: {
+    isTest: boolean;
+    trackLink?: TTrackLink;
+    campaign?: string;
+  }) =>
+  (url: string, content: string) => {
+    const destination = buildUtmUrl(url, { content, isTest, campaign });
+
+    return escapeHtml(trackLink ? trackLink(destination, content) : destination);
+  };
+
+export type TLinkBuilder = ReturnType<typeof createLinkBuilder>;
 
 export interface IFReportMemo {
   title: string;
@@ -202,7 +238,11 @@ const buildHeaderHtml = ({
   `<td align="right" style="font-size:12px;color:${COLOR.muted};white-space:nowrap;">${escapeHtml(rangeLabel)}</td>` +
   "</tr></table></td></tr>";
 
-const buildFooterHtml = (isTest: boolean, unsubscribeUrl: string) => {
+const buildFooterHtml = (
+  isTest: boolean,
+  unsubscribeUrl: string,
+  link: TLinkBuilder,
+) => {
   const footerLinkStyle = `color:${COLOR.muted};text-decoration:underline;`;
 
   return (
@@ -213,8 +253,8 @@ const buildFooterHtml = (isTest: boolean, unsubscribeUrl: string) => {
     "</td></tr></table></td></tr>" +
     `<tr><td style="padding:24px 24px 0;font-size:12px;line-height:1.8;color:${COLOR.muted};">` +
     `${isTest ? "테스트로 보낸 메일이에요." : "매주 토요일 오전 10시에 보내 드려요."}<br>` +
-    `<a href="${withUtm(MEMOS_URL, { content: "footer_web", isTest })}" style="${footerLinkStyle}">웹에서 보기</a> &nbsp;·&nbsp; ` +
-    `<a href="${withUtm(SETTING_URL, { content: "footer_setting", isTest })}" style="${footerLinkStyle}">리포트 설정</a> &nbsp;·&nbsp; ` +
+    `<a href="${link(MEMOS_URL, "footer_web")}" style="${footerLinkStyle}">웹에서 보기</a> &nbsp;·&nbsp; ` +
+    `<a href="${link(SETTING_URL, "footer_setting")}" style="${footerLinkStyle}">리포트 설정</a> &nbsp;·&nbsp; ` +
     `<a href="${escapeHtml(unsubscribeUrl)}" style="${footerLinkStyle}">수신 거부</a>` +
     "</td></tr>"
   );
@@ -264,6 +304,7 @@ export const buildWeeklyReportHtml = ({
   rangeLabel,
   isTest,
   unsubscribeUrl,
+  trackLink,
 }: {
   memos: IFReportMemo[];
   total: number;
@@ -271,7 +312,10 @@ export const buildWeeklyReportHtml = ({
   isTest: boolean;
   /** 푸터 "수신 거부" 링크. 로그인 없이 열리는 웹 확인 페이지 주소(토큰 포함) */
   unsubscribeUrl: string;
+  /** 우리 링크를 클릭 기록 경유 URL로 바꾸는 함수. 테스트 메일은 넘기지 않는다 */
+  trackLink?: TTrackLink;
 }) => {
+  const link = createLinkBuilder({ isTest, trackLink });
   const header = buildHeaderHtml({ rangeLabel, isTest });
   const accentLinkStyle = `color:${COLOR.link};text-decoration:none;font-weight:600;`;
 
@@ -282,9 +326,9 @@ export const buildWeeklyReportHtml = ({
         `<tr><td style="padding:28px 24px 8px;">` +
         `<div style="font-size:24px;line-height:1.4;font-weight:800;letter-spacing:-0.4px;">이번 주엔 아직 메모가 없어요</div>` +
         `<p style="margin:12px 0 0;font-size:15px;line-height:1.8;color:${COLOR.body};">메모를 남기면 토요일 오전 10시에 이 주소로 모아 보내 드려요.</p>` +
-        `<p style="margin:12px 0 0;font-size:14px;"><a href="${withUtm(MEMOS_URL, { content: "empty_open", isTest })}" style="${accentLinkStyle}">웹 메모 열기 →</a></p>` +
+        `<p style="margin:12px 0 0;font-size:14px;"><a href="${link(MEMOS_URL, "empty_open")}" style="${accentLinkStyle}">웹 메모 열기 →</a></p>` +
         "</td></tr>" +
-        buildFooterHtml(true, unsubscribeUrl),
+        buildFooterHtml(true, unsubscribeUrl, link),
     );
   }
 
@@ -300,11 +344,11 @@ export const buildWeeklyReportHtml = ({
       `<table ${TABLE_ATTRS} width="100%"><tr><td style="border:1px solid ${COLOR.line};border-radius:8px;padding:16px 18px;">` +
       `<div style="font-size:15px;font-weight:700;">웹에서 정리하기</div>` +
       `<div style="margin-top:4px;font-size:14px;line-height:1.6;color:${COLOR.muted};">이번 주 메모를 카테고리로 묶거나 다시 다듬어 보세요.</div>` +
-      `<div style="margin-top:8px;font-size:14px;"><a href="${withUtm(MEMOS_URL, { content: "organize", isTest })}" style="${accentLinkStyle}">메모 정리하러 가기 →</a></div>` +
+      `<div style="margin-top:8px;font-size:14px;"><a href="${link(MEMOS_URL, "organize")}" style="${accentLinkStyle}">메모 정리하러 가기 →</a></div>` +
       "</td></tr></table></td></tr>" +
       `<tr><td style="padding:32px 24px 12px;font-size:13px;font-weight:700;color:${COLOR.muted};letter-spacing:0.2px;">이번 주 메모 : ${escapeHtml(rangeLabel)}</td></tr>` +
       memos.map(buildMemoItemHtml).join("") +
-      `<tr><td style="padding:16px 24px 0;border-top:1px solid ${COLOR.line};font-size:14px;"><a href="${withUtm(MEMOS_URL, { content: "view_all", isTest })}" style="${accentLinkStyle}">웹에서 전체 보기 →</a></td></tr>` +
-      buildFooterHtml(isTest, unsubscribeUrl),
+      `<tr><td style="padding:16px 24px 0;border-top:1px solid ${COLOR.line};font-size:14px;"><a href="${link(MEMOS_URL, "view_all")}" style="${accentLinkStyle}">웹에서 전체 보기 →</a></td></tr>` +
+      buildFooterHtml(isTest, unsubscribeUrl, link),
   );
 };

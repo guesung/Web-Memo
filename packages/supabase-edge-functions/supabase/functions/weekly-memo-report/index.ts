@@ -1,9 +1,12 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
+  buildResurfaceHtml,
+  buildResurfaceSubject,
   buildWeeklyReportHtml,
   buildWeeklyReportSubject,
   type IFReportMemo,
+  type IFResurfaceMemo,
   type TTrackLink,
 } from "./template.ts";
 import {
@@ -13,6 +16,15 @@ import {
   type TReportKind,
 } from "../_shared/reportToken.ts";
 import { readWebUrl } from "../_shared/webUrl.ts";
+import {
+  getKstDayStart,
+  isHoldoutUser,
+  orderByWeekSeed,
+  pickResurfaceMemos,
+  RESURFACE_DAILY_CAP,
+  RESURFACE_MIN_AGE_DAYS,
+  takeMostRecentAuthors,
+} from "./resurface.ts";
 import {
   getCompletedWeekRange,
   getCurrentWeekRange,
@@ -196,7 +208,10 @@ const insertLog = async (log: {
   week_start: string;
   email: string;
   is_test: boolean;
-  status: "sent" | "failed";
+  status: "sent" | "failed" | "holdout";
+  kind?: TReportKind;
+  variant?: "sent" | "holdout";
+  memo_ids?: number[];
 }) => {
   const { error } = await supabase.from("weekly_report_log").insert(log);
 
@@ -290,6 +305,75 @@ const fetchSettingsByUserId = async (userIds: string[]) => {
   }
 
   return settings;
+};
+
+interface IFResurfaceCandidateRow {
+  user_id: string;
+  last_memo_at: string | null;
+}
+
+/** 이 사용자의 "예전 메모" 후보(id·작성일만). 본문은 고른 뒤에 읽어 불필요한 전송을 줄인다 */
+const fetchResurfaceCandidateMemos = async (userId: string, cutoff: Date) => {
+  const refs: { id: number; created_at: string }[] = [];
+
+  for (let offset = 0; ; offset += MEMO_PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from("memo")
+      .select("id, created_at")
+      .eq("user_id", userId)
+      .lte("created_at", cutoff.toISOString())
+      .is("deleted_at", null)
+      .not("isWish", "is", true)
+      .filter("memo", "match", "\\S")
+      .order("id", { ascending: true })
+      .range(offset, offset + MEMO_PAGE_SIZE - 1);
+
+    if (error) {
+      throw new Error(`예전 메모 후보 조회 실패: ${error.message}`);
+    }
+
+    for (const row of data ?? []) {
+      if (row.created_at) {
+        refs.push({ id: row.id, created_at: row.created_at });
+      }
+    }
+
+    if (!data || data.length < MEMO_PAGE_SIZE) {
+      return refs;
+    }
+  }
+};
+
+/** 이전에 resurface로 실제 보낸 메모 id. 대조군·실패·테스트 기록은 보낸 게 아니므로 제외한다 */
+const fetchSentResurfaceMemoIds = async (userId: string) => {
+  const { data, error } = await supabase
+    .from("weekly_report_log")
+    .select("memo_ids")
+    .eq("user_id", userId)
+    .eq("kind", "resurface")
+    .eq("variant", "sent")
+    .eq("is_test", false);
+
+  if (error) {
+    throw new Error(`이전 resurface 기록 조회 실패: ${error.message}`);
+  }
+
+  return new Set<number>((data ?? []).flatMap((row) => row.memo_ids ?? []));
+};
+
+const fetchMemosByIds = async (userId: string, ids: number[]) => {
+  const { data, error } = await supabase
+    .from("memo")
+    .select("id, title, url, memo, created_at")
+    .eq("user_id", userId)
+    .in("id", ids)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    throw new Error(`고른 메모 조회 실패: ${error.message}`);
+  }
+
+  return (data ?? []) as IFResurfaceMemo[];
 };
 
 /**
@@ -449,10 +533,334 @@ const runRegular = async (options: IFRegularOptions = {}) => {
   return jsonResponse({ status: "ok", sent, skipped, failed });
 };
 
+/** 연속 발송 실패가 이만큼 쌓이면 그날 실행을 멈춘다 (Resend 일일 한도 등 전면 실패에 계속 두드리지 않는다) */
+const MAX_CONSECUTIVE_FAILURES = 5;
+
+interface IFResurfaceOptions {
+  /** 주어지면 대상을 마지막 본문 메모 작성일 내림차순 상위 N명으로 자르고, RESURFACE_ENABLED와 무관하게 실행한다 */
+  resurfaceLimit?: number;
+  /** 한 사용자에게만 보낼 때의 user_id */
+  userId?: string;
+}
+
+/**
+ * 오늘(KST) 이미 보낸 resurface 수를 빼고 남은 하루 상한
+ */
+const fetchRemainingDailyCap = async (now: Date) => {
+  const { count, error } = await supabase
+    .from("weekly_report_log")
+    .select("id", { count: "exact", head: true })
+    .eq("kind", "resurface")
+    .eq("status", "sent")
+    .eq("is_test", false)
+    .gte("created_at", getKstDayStart(now).toISOString());
+
+  if (error) {
+    throw new Error(`오늘 resurface 발송 수 조회 실패: ${error.message}`);
+  }
+
+  return Math.max(0, RESURFACE_DAILY_CAP - (count ?? 0));
+};
+
+/**
+ * 이번 기간 report 대상이 아닌 resurface 후보. DB 함수가 걸러 user_id·마지막 메모 시각만 돌려준다
+ */
+const fetchResurfaceCandidates = async (
+  weekStart: string,
+  startUtc: Date,
+  endUtc: Date,
+) => {
+  const rows: IFResurfaceCandidateRow[] = [];
+
+  for (let offset = 0; ; offset += MEMO_PAGE_SIZE) {
+    const { data, error } = await supabase
+      .rpc("weekly_resurface_candidates", {
+        p_week_start: weekStart,
+        p_range_start: startUtc.toISOString(),
+        p_range_end: endUtc.toISOString(),
+      })
+      .range(offset, offset + MEMO_PAGE_SIZE - 1);
+
+    if (error) {
+      throw new Error(`resurface 대상 조회 실패: ${error.message}`);
+    }
+
+    rows.push(...((data ?? []) as IFResurfaceCandidateRow[]));
+
+    if (!data || data.length < MEMO_PAGE_SIZE) {
+      return rows;
+    }
+  }
+};
+
+/**
+ * resurface 모드: 이번 기간에 본문 메모를 안 쓴 사람에게 예전 메모를 보낸다. 대조군 절반은 기록만 남긴다
+ * @description 한 사람은 한 주에 한 통이다(report 대상이 아니고, 그 주 sent/holdout 기록이 없어야 한다).
+ * 하루 상한은 발송군에만 센다. 상한에 닿으면 멈추고, 남은 사람은 다음 날 같은 순서로 이어진다.
+ */
+const runResurface = async (options: IFResurfaceOptions = {}) => {
+  const isManual = options.resurfaceLimit !== undefined;
+
+  // 크론 실행은 RESURFACE_ENABLED가 "true"일 때만. 단계적 배포 중엔 사람이 resurfaceLimit로 수동 호출한다
+  if (!isManual && Deno.env.get("RESURFACE_ENABLED") !== "true") {
+    return jsonResponse({ status: "ok", disabled: true, sent: 0, holdout: 0, skipped: 0, failed: 0 });
+  }
+
+  const tokenSecret = readTokenSecret();
+  const now = new Date();
+  const { startUtc, endUtc, weekStart } = getCompletedWeekRange(now);
+  const remainingCap = await fetchRemainingDailyCap(now);
+  let sent = 0;
+  let holdout = 0;
+  let skipped = 0;
+  let failed = 0;
+  let consecutiveFailures = 0;
+
+  if (remainingCap === 0) {
+    return jsonResponse({ status: "ok", capped: true, sent, holdout, skipped, failed });
+  }
+
+  let candidates = (await fetchResurfaceCandidates(weekStart, startUtc, endUtc)).filter(
+    (row) => !options.userId || row.user_id === options.userId,
+  );
+
+  candidates =
+    options.resurfaceLimit !== undefined
+      ? takeMostRecentAuthors(candidates, options.resurfaceLimit)
+      : orderByWeekSeed(candidates, weekStart);
+
+  const settings = await fetchSettingsByUserId(candidates.map((row) => row.user_id));
+  const cutoff = new Date(now.getTime() - RESURFACE_MIN_AGE_DAYS * 24 * 60 * 60 * 1000);
+  let capped = false;
+
+  for (const { user_id: userId } of candidates) {
+    if (sent >= remainingCap) {
+      capped = true;
+      break;
+    }
+
+    if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+      console.error("resurface 연속 발송 실패로 중단:", consecutiveFailures);
+      break;
+    }
+
+    try {
+      const email = await resolveReportEmail(userId, settings.get(userId)?.weekly_report_email);
+
+      if (!email) {
+        skipped++;
+        continue;
+      }
+
+      const [refs, excludeIds] = await Promise.all([
+        fetchResurfaceCandidateMemos(userId, cutoff),
+        fetchSentResurfaceMemoIds(userId),
+      ]);
+      const picked = pickResurfaceMemos({
+        candidates: refs,
+        excludeIds,
+        now,
+        seed: `${userId}:${weekStart}`,
+      });
+
+      // 보낼 메모가 없는 사람은 발송군·대조군 어디에도 넣지 않는다 (두 군의 자격을 같게 유지)
+      if (picked.length === 0) {
+        skipped++;
+        continue;
+      }
+
+      const memoIds = picked.map((memo) => memo.id);
+
+      if (isHoldoutUser(userId)) {
+        const holdoutLogError = await insertLog({
+          user_id: userId,
+          week_start: weekStart,
+          email,
+          is_test: false,
+          status: "holdout",
+          kind: "resurface",
+          variant: "holdout",
+          memo_ids: memoIds,
+        });
+
+        if (holdoutLogError?.code === "23505") {
+          skipped++;
+        } else if (holdoutLogError) {
+          console.error("대조군 기록 저장 실패:", userId, holdoutLogError.message);
+          failed++;
+        } else {
+          holdout++;
+        }
+
+        continue;
+      }
+
+      const memos = await fetchMemosByIds(userId, memoIds);
+
+      if (memos.length === 0) {
+        skipped++;
+        continue;
+      }
+
+      try {
+        const unsubscribe = buildUnsubscribeLinks(userId);
+
+        await sendReportEmail({
+          to: email,
+          subject: buildResurfaceSubject({ memos, now, isTest: false }),
+          html: buildResurfaceHtml({
+            memos,
+            isTest: false,
+            unsubscribeUrl: unsubscribe.pageUrl,
+            trackLink: createTrackLink({
+              userId,
+              weekStart,
+              kind: "resurface",
+              secret: tokenSecret,
+            }),
+          }),
+          unsubscribe,
+        });
+      } catch (error) {
+        console.error("resurface 발송 실패:", userId, error);
+        failed++;
+        consecutiveFailures++;
+
+        const failedLogError = await insertLog({
+          user_id: userId,
+          week_start: weekStart,
+          email,
+          is_test: false,
+          status: "failed",
+          kind: "resurface",
+        });
+
+        if (failedLogError) {
+          console.error("실패 기록 저장 실패:", userId, failedLogError.message);
+        }
+
+        continue;
+      }
+
+      consecutiveFailures = 0;
+
+      const logError = await insertLog({
+        user_id: userId,
+        week_start: weekStart,
+        email,
+        is_test: false,
+        status: "sent",
+        kind: "resurface",
+        variant: "sent",
+        memo_ids: memos.map((memo) => memo.id),
+      });
+
+      if (logError?.code === "23505") {
+        skipped++;
+        continue;
+      }
+
+      if (logError) {
+        // 메일은 나갔지만 기록이 없다. 같은 메모를 다시 보낼 수 있으므로 반드시 드러낸다
+        console.error("resurface 발송 기록 저장 실패:", userId, logError.message);
+      }
+
+      sent++;
+    } catch (error) {
+      console.error("resurface 처리 실패:", userId, error);
+      failed++;
+    }
+  }
+
+  return jsonResponse({ status: "ok", sent, holdout, skipped, failed, capped });
+};
+
+/**
+ * resurface 테스트 발송: 본인의 예전 메모로 `[테스트]` 메일을 보낸다. 이전 발송 기록으로 제외하지 않고, 클릭도 기록하지 않는다
+ */
+const sendResurfaceTest = async ({
+  userId,
+  email,
+  weekStart,
+  now,
+}: {
+  userId: string;
+  email: string;
+  weekStart: string;
+  now: Date;
+}) => {
+  const cutoff = new Date(now.getTime() - RESURFACE_MIN_AGE_DAYS * 24 * 60 * 60 * 1000);
+  const refs = await fetchResurfaceCandidateMemos(userId, cutoff);
+  const picked = pickResurfaceMemos({
+    candidates: refs,
+    excludeIds: new Set(),
+    now,
+    seed: `${userId}:${weekStart}`,
+  });
+
+  if (picked.length === 0) {
+    return jsonResponse({ error: "no_resurface_memos" }, 404);
+  }
+
+  const memos = await fetchMemosByIds(
+    userId,
+    picked.map((memo) => memo.id),
+  );
+
+  try {
+    const unsubscribe = buildUnsubscribeLinks(userId);
+
+    await sendReportEmail({
+      to: email,
+      subject: buildResurfaceSubject({ memos, now, isTest: true }),
+      html: buildResurfaceHtml({
+        memos,
+        isTest: true,
+        unsubscribeUrl: unsubscribe.pageUrl,
+      }),
+      unsubscribe,
+    });
+  } catch (error) {
+    console.error("테스트 resurface 발송 실패:", userId, error);
+
+    const failedLogError = await insertLog({
+      user_id: userId,
+      week_start: weekStart,
+      email,
+      is_test: true,
+      status: "failed",
+      kind: "resurface",
+    });
+
+    if (failedLogError) {
+      console.error("실패 기록 저장 실패:", userId, failedLogError.message);
+    }
+
+    return jsonResponse({ error: "send_failed" }, 502);
+  }
+
+  const logError = await insertLog({
+    user_id: userId,
+    week_start: weekStart,
+    email,
+    is_test: true,
+    status: "sent",
+    kind: "resurface",
+    variant: "sent",
+    memo_ids: memos.map((memo) => memo.id),
+  });
+
+  if (logError) {
+    console.error("테스트 발송 기록 저장 실패:", userId, logError.message);
+  }
+
+  return jsonResponse({ status: "ok", email });
+};
+
 /**
  * 테스트 모드: 로그인한 사용자 본인의 설정 주소로 `[테스트]` 메일을 보낸다
  */
-const runTest = async (req: Request) => {
+const runTest = async (req: Request, kind: TReportKind) => {
   const token = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
 
   if (!token) {
@@ -513,6 +921,10 @@ const runTest = async (req: Request) => {
     return jsonResponse({ error: "invalid_email" }, 400);
   }
 
+  if (kind === "resurface") {
+    return await sendResurfaceTest({ userId, email, weekStart, now });
+  }
+
   const { memos, total } = await fetchWeekMemos(userId, startUtc, now);
 
   try {
@@ -569,7 +981,11 @@ serve(async (req) => {
   }
 
   try {
-    let body: { mode?: string } & IFRegularOptions = {};
+    let body: {
+      mode?: string;
+      kind?: string;
+      resurfaceLimit?: unknown;
+    } & IFRegularOptions = {};
 
     try {
       body = await req.json();
@@ -577,8 +993,12 @@ serve(async (req) => {
       // pg_cron은 '{}'를 보내지만, 본문이 비어 있어도 정기 모드로 본다
     }
 
+    if (body?.kind !== undefined && body.kind !== "report" && body.kind !== "resurface") {
+      return jsonResponse({ error: "invalid_kind" }, 400);
+    }
+
     if (body?.mode === "test") {
-      return await runTest(req);
+      return await runTest(req, body.kind === "resurface" ? "resurface" : "report");
     }
 
     // 정기 모드는 pg_cron만 부른다. JWT 검증을 끄고 배포하므로(verify_jwt = false)
@@ -587,6 +1007,23 @@ serve(async (req) => {
 
     if (!cronSecret || req.headers.get("x-cron-secret") !== cronSecret) {
       return jsonResponse({ status: "unauthorized" }, 401);
+    }
+
+    if (body?.kind === "resurface") {
+      const limit = body.resurfaceLimit;
+
+      if (limit !== undefined && (!Number.isInteger(limit) || (limit as number) < 1)) {
+        return jsonResponse({ error: "invalid_resurface_limit" }, 400);
+      }
+
+      return await runResurface({
+        resurfaceLimit: limit as number | undefined,
+        userId: body.userId,
+      });
+    }
+
+    if (body?.resurfaceLimit !== undefined) {
+      return jsonResponse({ error: "resurface_limit_requires_kind" }, 400);
     }
 
     return await runRegular({ weekStart: body?.weekStart, userId: body?.userId });

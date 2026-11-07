@@ -99,7 +99,9 @@ test.describe("메일 수신 거부 페이지 (Mocked)", () => {
 		await page.goto(`/ko${PATHS.unsubscribe}?token=${TOKEN}`);
 		await page.getByRole("button", { name: "메일 그만 받기" }).click();
 
-		await expect(page.getByRole("alert")).toContainText("처리하지 못했어요");
+		await expect(
+			page.getByRole("alert").filter({ hasText: "처리하지 못했어요" }),
+		).toBeVisible();
 		await expect(page.getByRole("button", { name: "다시 시도" })).toBeEnabled();
 	});
 
@@ -109,7 +111,9 @@ test.describe("메일 수신 거부 페이지 (Mocked)", () => {
 		await page.goto(`/ko${PATHS.unsubscribe}?token=${TOKEN}`);
 		await page.getByRole("button", { name: "메일 그만 받기" }).click();
 
-		await expect(page.getByRole("alert")).toContainText("처리하지 못했어요");
+		await expect(
+			page.getByRole("alert").filter({ hasText: "처리하지 못했어요" }),
+		).toBeVisible();
 	});
 
 	test("토큰이 잘못돼 401이면 잘못된 링크로 보여준다.", async ({ page }) => {

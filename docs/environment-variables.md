@@ -105,7 +105,7 @@
 | `UPSTASH_REDIS_REST_TOKEN` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/modules/ratelimit/rateLimit.ts` |
 | `UPSTASH_REDIS_REST_URL` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/modules/ratelimit/rateLimit.ts` |
 
-### Supabase Edge Function secrets (7개)
+### Supabase Edge Function secrets (9개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
@@ -113,15 +113,17 @@
 | `BLOG_DIGEST_ENABLED` (선택) | 정확히 true일 때만 긱뉴스 새 글 묶음 알림이 켜진다. 없거나 다른 값이면 묶음 알림 분기를 건너뛴다(위시 리마인더는 그대로) | `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/blogDigest.ts` |
 | `CRON_SECRET` | DB 트리거·pg_cron이 부르는 함수의 호출자 확인이 실패해 가입 메일·가입 알림·아티클 리마인더가 401로 끝난다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
 | `RESEND_API_KEY` | 가입 안내 메일이 발송되지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
+| `RESURFACE_ENABLED` (선택) | 정확히 true일 때만 크론이 다시 꺼내기(resurface) 메일을 보낸다. 없거나 다른 값이면 크론 resurface는 건너뛰고, resurfaceLimit를 준 수동 호출만 보낸다 | `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
 | `SLACK_FEEDBACK_WEBHOOK_URL` | 피드백 Slack 알림이 오지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts` |
 | `SLACK_SIGNUP_WEBHOOK_URL` | 신규 가입 Slack 알림이 오지 않는다. 함수가 예외를 던지고 로그에만 남는다 | `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts` |
-| `WEB_URL` | envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 피드백 알림에서 관리자 링크 줄만 빠진다 | `packages/env/src/config.ts`, `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts` |
+| `UNSUBSCRIBE_SECRET` | 주간 메일의 수신 거부·클릭 기록 토큰을 서명하지 못해 report·resurface 발송이 시작 전에 실패하고, 수신 거부·클릭 링크가 모두 홈으로만 간다 | `packages/supabase-edge-functions/supabase/functions/_shared/reportToken.ts` |
+| `WEB_URL` | envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 피드백 알림에서 관리자 링크 줄만 빠진다 | `packages/env/src/config.ts`, `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts`, `packages/supabase-edge-functions/supabase/functions/_shared/webUrl.ts` |
 
 ### `packages/env/.env.{환경}` (1개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
-| `WEB_URL` | envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 피드백 알림에서 관리자 링크 줄만 빠진다 | `packages/env/src/config.ts`, `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts` |
+| `WEB_URL` | envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 피드백 알림에서 관리자 링크 줄만 빠진다 | `packages/env/src/config.ts`, `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts`, `packages/supabase-edge-functions/supabase/functions/_shared/webUrl.ts` |
 
 ### 플랫폼이 주입하는 값 (등록하지 않음)
 
@@ -146,8 +148,8 @@
 | `PROBE_BASE_URL` | 운영 프로브의 대상 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 운영 도메인을 본다. 등록하지 않는다 | `e2e/playwright.probe.config.ts` |
 | `PW_CHROMIUM_ATTACH_TO_OTHER` | Playwright가 넣는 내부 플래그 | `e2e/tests/fixtures/extension.ts` |
 | `SUPABASE_ANON_KEY` | Supabase가 Edge Function에 주입한다. 테스트 발송에서 사용자 토큰을 auth.getUser로 검증할 때만 쓴다 | `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase가 Edge Function에 주입한다. Vercel에는 등록하지 않는다 | `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
-| `SUPABASE_URL` | Supabase가 Edge Function에 주입한다 | `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase가 Edge Function에 주입한다. Vercel에는 등록하지 않는다 | `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-report-click/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-report-unsubscribe/index.ts` |
+| `SUPABASE_URL` | Supabase가 Edge Function에 주입한다 | `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-report-click/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-report-unsubscribe/index.ts` |
 | `VERCEL` | Vercel 빌드와 런타임이 넣는다 | `apps/web/src/modules/slack/afterResponse.ts`, `packages/env/tsup.config.ts` |
 | `VERCEL_ENV` | Vercel이 배포 환경(production, preview, development)을 넣는다 | `apps/web/src/app/api/version/route.ts` |
 | `VERCEL_GIT_COMMIT_REF` | Vercel이 넣는다 | `apps/web/src/app/api/version/route.ts` |

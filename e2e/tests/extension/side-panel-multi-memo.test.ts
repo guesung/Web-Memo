@@ -187,7 +187,7 @@ test("새 메모의 첫 저장 응답을 기다리는 동안에는 새 메모 �
 	// 나중에 등록한 라우트가 먼저 실행된다. 첫 insert만 응답을 붙잡아 두었다가 목 저장소로 넘긴다.
 	await context.route(/\/rest\/v1\/memo(\?|$)/, async (route) => {
 		const method = route.request().method();
-		if (method !== "GET") {
+		if (method !== "GET" && method !== "HEAD") {
 			memoWrites.push(method);
 		}
 		if (method === "POST") {

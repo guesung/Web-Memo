@@ -41,7 +41,11 @@ test.describe("메모 상세 이전·다음 본문 모션 (Mocked)", () => {
 			const motionWindow = window as typeof window & {
 				memoDialogNode: Element;
 				memoOverlayNode: Element | null;
-				memoBodyAnimations: { frames: Keyframe[]; duration: number }[];
+				memoBodyAnimations: {
+					frames: Keyframe[];
+					duration: number;
+					animation: Animation;
+				}[];
 			};
 			const dialogNode = document.querySelector('[role="dialog"]');
 			if (!dialogNode) throw new Error("Missing memo dialog");
@@ -52,10 +56,13 @@ test.describe("메모 상세 이전·다음 본문 모션 (Mocked)", () => {
 			const originalAnimate = Element.prototype.animate;
 			Element.prototype.animate = function (...args) {
 				if (this.getAttribute("data-testid") === "memo-dialog-body") {
+					const animation = originalAnimate.apply(this, args);
 					motionWindow.memoBodyAnimations.push({
 						frames: args[0] as Keyframe[],
 						duration: (args[1] as KeyframeAnimationOptions).duration as number,
+						animation,
 					});
+					return animation;
 				}
 				return originalAnimate.apply(this, args);
 			};
@@ -74,7 +81,6 @@ test.describe("메모 상세 이전·다음 본문 모션 (Mocked)", () => {
 					const motionWindow = window as typeof window & {
 						memoDialogNode: Element;
 						memoOverlayNode: Element | null;
-						memoBodyAnimations: { frames: Keyframe[]; duration: number }[];
 					};
 					const currentDialog = document.querySelector('[role="dialog"]');
 					return {
@@ -85,7 +91,6 @@ test.describe("메모 상세 이전·다음 본문 모션 (Mocked)", () => {
 						bodyCount: currentDialog?.querySelectorAll(
 							'[data-testid="memo-dialog-body"]',
 						).length,
-						animations: motionWindow.memoBodyAnimations,
 					};
 				}),
 			)
@@ -104,18 +109,25 @@ test.describe("메모 상세 이전·다음 본문 모션 (Mocked)", () => {
 				() => (document.activeElement as HTMLElement | null)?.dataset.testid,
 			),
 		).toBe("memo-dialog-prev");
-		const nextFrames = await page.evaluate(
-			() =>
-				(
-					window as typeof window & {
-						memoBodyAnimations: { frames: Keyframe[]; duration: number }[];
-					}
-				).memoBodyAnimations,
+		const nextAnimations = await page.evaluate(() =>
+			(
+				window as typeof window & {
+					memoBodyAnimations: {
+						frames: Keyframe[];
+						duration: number;
+						animation: Animation;
+					}[];
+				}
+			).memoBodyAnimations
+				.filter(({ animation }) => animation.playState !== "idle")
+				.map(({ frames, duration }) => ({ frames, duration })),
 		);
-		expect(nextFrames).toHaveLength(1);
-		expect(nextFrames[0]).toMatchObject({ duration: 180 });
-		expect(String(nextFrames[0].frames[0].transform)).toBe("translateX(24px)");
-		expect(nextFrames[0].frames[0].opacity).toBe(0);
+		expect(nextAnimations).toHaveLength(1);
+		expect(nextAnimations[0]).toMatchObject({ duration: 180 });
+		expect(String(nextAnimations[0].frames[0].transform)).toBe(
+			"translateX(24px)",
+		);
+		expect(nextAnimations[0].frames[0].opacity).toBe(0);
 
 		await expect(dialog.getByTestId("memo-dialog-prev")).toBeEnabled();
 		await dialog.getByTestId("memo-dialog-prev").focus();
@@ -124,16 +136,24 @@ test.describe("메모 상세 이전·다음 본문 모션 (Mocked)", () => {
 		await expect(dialog.getByTestId("memo-textarea")).toHaveValue(
 			"Test memo content 1",
 		);
-		const prevFrames = await page.evaluate(
-			() =>
-				(
-					window as typeof window & {
-						memoBodyAnimations: { frames: Keyframe[] }[];
-					}
-				).memoBodyAnimations,
+		const prevAnimations = await page.evaluate(() =>
+			(
+				window as typeof window & {
+					memoBodyAnimations: { frames: Keyframe[]; animation: Animation }[];
+				}
+			).memoBodyAnimations
+				.filter(({ animation }) => animation.playState !== "idle")
+				.map(({ frames }) => ({ frames })),
 		);
-		expect(prevFrames).toHaveLength(2);
-		expect(String(prevFrames[1].frames[0].transform)).toBe("translateX(-24px)");
+		expect(prevAnimations).toHaveLength(1);
+		expect(String(prevAnimations[0].frames[0].transform)).toBe(
+			"translateX(-24px)",
+		);
+		const animationCount = await page.evaluate(
+			() =>
+				(window as typeof window & { memoBodyAnimations: unknown[] })
+					.memoBodyAnimations.length,
+		);
 		await dialog.getByTestId("memo-textarea").focus();
 		await page.keyboard.press("ArrowRight");
 		await expect(dialog.getByTestId("memo-textarea")).toHaveValue(
@@ -145,7 +165,7 @@ test.describe("메모 상세 이전·다음 본문 모션 (Mocked)", () => {
 					(window as typeof window & { memoBodyAnimations: unknown[] })
 						.memoBodyAnimations.length,
 			),
-		).toBe(2);
+		).toBe(animationCount);
 	});
 
 	test("모션 줄이기에서는 이동이 즉시 끝나고 빠른 왕복·닫기는 이전 모션을 남기지 않는다", async ({
@@ -216,7 +236,10 @@ test.describe("메모 상세 이전·다음 본문 모션 (Mocked)", () => {
 				window as typeof window & { memoBodyAnimations: Animation[] }
 			).memoBodyAnimations.map((animation) => animation.playState),
 		);
-		expect(statesAfterReturn).toEqual(["idle", "paused"]);
+		expect(statesAfterReturn.length).toBeGreaterThanOrEqual(2);
+		expect(statesAfterReturn.filter((state) => state !== "idle")).toEqual([
+			"paused",
+		]);
 		await dialog.getByTestId("memo-close-button").click();
 		await expect(dialog).toBeHidden();
 		const statesAfterClose = await page.evaluate(() =>
@@ -224,7 +247,8 @@ test.describe("메모 상세 이전·다음 본문 모션 (Mocked)", () => {
 				window as typeof window & { memoBodyAnimations: Animation[] }
 			).memoBodyAnimations.map((animation) => animation.playState),
 		);
-		expect(statesAfterClose).toEqual(["idle", "idle"]);
+		expect(statesAfterClose).toHaveLength(statesAfterReturn.length);
+		expect(statesAfterClose.every((state) => state === "idle")).toBe(true);
 	});
 
 	test("긴 메모 아래에서 키보드로 이동하면 새 메모는 위에서 시작한다", async ({

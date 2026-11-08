@@ -341,6 +341,17 @@
 | `weekly_report_enabled` | `boolean` |
 | `weekly_report_email` | `text` |
 
+#### 테이블 `memo.weekly_report_click`
+
+| 컬럼 | 타입 |
+| --- | --- |
+| `id` | `bigint` |
+| `user_id` | `uuid` |
+| `week_start` | `date` |
+| `kind` | `text` |
+| `position` | `text` |
+| `clicked_at` | `timestamp with time zone` |
+
 #### 테이블 `memo.weekly_report_log`
 
 | 컬럼 | 타입 |
@@ -352,8 +363,11 @@
 | `is_test` | `boolean` |
 | `status` | `text` |
 | `created_at` | `timestamp with time zone` |
+| `kind` | `text` |
+| `variant` | `text` |
+| `memo_ids` | `bigint[]` |
 
-#### DB 함수 (44개)
+#### DB 함수 (46개)
 
 | 함수 | 반환 타입 |
 | --- | --- |
@@ -386,6 +400,7 @@
 | `get_highlight_counts(target_urls text[])` | `TABLE(url text, count integer)` |
 | `get_highlight_counts_by_page_keys(target_page_keys text[])` | `TABLE(page_key text, count integer)` |
 | `get_memo_count()` | `integer` |
+| `get_memo_retention_stats(p_range text, p_granularity text)` | `jsonb` |
 | `get_public_stats()` | `json` |
 | `get_user_growth(days_ago integer, include_admin boolean)` | `json` |
 | `has_blog_memo_text(p_text text)` | `boolean` |
@@ -401,6 +416,7 @@
 | `update_profile_updated_at()` | `trigger` |
 | `update_shared_at()` | `trigger` |
 | `weekly_creation_retention(p_week_start date, p_weeks integer)` | `TABLE(cohort_week date, cohort_size integer, week_offset integer, active_users integer)` |
+| `weekly_resurface_candidates(p_week_start date, p_range_start timestamp with time zone, p_range_end timestamp with time zone)` | `TABLE(user_id uuid, last_memo_at timestamp with time zone)` |
 
 ### `public`
 
@@ -1244,11 +1260,13 @@ Supabase가 만들고 관리하는 스키마입니다. 플랫폼 업데이트로
 
 | 함수 | 배포 버전 |
 | --- | --- |
-| `blog-catalog-ingest` | 4 |
-| `daily-article-reminder` | 10 |
-| `get-categories-with-count` | 13 |
-| `kakao-auth` | 9 |
-| `send-feedback` | 7 |
-| `send-signup-slack-notification` | 3 |
-| `send-welcome-email` | 6 |
-| `weekly-memo-report` | 6 |
+| `blog-catalog-ingest` | 8 |
+| `daily-article-reminder` | 14 |
+| `get-categories-with-count` | 17 |
+| `kakao-auth` | 13 |
+| `send-feedback` | 11 |
+| `send-signup-slack-notification` | 7 |
+| `send-welcome-email` | 10 |
+| `weekly-memo-report` | 12 |
+| `weekly-report-click` | 5 |
+| `weekly-report-unsubscribe` | 5 |

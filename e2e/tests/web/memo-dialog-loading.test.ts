@@ -179,7 +179,7 @@ test.describe("메모 상세의 즉시 표시와 백그라운드 조회 (Mocked)
 		}
 	});
 
-	test("하이라이트 조회 중에는 영역이 없고 결과가 있으면 기본 접힘 상태에서 펼친다", async ({
+	test("하이라이트 조회 중에는 영역이 없고 결과가 있으면 인용문을 표시한다", async ({
 		page,
 	}) => {
 		const store = new MockSupabaseStore();
@@ -209,20 +209,13 @@ test.describe("메모 상세의 즉시 표시와 백그라운드 조회 (Mocked)
 			await expect(dialog.getByTestId("memo-textarea")).toHaveValue(
 				"Quoted memo",
 			);
-			await expect(
-				dialog.getByRole("button", {
-					name: "Other highlights on this page (1)",
-				}),
-			).toHaveCount(0);
+			const highlights = dialog.getByRole("region", {
+				name: "Other highlights on this page",
+			});
+			await expect(highlights).toHaveCount(0);
 			await expect(dialog.getByText("Delayed quote")).toHaveCount(0);
 			highlightGate.release();
-			const toggle = dialog.getByRole("button", {
-				name: "Other highlights on this page (1)",
-			});
-			await expect(toggle).toBeVisible();
-			await expect(dialog.getByText("Delayed quote")).toHaveCount(0);
-			await toggle.click();
-			await expect(dialog.getByText("Delayed quote")).toBeVisible();
+			await expect(highlights).toContainText("Delayed quote");
 		} finally {
 			highlightGate.release();
 		}
@@ -246,10 +239,7 @@ test.describe("메모 상세의 즉시 표시와 백그라운드 조회 (Mocked)
 			"No-quote memo",
 		);
 		await expect(
-			dialog.getByRole("button", { name: /Highlights \(\d+\)/ }),
-		).toHaveCount(0);
-		await expect(
-			dialog.getByRole("region", { name: "Highlights" }),
+			dialog.getByRole("region", { name: "Other highlights on this page" }),
 		).toHaveCount(0);
 	});
 

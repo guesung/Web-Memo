@@ -1,6 +1,7 @@
 import { expect, test } from "../fixtures/extension";
 import {
 	cleanupTestData,
+	createCleanupClient,
 	createTestNamespace,
 	fillMemo,
 	findSidePanelPage,
@@ -54,5 +55,52 @@ test.describe("SidePanel - Integration", () => {
 		await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(text);
 		await sidePanelPage.reload();
 		await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(text);
+	});
+
+	test("사이드 패널에서 저장한 메모를 수정하면 같은 메모에 반영되고 새로고침 후에도 유지된다.", async ({
+		page,
+	}) => {
+		const sidePanelPage = await findSidePanelPage(page);
+		const memoQueryResponse = waitForSidePanelMemoQuery({
+			sidePanelPage,
+			url: memoUrl,
+		});
+		await page.goto(memoUrl);
+		await memoQueryResponse;
+
+		const client = await createCleanupClient();
+		const loadMemos = async () => {
+			const { data, error } = await client
+				.from("memo")
+				.select("id, memo")
+				.eq("url", memoUrl);
+			if (error) throw error;
+			return data;
+		};
+
+		const initialText = `Initial memo ${Date.now()}`;
+		await fillMemo(sidePanelPage, initialText);
+		const createdMemos = await loadMemos();
+		expect(createdMemos).toHaveLength(1);
+		const createdId = createdMemos[0].id;
+		expect(createdMemos[0].memo).toBe(initialText);
+
+		const editedText = `${initialText} edited`;
+		const patchResponsePromise = sidePanelPage.waitForResponse(
+			(response) =>
+				response.request().method() === "PATCH" &&
+				new URL(response.url()).pathname.endsWith("/rest/v1/memo"),
+		);
+		await fillMemo(sidePanelPage, editedText);
+		const patchResponse = await patchResponsePromise;
+		expect(new URL(patchResponse.url()).searchParams.get("id")).toBe(
+			`eq.${createdId}`,
+		);
+
+		await sidePanelPage.reload();
+		await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(
+			editedText,
+		);
+		expect(await loadMemos()).toEqual([{ id: createdId, memo: editedText }]);
 	});
 });

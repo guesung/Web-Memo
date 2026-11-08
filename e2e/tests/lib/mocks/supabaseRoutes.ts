@@ -844,6 +844,33 @@ const handleFavoriteDelete = async ({ route, url, store }: HandlerParams) => {
 	});
 };
 
+/** PostgREST의 하이라이트 정렬을 적용한다. order가 없으면 기존 목의 정렬을 유지한다. */
+export const sortHighlights = (highlights: HighlightRow[], url: URL) => {
+	const order = url.searchParams.get("order");
+	const clauses = order
+		? order.split(",").map((clause) => {
+				const [column, direction] = clause.split(".");
+				return { column, ascending: direction === "asc" };
+			})
+		: [
+				{ column: "created_at", ascending: false },
+				{ column: "id", ascending: false },
+			];
+
+	return highlights.sort((left, right) => {
+		for (const { column, ascending } of clauses) {
+			const compared =
+				column === "id"
+					? left.id - right.id
+					: column === "created_at"
+						? left.created_at.localeCompare(right.created_at)
+						: 0;
+			if (compared !== 0) return ascending ? compared : -compared;
+		}
+		return 0;
+	});
+};
+
 /**
  * 하이라이트 목록 조회. URL·색상·검색어 필터를 적용한다.
  * @description 페이지별 조회는 `url=eq.X`, 여러 페이지 묶음 조회는 `url=in.(...)`로 온다.
@@ -863,46 +890,41 @@ const handleHighlightGet = async ({ route, url, store }: HandlerParams) => {
 		)
 		.find((matched): matched is RegExpMatchArray => matched !== null);
 
-	const highlights = store
-		.getAllHighlights()
-		.filter((highlight) => {
-			if (targetId && highlight.id !== Number(targetId)) return false;
-			// 목 기본 소유자는 로그인한 테스트 계정을 뜻한다. 명시한 타인 ID는 그대로 구별한다.
+	const highlights = store.getAllHighlights().filter((highlight) => {
+		if (targetId && highlight.id !== Number(targetId)) return false;
+		// 목 기본 소유자는 로그인한 테스트 계정을 뜻한다. 명시한 타인 ID는 그대로 구별한다.
+		if (
+			userId &&
+			highlight.user_id !== "test-user-id" &&
+			highlight.user_id !== userId
+		)
+			return false;
+		if (targetUrls !== undefined && !targetUrls.includes(highlight.url)) {
+			return false;
+		}
+		if (color && highlight.color !== color) {
+			return false;
+		}
+		if (
+			searchQuery &&
+			!matchesIlike(highlight.exact_text, searchQuery) &&
+			!matchesIlike(highlight.note, searchQuery)
+		) {
+			return false;
+		}
+		if (cursor) {
+			const compared = highlight.created_at.localeCompare(cursor[1]);
 			if (
-				userId &&
-				highlight.user_id !== "test-user-id" &&
-				highlight.user_id !== userId
-			)
-				return false;
-			if (targetUrls !== undefined && !targetUrls.includes(highlight.url)) {
-				return false;
-			}
-			if (color && highlight.color !== color) {
-				return false;
-			}
-			if (
-				searchQuery &&
-				!matchesIlike(highlight.exact_text, searchQuery) &&
-				!matchesIlike(highlight.note, searchQuery)
+				compared > 0 ||
+				(compared === 0 && highlight.id >= Number(cursor[3]))
 			) {
 				return false;
 			}
-			if (cursor) {
-				const compared = highlight.created_at.localeCompare(cursor[1]);
-				if (
-					compared > 0 ||
-					(compared === 0 && highlight.id >= Number(cursor[3]))
-				) {
-					return false;
-				}
-			}
+		}
 
-			return true;
-		})
-		.sort(
-			(left, right) =>
-				right.created_at.localeCompare(left.created_at) || right.id - left.id,
-		);
+		return true;
+	});
+	sortHighlights(highlights, url);
 	const limit = Number(url.searchParams.get("limit") ?? highlights.length);
 
 	await route.fulfill({

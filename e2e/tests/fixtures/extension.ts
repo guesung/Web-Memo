@@ -1,6 +1,9 @@
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { BrowserContext, Page } from "@playwright/test";
 import { test as base, chromium } from "@playwright/test";
+import { SUPABASE } from "@web-memo/shared/constants";
+import { AUTH_STORAGE_STATE_PATH } from "../lib/constants";
 import { supabaseGuardFixture } from "../lib/mocks/supabaseGuard";
 
 process.env.PW_CHROMIUM_ATTACH_TO_OTHER = "1";
@@ -15,11 +18,12 @@ type ExtensionFixture = {
 	context: BrowserContext;
 	/** `*.real.test.ts`가 아니면 목이 처리하지 않은 Supabase 요청을 막고 테스트를 실패시킨다(supabaseGuard.ts). */
 	supabaseGuard: undefined;
+	reuseWebAuth: boolean;
 };
 
 export const test = base.extend<ExtensionFixture>({
-	// biome-ignore lint/correctness/noEmptyPattern: Playwright fixture API requires empty destructuring
-	context: async ({}, use) => {
+	reuseWebAuth: [true, { option: true }],
+	context: async ({ reuseWebAuth }, use) => {
 		const context = await chromium.launchPersistentContext("", {
 			// 확장이 설치 때 여는 `/install` 탭은 언어 경로가 없어 브라우저 언어(Accept-Language)로
 			// 언어가 정해지고, 웹은 그 언어를 `i18next` 쿠키에 쓴다. 개발 기기가 한국어면 이
@@ -36,17 +40,59 @@ export const test = base.extend<ExtensionFixture>({
 			],
 		});
 		const installTabWatcher = watchInstallTab(context);
-
-		await installTabWatcher.waitForFirstInstallTab();
-		await restoreLanguageCookie(context);
-		await use(context);
-		installTabWatcher.stop();
-		await context.close();
+		try {
+			await installTabWatcher.waitForFirstInstallTab();
+			await restoreLanguageCookie(context);
+			if (reuseWebAuth) {
+				await restoreWebAuthCookies(context);
+			}
+			await use(context);
+		} finally {
+			installTabWatcher.stop();
+			await context.close();
+		}
 	},
 	baseURL: BASE_URL,
 	supabaseGuard: [supabaseGuardFixture, { auto: true }],
 });
 export const expect = test.expect;
+
+/** setup 프로젝트가 만든 웹 인증 쿠키만 새 확장 컨텍스트에 복사한다. 프로필과 확장 저장소는 공유하지 않는다. */
+const restoreWebAuthCookies = async (context: BrowserContext) => {
+	const state = JSON.parse(
+		await readFile(AUTH_STORAGE_STATE_PATH, "utf8"),
+	) as Awaited<ReturnType<BrowserContext["storageState"]>>;
+	const authCookieNames = new Set<string>([
+		SUPABASE.authToken,
+		SUPABASE.authCookie.accessToken,
+		SUPABASE.authCookie.refreshToken,
+	]);
+	const authCookies = state.cookies.filter((cookie) =>
+		authCookieNames.has(cookie.name),
+	);
+	const accessToken = authCookies.find(
+		(cookie) => cookie.name === SUPABASE.authCookie.accessToken,
+	);
+	if (
+		!accessToken ||
+		!authCookies.some(
+			(cookie) => cookie.name === SUPABASE.authCookie.refreshToken,
+		)
+	) {
+		throw new Error("웹 인증 상태에 확장 세션 복원용 쿠키가 없습니다.");
+	}
+	const payload = JSON.parse(
+		Buffer.from(accessToken.value.split(".")[1], "base64url").toString("utf8"),
+	) as { exp?: number };
+	if (
+		typeof payload.exp !== "number" ||
+		payload.exp * 1000 <= Date.now() + 5 * 60 * 1000
+	) {
+		throw new Error("웹 인증 토큰이 곧 만료됩니다. setup을 다시 실행하세요.");
+	}
+
+	await context.addCookies(authCookies);
+};
 
 /**
  * 확장이 설치 직후 여는 웹 메모 탭인지 판별한다.

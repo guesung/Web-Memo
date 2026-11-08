@@ -59,6 +59,7 @@ const makeContext = () => {
 		on: vi.fn(),
 		off: vi.fn(),
 		addCookies: vi.fn().mockResolvedValue(undefined),
+		addInitScript: vi.fn().mockResolvedValue(undefined),
 		close: vi.fn().mockResolvedValue(undefined),
 	};
 	return { context, page };
@@ -67,12 +68,16 @@ const makeContext = () => {
 const runFixture = async (
 	reuseWebAuth: boolean | undefined = true,
 	use: (context: BrowserContext) => Promise<void> = vi.fn(),
+	skipInitialGuide: boolean | undefined = true,
 ) => {
 	const fixture = mocks.fixtures.context as (
-		options: { reuseWebAuth: boolean | undefined },
+		options: {
+			reuseWebAuth: boolean | undefined;
+			skipInitialGuide: boolean | undefined;
+		},
 		use: (context: BrowserContext) => Promise<void>,
 	) => Promise<void>;
-	await fixture({ reuseWebAuth }, use);
+	await fixture({ reuseWebAuth, skipInitialGuide }, use);
 };
 
 beforeEach(() => {
@@ -84,9 +89,52 @@ beforeEach(() => {
 	);
 });
 
-afterEach(() => vi.useRealTimers());
+afterEach(() => {
+	vi.useRealTimers();
+	vi.unstubAllGlobals();
+});
 
 describe("extension context fixture", () => {
+	it("registers the guide marker before handing over the context, only for the web origin", async () => {
+		const { context } = makeContext();
+		mocks.launchPersistentContext.mockResolvedValue(context);
+		const use = vi.fn(async () => {
+			expect(context.addInitScript).toHaveBeenCalledOnce();
+		});
+		await runFixture(undefined, use);
+		const [script, argument] = context.addInitScript.mock.calls[0] as [
+			(origin: string) => void,
+			string,
+		];
+		expect(argument).toBe(
+			new URL(process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000")
+				.origin,
+		);
+		const setItem = vi.fn();
+		vi.stubGlobal("localStorage", { setItem });
+		vi.stubGlobal("window", { location: { origin: argument } });
+		script(argument);
+		expect(setItem).toHaveBeenCalledWith("guide", "true");
+		setItem.mockClear();
+		vi.stubGlobal("window", {
+			location: { origin: "chrome-extension://test" },
+		});
+		script(argument);
+		expect(setItem).not.toHaveBeenCalled();
+		vi.stubGlobal("window", { location: { origin: "https://other.example" } });
+		script(argument);
+		expect(setItem).not.toHaveBeenCalled();
+	});
+
+	it("keeps guide opt-out independent of auth reuse", async () => {
+		expect(mocks.fixtures.skipInitialGuide).toEqual([true, { option: true }]);
+		const { context } = makeContext();
+		mocks.launchPersistentContext.mockResolvedValue(context);
+		await runFixture(false, vi.fn(), false);
+		expect(mocks.readFile).not.toHaveBeenCalled();
+		expect(context.addInitScript).not.toHaveBeenCalled();
+	});
+
 	it("defaults to reusing web auth and adds only auth cookies to a fresh context", async () => {
 		const first = makeContext();
 		const second = makeContext();
@@ -122,6 +170,7 @@ describe("extension context fixture", () => {
 		mocks.launchPersistentContext.mockResolvedValue(context);
 		await runFixture(false);
 		expect(mocks.readFile).not.toHaveBeenCalled();
+		expect(context.addInitScript).toHaveBeenCalledOnce();
 		expect(context.addCookies).toHaveBeenCalledTimes(2);
 		expect(context.close).toHaveBeenCalledOnce();
 	});

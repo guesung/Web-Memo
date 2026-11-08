@@ -16,6 +16,7 @@ const pathToExtension = path.join(path.resolve(), "..", "dist");
 
 type ExtensionFixture = {
 	context: BrowserContext;
+	skipInitialGuide: boolean;
 	/** `*.real.test.ts`가 아니면 목이 처리하지 않은 Supabase 요청을 막고 테스트를 실패시킨다(supabaseGuard.ts). */
 	supabaseGuard: undefined;
 	reuseWebAuth: boolean;
@@ -23,7 +24,8 @@ type ExtensionFixture = {
 
 export const test = base.extend<ExtensionFixture>({
 	reuseWebAuth: [true, { option: true }],
-	context: async ({ reuseWebAuth }, use) => {
+	skipInitialGuide: [true, { option: true }],
+	context: async ({ reuseWebAuth, skipInitialGuide }, use) => {
 		const context = await chromium.launchPersistentContext("", {
 			// 확장이 설치 때 여는 `/install` 탭은 언어 경로가 없어 브라우저 언어(Accept-Language)로
 			// 언어가 정해지고, 웹은 그 언어를 `i18next` 쿠키에 쓴다. 개발 기기가 한국어면 이
@@ -45,6 +47,13 @@ export const test = base.extend<ExtensionFixture>({
 			await restoreLanguageCookie(context);
 			if (reuseWebAuth) {
 				await restoreWebAuthCookies(context);
+			}
+			if (skipInitialGuide) {
+				await context.addInitScript((origin) => {
+					if (window.location.origin === origin) {
+						localStorage.setItem("guide", JSON.stringify(true));
+					}
+				}, new URL(BASE_URL).origin);
 			}
 			await use(context);
 		} finally {

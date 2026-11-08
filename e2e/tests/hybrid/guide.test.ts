@@ -6,8 +6,8 @@ import { MockSupabaseStore, setupSupabaseMocks } from "../lib/mocks";
 // 가이드 문구의 단축키는 웹이 브라우저 OS(isMac)로 고른다. 테스트 브라우저는 이 프로세스와 같은 OS에서 돈다.
 const isMacOS = process.platform === "darwin";
 
-// 로그인 화면에서 실제 로그인하는 흐름을 검증하므로 setup 세션을 주입하지 않는다.
-test.use({ reuseWebAuth: false });
+// 로그인과 첫 방문 가이드를 검증하므로 인증 재사용과 가이드 완료 표시를 모두 끈다.
+test.use({ reuseWebAuth: false, skipInitialGuide: false });
 
 async function clearGuideLocalStorage(page: import("@playwright/test").Page) {
 	await page.evaluate(() => {

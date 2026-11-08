@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import { errors, expect } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { getExtensionUrl } from "@web-memo/shared/constants";
 import { getPageKey } from "@web-memo/shared/utils/url";
 
@@ -121,7 +121,7 @@ export const getMemoQueryPageKeys = (requestUrl: string) => {
 };
 
 /**
- * 확장이 있을 때만 뜨는 첫 방문 가이드를 끈다.
+ * 확장이 있을 때만 뜨는 첫 방문 가이드가 이미 보이면 닫는다.
  * @description 웹은 확장 manifest를 받아야 가이드를 시작하므로(apps/web/src/modules/guide/useGuide.ts)
  * 확장 없이 도는 web 프로젝트에는 필요 없다. 가이드가 뜨지 않는 것은 정상이다(완료 표시를 먼저 심었거나
  * manifest가 늦다). 가이드가 떴는데 닫히지 않을 때만 던진다.
@@ -133,15 +133,7 @@ export async function skipGuide(page: Page) {
 	});
 
 	const guidePopover = page.locator("#driver-popover-content");
-	const isGuideVisible = await guidePopover
-		.waitFor({ state: "visible", timeout: 2000 })
-		.then(() => true)
-		.catch((error: unknown) => {
-			if (error instanceof errors.TimeoutError) {
-				return false;
-			}
-			throw error;
-		});
+	const isGuideVisible = await guidePopover.isVisible();
 
 	if (!isGuideVisible) {
 		return;

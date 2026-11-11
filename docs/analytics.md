@@ -79,6 +79,13 @@ https://www.webmemo.xyz/ko/introduce?utm_source=threads&utm_medium=social&utm_ca
 `core_action`은 분류이지 저장 성공·실제 읽음의 증명이 아닙니다. 자동 수집 `page_view`,
 서버 Measurement Protocol, 확장 전송은 경로가 다르므로 명세의 공통 계약과 개별 예외를 함께 봅니다.
 
+**신규 이벤트 (2종)**
+
+| 이름 | 분류 | 속성 |
+| --- | --- | --- |
+| `email_unsubscribe` | `engagement` | `result: "ok" \| "invalidToken" \| "failed"` |
+| `memo_candidate_select` | `core_action` | `action: "select" \| "new"`, `candidate_count: number` |
+
 ## 앱(apps/app)
 
 앱은 공용 `Analytics.ts`를 쓰지 않습니다. 그 모듈이 `@web-memo/env`를 import해 EAS iOS 빌드가
@@ -303,7 +310,7 @@ gtag가 `_ga`에 심은 UUID를 cid로 받아 주는 것은 문서에 없는 동
 
 | 경로 | 막는 곳 |
 | --- | --- |
-| 커스텀 이벤트 48종 | `Analytics.ts`의 전송 게이트 — 메모리와 확장 storage의 `user_id`를 먼저 해석하고, 값이 `ANALYTICS_EXCLUDED_USER_ID`면 보내지 않습니다 |
+| 커스텀 이벤트 50종 | `Analytics.ts`의 전송 게이트 — 메모리와 확장 storage의 `user_id`를 먼저 해석하고, 값이 `ANALYTICS_EXCLUDED_USER_ID`면 보내지 않습니다 |
 | gtag 자동 수집 | 웹 루트 레이아웃 — 브라우저에 남은 표식을 읽어 gtag보다 먼저 `ga-disable-<측정ID>`를 켭니다 |
 
 판정 기준이 `profiles.role`이 아니라 UUID 상수인 이유는 **확장이 role을 모르기 때문입니다.**

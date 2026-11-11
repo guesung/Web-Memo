@@ -4,6 +4,7 @@ import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
 import useTranslation from "@src/modules/i18n/util.client";
 import { PATHS } from "@web-memo/shared/constants";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import { Button, Loading } from "@web-memo/ui";
 import { Check, CircleAlert } from "lucide-react";
 import { useState } from "react";
@@ -32,7 +33,9 @@ const UnsubscribeCard = ({ lng, token }: IFUnsubscribeCardProps) => {
 		if (!token || status === "pending") return;
 
 		setStatus("pending");
-		setStatus(STATUS_BY_RESULT[await requestUnsubscribe(token)]);
+		const result = await requestUnsubscribe(token);
+		analytics.trackEvent({ name: "email_unsubscribe", params: { result } });
+		setStatus(STATUS_BY_RESULT[result]);
 	};
 
 	if (status === "success") {

@@ -43,7 +43,7 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | `report-gsc-demand.yml` | workflow_dispatch | 수동 실행할 때마다 | `pnpm seo:gsc-demand` → `seo/export-gsc-demand.mjs` (조합 페이지 축 판단용 GSC 수요·사이트맵 리포트, 아티팩트만 남김) |
 | `chore-cleanup-unused.yml` | schedule, workflow_dispatch | 매주 토요일 10:00 KST 또는 수동 실행마다 | `cleanup/cleanup-unused-files.mjs` |
 | `chore-e2e-coverage.yml` | schedule, workflow_dispatch | 매주 일요일 10:23 KST 또는 수동 실행마다 | `e2e-coverage/maintain.mjs` |
-| `chore-ga-events.yml` | schedule, workflow_dispatch | 매주 수요일 09:41 KST 또는 수동 실행마다 | `ga-events/maintain.mjs` |
+| `chore-ga-events.yml` | schedule, workflow_dispatch | 매주 수요일 09:41 KST 또는 수동 실행마다. 결과(PR 게시·누락 없음·열린 PR로 건너뜀)는 리포트 채널로, 실패는 CI 채널로 알림 | `ga-events/maintain.mjs` · `ga-events/notification.mjs` |
 | `chore-supabase-inventory.yml` | schedule, workflow_dispatch | 매일 08:00 KST 또는 수동 실행마다 | `supabase/generate-supabase-inventory.mjs` · `supabase/sync-supabase-inventory-pr.mjs` |
 | `chore-sentry-triage.yml` | workflow_dispatch | Sentry 웹훅 수신기가 `SENTRY_AI_TRIAGE_ENABLED=true`일 때 새 이슈·재발마다 디스패치하거나 수동 실행할 때마다 | `sentry/triage-inputs.mjs` · `sentry/triage-guard.mjs` · `sentry/fetch-sentry-context.mjs` · `sentry/check-triage-patch.mjs` · `sentry/build-pr-body.mjs` · `sentry/report-sentry-triage.mjs` |
 | `chore-blog-catalog.yml` | schedule, workflow_dispatch | 매일 03:17 KST 토스·당근 전체 재순회, 15분마다 재개 요청 확인, 3시간마다(:37) 긱뉴스 피드 수집 또는 수동 실행(소스 선택·당근 smoke·dry-run)마다 | `blog-reading/collect.mjs` |

@@ -358,6 +358,14 @@ export type TAnalyticsEvent =
 				page_number: number;
 				sort: TBlogReadingSort;
 			};
+	  }
+	| {
+			name: "email_unsubscribe";
+			params: { result: "ok" | "invalidToken" | "failed" };
+	  }
+	| {
+			name: "memo_candidate_select";
+			params: { action: "select" | "new"; candidate_count: number };
 	  };
 
 /** 이벤트 이름만 추린 유니온. */
@@ -458,4 +466,6 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	blog_article_memo_click: "core_action",
 	blog_sync_resume_request: "core_action",
 	blog_reading_page_move: "engagement",
+	email_unsubscribe: "engagement",
+	memo_candidate_select: "core_action",
 };

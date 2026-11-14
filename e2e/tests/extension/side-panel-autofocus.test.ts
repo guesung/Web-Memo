@@ -24,6 +24,7 @@ test("메모를 불러오면 메모 칸에 커서가 들어간다 (Mocked)", asy
 	});
 	await login(page);
 	await skipGuide(page);
+	await expect(page.locator("#driver-popover-content")).toBeHidden();
 	await page.goto(url);
 	await openSidePanel(page);
 	const sidePanelPage = await findSidePanelPage(page);

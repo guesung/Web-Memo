@@ -239,6 +239,14 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
+      # 모델이 파일을 고친 실행(gap)에서는 이 잡에 리포트 웹훅을 주지 않습니다. 그 결과는 새 러너의 publish 잡이 알립니다.
+      - name: Notify result
+        id: notify_result
+        if: success() && steps.candidate.outputs.status != 'gap'
+        env:
+          SLACK_REPORT_WEBHOOK_URL: ${{ secrets.SLACK_REPORT_WEBHOOK_URL }}
+        run: node .github/scripts/ga-events/maintain.mjs notify
+
       - name: Notify failure
         if: failure()
         env:
@@ -329,6 +337,13 @@ jobs:
           path: ${{ runner.temp }}/ga-events/
           if-no-files-found: ignore
           retention-days: 30
+
+      - name: Notify result
+        id: notify_result
+        if: success()
+        env:
+          SLACK_REPORT_WEBHOOK_URL: ${{ secrets.SLACK_REPORT_WEBHOOK_URL }}
+        run: node .github/scripts/ga-events/maintain.mjs notify
 
       - name: Notify failure
         if: failure()

@@ -57,6 +57,26 @@ describe("GSC CLI", () => {
 		expect(writeFile).toHaveBeenCalledWith("artifacts/seo/gsc-report.md", "# GSC\n");
 	});
 
+	it("다른 주소로 넘기기만 하는 URL은 색인 검사 대상에서 뺀다", async () => {
+		readFile.mockResolvedValue(
+			JSON.stringify({
+				pages: [
+					{ kind: "page", url: "https://www.webmemo.xyz/ko/introduce", agent: "pc" },
+					{
+						kind: "page",
+						url: "https://www.webmemo.xyz/ko",
+						agent: "pc",
+						expectedDestination: "https://www.webmemo.xyz/ko/introduce",
+					},
+				],
+			}),
+		);
+
+		const report = await runGscCheck({ serviceAccountJson: "{}", weekly: false });
+
+		expect(report.inspections.map((inspection) => inspection.url)).toEqual(["https://www.webmemo.xyz/ko/introduce"]);
+	});
+
 	it("Secret이 없으면 skipped 리포트를 저장하고 성공 상태를 유지한다", async () => {
 		const report = await runGscCheck({ serviceAccountJson: "", urls: [], weekly: false });
 

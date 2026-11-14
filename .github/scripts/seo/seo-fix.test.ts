@@ -23,11 +23,11 @@ const finding = (overrides = {}) => ({
 });
 
 describe("selectSeoFixTargets", () => {
-	it("P0·P1이고 허용 경로 안의 코드 위치가 있는 발견만 고른다", () => {
+	it("P0·P1·P2이고 허용 경로 안의 코드 위치가 있는 발견만 고른다", () => {
 		const report = {
 			findings: [
 				finding(),
-				finding({ priority: "P2", title: "메타 길이" }),
+				finding({ priority: "P3", title: "사소한 것" }),
 				finding({ priority: "P0", title: "위치 없음", codeRefs: [] }),
 				finding({ priority: "P0", title: "워크플로만", codeRefs: [".github/workflows/report-seo.yml:3"] }),
 			],
@@ -59,6 +59,23 @@ describe("selectSeoFixTargets", () => {
 		const [target] = selectSeoFixTargets({ report });
 
 		expect(target.codeRefs).toEqual(["apps/web/next.config.ts:4", "packages/ui/src/a.tsx"]);
+	});
+
+	it("건수 제한에 걸리면 P2보다 P0·P1을 먼저 고른다", () => {
+		const report = {
+			findings: [
+				finding({ priority: "P2", title: "내부 링크 부족" }),
+				finding({ priority: "P2", title: "메타 길이" }),
+				finding({ priority: "P1", title: "중복 메타" }),
+				finding({ priority: "P0", title: "noindex" }),
+			],
+		};
+
+		expect(selectSeoFixTargets({ report }).map((target) => target.title)).toEqual([
+			"noindex",
+			"중복 메타",
+			"내부 링크 부족",
+		]);
 	});
 
 	it("한 번에 3건까지만 고른다", () => {

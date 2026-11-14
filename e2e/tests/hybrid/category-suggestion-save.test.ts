@@ -1,52 +1,44 @@
 import { expect, test } from "../fixtures/extension";
 import {
-	cleanupTestData,
-	createCleanupClient,
-	createTestNamespace,
 	fillMemo,
 	findSidePanelPage,
-	getRunId,
 	login,
 	openSidePanel,
 	skipGuide,
 	waitForSidePanelMemoQuery,
 } from "../lib";
+import {
+	createMockCategory,
+	MockSupabaseStore,
+	resetMockIds,
+	setupSupabaseMocks,
+} from "../lib/mocks";
+
+/** Jev가 추천으로 돌려줄 기존 카테고리의 이름. */
+const CATEGORY_NAME = "Jev suggestion";
+/** 테스트가 방문하는 페이지의 뿌리. 실제 사이트로 나가지 않게 빈 문서로 응답한다. */
+const PAGE_URL_ROOT = "https://example.com/category-suggestion";
 
 test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () => {
-	// 실제 Supabase에 쓰므로 afterEach에서 지울 대상을 여기 모아 둔다.
-	let memoUrls: string[] = [];
-	let categoryNames: string[] = [];
-	// 메모 URL·카테고리 이름에 실행·테스트 ID를 새겨, 정리가 다른 실행의 행을 건드리지 않게 한다.
-	let namespace: ReturnType<typeof createTestNamespace>;
 	let categoryId: number;
 
-	test.beforeEach(async ({ page }) => {
-		memoUrls = [];
-		categoryNames = [];
-		namespace = createTestNamespace({
-			runId: getRunId(),
-			testId: test.info().testId,
+	test.beforeEach(async ({ page, context }) => {
+		resetMockIds();
+		const store = new MockSupabaseStore();
+		categoryId = store.addCategory(
+			createMockCategory({ name: CATEGORY_NAME }),
+		).id;
+		await setupSupabaseMocks(page, store);
+		await context.route("https://example.com/**", async (route) => {
+			await route.fulfill({
+				contentType: "text/html",
+				body: "<h1>Category suggestion test</h1>",
+			});
 		});
 
 		await login(page);
 		await skipGuide(page);
-		const categoryName = namespace.categoryName("jev-suggestion");
-		categoryNames.push(categoryName);
-		const client = await createCleanupClient();
-		const { data, error } = await client
-			.from("category")
-			.insert({ name: categoryName })
-			.select("id")
-			.single();
-		if (error || !data) {
-			throw new Error(`테스트 카테고리 생성 실패: ${error?.message}`);
-		}
-		categoryId = data.id;
 		await openSidePanel(page);
-	});
-
-	test.afterEach(async () => {
-		await cleanupTestData({ memoUrls, categoryNames });
 	});
 
 	test("카테고리 추천 중 다른 페이지로 이동하면 새 페이지에 적용하지 않는다", async ({
@@ -54,9 +46,7 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 	}) => {
 		const sidePanelPage = await findSidePanelPage(page);
 
-		const timestamp = Date.now();
-		const pageAUrl = namespace.memoUrl(`a-${timestamp}`);
-		memoUrls.push(pageAUrl);
+		const pageAUrl = `${PAGE_URL_ROOT}/moving-a`;
 		const pageAMemoQuery = waitForSidePanelMemoQuery({
 			sidePanelPage,
 			url: pageAUrl,
@@ -65,7 +55,6 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 		await pageAMemoQuery;
 
 		// 1. 첫 메모 입력에서 시작하는 카테고리 API를 지연 응답하도록 모킹
-		const categoryName = namespace.categoryName("jev-suggestion");
 		let resolveCategoryApi!: () => void;
 		const categoryApiGate = new Promise<void>((resolve) => {
 			resolveCategoryApi = resolve;
@@ -78,7 +67,7 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 				contentType: "application/json",
 				body: JSON.stringify({
 					suggestion: {
-						categoryName,
+						categoryName: CATEGORY_NAME,
 						isExisting: true,
 						existingCategoryId: categoryId,
 						confidence: 0.2,
@@ -89,7 +78,7 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 		});
 
 		// 2. 첫 입력을 저장하면 추천 요청이 한 번 시작된다.
-		const memoText = `Test memo ${timestamp}`;
+		const memoText = "Test memo";
 		const categoryApiRequest = sidePanelPage.waitForRequest(
 			"**/api/openai/category",
 		);
@@ -100,8 +89,7 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 		).toBeVisible();
 
 		// 3. 카테고리 추천 중에 페이지 B로 이동
-		const pageBUrl = namespace.memoUrl(`b-page-${timestamp}`);
-		memoUrls.push(pageBUrl);
+		const pageBUrl = `${PAGE_URL_ROOT}/moving-b`;
 		const pageBMemoQuery = waitForSidePanelMemoQuery({
 			sidePanelPage,
 			url: pageBUrl,
@@ -129,9 +117,7 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 	test("Jev가 고른 기존 카테고리는 수락할 때만 적용한다", async ({ page }) => {
 		const sidePanelPage = await findSidePanelPage(page);
 
-		const timestamp = Date.now();
-		const pageAUrl = namespace.memoUrl(`b-${timestamp}`);
-		memoUrls.push(pageAUrl);
+		const pageAUrl = `${PAGE_URL_ROOT}/accept`;
 		const pageAMemoQuery = waitForSidePanelMemoQuery({
 			sidePanelPage,
 			url: pageAUrl,
@@ -140,7 +126,6 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 		await pageAMemoQuery;
 
 		// 1. 카테고리 API 즉시 응답 모킹 (페이지 전환 없이)
-		const categoryName = namespace.categoryName("jev-suggestion");
 		let categoryRequestCount = 0;
 		await sidePanelPage.route("**/api/openai/category", async (route) => {
 			categoryRequestCount += 1;
@@ -149,7 +134,7 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 				contentType: "application/json",
 				body: JSON.stringify({
 					suggestion: {
-						categoryName,
+						categoryName: CATEGORY_NAME,
 						isExisting: true,
 						existingCategoryId: categoryId,
 						confidence: 0.2,
@@ -160,13 +145,13 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 		});
 
 		// 2. 첫 메모 입력을 저장하면 카테고리 추천이 시작된다.
-		const memoText = `Category badge test ${timestamp}`;
+		const memoText = "Category badge test";
 		await fillMemo(sidePanelPage, memoText);
 
 		// 3. 추천만 표시되고 카테고리는 자동 적용되지 않는다.
 		await expect(
 			sidePanelPage.getByTestId("category-suggestion"),
-		).toContainText(categoryName, {
+		).toContainText(CATEGORY_NAME, {
 			timeout: 5000,
 		});
 		await expect(sidePanelPage.getByTestId("category-badge")).toHaveCount(0);
@@ -174,7 +159,7 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 		// 4. 수락한 뒤에만 배지에 적용한다.
 		await sidePanelPage.getByTestId("category-suggestion-accept").click();
 		await expect(sidePanelPage.getByTestId("category-badge")).toContainText(
-			categoryName,
+			CATEGORY_NAME,
 			{
 				timeout: 5000,
 			},
@@ -190,7 +175,7 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 		await fillMemo(sidePanelPage, `${memoText} updated`);
 		await expect(
 			sidePanelPage.getByTestId("category-suggestion"),
-		).toContainText(categoryName);
+		).toContainText(CATEGORY_NAME);
 		expect(categoryRequestCount).toBe(2);
 	});
 
@@ -199,9 +184,7 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 	}) => {
 		const sidePanelPage = await findSidePanelPage(page);
 
-		const timestamp = Date.now();
-		const pageUrl = namespace.memoUrl(`shortcut-${timestamp}`);
-		memoUrls.push(pageUrl);
+		const pageUrl = `${PAGE_URL_ROOT}/shortcut`;
 		const pageMemoQuery = waitForSidePanelMemoQuery({
 			sidePanelPage,
 			url: pageUrl,
@@ -209,14 +192,13 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 		await page.goto(pageUrl);
 		await pageMemoQuery;
 
-		const categoryName = namespace.categoryName("jev-suggestion");
 		await sidePanelPage.route("**/api/openai/category", async (route) => {
 			await route.fulfill({
 				status: 200,
 				contentType: "application/json",
 				body: JSON.stringify({
 					suggestion: {
-						categoryName,
+						categoryName: CATEGORY_NAME,
 						isExisting: true,
 						existingCategoryId: categoryId,
 						confidence: 0.2,
@@ -226,17 +208,17 @@ test.describe("카테고리 추천 - Jev 제안 수락과 페이지 전환", () 
 			});
 		});
 
-		const memoText = `Shortcut accept test ${timestamp}`;
+		const memoText = "Shortcut accept test";
 		await fillMemo(sidePanelPage, memoText);
 		await expect(
 			sidePanelPage.getByTestId("category-suggestion"),
-		).toContainText(categoryName, { timeout: 5000 });
+		).toContainText(CATEGORY_NAME, { timeout: 5000 });
 
 		// 단축키로 수락해도 textarea에 줄바꿈이 들어가지 않는다.
 		await sidePanelPage.locator("#memo-textarea").focus();
 		await sidePanelPage.keyboard.press("ControlOrMeta+Enter");
 		await expect(sidePanelPage.getByTestId("category-badge")).toContainText(
-			categoryName,
+			CATEGORY_NAME,
 			{ timeout: 5000 },
 		);
 		await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(memoText);

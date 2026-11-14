@@ -12,6 +12,26 @@ const ALLOWED_PROJECT_SLUGS = ["web-memo", "web-memo-web"];
 const DISPATCH_FAILURE_REPLY = "AI 분석을 시작하지 못했습니다";
 
 /**
+ * 이 이슈에 AI 분석 워크플로를 실행할지 판단합니다.
+ *
+ * @description 알림 문구의 "AI 분석 중" 안내가 이 값을 봅니다. 조건은
+ * {@link dispatchSentryTriage}가 실제로 디스패치하는 조건과 같아야 합니다.
+ */
+export const shouldDispatchSentryTriage = (
+	payload: IFSentryIssueWebhookPayload,
+): boolean => {
+	if (!isSentryAiTriageEnabled()) return false;
+
+	const issue = payload.data?.issue;
+	const projectSlug = issue?.project?.slug;
+
+	return (
+		Boolean(issue?.id && /^\d+$/.test(issue.id)) &&
+		Boolean(projectSlug && ALLOWED_PROJECT_SLUGS.includes(projectSlug))
+	);
+};
+
+/**
  * 킬 스위치가 켜져 있을 때만 AI 분석 워크플로를 실행합니다.
  *
  * @description `GITHUB_DISPATCH_TOKEN`은 이 Vercel 서버에서 dispatch 호출에만 쓰이고

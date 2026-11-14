@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { dispatchSentryTriage } from "./dispatchTriage";
+import {
+	dispatchSentryTriage,
+	shouldDispatchSentryTriage,
+} from "./dispatchTriage";
 import type { IFSentryIssueWebhookPayload } from "./request";
 
 const slack = { channel: "C123", ts: "1700000000.000100" };
@@ -130,6 +133,40 @@ describe("dispatchSentryTriage", () => {
 			await expect(
 				dispatchSentryTriage({ payload: buildPayload(), slack }),
 			).resolves.toBeUndefined();
+		});
+	});
+});
+
+describe("shouldDispatchSentryTriage", () => {
+	afterEach(() => {
+		vi.unstubAllEnvs();
+	});
+
+	it("킬 스위치가 꺼져 있으면 false다", () => {
+		expect(shouldDispatchSentryTriage(buildPayload())).toBe(false);
+	});
+
+	describe("켜져 있을 때", () => {
+		beforeEach(() => {
+			vi.stubEnv("SENTRY_AI_TRIAGE_ENABLED", "true");
+		});
+
+		it("허용된 프로젝트의 숫자 issue id면 true다", () => {
+			expect(shouldDispatchSentryTriage(buildPayload())).toBe(true);
+		});
+
+		it("허용되지 않은 프로젝트면 false다", () => {
+			expect(
+				shouldDispatchSentryTriage(
+					buildPayload({ project: { slug: "someone-else" } }),
+				),
+			).toBe(false);
+		});
+
+		it("issue id가 숫자가 아니면 false다", () => {
+			expect(shouldDispatchSentryTriage(buildPayload({ id: "abc" }))).toBe(
+				false,
+			);
 		});
 	});
 });

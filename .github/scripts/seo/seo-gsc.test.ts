@@ -3,6 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import {
 	collectGscReport,
 	compareGscInspections,
+	createGscMarkdown,
+	GSC_SITEMAP_URL,
+	GSC_WRITE_SCOPE,
+	resubmitSitemapForPendingUrls,
 	GSC_READONLY_SCOPE,
 	GSC_SITE_URL,
 	resolveGscMonths,
@@ -242,6 +246,70 @@ describe("GSC 리포트 수집", () => {
 			failures: [{ code: "invalid_credentials" }],
 		});
 		expect(JSON.stringify(report)).not.toContain("private-key");
+	});
+});
+
+describe("sitemap 재제출", () => {
+	const pending = { url: "https://www.webmemo.xyz/en/compare/chrome-memo-extensions", coverageState: "Discovered - currently not indexed" };
+	const indexed = { url: PAGE_URL, coverageState: "Submitted and indexed" };
+
+	it("아직 크롤되지 않은 URL이 없으면 인증도 요청도 하지 않는다", async () => {
+		const tokenExchanger = vi.fn();
+		const fetcher = vi.fn();
+
+		const result = await resubmitSitemapForPendingUrls({ inspections: [indexed], serviceAccount: {}, fetcher, tokenExchanger });
+
+		expect(result.status).toBe("not_needed");
+		expect(tokenExchanger).not.toHaveBeenCalled();
+		expect(fetcher).not.toHaveBeenCalled();
+	});
+
+	it("크롤되지 않은 URL이 있으면 쓰기 scope로 sitemap을 PUT으로 제출한다", async () => {
+		const tokenExchanger = vi.fn(async () => "write-token");
+		const fetcher = vi.fn(async () => new Response(null, { status: 204 }));
+
+		const result = await resubmitSitemapForPendingUrls({ inspections: [indexed, pending], serviceAccount: { id: 1 }, fetcher, tokenExchanger });
+
+		expect(tokenExchanger).toHaveBeenCalledWith({ serviceAccount: { id: 1 }, scope: GSC_WRITE_SCOPE });
+		expect(fetcher).toHaveBeenCalledWith(
+			`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(GSC_SITE_URL)}/sitemaps/${encodeURIComponent(GSC_SITEMAP_URL)}`,
+			{ method: "PUT", headers: { authorization: "Bearer write-token" } },
+		);
+		expect(result).toEqual({ status: "submitted", sitemapUrl: GSC_SITEMAP_URL, urls: [pending.url] });
+	});
+
+	it("권한이 없어 403이 나면 상태 코드만 남긴다", async () => {
+		const result = await resubmitSitemapForPendingUrls({
+			inspections: [pending],
+			serviceAccount: {},
+			fetcher: async () => new Response("민감할 수 있는 원문", { status: 403 }),
+			tokenExchanger: async () => "token",
+		});
+
+		expect(result).toMatchObject({ status: "failed", code: "http_403" });
+		expect(JSON.stringify(result)).not.toContain("원문");
+	});
+
+	it("제출 실패는 색인 검사 리포트를 실패로 만들지 않는다", async () => {
+		const fetcher = vi.fn(async (url) =>
+			url.includes("/sitemaps/")
+				? new Response(null, { status: 403 })
+				: new Response(
+						JSON.stringify({ inspectionResult: { indexStatusResult: { verdict: "NEUTRAL", coverageState: "URL is unknown to Google" } } }),
+						{ status: 200 },
+					),
+		);
+
+		const report = await collectGscReport({
+			serviceAccountJson: "{}",
+			urls: [pending.url],
+			fetcher,
+			tokenExchanger: async () => "token",
+		});
+
+		expect(report.status).toBe("passed");
+		expect(report.sitemapSubmission).toMatchObject({ status: "failed", code: "http_403" });
+		expect(createGscMarkdown(report)).toContain("sitemap 재제출 실패: http_403");
 	});
 });
 

@@ -6,6 +6,16 @@ export const GSC_SITE_URL = "https://www.webmemo.xyz/";
 export const GSC_READONLY_SCOPE =
 	"https://www.googleapis.com/auth/webmasters.readonly";
 
+/** sitemap 제출에 필요한 쓰기 범위입니다. 조회에는 쓰지 않습니다. */
+export const GSC_WRITE_SCOPE = "https://www.googleapis.com/auth/webmasters";
+/** Search Console에 다시 제출하는 sitemap 주소입니다. */
+export const GSC_SITEMAP_URL = "https://www.webmemo.xyz/sitemap.xml";
+/** 구글이 아직 크롤하지 않은 상태입니다. sitemap을 다시 제출해 발견을 재촉할 수 있습니다. */
+const PENDING_COVERAGE_STATES = [
+	"Discovered - currently not indexed",
+	"URL is unknown to Google",
+];
+
 const INSPECTION_ENDPOINT =
 	"https://searchconsole.googleapis.com/v1/urlInspection/index:inspect";
 const FINAL_DATA_LAG_DAYS = 3;
@@ -286,6 +296,12 @@ export const collectGscReport = async ({
 			report.failures.push({ url, ...safeFailure(error) });
 		}
 	}
+	report.sitemapSubmission = await resubmitSitemapForPendingUrls({
+		inspections: report.inspections,
+		serviceAccount,
+		fetcher,
+		tokenExchanger,
+	});
 	if (weekly) {
 		try {
 			report.weekly = await readWeeklyPerformance({
@@ -317,6 +333,39 @@ export const collectGscReport = async ({
 	}
 
 	return report;
+};
+
+/**
+ * 아직 크롤되지 않은 URL이 있으면 sitemap을 Search Console에 다시 제출합니다.
+ * @description "색인 생성 요청" 버튼은 API가 없어 대신 쓰는 공식 경로입니다. 서비스 계정에 속성 쓰기 권한이 없으면 403이 나는데, 이는 색인 검사의 실패가 아니므로 리포트 상태를 바꾸지 않고 결과만 남깁니다.
+ */
+export const resubmitSitemapForPendingUrls = async ({
+	inspections,
+	serviceAccount,
+	fetcher = fetch,
+	tokenExchanger = exchangeServiceAccountToken,
+}) => {
+	const urls = inspections
+		.filter((inspection) => PENDING_COVERAGE_STATES.includes(inspection.coverageState))
+		.map((inspection) => inspection.url);
+	if (urls.length === 0) {
+		return { status: "not_needed", sitemapUrl: GSC_SITEMAP_URL, urls };
+	}
+	try {
+		const accessToken = await tokenExchanger({ serviceAccount, scope: GSC_WRITE_SCOPE });
+		// 성공 응답에 본문이 없어 JSON을 읽는 requestGsc를 쓰지 않습니다.
+		const response = await fetcher(
+			`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(GSC_SITE_URL)}/sitemaps/${encodeURIComponent(GSC_SITEMAP_URL)}`,
+			{ method: "PUT", headers: { authorization: `Bearer ${accessToken}` } },
+		);
+		if (!response.ok) {
+			return { status: "failed", sitemapUrl: GSC_SITEMAP_URL, urls, code: `http_${response.status}` };
+		}
+
+		return { status: "submitted", sitemapUrl: GSC_SITEMAP_URL, urls };
+	} catch {
+		return { status: "failed", sitemapUrl: GSC_SITEMAP_URL, urls, code: "request_failed" };
+	}
 };
 
 const createFailedReport = (now, code, message) => ({
@@ -393,6 +442,12 @@ export const createGscMarkdown = (report) => {
 	}
 	for (const failure of report.failures ?? []) {
 		lines.push(`- 실패: ${failure.url ?? failure.scope} · ${failure.message}`);
+	}
+	if (report.sitemapSubmission?.status === "submitted") {
+		lines.push(`- sitemap 재제출: 아직 크롤되지 않은 URL ${report.sitemapSubmission.urls.length}건이 있어 다시 제출함`);
+	}
+	if (report.sitemapSubmission?.status === "failed") {
+		lines.push(`- sitemap 재제출 실패: ${report.sitemapSubmission.code} (서비스 계정의 Search Console 권한이 전체 권한인지 확인)`);
 	}
 	for (const change of report.indexChanges?.dropped ?? []) {
 		lines.push(`- 색인 이탈: ${change.url} (${change.previousVerdict} → ${change.verdict ?? "UNKNOWN"})`);

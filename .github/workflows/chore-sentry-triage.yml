@@ -199,7 +199,7 @@ jobs:
             - tests_added: 추가한 테스트 파일 경로 목록
           claude_args: |
             --model claude-sonnet-5
-            --max-turns 40
+            --max-turns 50
             --allowedTools Read,Grep,Glob,Edit,Write
             --json-schema '{"type":"object","properties":{"summary":{"type":"string"},"hypothesis":{"type":"string"},"evidence":{"type":"array","items":{"type":"string"}},"uncertainty":{"type":"string"},"confidence":{"type":"string","enum":["high","medium","low"]},"fix_applied":{"type":"boolean"},"fix_summary":{"type":"string"},"tests_added":{"type":"array","items":{"type":"string"}}},"required":["summary","hypothesis","evidence","uncertainty","confidence","fix_applied","fix_summary","tests_added"]}'
 

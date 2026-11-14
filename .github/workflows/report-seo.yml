@@ -280,7 +280,7 @@ jobs:
             - 고칠 수 없거나 사람의 결정이 필요한 발견은 파일을 바꾸지 말고 이유만 답하세요.
           claude_args: >-
             --model claude-sonnet-5
-            --max-turns 40
+            --max-turns 50
             --allowedTools "Read,Grep,Glob,Edit"
 
       # 파일을 바꾸지 않은 날에도 Claude가 왜 그랬는지 Step Summary에서 볼 수 있게 합니다.

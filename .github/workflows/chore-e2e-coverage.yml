@@ -91,7 +91,7 @@ jobs:
             If a flow requires a *.real.test.ts test, mark that assessment insufficient and explain why. Continue assessing all other flows.
           claude_args: >-
             --model claude-sonnet-4-6
-            --max-turns 20
+            --max-turns 50
             --allowedTools "Read,Grep,Glob"
             --json-schema '{"type":"object","additionalProperties":false,"properties":{"assessments":{"type":"array","items":{"type":"object","additionalProperties":false,"properties":{"flowId":{"type":"string"},"status":{"type":"string","enum":["covered","gap","insufficient"]},"reason":{"type":"string"},"productRefs":{"type":"array","items":{"type":"string"}},"existingTestRefs":{"type":"array","items":{"type":"string"}}},"required":["flowId","status","reason","productRefs","existingTestRefs"]}},"status":{"type":"string","enum":["gap","none","insufficient"]},"scenarioId":{"type":"string"},"reason":{"type":"string"},"productRefs":{"type":"array","items":{"type":"string"}},"existingTestRefs":{"type":"array","items":{"type":"string"}},"missingAction":{"type":"string"},"expectedResult":{"type":"string"},"testFile":{"type":"string"},"project":{"type":"string"}},"required":["assessments","status","scenarioId","reason","productRefs","existingTestRefs","missingAction","expectedResult","testFile","project"]}'
 
@@ -116,7 +116,7 @@ jobs:
             Do not edit product code, configuration, workflows, or existing tests. Do not commit or publish anything.
           claude_args: >-
             --model claude-sonnet-4-6
-            --max-turns 20
+            --max-turns 50
             --allowedTools "Read,Grep,Glob,Edit,Write"
 
       - name: Check generated changes
@@ -186,7 +186,7 @@ jobs:
             Keep the test mocked using e2e/tests/lib/mocks/. Do not rename it to *.real.test.ts or read or write real Supabase data beyond authentication.
           claude_args: >-
             --model claude-sonnet-4-6
-            --max-turns 20
+            --max-turns 50
             --allowedTools "Read,Grep,Glob,Edit,Write"
 
       - name: Check corrected changes

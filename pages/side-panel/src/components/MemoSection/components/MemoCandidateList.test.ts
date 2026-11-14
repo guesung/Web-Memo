@@ -14,6 +14,10 @@ vi.mock("@web-memo/ui", () => ({
 	Button: (props: Record<string, unknown>) =>
 		createElement("button", { type: "button", ...props }),
 }));
+// 컴포넌트가 이벤트를 보내면서 analytics를 불러옵니다. 실제 모듈은 환경 변수가 없는 테스트에서 불러오는 순간 실패합니다.
+vi.mock("@web-memo/shared/modules/analytics", () => ({
+	analytics: { trackEvent: vi.fn() },
+}));
 vi.mock("@src/utils", () => ({
 	getOfflineControlDisabledReason: () => undefined,
 }));

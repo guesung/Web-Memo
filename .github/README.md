@@ -69,7 +69,7 @@ dispatch해도 스크립트는 master의 것이 돕니다.
 | --- | --- |
 | `shared/` | 두 도메인 이상이 쓰는 모듈 (`run-context`·`slack-api`·`slack-blocks`·`http`·`jwt`·`google-auth`·`repo-versions`) |
 | `deploy/` | CI 빌드 판정, Slack 빌드·배포·릴리스 알림, 다음 버전 PR, PR 확장 다운로드 댓글, 확장 웹스토어 업로드, 스토어 버전 |
-| `seo/` | SEO 점검·GSC·Sheets 적재·AI 리포트·P0·P1 자동 수정 PR |
+| `seo/` | SEO 점검·GSC·Sheets 적재·AI 리포트·P0·P1·P2 자동 수정 PR |
 | `ga/` | GA4 일간·주간 리포트, 기능 사용량 측정 |
 | `env/` | 환경 변수 매니페스트 검사와 등록 현황 감사 |
 | `conventions/` | 코드 컨벤션 원장(`docs/code-conventions.yaml`) 형식 검사 |

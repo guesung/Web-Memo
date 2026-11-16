@@ -138,14 +138,20 @@ test("손상된 큐 원본은 덮어쓰지 않고 실패를 표시하며 복구 
 				if (
 					args[0] === "offlineMemoQueue" &&
 					sessionStorage.getItem("hold-queue-read")
-				)
+				) {
+					sessionStorage.setItem("held-queue-read", "true");
 					throw new Error("hold queue lookup until retry");
+				}
 				return originalGet(...args);
 			},
 		});
 		sessionStorage.setItem("hold-queue-read", "true");
 		await chrome.storage.local.set({ offlineMemoQueue: [] });
 	});
+	// 저장소 변경이 부른 재조회가 막힌 것을 본 뒤에 푼다. 먼저 풀면 재조회가 성공해 실패 표시 없이 자동 저장된다.
+	await expect
+		.poll(() => panel.evaluate(() => sessionStorage.getItem("held-queue-read")))
+		.toBe("true");
 	await panel.evaluate(() => sessionStorage.removeItem("hold-queue-read"));
 	await panel
 		.locator('[data-save-status="failed"]')

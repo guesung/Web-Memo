@@ -1,8 +1,13 @@
 // @ts-nocheck — .mjs 스크립트를 직접 import 하는 테스트라 타입 선언이 없습니다.
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { buildDailyReportPayload } from "./daily-report-blocks.mjs";
-import { CORE_EVENTS, summarizeGoogleSearchVisitors } from "./ga4-data.mjs";
+import {
+	CORE_EVENTS,
+	fetchWritingMinutes,
+	summarizeGoogleSearchVisitors,
+	summarizeWritingMinutes,
+} from "./ga4-data.mjs";
 
 const baseReport = {
 	targetDate: "2026-10-31",
@@ -85,6 +90,48 @@ describe("buildDailyReportPayload 핵심 이벤트 블록", () => {
 	});
 });
 
+describe("buildDailyReportPayload 퍼널 메모 작성 줄", () => {
+	const buildFunnelText = (writingMinutes) =>
+		blockTexts(
+			buildDailyReportPayload({
+				report: {
+					...baseReport,
+					events: { memo_write: eventStat([2, 1.9], [3148, 2000]) },
+					writingMinutes,
+				},
+				runUrl: null,
+			}),
+		).find((text) => text.startsWith("*퍼널*"));
+
+	it("건수 대신 사람 수와 작성한 분을 적고 증감률은 사람 수 기준이다", () => {
+		const funnel = buildFunnelText({ status: "ok", yesterday: 163, average7: 88 });
+
+		expect(funnel).toContain(
+			"메모 작성  *2명 · 163분 작성*  (7일 평균 1.9명 · 88.0분 · +5%)",
+		);
+		expect(funnel).not.toContain("3,148건");
+	});
+
+	it("분 조회가 실패하면 사람 수만 적는다", () => {
+		const funnel = buildFunnelText({ status: "failed" });
+
+		expect(funnel).toContain("메모 작성  *2명*  (7일 평균 1.9명 · +5%)");
+	});
+
+	it("분 데이터가 없으면 사람 수만 적는다", () => {
+		expect(buildFunnelText(undefined)).toContain(
+			"메모 작성  *2명*  (7일 평균 1.9명 · +5%)",
+		);
+	});
+
+	it("다른 퍼널 줄은 사람 수와 건수를 그대로 적는다", () => {
+		const funnel = buildFunnelText({ status: "ok", yesterday: 163, average7: 88 });
+
+		expect(funnel).toContain("사이드 패널 열기  *0명 · 0건*");
+		expect(funnel).toContain("신규 메모 작성  *0명 · 0건*");
+	});
+});
+
 describe("summarizeGoogleSearchVisitors", () => {
 	it("어제 값과 직전 7일 평균을 분모 7로 계산한다", () => {
 		const rows = [
@@ -106,6 +153,87 @@ describe("summarizeGoogleSearchVisitors", () => {
 			yesterday: 0,
 			average7: 0,
 		});
+	});
+});
+
+describe("summarizeWritingMinutes", () => {
+	it("저장이 있던 분(행)의 어제 개수와 직전 7일 평균을 분모 7로 센다", () => {
+		const rows = [
+			{ dimensions: ["202610311900"], metrics: [19] },
+			{ dimensions: ["202610311901"], metrics: [57] },
+			{ dimensions: ["202610311902"], metrics: [1] },
+			{ dimensions: ["202610301200"], metrics: [3] },
+			{ dimensions: ["202610241200"], metrics: [3] },
+			{ dimensions: ["202610241201"], metrics: [3] },
+			{ dimensions: ["202610241202"], metrics: [3] },
+			{ dimensions: ["202610241203"], metrics: [3] },
+			{ dimensions: ["202610241204"], metrics: [3] },
+			{ dimensions: ["202610241205"], metrics: [3] },
+			// 범위 밖 날짜는 평균에 들어가지 않는다
+			{ dimensions: ["202610231200"], metrics: [100] },
+		];
+
+		expect(summarizeWritingMinutes(rows, "2026-10-31")).toEqual({
+			yesterday: 3,
+			average7: 1,
+		});
+	});
+
+	it("행이 없으면 0분이다", () => {
+		expect(summarizeWritingMinutes([], "2026-10-31")).toEqual({
+			yesterday: 0,
+			average7: 0,
+		});
+	});
+});
+
+describe("fetchWritingMinutes", () => {
+	afterEach(() => {
+		vi.unstubAllGlobals();
+		vi.restoreAllMocks();
+	});
+
+	it("memo_write·운영 필터·8일·dateHourMinute·limit 15,000으로 조회해 분을 센다", async () => {
+		const fetchMock = vi.fn().mockResolvedValue({
+			ok: true,
+			json: async () => ({
+				rows: [
+					{ dimensionValues: [{ value: "202610311900" }], metricValues: [{ value: "5" }] },
+					{ dimensionValues: [{ value: "202610311901" }], metricValues: [{ value: "1" }] },
+				],
+			}),
+		});
+		vi.stubGlobal("fetch", fetchMock);
+
+		const result = await fetchWritingMinutes({
+			accessToken: "token",
+			propertyId: "1",
+			targetDate: "2026-10-31",
+		});
+
+		expect(result).toEqual({ status: "ok", yesterday: 2, average7: 0 });
+
+		const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+
+		expect(body.dateRanges).toEqual([{ startDate: "2026-10-24", endDate: "2026-10-31" }]);
+		expect(body.dimensions).toEqual([{ name: "dateHourMinute" }]);
+		expect(body.limit).toBe(15000);
+		expect(body.dimensionFilter.andGroup.expressions).toEqual([
+			{ filter: { fieldName: "eventName", stringFilter: { matchType: "EXACT", value: "memo_write" } } },
+			{ filter: { fieldName: "customEvent:build_env", stringFilter: { matchType: "EXACT", value: "production" } } },
+		]);
+	});
+
+	it("조회가 실패하면 throw 하지 않고 failed 를 돌려준다", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockResolvedValue({ ok: false, status: 500, text: async () => "boom" }),
+		);
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+
+		await expect(
+			fetchWritingMinutes({ accessToken: "token", propertyId: "1", targetDate: "2026-10-31" }),
+		).resolves.toEqual({ status: "failed" });
 	});
 });
 

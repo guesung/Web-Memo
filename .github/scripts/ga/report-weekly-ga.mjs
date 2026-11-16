@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * 지난주 한 주의 GA4 사용 현황을 집계해 Slack에 게시하고 구글 시트에 쌓습니다.
- * .github/workflows/report-ga-weekly.yml 이 매주 월요일 아침(서울 08:00) 호출합니다.
+ * 직전 토~금 한 주의 GA4 사용 현황을 집계해 Slack에 게시하고 구글 시트에 쌓습니다.
+ * .github/workflows/report-ga-weekly.yml 이 매주 토요일 아침(서울 08:00) 호출합니다.
  *
  * 데일리 리포트와 목적이 다릅니다. 그쪽은 "로깅이 살아 있는가"를 감시하고,
  * 이쪽은 "사람들이 무엇을 쓰고 있고 다음에 무엇을 만들어야 하는가"에 답합니다.
  * 두 질문을 한 메시지에 섞지 않으려고 리포트를 따로 뺐습니다.
  *
  * 두 가지로 돕니다.
- * - 정기 모드(WEEK_FROM·WEEK_TO 없음): 지난주를 Slack 에 게시하고 시트에 씁니다.
+ * - 정기 모드(WEEK_FROM·WEEK_TO 없음): 직전 토~금을 Slack 에 게시하고 시트에 씁니다.
  * - 백필 모드(WEEK_FROM·WEEK_TO 모두 있음): 지난 주들을 시트에만 씁니다. Slack 에
  *   옛 주 리포트가 수십 개 쏟아지면 채널이 읽히지 않으므로 게시하지 않습니다.
  *
@@ -27,11 +27,11 @@
  *   GA_SHEET_ID=<스프레드시트 URL 의 /d/ 와 /edit 사이> \
  *   node .github/scripts/ga/report-weekly-ga.mjs
  *
- * 백필 (월요일 YYYY-MM-DD, to 는 지난주 월요일 이하. GA_SHEET_ID 필수):
+ * 백필 (토요일 YYYY-MM-DD, to 는 직전 주 토요일 이하. GA_SHEET_ID 필수):
  *   GA4_PROPERTY_ID=471860782 \
  *   GA4_SERVICE_ACCOUNT_JSON="$(cat ~/ga4-service-account.json)" \
  *   GA_SHEET_ID=<스프레드시트 ID> \
- *   WEEK_FROM=2025-01-06 WEEK_TO=2026-09-14 \
+ *   WEEK_FROM=2025-10-18 WEEK_TO=2026-11-07 \
  *   node .github/scripts/ga/report-weekly-ga.mjs
  */
 

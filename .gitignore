@@ -87,3 +87,4 @@ android
 
 # SEO 모니터가 로컬·CI에서 생성하는 일회성 리포트
 /artifacts/seo/
+/artifacts/ga/

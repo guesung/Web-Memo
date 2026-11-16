@@ -12,7 +12,12 @@
  * - 백필 모드(WEEK_FROM·WEEK_TO 모두 있음): 지난 주들을 시트에만 씁니다. Slack 에
  *   옛 주 리포트가 수십 개 쏟아지면 채널이 읽히지 않으므로 게시하지 않습니다.
  *
- * 로컬 실행 (SLACK_REPORT_WEBHOOK_URL 없이 돌리면 보낼 페이로드를 stdout에 찍고,
+ * Slack 에는 봇(SLACK_BOT_TOKEN + GA_REPORT_CHANNEL_ID)으로 먼저 올리고, 실패하면 웹훅
+ * (SLACK_REPORT_WEBHOOK_URL)으로 내려갑니다. 봇으로 올라갔고 GA_INSIGHT_CONTEXT_PATH 가
+ * 있으면 조회한 수치·최근 8주 추이(시트 요약 탭)·메시지 ts 를 그 경로에 JSON 으로 남깁니다.
+ * 워크플로의 AI 인사이트 단계가 이 파일을 읽고 같은 스레드에 댓글을 답니다.
+ *
+ * 로컬 실행 (Slack 값 없이 돌리면 보낼 페이로드를 stdout에 찍고,
  * GA_SHEET_ID 없이 돌리면 시트 쓰기를 건너뜁니다):
  *   GA4_PROPERTY_ID=471860782 \
  *   GA4_SERVICE_ACCOUNT_JSON="$(cat ~/ga4-service-account.json)" \
@@ -40,6 +45,7 @@ import {
 	buildSummaryRow,
 	EVENT_TAB,
 	formatSeoulMinute,
+	readTabRows,
 	SHEETS_SCOPE,
 	SUMMARY_TAB,
 	upsertTab,
@@ -50,44 +56,126 @@ import {
 	resolveRunPlan,
 	shouldFetchEvents,
 } from "./ga4-weekly.mjs";
+import {
+	buildWeeklyInsightContext,
+	pickRecentWeeks,
+	writeInsightContext,
+	writeInsightOutputs,
+} from "./insight-context.mjs";
 import { fetchMemoRetention } from "./memo-retention.mjs";
+import { publishGaReport } from "./report-delivery.mjs";
 import { exchangeServiceAccountToken } from "../shared/google-auth.mjs";
 import { requireEnv } from "../shared/run-context.mjs";
-import { postToSlack } from "../shared/slack-blocks.mjs";
 import { buildWeeklyReportPayload } from "./weekly-report-blocks.mjs";
 
 const SUMMARY_KEY_COLUMNS = ["주 시작일"];
 const EVENT_KEY_COLUMNS = ["주 시작일", "이벤트"];
 
-/** 기존 Slack 게시. 웹훅이 없으면 페이로드를 찍고 건너뜁니다. */
-const postReportToSlack = async ({ report, retention, spreadsheetId }) => {
+/** 로컬 실행에는 런이 없어 null 입니다. */
+const readRunUrl = () => {
 	const repository = process.env.GITHUB_REPOSITORY;
 	const runId = process.env.GITHUB_RUN_ID;
 	const serverUrl = process.env.GITHUB_SERVER_URL ?? "https://github.com";
+
+	return repository && runId
+		? `${serverUrl}/${repository}/actions/runs/${runId}`
+		: null;
+};
+
+/** Slack 게시. 보낼 수단이 없으면 페이로드를 찍고 건너뜁니다. 어느 경로로 나갔는지 돌려줍니다. */
+const postReportToSlack = async ({ report, retention, spreadsheetId }) => {
 	const payload = buildWeeklyReportPayload({
 		report,
 		retention,
 		// 로컬 실행에는 런이 없습니다. 링크 없이 나머지만 싣습니다.
-		runUrl:
-			repository && runId
-				? `${serverUrl}/${repository}/actions/runs/${runId}`
-				: null,
+		runUrl: readRunUrl(),
 		// 시트 기록을 건너뛰는 실행(GA_SHEET_ID 없음)에는 가리킬 시트가 없습니다.
 		sheetUrl: spreadsheetId
 			? `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`
 			: null,
 	});
 
-	if (!process.env.SLACK_REPORT_WEBHOOK_URL) {
-		console.warn(
-			"::warning::SLACK_REPORT_WEBHOOK_URL 이 없어 Slack 전송을 건너뜁니다",
-		);
-		console.log(JSON.stringify(payload, null, 2));
+	return await publishGaReport({ payload });
+};
 
-		return;
+/**
+ * 시트 요약 탭에서 이번 주까지의 최근 주들을 읽습니다. AI 인사이트의 추이 입력입니다.
+ *
+ * 읽지 못해도 던지지 않고 null 을 돌려줍니다. 추이는 인사이트를 거드는 자료라, 이것
+ * 때문에 이미 나간 리포트의 잡을 실패시키지 않습니다.
+ */
+const readTrendRows = async ({ serviceAccountJson, spreadsheetId, week }) => {
+	if (!spreadsheetId) {
+		return null;
 	}
 
-	await postToSlack(process.env.SLACK_REPORT_WEBHOOK_URL, payload);
+	try {
+		const accessToken = await exchangeServiceAccountToken({
+			serviceAccount: JSON.parse(serviceAccountJson),
+			scope: SHEETS_SCOPE,
+		});
+		const rows = await readTabRows({
+			accessToken,
+			spreadsheetId,
+			title: SUMMARY_TAB,
+		});
+
+		return pickRecentWeeks({ rows, weekStart: week.start });
+	} catch (error) {
+		console.warn(
+			`::warning::AI 인사이트용 주간 추이를 시트에서 읽지 못했습니다: ${error instanceof Error ? error.message : error}`,
+		);
+
+		return null;
+	}
+};
+
+/**
+ * AI 인사이트 단계의 입력을 남기고, 단계를 돌릴지 가르는 output 을 씁니다.
+ *
+ * 스레드 댓글은 봇으로 올린 메시지에만 달 수 있습니다. 웹훅으로 내려갔거나 게시가
+ * 실패한 주는 입력을 만들지 않습니다.
+ */
+const prepareInsight = async ({
+	delivery,
+	report,
+	retention,
+	serviceAccountJson,
+	spreadsheetId,
+	week,
+}) => {
+	const contextPath = process.env.GA_INSIGHT_CONTEXT_PATH;
+	let ready = false;
+
+	if (delivery.via === "bot" && contextPath) {
+		try {
+			await writeInsightContext({
+				path: contextPath,
+				context: buildWeeklyInsightContext({
+					report,
+					retention,
+					trendRows: await readTrendRows({
+						serviceAccountJson,
+						spreadsheetId,
+						week,
+					}),
+					slack: { channel: delivery.channel, ts: delivery.ts },
+					runUrl: readRunUrl(),
+				}),
+			});
+			ready = true;
+		} catch (error) {
+			console.warn(
+				`::warning::AI 인사이트 입력을 남기지 못해 인사이트 댓글을 건너뜁니다: ${error instanceof Error ? error.message : error}`,
+			);
+		}
+	}
+
+	await writeInsightOutputs({
+		ready,
+		via: delivery.via,
+		outputPath: process.env.GITHUB_OUTPUT,
+	});
 };
 
 /**
@@ -187,8 +275,11 @@ const runRegular = async ({
 		failures.push({ step: "메모 리텐션 조회", error });
 	}
 
+	// 게시가 실패한 주는 via 가 none 으로 남아 인사이트 단계가 돌지 않습니다.
+	let delivery = { via: "none" };
+
 	try {
-		await postReportToSlack({ report, retention, spreadsheetId });
+		delivery = await postReportToSlack({ report, retention, spreadsheetId });
 	} catch (error) {
 		failures.push({ step: "Slack 게시", error });
 	}
@@ -215,6 +306,16 @@ const runRegular = async ({
 			failures.push({ step: "시트 기록", error });
 		}
 	}
+
+	// 시트 쓰기 뒤에 둡니다. 추이를 시트에서 읽으므로 이번 주 행이 먼저 들어가 있어야 합니다.
+	await prepareInsight({
+		delivery,
+		report,
+		retention,
+		serviceAccountJson,
+		spreadsheetId,
+		week,
+	});
 
 	for (const { step, error } of failures) {
 		console.error(`::error::${step} 실패: ${error.message}`);

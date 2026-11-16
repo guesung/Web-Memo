@@ -11,7 +11,7 @@
  *   GA4_SERVICE_ACCOUNT_JSON="$(cat ~/ga4-service-account.json)" \
  *   node .github/scripts/ga/measure-feature-usage.mjs [--from YYYY-MM-DD --to YYYY-MM-DD] [--format table|csv|json]
  *
- * --from/--to 를 생략하면 서울 기준 지난주(월~일)입니다. 둘은 함께 주어야 합니다.
+ * --from/--to 를 생략하면 서울 기준 직전 토~금 7일입니다(주간 리포트와 같은 기간). 둘은 함께 주어야 합니다.
  * 이벤트 목록은 packages/shared 의 type.ts 에서 읽고, 모수는 주간 리포트와 같은
  * 호스트 허용 목록(운영 웹 + 확장)입니다.
  */
@@ -34,8 +34,8 @@ const FORMATTERS = {
 
 const USAGE = `사용법: node .github/scripts/ga/measure-feature-usage.mjs [옵션]
 
-  --from YYYY-MM-DD   시작일 (기본: 지난주 월요일, 서울 기준)
-  --to   YYYY-MM-DD   종료일 (기본: 지난주 일요일). --from 과 함께 줍니다
+  --from YYYY-MM-DD   시작일 (기본: 직전 주 토요일, 서울 기준)
+  --to   YYYY-MM-DD   종료일 (기본: 직전 금요일). --from 과 함께 줍니다
   --format table|csv|json   출력 형식 (기본: table)
   -h, --help          이 도움말
 

@@ -1,10 +1,13 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { exchangeCodeForSession, setCookie } = vi.hoisted(() => ({
-	exchangeCodeForSession: vi.fn(),
-	setCookie: vi.fn(),
-}));
+const { exchangeCodeForSession, setCookie, deleteCookie, cookieValues } =
+	vi.hoisted(() => ({
+		exchangeCodeForSession: vi.fn(),
+		setCookie: vi.fn(),
+		deleteCookie: vi.fn(),
+		cookieValues: new Map<string, string>(),
+	}));
 
 vi.mock("@src/modules/i18n", () => ({
 	DEFAULT_LANGUAGE: "en",
@@ -16,7 +19,12 @@ vi.mock("@src/modules/supabase/util.server", () => ({
 }));
 
 vi.mock("next/headers", () => ({
-	cookies: () => ({ set: setCookie, get: () => undefined, delete: vi.fn() }),
+	cookies: () => ({
+		set: setCookie,
+		get: (name: string) =>
+			cookieValues.has(name) ? { value: cookieValues.get(name) } : undefined,
+		delete: deleteCookie,
+	}),
 }));
 
 import { GET } from "./route";
@@ -24,6 +32,7 @@ import { GET } from "./route";
 describe("GET /auth/callback", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		cookieValues.clear();
 	});
 
 	it("코드 교환 후 세션이 없으면 원문을 노출하지 않고 로그인 오류로 302 이동한다", async () => {
@@ -66,5 +75,59 @@ describe("GET /auth/callback", () => {
 			"http://localhost/ko/memos?login=google",
 		);
 		expect(setCookie).toHaveBeenCalledTimes(2);
+	});
+
+	describe("확장 로그인 창에서 시작한 로그인", () => {
+		const EXTENSION_URL =
+			"https://eaiojpmgklfngpjddhoalgcpkepgkclh.chromiumapp.org/";
+
+		beforeEach(() => {
+			cookieValues.set("login_return", "extension");
+		});
+
+		it("세션을 저장한 뒤 메모 화면 대신 확장 주소로 보내고, 돌아갈 곳을 지운다", async () => {
+			exchangeCodeForSession.mockResolvedValue({
+				data: {
+					session: {
+						access_token: "access-token",
+						refresh_token: "refresh-token",
+						user: {
+							app_metadata: { provider: "kakao" },
+							created_at: new Date().toISOString(),
+						},
+					},
+				},
+			});
+
+			const response = await GET(
+				new NextRequest("http://localhost/auth/callback?code=valid-code"),
+			);
+
+			expect(response.headers.get("location")).toBe(
+				`${EXTENSION_URL}?login=kakao&signup=true`,
+			);
+			expect(setCookie).toHaveBeenCalledTimes(2);
+			expect(deleteCookie).toHaveBeenCalledWith("login_return");
+		});
+
+		it("제공자가 취소·실패를 돌려주면 확장 주소로 오류만 알린다", async () => {
+			const response = await GET(
+				new NextRequest("http://localhost/auth/callback?error=access_denied"),
+			);
+
+			expect(response.headers.get("location")).toBe(`${EXTENSION_URL}?error=1`);
+			expect(exchangeCodeForSession).not.toHaveBeenCalled();
+		});
+
+		it("코드 교환 후 세션이 없으면 확장 주소로 오류만 알린다", async () => {
+			exchangeCodeForSession.mockResolvedValue({ data: { session: null } });
+
+			const response = await GET(
+				new NextRequest("http://localhost/auth/callback?code=bad-code"),
+			);
+
+			expect(response.headers.get("location")).toBe(`${EXTENSION_URL}?error=1`);
+			expect(setCookie).not.toHaveBeenCalled();
+		});
 	});
 });

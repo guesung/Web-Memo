@@ -1,5 +1,10 @@
 import { DEFAULT_LANGUAGE, getLanguage } from "@src/modules/i18n";
 import {
+	buildExtensionReturnUrl,
+	LOGIN_RETURN_COOKIE,
+	LOGIN_RETURN_EXTENSION,
+} from "@src/modules/supabase/extensionReturn";
+import {
 	LOGIN_NEXT_COOKIE,
 	sanitizeNextPath,
 } from "@src/modules/supabase/nextPath";
@@ -19,10 +24,21 @@ export async function GET(request: NextRequest) {
 	// 로그인 직후 화면이 뜨기까지 왕복이 하나 더 늘어나므로 여기서 붙여 보냅니다.
 	const language = getLanguage(request) ?? DEFAULT_LANGUAGE;
 
+	// 확장의 로그인 창에서 시작한 로그인은 결과와 무관하게 확장 주소로 끝내 창을 닫습니다.
+	// 한 번 쓰면 지워, 다음 로그인이 웹에서 시작돼도 확장 주소로 가지 않게 합니다.
+	const cookieStore = await cookies();
+	const isExtensionReturn =
+		cookieStore.get(LOGIN_RETURN_COOKIE)?.value === LOGIN_RETURN_EXTENSION;
+	if (isExtensionReturn) cookieStore.delete(LOGIN_RETURN_COOKIE);
+
 	// OAuth 제공자가 취소·실패를 error 쿼리로 돌려줍니다. 그대로 /memos로 보내면
 	// 미들웨어가 다시 로그인 화면으로 튕겨 사용자는 아무 안내 없이 제자리로 옵니다.
 	// 실패했다는 사실만 플래그로 넘기고 사유 원문은 싣지 않습니다.
 	if (requestUrl.searchParams.has("error")) {
+		if (isExtensionReturn) {
+			return NextResponse.redirect(buildExtensionReturnUrl({ error: true }));
+		}
+
 		const loginUrl = new URL(`${requestUrl.origin}/${language}${PATHS.login}`);
 		loginUrl.searchParams.set("error", "1");
 
@@ -37,6 +53,13 @@ export async function GET(request: NextRequest) {
 			await supabase.auth.exchangeCodeForSession(code);
 
 		if (!sessionData.session) {
+			if (isExtensionReturn) {
+				return NextResponse.redirect(
+					buildExtensionReturnUrl({ error: true }),
+					302,
+				);
+			}
+
 			const loginUrl = new URL(
 				`${requestUrl.origin}/${language}${PATHS.login}`,
 			);
@@ -45,7 +68,6 @@ export async function GET(request: NextRequest) {
 			return NextResponse.redirect(loginUrl, 302);
 		}
 
-		const cookieStore = await cookies();
 		cookieStore.set(
 			SUPABASE.authCookie.accessToken,
 			sessionData.session.access_token,
@@ -75,6 +97,15 @@ export async function GET(request: NextRequest) {
 			cookieStore.get(LOGIN_NEXT_COOKIE)?.value,
 		);
 		cookieStore.delete(LOGIN_NEXT_COOKIE);
+
+		if (isExtensionReturn) {
+			return NextResponse.redirect(
+				buildExtensionReturnUrl({
+					login: loginMethod ?? "unknown",
+					isSignUp,
+				}),
+			);
+		}
 
 		const redirectUrl = new URL(
 			nextPath

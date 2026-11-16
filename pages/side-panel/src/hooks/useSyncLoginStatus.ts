@@ -5,10 +5,14 @@ import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import type { ErrorBoundary } from "@web-memo/ui";
 import { type RefObject, useEffect } from "react";
 
+/** 패널 안에서 로그인을 마쳤을 때 `window`에 쏘는 이벤트 이름입니다. */
+export const PANEL_LOGIN_EVENT = "web-memo:panel-login";
+
 /**
  * 로그인 상태가 바뀌었을 수 있는 신호를 받아 사이드 패널을 갱신합니다.
- * @description 신호는 두 가지입니다. 웹에서 로그인 상태가 바뀌었다는 SYNC_LOGIN_STATUS와,
- * 네트워크가 돌아왔다는 `online` 이벤트입니다. 오프라인이면 사용자 확인이 실패해 로그인 화면이
+ * @description 신호는 세 가지입니다. 웹에서 로그인 상태가 바뀌었다는 SYNC_LOGIN_STATUS,
+ * 패널의 로그인 창에서 로그인을 마쳤다는 PANEL_LOGIN_EVENT(이때는 웹 화면이 열리지 않아
+ * SYNC_LOGIN_STATUS를 보내 줄 곳이 없습니다), 네트워크가 돌아왔다는 `online` 이벤트입니다. 오프라인이면 사용자 확인이 실패해 로그인 화면이
  * 대신 그려지므로, 연결이 돌아오면 다시 확인해야 메모 화면으로 돌아갑니다.
  * 로그아웃 상태에서는 MemoForm이 던진 오류로 로그인 화면이 대신 그려지므로,
  * MemoForm 안쪽이 아니라 로그인 여부와 무관하게 항상 마운트되는 곳에서 호출해야 합니다.
@@ -40,15 +44,17 @@ export default function useSyncLoginStatus(
 		bridge.handle.SYNC_LOGIN_STATUS(refreshLoginStatus);
 	});
 
-	useEffect(function refreshLoginStatusOnOnline() {
-		const handleOnline = () => {
+	useEffect(function refreshLoginStatusOnWindowSignal() {
+		const handleSignal = () => {
 			void refreshLoginStatus();
 		};
 
-		window.addEventListener("online", handleOnline);
+		window.addEventListener("online", handleSignal);
+		window.addEventListener(PANEL_LOGIN_EVENT, handleSignal);
 
 		return () => {
-			window.removeEventListener("online", handleOnline);
+			window.removeEventListener("online", handleSignal);
+			window.removeEventListener(PANEL_LOGIN_EVENT, handleSignal);
 		};
 	});
 }

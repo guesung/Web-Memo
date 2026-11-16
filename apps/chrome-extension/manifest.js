@@ -27,7 +27,14 @@ const manifest = deepmerge(
 		version: packageJson.version,
 		description: "__MSG_extensionDescription__",
 		default_locale: "ko",
-		permissions: ["sidePanel", "storage", "tabs", "contextMenus", "cookies"],
+		permissions: [
+			"sidePanel",
+			"storage",
+			"tabs",
+			"contextMenus",
+			"cookies",
+			"identity",
+		],
 		host_permissions: ["<all_urls>"],
 		options_page: "options/index.html",
 		background: {

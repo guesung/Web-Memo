@@ -1,14 +1,14 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { signInWithOAuth, setCookie, sendEvent, afterTasks } = vi.hoisted(
-	() => ({
+const { signInWithOAuth, setCookie, deleteCookie, sendEvent, afterTasks } =
+	vi.hoisted(() => ({
 		signInWithOAuth: vi.fn(),
 		setCookie: vi.fn(),
+		deleteCookie: vi.fn(),
 		sendEvent: vi.fn(),
 		afterTasks: [] as Array<() => unknown>,
-	}),
-);
+	}));
 
 vi.mock("@web-memo/env", () => ({
 	CONFIG: { webUrl: "https://webmemo.example" },
@@ -25,7 +25,9 @@ vi.mock("@src/modules/ga/measurementProtocol", () => ({
 		clientId ?? "generated-client-id",
 	sendMeasurementProtocolEvent: sendEvent,
 }));
-vi.mock("next/headers", () => ({ cookies: () => ({ set: setCookie }) }));
+vi.mock("next/headers", () => ({
+	cookies: () => ({ set: setCookie, delete: deleteCookie }),
+}));
 vi.mock("next/server", async (importOriginal) => ({
 	...(await importOriginal<typeof import("next/server")>()),
 	after: (task: () => unknown) => {
@@ -37,6 +39,8 @@ import { GET } from "./route";
 
 const EXTENSION_CLIENT_ID = "550e8400-e29b-41d4-a716-446655440000";
 const PROVIDER_URL = "https://accounts.example/oauth?state=abc";
+const EXTENSION_URL =
+	"https://eaiojpmgklfngpjddhoalgcpkepgkclh.chromiumapp.org/";
 
 const requestWith = (search: string) =>
 	new NextRequest(`https://webmemo.example/auth/start${search}`);
@@ -111,9 +115,41 @@ describe("GET /auth/start", () => {
 		});
 	});
 
-	it("client_id가 UUID 형식이 아니면 쿠키를 건드리지 않는다", async () => {
+	it("client_id가 UUID 형식이 아니면 _ga 쿠키를 심지 않는다", async () => {
 		await GET(requestWith("?provider=google&ext_cid=someone@example.com"));
 
 		expect(setCookie).not.toHaveBeenCalled();
+	});
+
+	it("확장 로그인 창에서 열면 돌아갈 곳을 쿠키에 적어 둔다", async () => {
+		const response = await GET(
+			requestWith("?provider=google&return=extension"),
+		);
+
+		expect(setCookie).toHaveBeenCalledWith(
+			"login_return",
+			"extension",
+			expect.objectContaining({ httpOnly: true, maxAge: 600 }),
+		);
+		expect(response.headers.get("location")).toBe(PROVIDER_URL);
+	});
+
+	it("웹에서 열면 이전 시도가 남긴 돌아갈 곳을 지운다", async () => {
+		await GET(requestWith("?provider=google"));
+
+		expect(deleteCookie).toHaveBeenCalledWith("login_return");
+	});
+
+	it("확장 로그인 창에서는 실패해도 로그인 페이지 대신 확장 주소로 보내 창을 닫는다", async () => {
+		signInWithOAuth.mockResolvedValue({
+			data: { url: null },
+			error: { message: "provider secret error" },
+		});
+
+		const failed = await GET(requestWith("?provider=kakao&return=extension"));
+		const rejected = await GET(requestWith("?provider=apple&return=extension"));
+
+		expect(failed.headers.get("location")).toBe(`${EXTENSION_URL}?error=1`);
+		expect(rejected.headers.get("location")).toBe(`${EXTENSION_URL}?error=1`);
 	});
 });

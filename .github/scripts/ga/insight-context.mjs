@@ -75,16 +75,23 @@ export const buildDailyInsightContext = ({
 	searchQueries: searchQueries ?? null,
 });
 
+const readWeekday = (date) => new Date(`${date}T00:00:00Z`).getUTCDay();
+
 /**
  * 시트 요약 탭의 행에서 그 주까지의 최근 주들을 오래된 순으로 고릅니다.
  *
- * 주 시작일이 문자열(YYYY-MM-DD)이 아닌 행은 뺍니다. 사람이 칸을 날짜 형식으로 바꾸면
+ * 이번 주와 시작 요일이 같은 행만 씁니다. 2026-11 에 주 경계가 월~일에서 토~금으로
+ * 바뀌어 시트에 두 기준의 행이 섞여 있고 기간이 서로 겹칩니다. 섞어 넘기면 같은 날들이
+ * 두 번 세어진 추이가 됩니다.
+ *
+ * 주 시작일이 문자열(YYYY-MM-DD)이 아닌 행도 뺍니다. 사람이 칸을 날짜 형식으로 바꾸면
  * 일련번호로 읽혀 정렬이 깨지는데, 그런 행을 추이에 섞느니 빠진 것이 낫습니다.
  */
 export const pickRecentWeeks = ({ rows, weekStart, count = TREND_WEEKS }) =>
 	rows
 		.filter((row) => /^\d{4}-\d{2}-\d{2}$/.test(String(row["주 시작일"] ?? "")))
 		.filter((row) => row["주 시작일"] <= weekStart)
+		.filter((row) => readWeekday(row["주 시작일"]) === readWeekday(weekStart))
 		.sort((a, b) => a["주 시작일"].localeCompare(b["주 시작일"]))
 		.slice(-count);
 
@@ -126,8 +133,7 @@ export const buildWeeklyInsightContext = ({
 	// 시트가 없거나 읽지 못한 실행에서는 rows 가 null 입니다. 그때는 추이를 직접 조회해야 합니다.
 	trend: {
 		source: "sheet",
-		// 2026-11 에 주 경계가 월~일에서 토~금으로 바뀌어, 그 전 행은 기간이 겹칩니다.
-		note: "한 행이 한 주입니다. 2026-11-14 주부터 토~금, 그 전 행은 월~일 기준이라 경계 전후를 그대로 비교할 수 없습니다.",
+		note: "한 행이 한 주이고 오래된 순입니다. 이번 주와 시작 요일이 같은 행만 골랐습니다. 빈 칸은 그 주에 조회하지 않은 값입니다.",
 		rows: trendRows,
 	},
 });

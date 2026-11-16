@@ -618,7 +618,7 @@
 ### `login`
 
 - **질문:** OAuth/email 콜백 뒤 메모 영역에 도달했는가?
-- **발생·제외:** 인증 사이드바 레이아웃 TrackLoginSuccess가 비어 있지 않은 login 쿼리를 읽으면 기록 후 login/signup 쿼리를 router.replace로 제거.
+- **발생·제외:** 인증 사이드바 레이아웃 TrackLoginSuccess가 비어 있지 않은 login 쿼리를 읽으면 기록 후 login/signup 쿼리를 router.replace로 제거. 확장 사이드 패널의 로그인 창에서 로그인하면 웹 메모 화면을 거치지 않으므로, 패널의 LoginSection이 로그인 창이 돌려준 주소의 login 값을 읽어 확장에서 기록한다.
 - **속성:** 필수 `method: string`; 콜백의 제공자 값 또는 email.
 - **단위·중복:** 쿼리 제거로 정상 재조회 중복을 줄이지만 ref/서버 idempotency 가드는 없음.
 - **근거·테스트:** [호출 코드](../apps/web/src/app/%5Blng%5D/%28auth%29/%28sidebar%29/_components/TrackLoginSuccess/index.tsx); [관련 테스트](../apps/web/src/app/auth/callback/route.test.ts).
@@ -627,7 +627,7 @@
 ### `sign_up`
 
 - **질문:** 콜백이 신규 계정으로 분류한 도착이 얼마나 있는가?
-- **발생·제외:** TrackLoginSuccess에서 login 쿼리가 있고 signup=true면 login에 앞서 함께 기록. signup만 있으면 없음.
+- **발생·제외:** TrackLoginSuccess에서 login 쿼리가 있고 signup=true면 login에 앞서 함께 기록. signup만 있으면 없음. 확장 사이드 패널의 로그인 창 경로에서는 LoginSection이 같은 규칙으로 기록한다.
 - **속성:** 필수 `method: string`; login과 같은 쿼리 값.
 - **단위·중복:** 신규 분류 콜백 도착당 시도; 쿼리 제거 정책은 login과 동일.
 - **근거·테스트:** [호출 코드](../apps/web/src/app/%5Blng%5D/%28auth%29/%28sidebar%29/_components/TrackLoginSuccess/index.tsx); [관련 테스트](../apps/web/src/app/auth/callback/route.test.ts).
@@ -645,11 +645,11 @@
 ### `side_panel_login_click`
 
 - **질문:** 패널 로그인 안내에서 어느 제공자로 로그인을 시작하려는가?
-- **발생·제외:** LoginSection 제공자 버튼 클릭 시 client ID 조회와 Tab.create 전에 기록. 네트워크 불가 안내에서는 버튼 미표시.
+- **발생·제외:** LoginSection 제공자 버튼 클릭 시 client ID 조회와 로그인 창(로그인 창을 쓸 수 없는 브라우저에서는 새 탭)을 열기 전에 기록. 네트워크 불가 안내에서는 버튼 미표시.
 - **속성:** 필수 `method: "kakao" | "google"`; 누른 제공자 버튼. 버튼이 하나였던 이전 버전의 이벤트에는 없다.
 - **단위·중복:** 클릭당 1회; 별도 중복 제거 없음.
 - **근거·테스트:** [호출 코드](../pages/side-panel/src/components/LoginSection.tsx); [관련 테스트](../pages/side-panel/src/components/LoginSection.test.ts).
-- **한계·이력:** 탭 생성·로그인 성공을 뜻하지 않는다. ext_cid 전달 실패/GA 식별 분리 가능성을 별도로 확인한다. 도입 버전·일자 미확인.
+- **한계·이력:** 로그인 창 표시·로그인 성공을 뜻하지 않는다. ext_cid 전달 실패/GA 식별 분리 가능성을 별도로 확인한다. 도입 버전·일자 미확인.
 
 ### `header_login_click`
 

@@ -25,7 +25,7 @@ export const EVENT_TAB = "이벤트";
 /**
  * 서울 기준 `YYYY-MM-DD HH:mm`. 기록 시각 열에 씁니다.
  *
- * 러너는 UTC 로 돌아서 toISOString 을 그대로 쓰면 월요일 아침 기록이 일요일
+ * 러너는 UTC 로 돌아서 toISOString 을 그대로 쓰면 토요일 아침 기록이 금요일
  * 밤으로 찍힙니다. 시트를 읽는 사람의 시계에 맞춥니다.
  */
 export const formatSeoulMinute = (date) => {

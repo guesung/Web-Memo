@@ -6,6 +6,7 @@ import type { Database, MemoSupabaseClient } from "@web-memo/shared/types";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { LOGIN_RETURN_COOKIE } from "./extensionReturn";
 import {
 	LOGIN_NEXT_COOKIE,
 	LOGIN_NEXT_MAX_AGE_SEC,
@@ -45,6 +46,10 @@ export const getSupabaseClient = async () => {
 const rememberNextPath = async (formData?: FormData) => {
 	const cookieStore = await cookies();
 	const nextPath = sanitizeNextPath(formData?.get(LOGIN_NEXT_PARAM));
+
+	// 확장 로그인 창을 열었다 닫은 직후 웹에서 로그인하면, 남은 값 때문에 콜백이
+	// 이 탭을 확장 주소로 보내 빈 화면이 된다. 웹에서 시작한 로그인은 웹으로 돌아온다.
+	cookieStore.delete(LOGIN_RETURN_COOKIE);
 
 	if (!nextPath) {
 		cookieStore.delete(LOGIN_NEXT_COOKIE);

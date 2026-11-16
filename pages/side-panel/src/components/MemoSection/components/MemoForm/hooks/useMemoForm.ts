@@ -567,6 +567,16 @@ export default function useMemoForm({
 		}
 	}, [pendingOfflineMemo.status, saveMemo]);
 
+	/**
+	 * 디바운스 콜백이 부를 최신 saveMemo.
+	 * @description 콜백이 예약 시점 렌더의 saveMemo를 붙들면, 그 사이 큐 조회 상태가 바뀌어도 옛 상태로
+	 * 저장을 판단한다(오류 상태에서 예약한 저장이 재시도 성공 뒤에 failed를 덮어쓴다). 실행 시점에 ref로 읽는다.
+	 */
+	const latestSaveMemoRef = useRef(saveMemo);
+	useEffect(() => {
+		latestSaveMemoRef.current = saveMemo;
+	}, [saveMemo]);
+
 	const handleSaveRetryClick = () => {
 		setSaveStatus("retrying");
 		if (pendingOfflineMemo.status === "error") {
@@ -583,7 +593,7 @@ export default function useMemoForm({
 		titleSync.handleTitleInputChange(text);
 		// 새 메모는 제목만 바꾼 채로는 빈 메모를 만들지 않는다. 본문이 채워지면 그 저장에 제목이 함께 나간다.
 		debounceTitle(() =>
-			isBlankNewMemo() ? undefined : saveMemo({ title: text }),
+			isBlankNewMemo() ? undefined : latestSaveMemoRef.current({ title: text }),
 		);
 	};
 
@@ -592,9 +602,9 @@ export default function useMemoForm({
 			hasEditedMemoRef.current = true;
 			hasUnsavedChangeRef.current = true;
 			setValue("memo", text);
-			debounce(() => saveMemo({ memo: text }));
+			debounce(() => latestSaveMemoRef.current({ memo: text }));
 		},
-		[setValue, debounce, saveMemo],
+		[setValue, debounce],
 	);
 
 	const handleImpressionChange = useCallback(
@@ -602,9 +612,9 @@ export default function useMemoForm({
 			hasEditedMemoRef.current = true;
 			hasUnsavedChangeRef.current = true;
 			setValue("impression", text);
-			debounce(() => saveMemo({ impression: text }));
+			debounce(() => latestSaveMemoRef.current({ impression: text }));
 		},
-		[setValue, debounce, saveMemo],
+		[setValue, debounce],
 	);
 
 	const handleActionItemChange = useCallback(
@@ -612,9 +622,9 @@ export default function useMemoForm({
 			hasEditedMemoRef.current = true;
 			hasUnsavedChangeRef.current = true;
 			setValue("actionItem", text);
-			debounce(() => saveMemo({ actionItem: text }));
+			debounce(() => latestSaveMemoRef.current({ actionItem: text }));
 		},
-		[setValue, debounce, saveMemo],
+		[setValue, debounce],
 	);
 
 	/**

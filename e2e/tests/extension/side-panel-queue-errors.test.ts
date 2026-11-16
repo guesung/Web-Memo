@@ -192,6 +192,10 @@ test("큐 읽기 실패는 원본을 보존하고 재시도로 현재 입력을 
 		.poll(() => store.getMemo(memo.id)?.memo)
 		.toBe("draft after read failure");
 	await expect(panel.locator('[data-save-status="saved"]')).toBeVisible();
+	// 오류 상태에서 예약된 디바운스 저장(300ms)이 재시도 성공 뒤에 failed를 덮어쓰지 않아야 한다.
+	await panel.waitForTimeout(600);
+	await expect(panel.locator('[data-save-status="saved"]')).toBeVisible();
+	await expect(panel.locator('[data-save-status="failed"]')).toHaveCount(0);
 });
 
 test("네트워크 실패 후 revision과 결과 수치가 남고 재연결 때 복구한다", async ({

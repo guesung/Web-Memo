@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * SEO AI 리포트의 P0·P1 발견을 Claude Code가 코드로 고치고 PR로 올리는 파이프라인의 결정적인 부분입니다.
+ * SEO AI 리포트의 P0·P1·P2 발견을 Claude Code가 코드로 고치고 PR로 올리는 파이프라인의 결정적인 부분입니다.
  * .github/workflows/report-seo.yml 의 세 잡이 하위 명령으로 나눠 호출합니다.
  *
  *   select  (inspect 잡)  수정 대상을 고르고, 이미 열린 자동 수정 PR이 있으면 건너뜁니다.
@@ -18,7 +18,9 @@ import { pathToFileURL } from "node:url";
 import { postSlackMessage, readSlackEnv, toSingleLine } from "../shared/slack-api.mjs";
 
 const BRANCH_PREFIX = "claude/seo-fix-";
-const FIX_PRIORITIES = ["P0", "P1"];
+/** 앞에 있을수록 먼저 고칩니다. P3는 사소한 것이라 자동 수정하지 않습니다. */
+const FIX_PRIORITIES = ["P0", "P1", "P2"];
+const PRIORITY_LABEL = FIX_PRIORITIES.join("·");
 const MAX_TARGETS = 3;
 const MAX_CHANGED_FILES = 10;
 /** 웹 사이트의 SEO 응답을 만드는 코드입니다. 워크플로·설정·의존성은 여기 없으므로 모델이 건드릴 수 없습니다. */
@@ -38,7 +40,7 @@ const isAllowedPath = (filePath) =>
 
 /**
  * AI 리포트에서 자동 수정 대상을 고릅니다.
- * @description P0·P1이면서 해결 방법이 코드 수정(fixability=code)이고 코드 위치가 수정 허용 경로 안에 있는 발견만 남깁니다. 위치가 허용 경로 밖이면 코드 위치에서 빼고, 남는 위치가 없으면 대상이 아닙니다.
+ * @description P0·P1·P2이면서 해결 방법이 코드 수정(fixability=code)이고 코드 위치가 수정 허용 경로 안에 있는 발견만 남깁니다. 위치가 허용 경로 밖이면 코드 위치에서 빼고, 남는 위치가 없으면 대상이 아닙니다. 건수 제한에서 급한 발견이 밀리지 않도록 우선순위 순으로 고릅니다.
  */
 export const selectSeoFixTargets = ({ report }) =>
 	(Array.isArray(report?.findings) ? report.findings : [])
@@ -55,6 +57,7 @@ export const selectSeoFixTargets = ({ report }) =>
 			),
 		}))
 		.filter((target) => target.codeRefs.length > 0)
+		.sort((left, right) => FIX_PRIORITIES.indexOf(left.priority) - FIX_PRIORITIES.indexOf(right.priority))
 		.slice(0, MAX_TARGETS);
 
 /**
@@ -93,7 +96,7 @@ export const buildSeoFixPrBody = ({ targets, runUrl }) =>
 	[
 		"## 설명",
 		"",
-		`SEO 모니터의 AI 리포트에서 P0·P1로 분류된 발견 ${targets.length}건을 근거로 Claude Code가 작성한 수정입니다.${runUrl ? ` (${runUrl})` : ""}`,
+		`SEO 모니터의 AI 리포트에서 ${PRIORITY_LABEL}로 분류된 발견 ${targets.length}건을 근거로 Claude Code가 작성한 수정입니다.${runUrl ? ` (${runUrl})` : ""}`,
 		"자동 머지는 하지 않습니다. 수정이 발견의 원인을 실제로 고치는지 diff를 확인한 뒤 머지합니다.",
 		"",
 		"### 대상 발견",
@@ -188,9 +191,9 @@ const commands = {
 		const report = JSON.parse(readFileSync(reportPath, "utf8")).report;
 		const targets = selectSeoFixTargets({ report });
 		const candidateCount = (report?.findings ?? []).filter((finding) => FIX_PRIORITIES.includes(finding?.priority)).length;
-		console.log(`P0·P1 발견 ${candidateCount}건 중 코드 수정 대상 ${targets.length}건`);
+		console.log(`${PRIORITY_LABEL} 발견 ${candidateCount}건 중 코드 수정 대상 ${targets.length}건`);
 		if (targets.length === 0) {
-			console.log("수정 대상 발견(P0·P1, 해결 방법이 코드 수정, 허용 경로 안의 코드 위치)이 없습니다");
+			console.log(`수정 대상 발견(${PRIORITY_LABEL}, 해결 방법이 코드 수정, 허용 경로 안의 코드 위치)이 없습니다`);
 			output("has_targets", "false");
 
 			return;
@@ -267,7 +270,7 @@ const commands = {
 					blocks: [
 						{
 							type: "section",
-							text: { type: "mrkdwn", text: `🛠 P0·P1 발견을 Claude Code가 수정한 PR을 열었습니다. 머지 전에 diff를 확인해 주세요.\n<${prUrl}|${toSingleLine(title).replace(/[&<>]/g, "")}>`, verbatim: true },
+							text: { type: "mrkdwn", text: `🛠 ${PRIORITY_LABEL} 발견을 Claude Code가 수정한 PR을 열었습니다. 머지 전에 diff를 확인해 주세요.\n<${prUrl}|${toSingleLine(title).replace(/[&<>]/g, "")}>`, verbatim: true },
 						},
 					],
 				},

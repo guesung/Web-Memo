@@ -103,3 +103,41 @@ describe("Claude 실패 진단 경로", () => {
 		},
 	);
 });
+
+describe("결과 알림 경로", () => {
+	const names = (job: "maintain" | "publish") =>
+		workflow.jobs[job].steps.map((value: { name?: string }) => value.name);
+	const notify = (job: "maintain" | "publish") =>
+		workflow.jobs[job].steps.find(
+			(value: { id?: string }) => value.id === "notify_result",
+		);
+
+	it("분석 잡은 모델이 파일을 고치지 않은 실행에서만 리포트 채널로 알린다", () => {
+		expect(notify("maintain").if).toBe(
+			"success() && steps.candidate.outputs.status != 'gap'",
+		);
+		expect(notify("maintain").env.SLACK_REPORT_WEBHOOK_URL).toBe(
+			"${{ secrets.SLACK_REPORT_WEBHOOK_URL }}",
+		);
+	});
+
+	it("게시 잡은 성공하면 리포트 채널로 알린다", () => {
+		expect(notify("publish").if).toBe("success()");
+		expect(notify("publish").run).toBe(
+			"node .github/scripts/ga-events/maintain.mjs notify",
+		);
+	});
+
+	it.each([
+		["maintain", "Summarize result"],
+		["publish", "Summarize publication"],
+	] as const)("%s 잡은 요약 뒤, 실패 알림 앞에서 결과를 알린다", (job, summary) => {
+		const order = names(job);
+		expect(order.indexOf("Notify result")).toBeGreaterThan(
+			order.indexOf(summary),
+		);
+		expect(order.indexOf("Notify result")).toBeLessThan(
+			order.indexOf("Notify failure"),
+		);
+	});
+});

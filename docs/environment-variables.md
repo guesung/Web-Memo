@@ -72,7 +72,7 @@
 | `SLACK_BOT_TOKEN` | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts`, `.github/workflows/report-seo.yml`, `.github/workflows/chore-sentry-triage.yml`, `.github/scripts/sentry/report-sentry-triage.mjs` |
 | `SLACK_CHANNEL_ID` | 머지 스레드가 생기지 않고 웹훅 알림으로 폴백한다 | `.github/workflows/ci.yml` |
 | `SLACK_REPORT_CHANNEL_ID` | SEO AI 리포트를 스레드로 보내지 못하고 기존 기계 판정 알림으로 대신한다. 봇(SLACK_BOT_TOKEN)이 이 채널에 초대돼 있어야 한다 | `.github/workflows/report-seo.yml` |
-| `SLACK_REPORT_WEBHOOK_URL` | GA 리포트, 주간 리팩토링 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다 | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml` |
+| `SLACK_REPORT_WEBHOOK_URL` | GA 리포트, 주간 리팩토링 점검 결과, 주간 GA 이벤트 누락 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다 | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/chore-ga-events.yml` |
 | `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/versions.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/audit-ga-cid-adoption.yml`, `.github/workflows/notify-extension-published.yml`, `.github/workflows/chore-e2e-coverage.yml` |
 | `STAGING_WEB_URL_WITHOUT_PROTOCOL` | 스테이징 배포에 alias 도메인이 붙지 않는다 | `.github/workflows/cd-web.yml` |
 | `SUPABASE_ACCESS_TOKEN` | 등록 현황 감사가 Supabase secrets를 조회하지 못하고 Supabase 인벤토리 문서가 갱신되지 않는다 | `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml` |
@@ -449,7 +449,7 @@ Protocol로 직접 이벤트를 보내는 현재 구조상 이미 번들에 인�
 - 두 값을 등록하기 전에 머지하면 등록 현황 감사가 PR 체크를 실패시킵니다. 등록한 뒤 머지합니다.
 
 두 Slack 웹훅은 채널이 다릅니다. `SLACK_WEBHOOK_URL`은 빌드·배포·릴리스 결과가 가는
-기존 CI 채널이고, `SLACK_REPORT_WEBHOOK_URL`은 GA 리포트와 주간 리팩토링 점검 결과만 가는 전용 채널입니다.
+기존 CI 채널이고, `SLACK_REPORT_WEBHOOK_URL`은 GA 리포트, 주간 리팩토링 점검 결과, 주간 GA 이벤트 누락 점검 결과만 가는 전용 채널입니다.
 성격이 달라 나눴습니다 — 리포트가 매일 쌓이면 즉시 봐야 하는 배포 실패 알림을 밀어냅니다.
 **다만 `report-ga-daily.yml`의 실패 알림은 일부러 `SLACK_WEBHOOK_URL`로 보냅니다.**
 리포트 채널 웹훅 자체가 죽으면 실패 알림도 같이 침묵하기 때문에, 경로를 갈라 둔 것입니다.

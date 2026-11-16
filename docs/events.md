@@ -6,7 +6,7 @@
 
 - **코드 계약:** [type.ts](../packages/shared/src/modules/analytics/type.ts)의 `TAnalyticsEvent`와 `EVENT_CATEGORY`.
 - **발생 동작:** 아래 호출부 코드가 원천입니다. 타입에 이름이 있어도 실행 경로가 없을 수 있습니다.
-- **문서 검토 기준:** 2026-10-28, master `445ea702`의 81종 명세에 PR #788의 신규 3종을 통합해 총 84개 이름을 기술했습니다. 소개 데모 수동 조작 1종과 웹스토어 리뷰 요청 4종(DB-1264), 주간 메일 복귀 1종(DB-1301)을 더해 현재 90개입니다.
+- **문서 검토 기준:** 2026-10-28, master `445ea702`의 81종 명세에 PR #788의 신규 3종을 통합해 총 84개 이름을 기술했습니다. 소개 데모 수동 조작 1종과 웹스토어 리뷰 요청 4종(DB-1264), 주간 메일 복귀 1종(DB-1301)을 더해 현재 92개입니다.
   기존 81종 문서화는 제품 동작을 바꾸지 않았으며, 신규 3종은 PR #788의 구현을 기준으로 기술했습니다.
   아래 한계는 AS-IS 기록이며, 오류 판정·개인정보 공백을 바람직한 동작으로 승인하는 것은 아닙니다.
 - **운영 확인과 구분:** 코드·테스트를 읽은 사실은 테스트 실행·배포·운영 수신의 증거가 아닙니다.
@@ -30,7 +30,7 @@
 
 | 항목 | 현재 동작과 한계 |
 | --- | --- |
-| 호출 | `analytics.trackEvent({ name, params })`. helper가 여러 이벤트를 만들기도 함. `install_guide_load`·`extension_uninstall` 서버 전송과 웹 자동 수집은 개별 명세의 예외 |
+| 호출 | `analytics.trackEvent({ name, params })`. helper가 여러 이벤트를 만들기도 함. `install_guide_load`·`extension_uninstall`·`/auth/start` 경로의 `login_start` 서버 전송과 웹 자동 수집은 개별 명세의 예외 |
 | 분류 | `EVENT_CATEGORY`의 `core_action` / `engagement`. 비즈니스 성공이나 트랜잭션 보장은 아님 |
 | 게이트 | 공통 계층은 development·운영자 계정을 제외, staging은 전송. 자동 gtag·서버 경로는 별도 게이트를 확인 |
 | `event_category` | 분류 문자열. 공통 계층이 덧붙임 |
@@ -323,6 +323,15 @@
 - **근거·테스트:** [pastMemoTracking.ts](../pages/side-panel/src/components/MemoSection/utils/pastMemoTracking.ts) · [PastMemoView.tsx](../pages/side-panel/src/components/MemoSection/components/PastMemoView.tsx); 테스트: [pastMemoTracking.test.ts](../pages/side-panel/src/components/MemoSection/utils/pastMemoTracking.test.ts) · [PastMemoView.test.ts](../pages/side-panel/src/components/MemoSection/components/PastMemoView.test.ts).
 - **한계·이력:** 원문 로드 완료·읽음·문제 해결을 뜻하지 않는 재사용 행동 대리지표다. 개별 시도 토큰을 GA로 보내지 않아 사후 정확한 attempt join은 불가. DB-1251; 운영 도입 버전·일자는 별도 확인.
 
+### `memo_candidate_select`
+
+- **질문:** 같은 페이지에 메모가 여러 개일 때 사용자가 기존 메모와 새 메모 중 무엇을 선택하는가? 후보가 몇 개 표시됐을 때 각각 선택하는가?
+- **발생·제외:** MemoCandidateList에서 기존 메모 카드를 누르거나(onMemoSelect) 새 메모 버튼을 누를 때(onNewMemoClick) 콜백 실행 전에 발생. 삭제 버튼 클릭·키보드 단축키는 제외한다.
+- **속성:** 필수 `action: "select" | "new"`, `candidate_count: number`(현재 주소 메모 수 + 쿼리만 다른 주소 메모 수 합). 메모 ID는 보내지 않는다.
+- **단위·중복:** 클릭당 1회. 사용자·메모별 중복 제거 없음.
+- **근거·테스트:** [MemoCandidateList.tsx](../pages/side-panel/src/components/MemoSection/components/MemoCandidateList.tsx); 이벤트 전용 단위 검증 미확인.
+- **한계·이력:** 선택 후 실제 편집·저장 여부는 알 수 없다. candidate_count는 렌더 시점의 길이이며 select 시 최신 값임은 보장하지 않는다. DB-1269. 도입 버전·일자 미확인.
+
 ## 하이라이트·AI·카테고리·설정
 
 ### `highlight_source_jump`
@@ -600,10 +609,10 @@
 ### `login_start`
 
 - **질문:** 웹에서 어느 로그인 수단을 선택하는가?
-- **발생·제외:** TrackLoginStartForm의 클릭 capture에서 data-login-method가 있는 가장 가까운 버튼을 찾고 비어 있지 않은 method일 때 기록. OAuth 완료 전.
+- **발생·제외:** TrackLoginStartForm의 클릭 capture에서 data-login-method가 있는 가장 가까운 버튼을 찾고 비어 있지 않은 method일 때 기록. OAuth 완료 전. 확장 사이드 패널의 제공자 버튼으로 들어오면 로그인 페이지를 거치지 않으므로 GET /auth/start가 OAuth 시작에 성공했을 때 after()로 서버 전송한다(development 제외).
 - **속성:** 필수 `method: string`; 현재 버튼은 google/kakao/apple. 타입은 문자열이며 허용값 검증은 별도 없음.
 - **단위·중복:** 조건을 만족하는 클릭당 1회; pending 제공자 버튼 반복 클릭도 전역 중복 제거하지 않음.
-- **근거·테스트:** [호출 코드](../apps/web/src/app/%5Blng%5D/%28no-auth%29/login/_components/TrackLoginStartForm/index.tsx); [관련 테스트](../e2e/tests/web/login.test.ts).
+- **근거·테스트:** [호출 코드](../apps/web/src/app/%5Blng%5D/%28no-auth%29/login/_components/TrackLoginStartForm/index.tsx); [관련 테스트](../e2e/tests/web/login.test.ts); [서버 호출 코드](../apps/web/src/app/auth/start/route.ts); [서버 테스트](../apps/web/src/app/auth/start/route.test.ts).
 - **한계·이력:** 로그인 요청/세션의 고유 식별자가 없고 키보드 form submit 전체를 포괄하는 이벤트도 아니다. login 사용자 수를 나눠 정확한 완료율로 삼지 않는다. DB-1160. 도입 버전·일자 미확인.
 
 ### `login`
@@ -635,9 +644,9 @@
 
 ### `side_panel_login_click`
 
-- **질문:** 패널 로그인 안내에서 웹 로그인으로 이동하려는가?
-- **발생·제외:** LoginSection 버튼 클릭 시 client ID 조회와 Tab.create 전에 기록. 네트워크 불가 안내에서는 버튼 미표시.
-- **속성:** 추가 속성 없음.
+- **질문:** 패널 로그인 안내에서 어느 제공자로 로그인을 시작하려는가?
+- **발생·제외:** LoginSection 제공자 버튼 클릭 시 client ID 조회와 Tab.create 전에 기록. 네트워크 불가 안내에서는 버튼 미표시.
+- **속성:** 필수 `method: "kakao" | "google"`; 누른 제공자 버튼. 버튼이 하나였던 이전 버전의 이벤트에는 없다.
 - **단위·중복:** 클릭당 1회; 별도 중복 제거 없음.
 - **근거·테스트:** [호출 코드](../pages/side-panel/src/components/LoginSection.tsx); [관련 테스트](../pages/side-panel/src/components/LoginSection.test.ts).
 - **한계·이력:** 탭 생성·로그인 성공을 뜻하지 않는다. ext_cid 전달 실패/GA 식별 분리 가능성을 별도로 확인한다. 도입 버전·일자 미확인.
@@ -884,6 +893,15 @@
 - **단위·중복:** 성공 분기 핸들러당1회; 같은 쪽 재방문 포함.
 - **근거·테스트:** [호출 코드](../apps/web/src/app/%5Blng%5D/%28auth%29/%28sidebar%29/memos/blogs/_hooks/useBlogReading.ts); [관련 테스트](../e2e/tests/web/blogReading.test.ts); [계약](../packages/shared/src/types/blogReading.ts).
 - **한계·이력:** 목록 DOM 표시 완료나 글 읽음 아님. 다음 조회 오류는 전송하지 않으므로 이 이벤트만으로 실패율 계산 불가. DB-1134. 도입 버전·일자 미확인.
+
+### `email_unsubscribe`
+
+- **질문:** 수신 거부 페이지를 연 사용자가 실제로 수신 거부를 완료하는가? 토큰이 유효하지 않은 링크가 얼마나 되는가?
+- **발생·제외:** UnsubscribeCard에서 버튼을 누르고 requestUnsubscribe POST 요청이 완료(성공·오류·토큰 무효)된 뒤 발생. 토큰 없이 페이지를 연 경우는 버튼이 없어 발생하지 않는다. pending 상태 중 중복 클릭은 가드된다.
+- **속성:** 필수 `result: "ok" | "invalidToken" | "failed"`. `"ok"` = 수신 거부 성공, `"invalidToken"` = 유효하지 않은 토큰, `"failed"` = 서버 오류.
+- **단위·중복:** POST 요청 완료당 1회. 오류 후 재시도는 별도 이벤트.
+- **근거·테스트:** [UnsubscribeCard.tsx](../apps/web/src/app/%5Blng%5D/%28no-auth%29/unsubscribe/_components/UnsubscribeCard.tsx); 이벤트 전용 단위 검증 미확인.
+- **한계·이력:** 토큰 없이 페이지를 연 사용자의 의도는 측정할 수 없다. 수신 거부 성공이 메일 발송 실제 중단을 보장하지 않는다. 도입 버전·일자 미확인.
 
 ## 코드 반영과 운영 보급을 확인해야 할 항목
 

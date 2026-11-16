@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { appendFileSync, constants, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { buildResultNotification } from "./notification.mjs";
 import { TYPE_FILE, extractEventNames, isoWeek, run, selectRecentFiles, validateCandidate, validateChanges } from "./validation.mjs";
 
 const directory = path.resolve(process.env.GA_EVENTS_DIR ?? path.join(process.env.RUNNER_TEMP ?? "/tmp", "ga-events"));
@@ -177,6 +178,24 @@ const commands = {
 			appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## 주간 GA 이벤트 누락 점검\n\n결과: ${result.status}\n\n실행 상태: ${result.runStatus}\n\n진단: ${result.error ?? "없음"}\n\nDry run: ${result.dryRun}\n\n게시 생략: ${result.publicationSkipped ?? "없음"}\n\n세부 결과는 JSON 아티팩트를 확인하세요.\n`);
 		}
 	},
+	// summary가 runStatus·dryRun까지 채운 result.json을 읽습니다. 반드시 summary 뒤에 실행합니다.
+	notify: async () => {
+		const webhook = process.env.SLACK_REPORT_WEBHOOK_URL;
+		if (!webhook) {
+			console.log("::warning::SLACK_REPORT_WEBHOOK_URL is unavailable");
+			return;
+		}
+		const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+		const text = buildResultNotification(read("result"), runUrl);
+		if (!text) {
+			console.log("보낼 결과 알림이 없습니다");
+			return;
+		}
+		const response = await fetch(webhook, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text }) });
+		if (!response.ok) {
+			fail(`Slack 결과 알림 전송 실패: HTTP ${response.status}`);
+		}
+	},
 };
 
 try {
@@ -184,7 +203,7 @@ try {
 	if (!Object.hasOwn(commands, command)) {
 		fail("알 수 없는 GA 이벤트 점검 명령입니다");
 	}
-	commands[command]();
+	await commands[command]();
 } catch (error) {
 	const message = error.isSafe === true ? error.message : "입력 JSON·파일을 읽거나 처리하지 못했습니다";
 	write("result", { status: "failed", stage: Object.hasOwn(commands, process.argv[2]) ? process.argv[2] : "unknown", error: message });

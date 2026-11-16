@@ -305,11 +305,11 @@
 	"login_benefit_web_description": {
 		"message": "All your notes and highlights in one place at webmemo.xyz"
 	},
-	"login_start_button": {
-		"message": "Continue with Google or Kakao"
+	"login_kakao_button": {
+		"message": "Continue with Kakao"
 	},
-	"login_start_hint": {
-		"message": "Sign in on the new tab, then come back to this panel to start."
+	"login_google_button": {
+		"message": "Continue with Google"
 	},
 	"login_network_unavailable": {
 		"message": "You're offline. We'll reload automatically once you're back online."

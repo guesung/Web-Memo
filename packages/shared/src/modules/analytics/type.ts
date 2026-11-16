@@ -135,7 +135,11 @@ export type TAnalyticsEvent =
 	| { name: "extension_installed" }
 	| { name: "extension_uninstall" }
 	| { name: "login_start"; params: { method: string } }
-	| { name: "side_panel_login_click" }
+	| {
+			name: "side_panel_login_click";
+			/** 누른 제공자 버튼. 패널에서 고른 로그인 수단입니다 */
+			params: { method: "kakao" | "google" };
+	  }
 	| {
 			name: "header_login_click";
 			params: {

@@ -1,17 +1,18 @@
 import { type QueryState, useQueryClient } from "@tanstack/react-query";
 import { CONFIG } from "@web-memo/env";
-import { QUERY_KEY } from "@web-memo/shared/constants";
+import { PATHS, QUERY_KEY } from "@web-memo/shared/constants";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { getResultError, isNetworkError } from "@web-memo/shared/utils";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import { Button } from "@web-memo/ui";
 import {
-	ExternalLinkIcon,
 	FileTextIcon,
 	HighlighterIcon,
 	PencilLineIcon,
 	SearchIcon,
 } from "lucide-react";
+import googleLogo from "../assets/google.svg";
+import kakaoLogo from "../assets/kakao.svg";
 import useOnlineStatus from "../hooks/useOnlineStatus";
 
 /**
@@ -30,20 +31,25 @@ export default function LoginSection() {
 		getIsUserCheckNetworkError(queryClient.getQueryState(QUERY_KEY.user()));
 
 	/**
-	 * 로그인 페이지를 새 탭으로 엽니다.
-	 * @description 확장의 client_id를 쿼리로 실어 보냅니다. 사이드패널은 비로그인이고
+	 * 고른 제공자의 로그인 화면을 새 탭으로 엽니다.
+	 * @description 웹 로그인 페이지를 거치지 않고 웹의 OAuth 시작 경로로 바로 갑니다.
+	 * 확장의 client_id를 쿼리로 실어 보냅니다. 사이드패널은 비로그인이고
 	 * 로그인은 웹 탭에서 끝나는데, 확장과 웹은 서로 다른 식별자를 써서 그냥 두면
 	 * "사이드패널까지 왔다가 가입하지 않은 사람"을 셀 수 없습니다.
 	 */
-	const handleLoginButtonClick = async () => {
-		analytics.trackEvent({ name: "side_panel_login_click" });
+	const handleProviderButtonClick = async (provider: TLoginProviderId) => {
+		analytics.trackEvent({
+			name: "side_panel_login_click",
+			params: { method: provider },
+		});
 
 		const clientId = await analytics.getExtensionClientId();
-		const loginUrl = new URL(`${CONFIG.webUrl}/login`);
+		const startUrl = new URL(`${CONFIG.webUrl}${PATHS.startOAuth}`);
 
-		if (clientId) loginUrl.searchParams.set("ext_cid", clientId);
+		startUrl.searchParams.set("provider", provider);
+		if (clientId) startUrl.searchParams.set("ext_cid", clientId);
 
-		Tab.create({ url: loginUrl.toString() });
+		Tab.create({ url: startUrl.toString() });
 	};
 
 	if (isNetworkUnavailable) {
@@ -102,17 +108,47 @@ export default function LoginSection() {
 			</ul>
 
 			<div className="mt-auto flex flex-col gap-2">
-				<Button className="w-full" onClick={handleLoginButtonClick}>
-					{I18n.get("login_start_button")}
-					<ExternalLinkIcon />
-				</Button>
-				<p className="text-center text-muted-foreground text-xs">
-					{I18n.get("login_start_hint")}
-				</p>
+				{LOGIN_PROVIDERS.map(({ id, logo, labelKey, className }) => (
+					<Button
+						key={id}
+						className={`h-10 w-full ${className}`}
+						onClick={() => handleProviderButtonClick(id)}
+					>
+						<img src={logo} alt="" className="size-[18px]" />
+						{I18n.get(labelKey)}
+					</Button>
+				))}
 			</div>
 		</div>
 	);
 }
+
+/** 패널에서 바로 시작할 수 있는 로그인 제공자입니다. */
+type TLoginProviderId = "kakao" | "google";
+
+/**
+ * 패널에 내놓는 제공자 버튼. 웹의 OAuth 시작 경로가 받는 제공자와 같아야 한다.
+ * @description OAuth 제공자 가이드라인이 색을 지정하므로 역할 토큰 대신 브랜드 색을 그대로 쓴다.
+ */
+const LOGIN_PROVIDERS = [
+	{
+		id: "kakao",
+		logo: kakaoLogo,
+		labelKey: "login_kakao_button",
+		className: "bg-[#FEE500] text-gray-900 hover:bg-[#F5DC00]",
+	},
+	{
+		id: "google",
+		logo: googleLogo,
+		labelKey: "login_google_button",
+		className: "border border-gray-200 bg-white text-gray-900 hover:bg-gray-50",
+	},
+] as const satisfies ReadonlyArray<{
+	id: TLoginProviderId;
+	logo: string;
+	labelKey: string;
+	className: string;
+}>;
 
 /** 로그인하면 할 수 있는 일. 순서는 패널을 연 사람이 가장 먼저 쓸 기능 순이다. */
 const LOGIN_BENEFITS = [

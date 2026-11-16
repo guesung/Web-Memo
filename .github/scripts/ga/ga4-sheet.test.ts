@@ -6,6 +6,7 @@ import {
 	buildSummaryRow,
 	formatSeoulMinute,
 	mergeRows,
+	readTabRows,
 	upsertTab,
 } from "./ga4-sheet.mjs";
 import { FUNNEL_EVENTS } from "./ga4-weekly.mjs";
@@ -343,5 +344,56 @@ describe("upsertTab", () => {
 			["주 시작일", "이벤트", "사용자 수"],
 			["2026-09-14", "memo_write", 4],
 		]);
+	});
+});
+
+describe("readTabRows", () => {
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	const stubValues = (values) => {
+		const fetchMock = vi.fn(
+			async () => new Response(JSON.stringify(values ? { values } : {})),
+		);
+
+		vi.stubGlobal("fetch", fetchMock);
+
+		return fetchMock;
+	};
+
+	it("헤더를 키로 삼아 행을 객체로 돌려주고, 잘린 행 끝은 빈 문자열로 채운다", async () => {
+		const fetchMock = stubValues([
+			["주 시작일", "활성 사용자", "기록 경위"],
+			["2026-11-07", 57, "정기"],
+			["2026-11-14", 61],
+		]);
+
+		const rows = await readTabRows({
+			accessToken: "token",
+			spreadsheetId: "sheet-id",
+			title: "요약",
+		});
+
+		expect(rows).toEqual([
+			{ "주 시작일": "2026-11-07", "활성 사용자": 57, "기록 경위": "정기" },
+			{ "주 시작일": "2026-11-14", "활성 사용자": 61, "기록 경위": "" },
+		]);
+		// 숫자를 숫자로 받아야 추이를 계산할 수 있습니다.
+		expect(String(fetchMock.mock.calls[0][0])).toContain(
+			"valueRenderOption=UNFORMATTED_VALUE",
+		);
+	});
+
+	it("빈 탭이면 빈 배열이다", async () => {
+		stubValues(null);
+
+		expect(
+			await readTabRows({
+				accessToken: "token",
+				spreadsheetId: "sheet-id",
+				title: "요약",
+			}),
+		).toEqual([]);
 	});
 });

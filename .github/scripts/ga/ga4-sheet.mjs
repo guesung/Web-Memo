@@ -227,6 +227,26 @@ export const ensureTab = async ({ accessToken, spreadsheetId, title }) => {
 };
 
 /**
+ * 탭의 행을 헤더 → 값 객체로 읽습니다. 탭이 없거나 비어 있으면 빈 배열입니다.
+ *
+ * 쓰기와 같은 이유로 원형 값(UNFORMATTED_VALUE)으로 받아 숫자는 숫자로 돌려줍니다.
+ */
+export const readTabRows = async ({ accessToken, spreadsheetId, title }) => {
+	const base = `${SHEETS_API}/${encodeURIComponent(spreadsheetId)}`;
+	const current = await requestJson(
+		`${base}/values/${encodeURIComponent(toSheetRange(title))}?valueRenderOption=UNFORMATTED_VALUE`,
+		{ headers: buildHeaders(accessToken) },
+	);
+	const [header = [], ...body] = current.values ?? [];
+
+	return body.map((cells) =>
+		Object.fromEntries(
+			header.map((column, index) => [column, cells[index] ?? ""]),
+		),
+	);
+};
+
+/**
  * 탭에 행을 합쳐 씁니다. 같은 키의 행은 덮어쓰고, 없는 키는 붙입니다.
  *
  * 합친 결과를 A1 부터 통째로 PUT 합니다. 한 요청이라 중간에 끊겨도 탭이 반쯤

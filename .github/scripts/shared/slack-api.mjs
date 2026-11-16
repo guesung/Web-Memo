@@ -165,6 +165,68 @@ export const sendSlackMessage = async ({ payload, slack }) => {
 };
 
 /**
+ * 채널 최상위 메시지를 봇으로 먼저 보내고, 못 보내면 웹훅으로 내려갑니다.
+ *
+ * 봇으로 보내야 ts 를 돌려받아 그 메시지에 스레드 댓글을 달 수 있습니다. 웹훅은
+ * 채널이 고정이고 ts 를 주지 않으므로, 웹훅으로 나간 메시지에는 댓글을 달 수 없습니다.
+ * 그래도 본문은 끊기면 안 되어 봇 게시가 실패하면 웹훅으로 한 번 더 보냅니다.
+ *
+ * 던지지 않습니다. 호출부가 { ok: false }를 보고 잡을 실패시킬지 정합니다.
+ *
+ * @param {object} params
+ * @param {{ text: string, blocks: object[] }} params.payload
+ * @param {string} [params.botToken]
+ * @param {string} [params.channelId]
+ * @param {string} [params.webhookUrl]
+ * @returns {Promise<
+ *   | { ok: true, via: "bot", ts: string, channel: string }
+ *   | { ok: true, via: "webhook" }
+ *   | { ok: false, via: "none", error: string }
+ * >}
+ */
+export const postRootMessage = async ({
+	payload,
+	botToken,
+	channelId,
+	webhookUrl,
+}) => {
+	let botError = "not_configured";
+
+	if (botToken && channelId) {
+		const result = await postSlackMessage({
+			token: botToken,
+			channel: channelId,
+			payload,
+		});
+
+		if (result.ok) {
+			return { ok: true, via: "bot", ts: result.ts, channel: channelId };
+		}
+
+		botError = result.error;
+		warn(
+			`Slack 봇 게시에 실패했습니다(${result.error}). 웹훅으로 보냅니다 — 이 메시지에는 스레드 댓글을 달 수 없습니다`,
+		);
+	}
+
+	if (!webhookUrl) {
+		return { ok: false, via: "none", error: botError };
+	}
+
+	try {
+		await postToSlack(webhookUrl, payload);
+
+		return { ok: true, via: "webhook" };
+	} catch (error) {
+		return {
+			ok: false,
+			via: "none",
+			error: `webhook_failed: ${error instanceof Error ? error.message : error}`,
+		};
+	}
+};
+
+/**
  * 알림 스크립트의 마지막 단계입니다. 보낼 수단이 하나도 없으면(로컬 확인, 시크릿 미설정)
  * 보낼 페이로드만 stdout에 찍고 끝내고, 있으면 sendSlackMessage로 보냅니다.
  *

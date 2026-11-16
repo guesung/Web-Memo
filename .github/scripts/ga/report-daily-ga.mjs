@@ -6,7 +6,12 @@
  * 이 리포트의 목적은 사용량 보고가 아니라 로깅 감시입니다. 로깅은 틀려도 화면이
  * 깨지지 않아 아무도 모르게 죽습니다. 7일 평균과 매일 대조하는 것이 유일한 알람입니다.
  *
- * 로컬 실행 (SLACK_REPORT_WEBHOOK_URL 없이 돌리면 보낼 페이로드를 stdout에 찍습니다):
+ * Slack 에는 봇(SLACK_BOT_TOKEN + GA_REPORT_CHANNEL_ID)으로 먼저 올리고, 실패하면 웹훅
+ * (SLACK_REPORT_WEBHOOK_URL)으로 내려갑니다. 봇으로 올라갔고 GA_INSIGHT_CONTEXT_PATH 가
+ * 있으면 조회한 수치와 메시지 ts 를 그 경로에 JSON 으로 남깁니다. 워크플로의 AI 인사이트
+ * 단계가 이 파일을 읽고 같은 스레드에 댓글을 답니다.
+ *
+ * 로컬 실행 (Slack 값 없이 돌리면 보낼 페이로드를 stdout에 찍습니다):
  *   GA4_PROPERTY_ID=471860782 \
  *   GA4_SERVICE_ACCOUNT_JSON="$(cat ~/ga4-service-account.json)" \
  *   GSC_SERVICE_ACCOUNT_JSON="$(cat ~/gsc-service-account.json)" \
@@ -18,8 +23,13 @@
 import { buildDailyReportPayload } from "./daily-report-blocks.mjs";
 import { fetchDailyGa4Report } from "./ga4-data.mjs";
 import { fetchTopSearchQueries } from "./gsc-daily.mjs";
+import {
+	buildDailyInsightContext,
+	writeInsightContext,
+	writeInsightOutputs,
+} from "./insight-context.mjs";
+import { publishGaReport } from "./report-delivery.mjs";
 import { requireEnv } from "../shared/run-context.mjs";
-import { postToSlack } from "../shared/slack-blocks.mjs";
 
 const main = async () => {
 	const serviceAccountJson = requireEnv("GA4_SERVICE_ACCOUNT_JSON");
@@ -35,26 +45,42 @@ const main = async () => {
 			serviceAccountJson: process.env.GSC_SERVICE_ACCOUNT_JSON,
 		}),
 	]);
-	const payload = buildDailyReportPayload({
-		report,
-		searchQueries,
-		// 로컬 실행에는 런이 없습니다. 링크 없이 나머지만 싣습니다.
-		runUrl:
-			repository && runId
-				? `${serverUrl}/${repository}/actions/runs/${runId}`
-				: null,
-	});
+	// 로컬 실행에는 런이 없습니다. 링크 없이 나머지만 싣습니다.
+	const runUrl =
+		repository && runId
+			? `${serverUrl}/${repository}/actions/runs/${runId}`
+			: null;
+	const payload = buildDailyReportPayload({ report, searchQueries, runUrl });
+	const delivery = await publishGaReport({ payload });
+	const contextPath = process.env.GA_INSIGHT_CONTEXT_PATH;
+	let ready = false;
 
-	if (!process.env.SLACK_REPORT_WEBHOOK_URL) {
-		console.warn(
-			"::warning::SLACK_REPORT_WEBHOOK_URL 이 없어 Slack 전송을 건너뜁니다",
-		);
-		console.log(JSON.stringify(payload, null, 2));
-
-		return;
+	// 스레드 댓글은 봇으로 올린 메시지에만 달 수 있습니다. 웹훅으로 내려간 날은 건너뜁니다.
+	if (delivery.via === "bot" && contextPath) {
+		// 리포트는 이미 나갔습니다. 인사이트 입력을 못 남겼다고 잡을 실패시키지 않습니다.
+		try {
+			await writeInsightContext({
+				path: contextPath,
+				context: buildDailyInsightContext({
+					report,
+					searchQueries,
+					slack: { channel: delivery.channel, ts: delivery.ts },
+					runUrl,
+				}),
+			});
+			ready = true;
+		} catch (error) {
+			console.warn(
+				`::warning::AI 인사이트 입력을 남기지 못해 인사이트 댓글을 건너뜁니다: ${error instanceof Error ? error.message : error}`,
+			);
+		}
 	}
 
-	await postToSlack(process.env.SLACK_REPORT_WEBHOOK_URL, payload);
+	await writeInsightOutputs({
+		ready,
+		via: delivery.via,
+		outputPath: process.env.GITHUB_OUTPUT,
+	});
 };
 
 await main();

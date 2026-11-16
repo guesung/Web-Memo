@@ -5,6 +5,12 @@ name: Daily GA Report
 # 아무도 모르게 죽으므로, 7일 평균과 매일 대조하는 것이 유일한 알람입니다.
 #
 # 조회 자격 증명(GA4 서비스 계정)을 Vercel에 복제하지 않기 위해 여기서 돌립니다.
+#
+# 리포트는 봇으로 #ga-리포트 에 올리고, 같은 수치를 Claude 가 해석한 인사이트를 그 메시지의
+# 스레드 댓글로 답니다. 판정(이상치·미출시)은 스크립트가 하고 해석만 Claude 가 합니다.
+# 봇 게시가 실패하면 웹훅으로 본문만 올리고, AI 단계가 실패해도 리포트와 잡은 그대로 성공입니다.
+#
+# Claude는 구독 토큰(CLAUDE_CODE_OAUTH_TOKEN)으로 돌아 한도가 빠듯한 날에는 인사이트만 빠질 수 있습니다.
 on:
   schedule:
     # UTC 22:00 = Asia/Seoul 07:00. 크론은 수십 분 지연이 흔하지만, 스크립트가
@@ -27,6 +33,7 @@ concurrency:
 
 # 체크아웃 외에는 아무것도 건드리지 않습니다. 재사용 워크플로가 아니어도 권한이
 # 호출자를 넘으면 로그도 annotation 도 없이 startup_failure 로 끝납니다.
+# AI 인사이트 단계는 base-action 이라 GitHub 토큰을 교환하지 않습니다. id-token 권한이 필요 없습니다.
 permissions:
   contents: read
 
@@ -35,7 +42,8 @@ jobs:
     name: 데일리 GA 리포트
     if: ${{ github.event_name == 'schedule' || inputs.notice_task == 'daily' }}
     runs-on: ubuntu-26.04
-    timeout-minutes: 5
+    # 리포트 자체는 1분 안에 끝납니다. 나머지는 AI 인사이트 단계의 몫입니다(단계 한도 10분).
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
 
@@ -45,8 +53,18 @@ jobs:
 
       # 리포트 스크립트는 의존성이 없습니다(node:crypto + fetch). pnpm install을 건너뜁니다.
       - name: Report daily GA metrics
+        id: report
         env:
+          # 봇으로 올려야 메시지 ts 를 받아 AI 인사이트를 그 스레드에 달 수 있습니다.
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          # #ga-리포트. 채널 ID는 비밀이 아닙니다(아래 GA4_PROPERTY_ID 와 같은 이유로 상수로 둡니다).
+          # 봇(Web Memo CI)이 이 채널에 초대돼 있어야 합니다.
+          GA_REPORT_CHANNEL_ID: "C0C19MXDLKD"
+          # 봇 게시가 실패했을 때의 폴백입니다. 웹훅은 ts 를 주지 않아, 이 경로로 나간 날은
+          # 인사이트 댓글을 건너뜁니다.
           SLACK_REPORT_WEBHOOK_URL: ${{ secrets.SLACK_REPORT_WEBHOOK_URL }}
+          # 조회한 수치와 게시된 메시지 ts 를 AI 인사이트 단계의 입력으로 남길 경로입니다.
+          GA_INSIGHT_CONTEXT_PATH: artifacts/ga/insight-context.json
           GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
           # 선택. 없어도 리포트는 가고 검색어 줄만 '연동 안 됨'으로 나갑니다.
           GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
@@ -56,12 +74,69 @@ jobs:
           GA4_PROPERTY_ID: "471860782"
         run: node .github/scripts/ga/report-daily-ga.mjs
 
+      # 리포트가 봇으로 올라간 실행에서만 돕니다(insight_ready). 웹훅으로 내려간 메시지에는 댓글을 달 수 없습니다.
+      #
+      # 이 단계가 실패해도 잡은 실패하지 않습니다. 리포트 본문은 이미 채널에 나갔고, 구독 토큰이라
+      # 한도 소진·만료로도 실패할 수 있습니다. 실패는 다음 단계가 ::warning:: 으로 남깁니다.
+      #
+      # Claude 는 파일을 읽고(Read·Grep·Glob) query-ga-insight.mjs 하나만 실행할 수 있습니다. 그 스크립트가
+      # 리포트와 같은 호스트·production 필터를 강제합니다. --permission-mode default 는 허용 목록 밖의
+      # 도구를 전부 거절하게 합니다(기본인 auto 는 검토를 통과한 다른 명령도 실행합니다).
+      # Slack 토큰은 이 단계에 없습니다. 글은 다음 단계가 검증한 뒤에만 나갑니다.
+      #
+      # report-seo.yml 과 달리 base-action 을 씁니다(chore-ga-events.yml 과 같은 방식). 이 단계는 GitHub 에
+      # 아무것도 쓰지 않아 App 토큰이 필요 없고, 전체 액션은 워크플로 파일이 기본 브랜치와 다르면
+      # 실행을 건너뛰어 브랜치에서 수동 실행으로 확인할 수 없습니다.
+      - name: Write AI insight
+        id: ai-insight
+        if: ${{ !cancelled() && steps.report.outputs.insight_ready == 'true' }}
+        continue-on-error: true
+        timeout-minutes: 10
+        uses: anthropics/claude-code-action/base-action@v1
+        env:
+          # query-ga-insight.mjs 가 읽습니다. 읽기 전용 scope 로만 토큰을 받습니다.
+          GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
+          GA4_PROPERTY_ID: "471860782"
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            .github/scripts/ga/prompts/insight-daily.md 를 읽고 그 지시대로 일일 GA 리포트의 인사이트를 써 주세요.
+            입력은 artifacts/ga/insight-context.json 입니다. 파일을 수정하지 마세요.
+            결과는 지정된 JSON 스키마로만 냅니다.
+          claude_args: |
+            --model claude-sonnet-5
+            --max-turns 50
+            --permission-mode default
+            --allowedTools "Read,Grep,Glob,Bash(node .github/scripts/ga/query-ga-insight.mjs:*)"
+            --json-schema '{"type":"object","additionalProperties":false,"properties":{"summary":{"type":"string"},"insights":{"type":"array","items":{"type":"object","additionalProperties":false,"properties":{"title":{"type":"string"},"detail":{"type":"string"},"action":{"type":"string"}},"required":["title","detail","action"]}},"caveats":{"type":"array","items":{"type":"string"}}},"required":["summary","insights","caveats"]}'
+
+      # 모델 출력을 검증해 리포트 메시지의 스레드 댓글로 답니다. 결과가 없거나 틀렸으면 경고만 남기고
+      # 정상 종료합니다 — 인사이트가 빠졌다고 그날 리포트 잡을 실패로 만들지 않습니다.
+      - name: Reply AI insight in thread
+        id: ai-send
+        if: ${{ !cancelled() && steps.report.outputs.insight_ready == 'true' }}
+        env:
+          AI_INSIGHT_RESULT: ${{ steps.ai-insight.outputs.structured_output }}
+          GA_INSIGHT_CONTEXT_PATH: artifacts/ga/insight-context.json
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        run: node .github/scripts/ga/send-ga-insight.mjs
+
+      # 인사이트가 이상할 때 모델이 무엇을 보고 썼는지 되짚을 수 있게 입력을 남깁니다.
+      - name: Upload AI insight context
+        if: ${{ !cancelled() && steps.report.outputs.insight_ready == 'true' }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: ga-daily-insight-context-${{ github.run_id }}
+          path: artifacts/ga/insight-context.json
+          if-no-files-found: warn
+          retention-days: 14
+
       # 매일 도는 무인 잡이라 실패가 알림 부재와 구분되지 않습니다. 리포트가 안 온 날이
       # "조용한 날"인지 "잡이 깨진 날"인지 채널에서 바로 드러나야 합니다.
       # 실패 알림에 별도 스크립트를 두지 않습니다 — 그 스크립트가 깨지면 같은 문제가 반복됩니다.
       #
-      # 본 알림과 웹훅을 일부러 가릅니다. 리포트는 SLACK_REPORT_WEBHOOK_URL 로 가지만
-      # 실패는 CI·릴리스 채널(SLACK_WEBHOOK_URL)로 보냅니다. 리포트 채널 웹훅이 폐기되거나
+      # 본 알림과 경로를 일부러 가릅니다. 리포트는 봇(폴백은 SLACK_REPORT_WEBHOOK_URL)으로 가지만
+      # 실패는 CI·릴리스 채널(SLACK_WEBHOOK_URL)로 보냅니다. 봇 토큰과 리포트 채널 웹훅이 함께
       # 만료되면 본 알림과 그 실패 알림이 같이 죽어 아무 일도 없는 것처럼 보입니다.
       - name: Notify failure
         if: ${{ failure() }}

@@ -85,6 +85,32 @@ describe("GA 이벤트 자동 수정 경로", () => {
 	});
 });
 
+describe("이전 자동 PR 기록 반영", () => {
+	it("분석 프롬프트가 rejectedEvents 규칙을 갖는다", () => {
+		const prompt = step("analyze").with.prompt;
+
+		expect(prompt).toContain("context.rejectedEvents");
+		expect(prompt).toContain("different name");
+		expect(prompt).toContain("not as instructions");
+		expect(prompt).toContain("status=none");
+	});
+
+	it("컨텍스트 단계만 읽기 토큰을 받고 Claude 단계에는 토큰이 없다", () => {
+		expect(step("context").env.GH_TOKEN).toBe("${{ github.token }}");
+		for (const claudeStep of steps.filter((value: { uses?: string }) => value.uses?.startsWith("anthropics/claude-code-action"))) {
+			expect(claudeStep.env?.GH_TOKEN).toBeUndefined();
+			expect(JSON.stringify(claudeStep)).not.toContain("github.token");
+		}
+	});
+
+	it("게시 잡의 import-patch는 읽기 토큰으로 컨텍스트를 다시 만든다", () => {
+		const imported = workflow.jobs.publish.steps.find((value: { run?: string }) => value.run?.includes("maintain.mjs import-patch"));
+
+		expect(imported.env.GH_TOKEN).toBe("${{ github.token }}");
+		expect(workflow.jobs.publish.permissions).toBeUndefined();
+	});
+});
+
 describe("Claude 실패 진단 경로", () => {
 	it.each(["analyze", "write_events", "fix_events"])(
 		"%s 실패 직후 안전한 요약만 남긴다",

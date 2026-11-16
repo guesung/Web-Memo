@@ -1,9 +1,10 @@
 // @ts-nocheck — .mjs 스크립트를 직접 import 하는 테스트라 타입 선언이 없습니다.
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { buildDailyReportPayload } from "./daily-report-blocks.mjs";
 import {
 	CORE_EVENTS,
+	fetchWritingMinutes,
 	summarizeGoogleSearchVisitors,
 	summarizeWritingMinutes,
 } from "./ga4-data.mjs";
@@ -183,6 +184,56 @@ describe("summarizeWritingMinutes", () => {
 			yesterday: 0,
 			average7: 0,
 		});
+	});
+});
+
+describe("fetchWritingMinutes", () => {
+	afterEach(() => {
+		vi.unstubAllGlobals();
+		vi.restoreAllMocks();
+	});
+
+	it("memo_write·운영 필터·8일·dateHourMinute·limit 15,000으로 조회해 분을 센다", async () => {
+		const fetchMock = vi.fn().mockResolvedValue({
+			ok: true,
+			json: async () => ({
+				rows: [
+					{ dimensionValues: [{ value: "202610311900" }], metricValues: [{ value: "5" }] },
+					{ dimensionValues: [{ value: "202610311901" }], metricValues: [{ value: "1" }] },
+				],
+			}),
+		});
+		vi.stubGlobal("fetch", fetchMock);
+
+		const result = await fetchWritingMinutes({
+			accessToken: "token",
+			propertyId: "1",
+			targetDate: "2026-10-31",
+		});
+
+		expect(result).toEqual({ status: "ok", yesterday: 2, average7: 0 });
+
+		const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+
+		expect(body.dateRanges).toEqual([{ startDate: "2026-10-24", endDate: "2026-10-31" }]);
+		expect(body.dimensions).toEqual([{ name: "dateHourMinute" }]);
+		expect(body.limit).toBe(15000);
+		expect(body.dimensionFilter.andGroup.expressions).toEqual([
+			{ filter: { fieldName: "eventName", stringFilter: { matchType: "EXACT", value: "memo_write" } } },
+			{ filter: { fieldName: "customEvent:build_env", stringFilter: { matchType: "EXACT", value: "production" } } },
+		]);
+	});
+
+	it("조회가 실패하면 throw 하지 않고 failed 를 돌려준다", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockResolvedValue({ ok: false, status: 500, text: async () => "boom" }),
+		);
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+
+		await expect(
+			fetchWritingMinutes({ accessToken: "token", propertyId: "1", targetDate: "2026-10-31" }),
+		).resolves.toEqual({ status: "failed" });
 	});
 });
 

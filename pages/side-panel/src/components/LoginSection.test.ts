@@ -64,7 +64,7 @@ it("온라인이고 사용자 확인이 네트워크 오류가 아니면 로그�
 
 	await renderLoginSection();
 
-	expect(container.textContent).toContain("login_start_button");
+	expect(container.textContent).toContain("login_google_button");
 	expect(container.textContent).not.toContain("login_network_unavailable");
 });
 
@@ -98,15 +98,14 @@ it("연결 안내 중에 online 이벤트가 오면 다시 판단한다", async 
 		window.dispatchEvent(new Event("online"));
 	});
 
-	expect(container.textContent).toContain("login_start_button");
+	expect(container.textContent).toContain("login_google_button");
 });
 
-it("로그인 전에 예시와 할 수 있는 일을 보여주고, 시작 버튼은 로그인 탭을 연다", async () => {
+it("로그인 전에 예시와 할 수 있는 일을 보여주고, 카카오·Google 버튼만 내놓는다", async () => {
 	queryClient.setQueryData(QUERY_KEY.user(), {
 		data: { user: null },
 		error: null,
 	});
-	vi.mocked(analytics.getExtensionClientId).mockResolvedValue("cid-1");
 
 	await renderLoginSection();
 
@@ -114,15 +113,39 @@ it("로그인 전에 예시와 할 수 있는 일을 보여주고, 시작 버튼
 		"login_example_quote_highlight",
 	);
 	expect(container.querySelectorAll("li")).toHaveLength(3);
-
-	await act(async () => {
-		container.querySelector("button")?.click();
-	});
-
-	expect(analytics.trackEvent).toHaveBeenCalledWith({
-		name: "side_panel_login_click",
-	});
-	expect(Tab.create).toHaveBeenCalledWith({
-		url: "https://example.com/login?ext_cid=cid-1",
-	});
+	expect(
+		[...container.querySelectorAll("button")].map(
+			(button) => button.textContent,
+		),
+	).toEqual(["login_kakao_button", "login_google_button"]);
 });
+
+it.each([
+	["login_kakao_button", "kakao"],
+	["login_google_button", "google"],
+])(
+	"%s 버튼은 그 제공자의 로그인 시작 경로를 새 탭으로 연다",
+	async (label, provider) => {
+		queryClient.setQueryData(QUERY_KEY.user(), {
+			data: { user: null },
+			error: null,
+		});
+		vi.mocked(analytics.getExtensionClientId).mockResolvedValue("cid-1");
+
+		await renderLoginSection();
+
+		await act(async () => {
+			[...container.querySelectorAll("button")]
+				.find((button) => button.textContent === label)
+				?.click();
+		});
+
+		expect(analytics.trackEvent).toHaveBeenCalledWith({
+			name: "side_panel_login_click",
+			params: { method: provider },
+		});
+		expect(Tab.create).toHaveBeenCalledWith({
+			url: `https://example.com/auth/start?provider=${provider}&ext_cid=cid-1`,
+		});
+	},
+);

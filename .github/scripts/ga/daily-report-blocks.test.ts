@@ -2,7 +2,11 @@
 import { describe, expect, it } from "vitest";
 
 import { buildDailyReportPayload } from "./daily-report-blocks.mjs";
-import { CORE_EVENTS, summarizeGoogleSearchVisitors } from "./ga4-data.mjs";
+import {
+	CORE_EVENTS,
+	summarizeGoogleSearchVisitors,
+	summarizeWritingMinutes,
+} from "./ga4-data.mjs";
 
 const baseReport = {
 	targetDate: "2026-10-31",
@@ -103,6 +107,37 @@ describe("summarizeGoogleSearchVisitors", () => {
 
 	it("행이 없으면 0명이다", () => {
 		expect(summarizeGoogleSearchVisitors([], "2026-10-31")).toEqual({
+			yesterday: 0,
+			average7: 0,
+		});
+	});
+});
+
+describe("summarizeWritingMinutes", () => {
+	it("저장이 있던 분(행)의 어제 개수와 직전 7일 평균을 분모 7로 센다", () => {
+		const rows = [
+			{ dimensions: ["202610311900"], metrics: [19] },
+			{ dimensions: ["202610311901"], metrics: [57] },
+			{ dimensions: ["202610311902"], metrics: [1] },
+			{ dimensions: ["202610301200"], metrics: [3] },
+			{ dimensions: ["202610241200"], metrics: [3] },
+			{ dimensions: ["202610241201"], metrics: [3] },
+			{ dimensions: ["202610241202"], metrics: [3] },
+			{ dimensions: ["202610241203"], metrics: [3] },
+			{ dimensions: ["202610241204"], metrics: [3] },
+			{ dimensions: ["202610241205"], metrics: [3] },
+			// 범위 밖 날짜는 평균에 들어가지 않는다
+			{ dimensions: ["202610231200"], metrics: [100] },
+		];
+
+		expect(summarizeWritingMinutes(rows, "2026-10-31")).toEqual({
+			yesterday: 3,
+			average7: 1,
+		});
+	});
+
+	it("행이 없으면 0분이다", () => {
+		expect(summarizeWritingMinutes([], "2026-10-31")).toEqual({
 			yesterday: 0,
 			average7: 0,
 		});

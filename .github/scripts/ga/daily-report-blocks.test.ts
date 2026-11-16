@@ -89,6 +89,48 @@ describe("buildDailyReportPayload 핵심 이벤트 블록", () => {
 	});
 });
 
+describe("buildDailyReportPayload 퍼널 메모 작성 줄", () => {
+	const buildFunnelText = (writingMinutes) =>
+		blockTexts(
+			buildDailyReportPayload({
+				report: {
+					...baseReport,
+					events: { memo_write: eventStat([2, 1.9], [3148, 2000]) },
+					writingMinutes,
+				},
+				runUrl: null,
+			}),
+		).find((text) => text.startsWith("*퍼널*"));
+
+	it("건수 대신 사람 수와 작성한 분을 적고 증감률은 사람 수 기준이다", () => {
+		const funnel = buildFunnelText({ status: "ok", yesterday: 163, average7: 88 });
+
+		expect(funnel).toContain(
+			"메모 작성  *2명 · 163분 작성*  (7일 평균 1.9명 · 88.0분 · +5%)",
+		);
+		expect(funnel).not.toContain("3,148건");
+	});
+
+	it("분 조회가 실패하면 사람 수만 적는다", () => {
+		const funnel = buildFunnelText({ status: "failed" });
+
+		expect(funnel).toContain("메모 작성  *2명*  (7일 평균 1.9명 · +5%)");
+	});
+
+	it("분 데이터가 없으면 사람 수만 적는다", () => {
+		expect(buildFunnelText(undefined)).toContain(
+			"메모 작성  *2명*  (7일 평균 1.9명 · +5%)",
+		);
+	});
+
+	it("다른 퍼널 줄은 사람 수와 건수를 그대로 적는다", () => {
+		const funnel = buildFunnelText({ status: "ok", yesterday: 163, average7: 88 });
+
+		expect(funnel).toContain("사이드 패널 열기  *0명 · 0건*");
+		expect(funnel).toContain("신규 메모 작성  *0명 · 0건*");
+	});
+});
+
 describe("summarizeGoogleSearchVisitors", () => {
 	it("어제 값과 직전 7일 평균을 분모 7로 계산한다", () => {
 		const rows = [

@@ -423,7 +423,7 @@ node .github/scripts/ga/measure-first-memo.mjs \
 채널이 `#ga-리포트`로 고정이라 **폴백으로 나간 주간 리포트는 일일 채널에 올라갑니다.** 채널을 새로 만들면
 봇을 그 채널에 초대해야 합니다.
 
-리포트가 봇으로 올라가면 같은 실행에서 Claude(`anthropics/claude-code-action`, 구독 토큰)가 그 수치를 해석해
+리포트가 봇으로 올라가면 같은 실행에서 Claude(`anthropics/claude-code-action/base-action`, 구독 토큰)가 그 수치를 해석해
 리포트 메시지의 **스레드 댓글**로 인사이트를 답니다.
 
 - 입력은 리포트 스크립트가 남긴 `artifacts/ga/insight-context.json`입니다(리포트와 같은 조회 결과 + 메시지 ts).

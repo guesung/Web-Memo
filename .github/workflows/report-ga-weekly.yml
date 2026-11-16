@@ -16,8 +16,7 @@ name: Weekly GA Report
 # 봇 게시가 실패하면 웹훅으로 본문만 올리고(웹훅은 #ga-리포트 고정), AI 단계가 실패해도
 # 리포트와 잡은 그대로 성공입니다. 백필은 Slack 에 게시하지 않으므로 AI 단계도 돌지 않습니다.
 #
-# 전제: report-seo.yml 과 같이 Claude GitHub App이 설치돼 있어야 합니다. Claude는 구독 토큰
-# (CLAUDE_CODE_OAUTH_TOKEN)으로 돌아 한도가 빠듯한 날에는 인사이트만 빠질 수 있습니다.
+# Claude는 구독 토큰(CLAUDE_CODE_OAUTH_TOKEN)으로 돌아 한도가 빠듯한 날에는 인사이트만 빠질 수 있습니다.
 on:
   schedule:
     # UTC 금요일 23:00 = Asia/Seoul 토요일 08:00. 크론은 수십 분 지연이 흔하지만,
@@ -43,10 +42,9 @@ concurrency:
 
 # 체크아웃 외에는 아무것도 건드리지 않습니다. 재사용 워크플로가 아니어도 권한이
 # 호출자를 넘으면 로그도 annotation 도 없이 startup_failure 로 끝납니다.
-# id-token 은 AI 인사이트 단계의 claude-code-action 이 GitHub 접근 토큰을 OIDC 로 교환하는 데 씁니다.
+# AI 인사이트 단계는 base-action 이라 GitHub 토큰을 교환하지 않습니다. id-token 권한이 필요 없습니다.
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   report:
@@ -109,12 +107,16 @@ jobs:
       # 리포트와 같은 호스트·production 필터를 강제합니다. --permission-mode default 는 허용 목록 밖의
       # 도구를 전부 거절하게 합니다(기본인 auto 는 검토를 통과한 다른 명령도 실행합니다).
       # Slack 토큰은 이 단계에 없습니다. 글은 다음 단계가 검증한 뒤에만 나갑니다.
+      #
+      # report-seo.yml 과 달리 base-action 을 씁니다(chore-ga-events.yml 과 같은 방식). 이 단계는 GitHub 에
+      # 아무것도 쓰지 않아 App 토큰이 필요 없고, 전체 액션은 워크플로 파일이 기본 브랜치와 다르면
+      # 실행을 건너뛰어 브랜치에서 수동 실행으로 확인할 수 없습니다.
       - name: Write AI insight
         id: ai-insight
         if: ${{ !cancelled() && steps.report.outputs.insight_ready == 'true' }}
         continue-on-error: true
         timeout-minutes: 10
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action/base-action@v1
         env:
           # query-ga-insight.mjs 가 읽습니다. 읽기 전용 scope 로만 토큰을 받습니다.
           GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}

@@ -780,6 +780,31 @@ it("lookup error fails closed and retry can save after lookup recovery", async (
 	expect(mocks.upsert).toHaveBeenCalledTimes(1);
 });
 
+it("큐 조회 오류 중 입력하고 재시도로 저장에 성공하면 디바운스가 지나도 saved를 유지한다", async () => {
+	mocks.pendingStatus = "error";
+	await render();
+	await act(async () => form.handleMemoChange("draft"));
+	await act(async () => form.handleSaveRetryClick());
+	mocks.pendingStatus = "absent";
+	await render();
+	expect(form.saveStatus).toBe("saved");
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(350);
+	});
+	expect(form.saveStatus).toBe("saved");
+});
+
+it("큐 조회 오류가 디바운스 시점까지 그대로면 failed로 남는다", async () => {
+	mocks.pendingStatus = "error";
+	await render();
+	await act(async () => form.handleMemoChange("draft"));
+	await act(async () => {
+		await vi.advanceTimersByTimeAsync(350);
+	});
+	expect(form.saveStatus).toBe("failed");
+	expect(mocks.upsert).not.toHaveBeenCalled();
+});
+
 it("storage lookup and tab errors release save gate for retry", async () => {
 	await render();
 	mocks.getTabInfo.mockRejectedValueOnce(new Error("tab failed"));

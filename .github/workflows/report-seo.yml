@@ -14,7 +14,8 @@ name: SEO Monitor
 #
 # 자동 수정: 리포트의 P0·P1·P2 발견 중 코드 위치(apps/web·packages/ui·packages/shared)가 있는 것을 Claude가
 # 코드로 고치고 master 대상 PR을 엽니다. 자동 머지는 하지 않으며 열린 자동 수정 PR이 있으면 새로 만들지
-# 않습니다. 잡을 셋으로 나눠 권한을 분리합니다.
+# 않습니다. 닫힌(머지되지 않은) 자동 수정 PR의 근거와 같은 발견은 다시 고치지 않으며(리포트에는 계속 나옴),
+# 그 PR 조회에 실패하면 이전 기록 없이 진행하고 Step Summary에 남깁니다. 잡을 셋으로 나눠 권한을 분리합니다.
 #   inspect  수정 대상 선정 (읽기 전용)
 #   fix      Claude가 파일만 고침. git 자격 증명·Bash 없음. 변경 범위 검사와 pnpm check·type-check 통과 필요
 #   publish  검증된 패치만 GitHub App 토큰으로 커밋·PR (App 토큰이라야 PR에서 CI가 돕니다)
@@ -44,7 +45,7 @@ permissions:
   actions: read
   contents: read
   id-token: write
-  # 열린 자동 수정 PR을 조회합니다. 쓰기는 publish 잡이 App 토큰으로만 합니다.
+  # 열린·닫힌 자동 수정 PR을 조회합니다. 쓰기는 publish 잡이 App 토큰으로만 합니다.
   pull-requests: read
 
 jobs:

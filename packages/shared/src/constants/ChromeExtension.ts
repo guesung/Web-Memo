@@ -8,6 +8,13 @@
 export const CHROME_EXTENSION_ID = "eaiojpmgklfngpjddhoalgcpkepgkclh";
 
 /**
+ * `chrome.identity.launchWebAuthFlow`가 끝났다고 알아듣는 주소.
+ * @description 로그인 창이 이 주소로 이동하면 크롬이 창을 닫고 주소를 확장에 돌려준다.
+ * 실제로 열리는 페이지가 아니다. 웹의 OAuth 콜백이 확장에서 시작한 로그인을 여기로 돌려보낸다.
+ */
+export const CHROME_EXTENSION_AUTH_REDIRECT_URL = `https://${CHROME_EXTENSION_ID}.chromiumapp.org/`;
+
+/**
  * 크롬 웹스토어 개발자 대시보드의 게시자(Publisher) ID.
  * @description
  * 웹스토어 API v2의 모든 요청 경로(`publishers/<id>/items/<extensionId>`)에 들어간다.

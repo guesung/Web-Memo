@@ -30,7 +30,7 @@
 
 | 항목 | 현재 동작과 한계 |
 | --- | --- |
-| 호출 | `analytics.trackEvent({ name, params })`. helper가 여러 이벤트를 만들기도 함. `install_guide_load`·`extension_uninstall` 서버 전송과 웹 자동 수집은 개별 명세의 예외 |
+| 호출 | `analytics.trackEvent({ name, params })`. helper가 여러 이벤트를 만들기도 함. `install_guide_load`·`extension_uninstall`·`/auth/start` 경로의 `login_start` 서버 전송과 웹 자동 수집은 개별 명세의 예외 |
 | 분류 | `EVENT_CATEGORY`의 `core_action` / `engagement`. 비즈니스 성공이나 트랜잭션 보장은 아님 |
 | 게이트 | 공통 계층은 development·운영자 계정을 제외, staging은 전송. 자동 gtag·서버 경로는 별도 게이트를 확인 |
 | `event_category` | 분류 문자열. 공통 계층이 덧붙임 |
@@ -609,16 +609,16 @@
 ### `login_start`
 
 - **질문:** 웹에서 어느 로그인 수단을 선택하는가?
-- **발생·제외:** TrackLoginStartForm의 클릭 capture에서 data-login-method가 있는 가장 가까운 버튼을 찾고 비어 있지 않은 method일 때 기록. OAuth 완료 전.
+- **발생·제외:** TrackLoginStartForm의 클릭 capture에서 data-login-method가 있는 가장 가까운 버튼을 찾고 비어 있지 않은 method일 때 기록. OAuth 완료 전. 확장 사이드 패널의 제공자 버튼으로 들어오면 로그인 페이지를 거치지 않으므로 GET /auth/start가 OAuth 시작에 성공했을 때 after()로 서버 전송한다(development 제외).
 - **속성:** 필수 `method: string`; 현재 버튼은 google/kakao/apple. 타입은 문자열이며 허용값 검증은 별도 없음.
 - **단위·중복:** 조건을 만족하는 클릭당 1회; pending 제공자 버튼 반복 클릭도 전역 중복 제거하지 않음.
-- **근거·테스트:** [호출 코드](../apps/web/src/app/%5Blng%5D/%28no-auth%29/login/_components/TrackLoginStartForm/index.tsx); [관련 테스트](../e2e/tests/web/login.test.ts).
+- **근거·테스트:** [호출 코드](../apps/web/src/app/%5Blng%5D/%28no-auth%29/login/_components/TrackLoginStartForm/index.tsx); [관련 테스트](../e2e/tests/web/login.test.ts); [서버 호출 코드](../apps/web/src/app/auth/start/route.ts); [서버 테스트](../apps/web/src/app/auth/start/route.test.ts).
 - **한계·이력:** 로그인 요청/세션의 고유 식별자가 없고 키보드 form submit 전체를 포괄하는 이벤트도 아니다. login 사용자 수를 나눠 정확한 완료율로 삼지 않는다. DB-1160. 도입 버전·일자 미확인.
 
 ### `login`
 
 - **질문:** OAuth/email 콜백 뒤 메모 영역에 도달했는가?
-- **발생·제외:** 인증 사이드바 레이아웃 TrackLoginSuccess가 비어 있지 않은 login 쿼리를 읽으면 기록 후 login/signup 쿼리를 router.replace로 제거.
+- **발생·제외:** 인증 사이드바 레이아웃 TrackLoginSuccess가 비어 있지 않은 login 쿼리를 읽으면 기록 후 login/signup 쿼리를 router.replace로 제거. 확장 사이드 패널의 로그인 창에서 로그인하면 웹 메모 화면을 거치지 않으므로, 패널의 LoginSection이 로그인 창이 돌려준 주소의 login 값을 읽어 확장에서 기록한다.
 - **속성:** 필수 `method: string`; 콜백의 제공자 값 또는 email.
 - **단위·중복:** 쿼리 제거로 정상 재조회 중복을 줄이지만 ref/서버 idempotency 가드는 없음.
 - **근거·테스트:** [호출 코드](../apps/web/src/app/%5Blng%5D/%28auth%29/%28sidebar%29/_components/TrackLoginSuccess/index.tsx); [관련 테스트](../apps/web/src/app/auth/callback/route.test.ts).
@@ -627,7 +627,7 @@
 ### `sign_up`
 
 - **질문:** 콜백이 신규 계정으로 분류한 도착이 얼마나 있는가?
-- **발생·제외:** TrackLoginSuccess에서 login 쿼리가 있고 signup=true면 login에 앞서 함께 기록. signup만 있으면 없음.
+- **발생·제외:** TrackLoginSuccess에서 login 쿼리가 있고 signup=true면 login에 앞서 함께 기록. signup만 있으면 없음. 확장 사이드 패널의 로그인 창 경로에서는 LoginSection이 같은 규칙으로 기록한다.
 - **속성:** 필수 `method: string`; login과 같은 쿼리 값.
 - **단위·중복:** 신규 분류 콜백 도착당 시도; 쿼리 제거 정책은 login과 동일.
 - **근거·테스트:** [호출 코드](../apps/web/src/app/%5Blng%5D/%28auth%29/%28sidebar%29/_components/TrackLoginSuccess/index.tsx); [관련 테스트](../apps/web/src/app/auth/callback/route.test.ts).
@@ -644,12 +644,12 @@
 
 ### `side_panel_login_click`
 
-- **질문:** 패널 로그인 안내에서 웹 로그인으로 이동하려는가?
-- **발생·제외:** LoginSection 버튼 클릭 시 client ID 조회와 Tab.create 전에 기록. 네트워크 불가 안내에서는 버튼 미표시.
-- **속성:** 추가 속성 없음.
+- **질문:** 패널 로그인 안내에서 어느 제공자로 로그인을 시작하려는가?
+- **발생·제외:** LoginSection 제공자 버튼 클릭 시 client ID 조회와 로그인 창(로그인 창을 쓸 수 없는 브라우저에서는 새 탭)을 열기 전에 기록. 네트워크 불가 안내에서는 버튼 미표시.
+- **속성:** 필수 `method: "kakao" | "google"`; 누른 제공자 버튼. 버튼이 하나였던 이전 버전의 이벤트에는 없다.
 - **단위·중복:** 클릭당 1회; 별도 중복 제거 없음.
 - **근거·테스트:** [호출 코드](../pages/side-panel/src/components/LoginSection.tsx); [관련 테스트](../pages/side-panel/src/components/LoginSection.test.ts).
-- **한계·이력:** 탭 생성·로그인 성공을 뜻하지 않는다. ext_cid 전달 실패/GA 식별 분리 가능성을 별도로 확인한다. 도입 버전·일자 미확인.
+- **한계·이력:** 로그인 창 표시·로그인 성공을 뜻하지 않는다. ext_cid 전달 실패/GA 식별 분리 가능성을 별도로 확인한다. 도입 버전·일자 미확인.
 
 ### `header_login_click`
 

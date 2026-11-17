@@ -281,6 +281,66 @@ test("드래그 중에는 버블이 숨고 포인터를 놓으면 나타난다",
 	await expect(toolbar).toBeVisible();
 });
 
+test("칠한 문장 위에 마우스를 올리면 문서 커서가 pointer가 되고 벗어나면 원래대로 돌아온다", async ({
+	page,
+}) => {
+	await setupSupabaseMocks(page, new MockSupabaseStore());
+	await login(page);
+	await skipGuide(page);
+	await openSidePanel(page);
+	const sidePanelPage = await findSidePanelPage(page);
+	await sidePanelPage.evaluate(async () => {
+		await chrome.storage.sync.set({
+			highlightBubbleEnabled: true,
+			highlightIntroSeen: true,
+			highlightEditHintSeen: true,
+			highlightDisabledSites: [],
+		});
+	});
+	const labels = await sidePanelPage.evaluate(() => ({
+		create: chrome.i18n.getMessage("highlight_create"),
+		yellow: chrome.i18n.getMessage("highlight_color_yellow"),
+	}));
+	await page.evaluate((text) => {
+		const passage = document.createElement("p");
+		passage.id = "e2e-highlight-passage";
+		passage.textContent = text;
+		document.body.append(passage);
+	}, TEST_TEXT);
+	const rangeCenter = (start: number, end: number) =>
+		page.evaluate(
+			({ start, end }) => {
+				const text = document.querySelector("#e2e-highlight-passage")
+					?.firstChild as Text;
+				const range = document.createRange();
+				range.setStart(text, start);
+				range.setEnd(text, end);
+				const rect = range.getBoundingClientRect();
+				return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+			},
+			{ start, end },
+		);
+	const readCursor = () =>
+		page.evaluate(() => getComputedStyle(document.documentElement).cursor);
+
+	await selectPassage(page, 0, 24);
+	await page
+		.locator(TOOLBAR)
+		.getByRole("toolbar", { name: labels.create })
+		.getByRole("button", { name: labels.yellow })
+		.click();
+
+	const painted = await rangeCenter(0, 24);
+	await page.mouse.move(painted.x, painted.y);
+	await page.mouse.move(painted.x + 1, painted.y);
+	await expect.poll(readCursor).toBe("pointer");
+
+	const unpainted = await rangeCenter(29, 54);
+	await page.mouse.move(unpainted.x, unpainted.y);
+	await page.mouse.move(unpainted.x + 1, unpainted.y);
+	await expect.poll(readCursor).not.toBe("pointer");
+});
+
 async function selectPassage(
 	page: import("@playwright/test").Page,
 	start: number,

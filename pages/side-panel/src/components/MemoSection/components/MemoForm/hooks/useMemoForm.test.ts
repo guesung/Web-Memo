@@ -40,6 +40,7 @@ vi.mock("@web-memo/shared/hooks", () => ({
 	useDidMount: vi.fn(),
 	useTabQuery: () => ({ data: mocks.tab }),
 	useSupabaseClientQuery: () => ({ data: {} }),
+	useMemoStoreQuery: () => ({ data: {} }),
 	useSupabaseUserQuery: () => ({
 		user: { data: { user: mocks.userId ? { id: mocks.userId } : null } },
 	}),

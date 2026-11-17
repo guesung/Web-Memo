@@ -10,8 +10,8 @@ import {
 	useDebounce,
 	useDidMount,
 	useMemoPatchMutation,
+	useMemoStoreQuery,
 	useMemoUpsertMutation,
-	useSupabaseClientQuery,
 	useSupabaseUserQuery,
 	useTabQuery,
 } from "@web-memo/shared/hooks";
@@ -91,7 +91,7 @@ export default function useMemoForm({
 		useDebounce();
 	const queryClient = useQueryClient();
 	const { data: tab } = useTabQuery();
-	const { data: supabaseClient } = useSupabaseClientQuery();
+	const { data: memoStore } = useMemoStoreQuery();
 	const isOnline = useOnlineStatus();
 	const { user } = useSupabaseUserQuery();
 	const userId = user.data.user?.id;
@@ -110,7 +110,7 @@ export default function useMemoForm({
 	}
 	// Suspense로 읽으면 조회를 기다리는 동안 폼 전체가 스켈레톤으로 바뀐다. 잠금 판단은 MemoSection이 맡는다.
 	const { data: memoQueryData, refetch: refetchMemo } = useQuery({
-		...memoQueryOptions({ supabaseClient, url: tab?.url ?? "" }),
+		...memoQueryOptions({ memoStore, url: tab?.url ?? "" }),
 		// MemoSection이 같은 키를 이미 prefetch했으므로 마운트 때 한 번 더 조회하지 않는다.
 		refetchOnMount: false,
 	});

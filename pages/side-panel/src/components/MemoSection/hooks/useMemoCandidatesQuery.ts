@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
 	memoQueryOptions,
 	samePathMemoQueryOptions,
-	useSupabaseClientQuery,
+	useMemoStoreQuery,
 } from "@web-memo/shared/hooks";
 import useOnlineStatus from "../../../hooks/useOnlineStatus";
 
@@ -23,15 +23,15 @@ interface IFUseMemoCandidatesQueryProps {
 export default function useMemoCandidatesQuery({
 	url,
 }: IFUseMemoCandidatesQueryProps) {
-	const { data: supabaseClient } = useSupabaseClientQuery();
+	const { data: memoStore } = useMemoStoreQuery();
 	const isOnline = useOnlineStatus();
 	const memoQuery = useQuery({
-		...memoQueryOptions({ supabaseClient, url }),
+		...memoQueryOptions({ memoStore, url }),
 		// MemoSection이 같은 키를 이미 prefetch했으므로 마운트 때 한 번 더 조회하지 않는다.
 		refetchOnMount: false,
 	});
 	const samePathMemoQuery = useQuery({
-		...samePathMemoQueryOptions({ supabaseClient, url }),
+		...samePathMemoQueryOptions({ memoStore, url }),
 		refetchOnMount: false,
 	});
 

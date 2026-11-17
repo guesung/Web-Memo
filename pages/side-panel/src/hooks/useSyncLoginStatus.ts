@@ -37,6 +37,8 @@ export default function useSyncLoginStatus(
 		await queryClient.refetchQueries({
 			queryKey: QUERY_KEY.supabaseClient(),
 		});
+		// 기기 저장소를 쓰던 패널이 로그인 신호를 받으면 서버 저장소로 다시 고른다.
+		await queryClient.refetchQueries({ queryKey: QUERY_KEY.memoStore() });
 		await queryClient.refetchQueries({ queryKey: QUERY_KEY.user() });
 		// 오프라인에서 실패한 설정·메모 조회가 오류로 남아 있으면, 경계를 리셋해도 Suspense 조회가 같은
 		// 오류를 곧바로 다시 던져 로그인 화면(경계 폴백)으로 돌아간다. 리셋 전에 먼저 다시 가져온다.

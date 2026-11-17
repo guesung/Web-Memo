@@ -6,8 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import {
 	memoQueryOptions,
 	useHighlightMemoLinks,
+	useMemoStoreQuery,
 	useSettingQuery,
-	useSupabaseClientQuery,
 } from "@web-memo/shared/hooks";
 import { useSearchParams } from "@web-memo/shared/modules/search-params";
 import type { GetMemoResponse } from "@web-memo/shared/types";
@@ -61,8 +61,8 @@ export default function MemoDialog({
 	nextMemoId,
 }: MemoDialogProps) {
 	const { t } = useTranslation(lng);
-	const { data: supabaseClient } = useSupabaseClientQuery();
-	const query = useQuery(memoQueryOptions({ supabaseClient, id: memoId }));
+	const { data: memoStore } = useMemoStoreQuery();
+	const query = useQuery(memoQueryOptions({ memoStore, id: memoId }));
 	const latestMemo = query.data?.data?.find((memo) => memo.id === memoId);
 	const memo = initialMemo?.id === memoId ? initialMemo : latestMemo;
 	const displayedMemoId = memo?.id;

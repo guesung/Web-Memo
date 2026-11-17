@@ -20,6 +20,7 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
 	useSupabaseClientQuery: () => ({ data: {} }),
+	useMemoStoreQuery: () => ({ data: {} }),
 	memoQueryOptions: ({ url }: { url?: string }) => ({
 		queryKey: ["test-memo", url],
 		queryFn: mocks.memoQueryImpl,

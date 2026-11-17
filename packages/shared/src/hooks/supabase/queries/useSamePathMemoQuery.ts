@@ -1,9 +1,8 @@
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { QUERY_KEY } from "../../../constants";
-import type { MemoSupabaseClient } from "../../../types";
-import { getPathKey, MemoService } from "../../../utils";
+import { getPathKey, type IFMemoStore } from "../../../utils";
 
-import useSupabaseClientQuery from "./useSupabaseClientQuery";
+import useMemoStoreQuery from "./useMemoStoreQuery";
 
 /** 같은 경로의 메모 후보를 조회하는 입력. */
 interface IFUseSamePathMemoQueryProps {
@@ -13,7 +12,7 @@ interface IFUseSamePathMemoQueryProps {
 
 /** samePathMemoQueryOptions의 인자 */
 interface IFSamePathMemoQueryOptionsParams extends IFUseSamePathMemoQueryProps {
-	supabaseClient: MemoSupabaseClient;
+	memoStore: IFMemoStore;
 }
 
 /**
@@ -23,10 +22,9 @@ interface IFSamePathMemoQueryOptionsParams extends IFUseSamePathMemoQueryProps {
  * 비-Suspense(useQuery)로 읽어도 같은 캐시를 쓰게 한다.
  */
 export const samePathMemoQueryOptions = ({
-	supabaseClient,
+	memoStore,
 	url,
 }: IFSamePathMemoQueryOptionsParams) => {
-	const memoService = new MemoService(supabaseClient);
 	const pathKey = getSafePathKey(url);
 
 	return queryOptions({
@@ -35,7 +33,7 @@ export const samePathMemoQueryOptions = ({
 				return { data: [], error: null };
 			}
 
-			const result = await memoService.getMemosBySamePath(url);
+			const result = await memoStore.getMemosBySamePath(url);
 
 			if (result.error) {
 				throw result.error;
@@ -43,7 +41,10 @@ export const samePathMemoQueryOptions = ({
 
 			return result;
 		},
-		queryKey: QUERY_KEY.samePathMemos(pathKey ?? ""),
+		queryKey: QUERY_KEY.samePathMemos(
+			pathKey ?? "",
+			memoStore.kind === "local" ? "local" : undefined,
+		),
 	});
 };
 
@@ -54,11 +55,9 @@ export const samePathMemoQueryOptions = ({
 export default function useSamePathMemoQuery({
 	url,
 }: IFUseSamePathMemoQueryProps) {
-	const { data: supabaseClient } = useSupabaseClientQuery();
+	const { data: memoStore } = useMemoStoreQuery();
 
-	const query = useSuspenseQuery(
-		samePathMemoQueryOptions({ supabaseClient, url }),
-	);
+	const query = useSuspenseQuery(samePathMemoQueryOptions({ memoStore, url }));
 
 	return {
 		...query,

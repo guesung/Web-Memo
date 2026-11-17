@@ -11,6 +11,7 @@ import { QUERY_KEY } from "@web-memo/shared/constants";
 import {
 	categoryQueryOptions,
 	memoQueryOptions,
+	memoStoreQueryOptions,
 	samePathMemoQueryOptions,
 	settingQueryOptions,
 	supabaseClientQueryOptions,
@@ -89,18 +90,16 @@ export default function MemoSection({
 		function prefetchMemo() {
 			const prefetch = async () => {
 				try {
-					const supabaseClient = await queryClient.ensureQueryData(
-						supabaseClientQueryOptions(),
+					const memoStore = await queryClient.ensureQueryData(
+						memoStoreQueryOptions(queryClient),
 					);
 
 					const url = tab?.url ?? "";
 
 					await Promise.all([
+						queryClient.prefetchQuery(memoQueryOptions({ memoStore, url })),
 						queryClient.prefetchQuery(
-							memoQueryOptions({ supabaseClient, url }),
-						),
-						queryClient.prefetchQuery(
-							samePathMemoQueryOptions({ supabaseClient, url }),
+							samePathMemoQueryOptions({ memoStore, url }),
 						),
 					]);
 				} catch {

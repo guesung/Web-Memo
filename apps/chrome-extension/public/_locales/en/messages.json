@@ -803,5 +803,29 @@
 	},
 	"review_prompt_close": {
 		"message": "Close"
+	},
+	"guest_banner_first_save": {
+		"message": "Log in to see your memos on the web and app too"
+	},
+	"guest_banner_count": {
+		"message": "$count$ memos are only on this device. Log in to move them to your account.",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "10"
+			}
+		}
+	},
+	"guest_banner_storage_warning": {
+		"message": "This device is almost out of storage. Log in to keep writing."
+	},
+	"guest_banner_storage_blocked": {
+		"message": "No more new memos can be saved on this device. You can still edit existing ones. Log in to keep writing."
+	},
+	"guest_banner_close": {
+		"message": "Close"
+	},
+	"guest_web_link_message": {
+		"message": "This memo is only on this device. Log in to see it on the web and app too."
 	}
 }

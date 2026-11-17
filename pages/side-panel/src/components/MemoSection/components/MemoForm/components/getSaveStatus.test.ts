@@ -139,4 +139,23 @@ describe("getSaveStatus", () => {
 			},
 		);
 	});
+
+	it("비로그인에서 저장 공간 차단으로 새 메모가 거부되면 실패 표시 대신 비워 둔다", () => {
+		expect(
+			getSaveStatus({
+				...BASE_PARAMS,
+				isGuest: true,
+				isStorageBlocked: true,
+				saveStatus: "failed",
+			}),
+		).toBe("empty");
+		expect(
+			getSaveStatus({
+				...BASE_PARAMS,
+				isGuest: true,
+				isStorageBlocked: false,
+				saveStatus: "failed",
+			}),
+		).toBe("failed");
+	});
 });

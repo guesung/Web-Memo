@@ -1,3 +1,4 @@
+export { default as GuestLoginBanner } from "./GuestLoginBanner";
 export { default as Header } from "./Header";
 export { default as ToggleTheme } from "./Header/components/ToggleTheme";
 export { default as LoginProviderMenu } from "./LoginProviderMenu";

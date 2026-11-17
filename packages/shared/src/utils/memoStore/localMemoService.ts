@@ -165,6 +165,9 @@ export class LocalMemoService implements IFMemoStore {
 		return ok([memo]);
 	};
 
+	/** 기기에 있는 메모 전체 개수. 휴지통(`deleted_at`)에 있는 메모는 세지 않는다. */
+	countMemos = async () => (await this.getAlive()).length;
+
 	getMemoByUrl = async (url: string): Promise<IFMemoListResponse> => {
 		const pageKey = getPageKey(url);
 		const memos = await this.getAlive();

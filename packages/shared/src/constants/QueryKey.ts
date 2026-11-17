@@ -86,6 +86,10 @@ export const QUERY_KEY = {
 	supabaseClient: () => ["supabaseClient"],
 	/** 로그인 여부로 고른 메모 저장소. 로그인 신호가 오면 다시 판정한다. */
 	memoStore: () => ["memoStore"],
+	/** 비로그인 권유 배너가 보는 기기 메모 개수와 저장 공간 사용 비율. */
+	guestBannerStats: () => ["guestBannerStats"],
+	/** 비로그인 권유 배너 중 사용자가 닫은 변형. */
+	guestBannerDismissed: () => ["guestBannerDismissed"],
 	supabaseFeedbackClient: () => ["supabaseFeedbackClient"],
 	user: () => ["user"],
 	category: () => ["cateogory"],

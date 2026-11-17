@@ -78,6 +78,7 @@ const MemoFormContent = ({
 	onRetrySync,
 	onPastMemoOpen,
 	onServerSaveSuccess,
+	isStorageBlocked = false,
 	pageMemoCount = 0,
 	siblingCategoryId,
 	isNewMemo = false,
@@ -228,6 +229,8 @@ const MemoFormContent = ({
 		hasSyncNetworkError,
 		isSyncFailed,
 		isGuest,
+		// 기존 메모 수정은 막히지 않으므로 새 메모(아직 id가 없는 메모)의 실패만 가린다.
+		isStorageBlocked: isStorageBlocked && memoData === undefined,
 	});
 
 	/**
@@ -890,6 +893,7 @@ const MemoForm = ({
 	onRetrySync,
 	onPastMemoOpen,
 	onServerSaveSuccess,
+	isStorageBlocked,
 	pageMemoCount,
 	siblingCategoryId,
 	isNewMemo,
@@ -927,6 +931,7 @@ const MemoForm = ({
 				onRetrySync={onRetrySync}
 				onPastMemoOpen={onPastMemoOpen}
 				onServerSaveSuccess={onServerSaveSuccess}
+				isStorageBlocked={isStorageBlocked}
 				pageMemoCount={pageMemoCount}
 				siblingCategoryId={siblingCategoryId}
 				isNewMemo={isNewMemo}
@@ -966,6 +971,8 @@ interface IFMemoFormProps {
 	onPastMemoOpen?: (duplicate: IFPastMemoDuplicate) => void;
 	/** 서버가 메모 저장을 받아들였을 때. 오프라인 대기열 저장은 해당하지 않는다 */
 	onServerSaveSuccess?: () => void;
+	/** 비로그인 기기 저장 공간이 가득 차 새 메모를 저장할 수 없는지. 새 메모 저장 실패를 실패 표시 대신 차단 배너에 맡긴다 */
+	isStorageBlocked?: boolean;
 	/** 현재 주소에 저장된 메모 수. 1개 이상이면 과거 메모 판정을 부르지 않는다 */
 	pageMemoCount?: number;
 	/** 같은 페이지 다른 메모의 카테고리 id. 있으면 첫 저장 후 AI 대신 이 카테고리를 제안한다 */

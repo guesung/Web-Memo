@@ -40,6 +40,8 @@ import {
 	useRef,
 	useState,
 } from "react";
+import GuestLoginBanner from "../GuestLoginBanner";
+import useGuestLoginBanner from "../GuestLoginBanner/useGuestLoginBanner";
 import NoticeBanner from "../NoticeBanner";
 import ReviewPromptBanner from "../ReviewPromptBanner";
 import useReviewPrompt from "../ReviewPromptBanner/useReviewPrompt";
@@ -215,6 +217,13 @@ const MemoSectionBody = ({
 	const fieldResizeState = useMemoFieldRatios();
 	const { data: tab } = useTabQuery();
 	const reviewPrompt = useReviewPrompt({ userId, isAiTabOpen });
+	const guestBanner = useGuestLoginBanner({ isGuest });
+	const { notifySaved: notifyReviewPromptSaved } = reviewPrompt;
+	const { notifySaved: notifyGuestBannerSaved } = guestBanner;
+	const handleServerSaveSuccess = useCallback(() => {
+		void notifyReviewPromptSaved();
+		notifyGuestBannerSaved();
+	}, [notifyReviewPromptSaved, notifyGuestBannerSaved]);
 	// 후보 조회를 기다리는 동안 폼 전체를 스켈레톤으로 바꾸지 않도록 Suspense 없이 읽는다.
 	const {
 		memos,
@@ -594,6 +603,14 @@ const MemoSectionBody = ({
 		/>
 	);
 
+	const guestLoginBanner = guestBanner.variant && (
+		<GuestLoginBanner
+			variant={guestBanner.variant}
+			memoCount={guestBanner.memoCount}
+			onClose={(variant) => void guestBanner.dismiss(variant)}
+		/>
+	);
+
 	// 후보를 받기 전에는 목록·선택 로직을 돌리지 않고 잠긴 폼을 그린다. key가 같아 도착 뒤에도 같은 폼을 이어 쓴다.
 	if (isMemoLocked) {
 		return (
@@ -607,6 +624,7 @@ const MemoSectionBody = ({
 					onMemoRetryClick={refetchMemoCandidates}
 				/>
 				{reviewPromptBanner}
+				{guestLoginBanner}
 			</>
 		);
 	}
@@ -673,13 +691,15 @@ const MemoSectionBody = ({
 						hasSyncNetworkError={lastFlushHadNetworkError}
 						onRetrySync={retrySync}
 						onPastMemoOpen={handlePastMemoOpen}
-						onServerSaveSuccess={reviewPrompt.notifySaved}
+						onServerSaveSuccess={handleServerSaveSuccess}
+						isStorageBlocked={guestBanner.isStorageBlocked}
 						pageMemoCount={memos.length}
 						siblingCategoryId={siblingCategoryId}
 					/>
 				)}
 			</div>
 			{reviewPromptBanner}
+			{guestLoginBanner}
 		</>
 	);
 };

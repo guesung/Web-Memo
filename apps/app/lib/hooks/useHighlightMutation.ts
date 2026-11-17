@@ -172,6 +172,7 @@ export function useHighlightDeleteMutation() {
 			queryClient.invalidateQueries({
 				queryKey: QUERY_KEY.highlightCountsPrefix(),
 			});
+			queryClient.invalidateQueries({ queryKey: QUERY_KEY.highlights() });
 		},
 	});
 }

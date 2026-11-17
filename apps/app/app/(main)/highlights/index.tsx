@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { Highlighter, LogIn } from "lucide-react-native";
 import {
 	ActivityIndicator,
+	Alert,
 	FlatList,
 	Text,
 	TouchableOpacity,
@@ -10,6 +11,7 @@ import {
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useHighlightDeleteMutation } from "@/lib/hooks/useHighlightMutation";
 import { useTabBarHideOnScroll } from "@/lib/hooks/useTabBarHideOnScroll";
 import { HighlightFilterBar } from "./_components/HighlightFilterBar";
 import { HighlightGroupCard } from "./_components/HighlightGroupCard";
@@ -33,6 +35,10 @@ export default function HighlightScreen() {
 		isFetchingNextPage,
 		handleEndReached,
 	} = useHighlightScreen();
+	const deleteMutation = useHighlightDeleteMutation();
+	const deletingId = deleteMutation.isPending
+		? deleteMutation.variables?.id
+		: undefined;
 	const { scrollProps } = useTabBarHideOnScroll();
 
 	const emptyStateIconColor = isDark ? "#404040" : "#ddd";
@@ -42,6 +48,19 @@ export default function HighlightScreen() {
 			pathname: "/(main)/browser",
 			params: { url: encodeURIComponent(highlight.url), t: String(Date.now()) },
 		});
+	};
+
+	const handleHighlightDelete = (highlight: HighlightRow) => {
+		deleteMutation.mutate(
+			{ id: highlight.id, url: highlight.url },
+			{
+				onError: () =>
+					Alert.alert(
+						"하이라이트를 삭제하지 못했어요",
+						"잠시 후 다시 시도해 주세요.",
+					),
+			},
+		);
 	};
 
 	return (
@@ -92,6 +111,8 @@ export default function HighlightScreen() {
 									group={item}
 									count={highlightCounts.get(item.url) ?? 0}
 									onHighlightPress={handleHighlightPress}
+									onHighlightDelete={handleHighlightDelete}
+									deletingId={deletingId}
 								/>
 							)}
 							onEndReached={handleEndReached}

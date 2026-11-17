@@ -92,6 +92,7 @@ test.describe("확장 삭제 사유 설문", () => {
 		expect(requests).toHaveLength(1);
 		const payload = requests[0].postDataJSON();
 		expect(payload.email).toBeNull();
+		expect(payload.source_path).toBe(new URL(page.url()).pathname);
 
 		const content = JSON.parse(payload.content);
 		expect(content.type).toBe("uninstall");

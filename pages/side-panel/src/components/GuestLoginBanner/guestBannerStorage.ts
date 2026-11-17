@@ -1,7 +1,9 @@
 import type { TGuestBannerVariant } from "./selectGuestBanner";
 
 /** 닫은 권유 배너를 담는 chrome.storage.local 키. */
-const GUEST_BANNER_DISMISSED_STORAGE_KEY = "guestBannerDismissed";
+const DISMISSED_STORAGE_KEY = "guestBannerDismissed";
+/** 한 번이라도 노출된 1회성 권유 배너를 담는 chrome.storage.local 키. */
+const SHOWN_STORAGE_KEY = "guestBannerShown";
 
 const VARIANTS: readonly TGuestBannerVariant[] = [
 	"storageBlocked",
@@ -14,19 +16,20 @@ const VARIANTS: readonly TGuestBannerVariant[] = [
 const isVariant = (value: unknown): value is TGuestBannerVariant =>
 	VARIANTS.includes(value as TGuestBannerVariant);
 
-export const readDismissedGuestBanners = async (): Promise<
-	TGuestBannerVariant[]
-> => {
-	const stored = await chrome.storage.local.get(
-		GUEST_BANNER_DISMISSED_STORAGE_KEY,
-	);
-	const value = stored[GUEST_BANNER_DISMISSED_STORAGE_KEY];
+const readVariants = async (key: string): Promise<TGuestBannerVariant[]> => {
+	const stored = await chrome.storage.local.get(key);
+	const value = stored[key];
 	return Array.isArray(value) ? value.filter(isVariant) : [];
 };
 
+export const readDismissedGuestBanners = () =>
+	readVariants(DISMISSED_STORAGE_KEY);
+
 export const writeDismissedGuestBanners = (
 	dismissed: readonly TGuestBannerVariant[],
-) =>
-	chrome.storage.local.set({
-		[GUEST_BANNER_DISMISSED_STORAGE_KEY]: dismissed,
-	});
+) => chrome.storage.local.set({ [DISMISSED_STORAGE_KEY]: dismissed });
+
+export const readShownGuestBanners = () => readVariants(SHOWN_STORAGE_KEY);
+
+export const writeShownGuestBanners = (shown: readonly TGuestBannerVariant[]) =>
+	chrome.storage.local.set({ [SHOWN_STORAGE_KEY]: shown });

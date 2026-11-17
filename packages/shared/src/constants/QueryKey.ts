@@ -90,6 +90,8 @@ export const QUERY_KEY = {
 	guestBannerStats: () => ["guestBannerStats"],
 	/** 비로그인 권유 배너 중 사용자가 닫은 변형. */
 	guestBannerDismissed: () => ["guestBannerDismissed"],
+	/** 비로그인 권유 배너 중 한 번이라도 노출된 1회성 변형. */
+	guestBannerShown: () => ["guestBannerShown"],
 	supabaseFeedbackClient: () => ["supabaseFeedbackClient"],
 	user: () => ["user"],
 	category: () => ["cateogory"],

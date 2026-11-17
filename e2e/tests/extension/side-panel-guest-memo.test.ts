@@ -1,3 +1,4 @@
+import type { BrowserContext, Page } from "@playwright/test";
 import { expect, test } from "../fixtures/extension";
 import { findSidePanelPage, openSidePanel, skipGuide } from "../lib";
 
@@ -54,13 +55,15 @@ test("로그인하지 않아도 메모를 쓰면 이 기기에 저장되고 다�
 	);
 });
 
-/**
- * 첫 저장 뒤에 로그인 권유 배너가 한 번 뜨고, 닫으면 다시 열어도 뜨지 않는다.
- * 웹 링크는 웹 탭을 열지 않고 로그인 안내 팝오버를 보여 준다.
- */
-test("비로그인에서 첫 저장 배너를 닫으면 다시 뜨지 않고, 웹 링크는 새 탭 대신 팝오버를 연다 (Mocked)", async ({
+/** 목 페이지를 열고 그 페이지의 사이드 패널을 연다. */
+const openGuestPanel = async ({
 	page,
 	context,
+	path,
+}: {
+	page: Page;
+	context: BrowserContext;
+	path: string;
 }) => {
 	await context.route("https://example.com/**", async (route) => {
 		await route.fulfill({
@@ -69,14 +72,72 @@ test("비로그인에서 첫 저장 배너를 닫으면 다시 뜨지 않고, �
 		});
 	});
 	await skipGuide(page);
-	await page.goto("https://example.com/guest-banner");
+	await page.goto(`https://example.com/${path}`);
 	await openSidePanel(page);
-	const sidePanelPage = await findSidePanelPage(page);
+	return findSidePanelPage(page);
+};
 
-	await sidePanelPage.locator("#memo-textarea").fill("배너 확인용 메모");
+/**
+ * 첫 저장 배너는 처음 노출될 때 한 번만 뜬다. 두 번째 저장에서는 숨고 다른 세션에서도 다시 뜨지 않는다.
+ */
+test("비로그인 첫 저장 배너는 첫 저장에 뜨고 두 번째 저장에서 숨으며 다시 열어도 뜨지 않는다 (Mocked)", async ({
+	page,
+	context,
+}) => {
+	const sidePanelPage = await openGuestPanel({
+		page,
+		context,
+		path: "guest-banner-once",
+	});
+	const memoTextarea = sidePanelPage.locator("#memo-textarea");
 	const banner = sidePanelPage.getByTestId("guest-login-banner");
+
+	await memoTextarea.fill("첫 저장");
 	await expect(banner).toBeVisible();
 	await expect(banner).toHaveAttribute("data-variant", "firstSave");
+
+	await memoTextarea.fill("두 번째 저장");
+	await expect(banner).toBeHidden();
+
+	await sidePanelPage.reload();
+	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(
+		"두 번째 저장",
+	);
+	await sidePanelPage.locator("#memo-textarea").fill("세 번째 저장");
+	await expect(
+		sidePanelPage.getByText(/이 기기에만 저장돼요|saved on this device only/i),
+	).toBeVisible();
+	await expect(sidePanelPage.getByTestId("guest-login-banner")).toBeHidden();
+});
+
+test("비로그인 첫 저장 배너는 닫기 버튼으로 닫을 수 있다 (Mocked)", async ({
+	page,
+	context,
+}) => {
+	const sidePanelPage = await openGuestPanel({
+		page,
+		context,
+		path: "guest-banner-close",
+	});
+	const banner = sidePanelPage.getByTestId("guest-login-banner");
+
+	await sidePanelPage.locator("#memo-textarea").fill("닫기 확인용 메모");
+	await expect(banner).toBeVisible();
+	await banner.getByRole("button", { name: /^(닫기|close)$/i }).click();
+	await expect(banner).toBeHidden();
+});
+
+/** 웹 링크는 웹 탭을 열지 않고 로그인 안내 팝오버를 보여 준다. */
+test("비로그인에서 웹 링크를 누르면 새 탭 대신 로그인 안내 팝오버가 열린다 (Mocked)", async ({
+	page,
+	context,
+}) => {
+	const sidePanelPage = await openGuestPanel({
+		page,
+		context,
+		path: "guest-web-link",
+	});
+	await sidePanelPage.locator("#memo-textarea").fill("웹 링크 확인용 메모");
 
 	const pageCountBefore = context.pages().length;
 	await sidePanelPage
@@ -87,13 +148,4 @@ test("비로그인에서 첫 저장 배너를 닫으면 다시 뜨지 않고, �
 	expect(context.pages()).toHaveLength(pageCountBefore);
 	await sidePanelPage.keyboard.press("Escape");
 	await expect(popover).toBeHidden();
-
-	await banner.getByRole("button", { name: /^(닫기|close)$/i }).click();
-	await expect(banner).toBeHidden();
-
-	await sidePanelPage.reload();
-	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(
-		"배너 확인용 메모",
-	);
-	await expect(sidePanelPage.getByTestId("guest-login-banner")).toBeHidden();
 });

@@ -222,7 +222,7 @@ const MemoSectionBody = ({
 	const { notifySaved: notifyGuestBannerSaved } = guestBanner;
 	const handleServerSaveSuccess = useCallback(() => {
 		void notifyReviewPromptSaved();
-		notifyGuestBannerSaved();
+		void notifyGuestBannerSaved();
 	}, [notifyReviewPromptSaved, notifyGuestBannerSaved]);
 	// 후보 조회를 기다리는 동안 폼 전체를 스켈레톤으로 바꾸지 않도록 Suspense 없이 읽는다.
 	const {

@@ -35,6 +35,10 @@ export type TAppAnalyticsEvent =
 	| {
 			name: "highlight_create";
 			params: { color: HighlightColor; has_note: boolean };
+	  }
+	| {
+			name: "highlight_delete";
+			params: { source: "app_list" | "app_browser" };
 	  };
 
 /** 이벤트 이름별 분류. Record로 강제해 분류가 빠지면 컴파일이 실패한다. */
@@ -50,6 +54,7 @@ export const APP_EVENT_CATEGORY: Record<
 	memo_restore: "core_action",
 	login: "core_action",
 	highlight_create: "core_action",
+	highlight_delete: "core_action",
 };
 
 /**

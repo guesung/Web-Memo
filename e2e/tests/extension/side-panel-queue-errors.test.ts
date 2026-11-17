@@ -138,14 +138,20 @@ test("손상된 큐 원본은 덮어쓰지 않고 실패를 표시하며 복구 
 				if (
 					args[0] === "offlineMemoQueue" &&
 					sessionStorage.getItem("hold-queue-read")
-				)
+				) {
+					sessionStorage.setItem("held-queue-read", "true");
 					throw new Error("hold queue lookup until retry");
+				}
 				return originalGet(...args);
 			},
 		});
 		sessionStorage.setItem("hold-queue-read", "true");
 		await chrome.storage.local.set({ offlineMemoQueue: [] });
 	});
+	// 저장소 변경이 부른 재조회가 막힌 것을 본 뒤에 푼다. 먼저 풀면 재조회가 성공해 실패 표시 없이 자동 저장된다.
+	await expect
+		.poll(() => panel.evaluate(() => sessionStorage.getItem("held-queue-read")))
+		.toBe("true");
 	await panel.evaluate(() => sessionStorage.removeItem("hold-queue-read"));
 	await panel
 		.locator('[data-save-status="failed"]')
@@ -192,6 +198,10 @@ test("큐 읽기 실패는 원본을 보존하고 재시도로 현재 입력을 
 		.poll(() => store.getMemo(memo.id)?.memo)
 		.toBe("draft after read failure");
 	await expect(panel.locator('[data-save-status="saved"]')).toBeVisible();
+	// 오류 상태에서 예약된 디바운스 저장(300ms)이 재시도 성공 뒤에 failed를 덮어쓰지 않아야 한다.
+	await panel.waitForTimeout(600);
+	await expect(panel.locator('[data-save-status="saved"]')).toBeVisible();
+	await expect(panel.locator('[data-save-status="failed"]')).toHaveCount(0);
 });
 
 test("네트워크 실패 후 revision과 결과 수치가 남고 재연결 때 복구한다", async ({

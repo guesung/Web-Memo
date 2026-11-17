@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	deliverSlackMessage,
+	postRootMessage,
 	postSlackMessage,
 	readSlackEnv,
 	sendSlackMessage,
@@ -311,5 +312,86 @@ describe("deliverSlackMessage", () => {
 		});
 
 		expect(result).toEqual({ ok: true, via: "thread", ts: "2.2" });
+	});
+});
+
+describe("postRootMessage", () => {
+	const WEBHOOK_URL = "https://hooks.slack.com/services/x";
+
+	it("봇 토큰과 채널이 있으면 봇으로 루트 메시지를 보내고 ts 와 채널을 돌려준다", async () => {
+		fetchMock.mockResolvedValue(jsonResponse({ ok: true, ts: "3.3" }));
+
+		const result = await postRootMessage({
+			payload: PAYLOAD,
+			botToken: "xoxb-t",
+			channelId: "C1",
+			webhookUrl: WEBHOOK_URL,
+		});
+
+		expect(result).toEqual({ ok: true, via: "bot", ts: "3.3", channel: "C1" });
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+		expect(requestBody()).not.toHaveProperty("thread_ts");
+	});
+
+	it("봇 게시가 실패하면 경고를 남기고 웹훅으로 내려간다", async () => {
+		fetchMock
+			.mockResolvedValueOnce(jsonResponse({ ok: false, error: "not_in_channel" }))
+			.mockResolvedValueOnce(new Response("ok"));
+
+		const result = await postRootMessage({
+			payload: PAYLOAD,
+			botToken: "xoxb-t",
+			channelId: "C1",
+			webhookUrl: WEBHOOK_URL,
+		});
+
+		expect(result).toEqual({ ok: true, via: "webhook" });
+		expect(fetchMock.mock.calls[1][0]).toBe(WEBHOOK_URL);
+		expect(warnings().join("\n")).toContain("not_in_channel");
+	});
+
+	it("봇 값이 없으면 봇을 시도하지 않고 웹훅으로 보낸다", async () => {
+		fetchMock.mockResolvedValue(new Response("ok"));
+
+		const result = await postRootMessage({
+			payload: PAYLOAD,
+			botToken: "",
+			channelId: "C1",
+			webhookUrl: WEBHOOK_URL,
+		});
+
+		expect(result).toEqual({ ok: true, via: "webhook" });
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+		expect(fetchMock.mock.calls[0][0]).toBe(WEBHOOK_URL);
+	});
+
+	it("봇이 실패하고 웹훅이 없으면 봇의 오류를 돌려준다", async () => {
+		fetchMock.mockResolvedValue(jsonResponse({ ok: false, error: "invalid_auth" }));
+
+		const result = await postRootMessage({
+			payload: PAYLOAD,
+			botToken: "xoxb-t",
+			channelId: "C1",
+			webhookUrl: "",
+		});
+
+		expect(result).toEqual({ ok: false, via: "none", error: "invalid_auth" });
+	});
+
+	it("봇과 웹훅이 모두 실패하면 던지지 않고 웹훅 오류를 돌려준다", async () => {
+		fetchMock
+			.mockResolvedValueOnce(jsonResponse({ ok: false, error: "invalid_auth" }))
+			.mockResolvedValueOnce(new Response("no_service", { status: 404 }));
+
+		const result = await postRootMessage({
+			payload: PAYLOAD,
+			botToken: "xoxb-t",
+			channelId: "C1",
+			webhookUrl: WEBHOOK_URL,
+		});
+
+		expect(result.ok).toBe(false);
+		expect(result.via).toBe("none");
+		expect(result.error).toContain("webhook_failed");
 	});
 });

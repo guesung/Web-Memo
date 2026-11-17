@@ -9,9 +9,15 @@ import {
 } from "@web-memo/shared/constants";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import type { HighlightMemoLink, HighlightRow } from "@web-memo/shared/types";
+import { toast } from "@web-memo/ui";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useHighlightNoteMutation } from "../_hooks";
+import {
+	useHighlightDeleteMutation,
+	useHighlightNoteMutation,
+} from "../_hooks";
+import { HighlightDeleteDialog } from "./HighlightDeleteDialog";
+import { HighlightQuoteMenu } from "./HighlightQuoteMenu";
 
 /** 하이라이트 문장과 기존 메모를 표시하는 속성. */
 interface IFHighlightQuoteProps {
@@ -41,6 +47,9 @@ export const HighlightQuote = ({
 	const [isNoteSaveError, setIsNoteSaveError] = useState(false);
 	const { mutate: saveNote, isPending: isNoteSaving } =
 		useHighlightNoteMutation();
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+	const { mutateAsync: deleteHighlight, isPending: isDeleting } =
+		useHighlightDeleteMutation();
 	const noteTextareaRef = useRef<HTMLTextAreaElement>(null);
 	const itemRef = useRef<HTMLLIElement>(null);
 	const style = HIGHLIGHT_COLOR_STYLE[highlight.color as HighlightColor];
@@ -77,15 +86,22 @@ export const HighlightQuote = ({
 		);
 	};
 
+	const handleDeleteConfirm = () => {
+		setIsDeleteDialogOpen(false);
+		deleteHighlight(highlight)
+			.then(() => toast({ title: t("highlight.delete.success") }))
+			.catch(() => toast({ title: t("highlight.delete.failed") }));
+	};
+
 	return (
 		<li
 			ref={itemRef}
 			id={`highlight-${highlight.id}`}
 			tabIndex={isTarget ? -1 : undefined}
-			className={`border-l-[3px] pl-[14px] outline-none sm:pl-4${isTarget ? " rounded-sm ring-2 ring-primary ring-offset-4 ring-offset-background" : ""}`}
+			className={`flex gap-2 border-l-[3px] pl-[14px] outline-none sm:pl-4${isDeleting ? " opacity-50" : ""}${isTarget ? " rounded-sm ring-2 ring-primary ring-offset-4 ring-offset-background" : ""}`}
 			style={{ borderColor: style.bar }}
 		>
-			<div className="min-w-0">
+			<div className="min-w-0 flex-1">
 				<p className="break-keep text-base leading-[1.6] text-foreground [overflow-wrap:anywhere]">
 					<mark className="bg-transparent text-inherit">
 						{highlight.exact_text}
@@ -105,7 +121,7 @@ export const HighlightQuote = ({
 				) : note.trim() ? (
 					<button
 						type="button"
-						disabled={isNoteSaving}
+						disabled={isNoteSaving || isDeleting}
 						onClick={() => setIsEditing(true)}
 						className="mt-1.5 block text-left text-[13px] leading-[1.5] text-muted-foreground hover:underline"
 					>
@@ -163,6 +179,17 @@ export const HighlightQuote = ({
 					</div>
 				)}
 			</div>
+			<HighlightQuoteMenu
+				lng={lng}
+				disabled={isDeleting}
+				onDeleteSelect={() => setIsDeleteDialogOpen(true)}
+			/>
+			<HighlightDeleteDialog
+				lng={lng}
+				open={isDeleteDialogOpen}
+				onOpenChange={setIsDeleteDialogOpen}
+				onConfirm={handleDeleteConfirm}
+			/>
 		</li>
 	);
 };

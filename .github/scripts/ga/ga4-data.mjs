@@ -329,6 +329,98 @@ export const fetchGoogleSearchVisitors = async ({
 	}
 };
 
+/**
+ * 작성한 분 조회 한도. 8일 × 1,440분 = 11,520행이라 REPORT_ROW_LIMIT(10,000)로는
+ * 하루 종일 쓴 날이 겹치면 잘립니다. 잘리면 에러 없이 분이 덜 셉니다.
+ */
+const WRITING_MINUTES_ROW_LIMIT = 15000;
+
+/**
+ * memo_write 가 1번 이상 발생한 분(minute)의 어제 개수와 7일 평균. 순수 함수입니다.
+ *
+ * rows 는 dateHourMinute 차원(YYYYMMDDHHmm) 하나를 가진 readRows 결과이고, 행 하나가
+ * "저장이 있었던 1분"입니다. 평균 분모는 aggregateDaily 와 같이 항상 7 입니다.
+ *
+ * ⚠️ 사람별 합이 아닙니다. 두 사람이 같은 분에 저장하면 1분으로 셉니다 — memo_write 에는
+ * ext_client_id 가 비어 있어 사람별로 나눌 수 없습니다.
+ */
+export const summarizeWritingMinutes = (rows, targetDate) => {
+	const weekStart = shiftDate(targetDate, -MOVING_AVERAGE_DAYS);
+	let yesterday = 0;
+	let total = 0;
+
+	for (const { dimensions } of rows) {
+		const [rawMinute] = dimensions;
+		const date = `${rawMinute.slice(0, 4)}-${rawMinute.slice(4, 6)}-${rawMinute.slice(6, 8)}`;
+
+		if (date === targetDate) {
+			yesterday += 1;
+
+			continue;
+		}
+
+		if (date >= weekStart && date < targetDate) total += 1;
+	}
+
+	return { yesterday, average7: total / MOVING_AVERAGE_DAYS };
+};
+
+/**
+ * 메모를 작성한 분 수.
+ *
+ * memo_write 는 자동저장마다 발생해 건수가 작성량을 대변하지 못합니다(한 사람이 하루
+ * 수천 건). 그래서 "저장이 있었던 분"을 세어 작성 강도로 봅니다.
+ *
+ * 이 조회가 실패해도 리포트 전체를 막지 않습니다. 0분과 구분되도록 failed 로 돌려줍니다.
+ */
+export const fetchWritingMinutes = async ({
+	accessToken,
+	propertyId,
+	targetDate,
+}) => {
+	try {
+		const report = await runReport({
+			accessToken,
+			propertyId,
+			body: {
+				dateRanges: [
+					{
+						startDate: shiftDate(targetDate, -MOVING_AVERAGE_DAYS),
+						endDate: targetDate,
+					},
+				],
+				dimensions: [{ name: "dateHourMinute" }],
+				metrics: [{ name: "eventCount" }],
+				dimensionFilter: {
+					andGroup: {
+						expressions: [
+							{
+								filter: {
+									fieldName: "eventName",
+									stringFilter: { matchType: "EXACT", value: "memo_write" },
+								},
+							},
+							PRODUCTION_FILTER,
+						],
+					},
+				},
+				limit: WRITING_MINUTES_ROW_LIMIT,
+			},
+		});
+
+		return {
+			status: "ok",
+			...summarizeWritingMinutes(readRows(report), targetDate),
+		};
+	} catch (error) {
+		console.warn(
+			`::warning::메모 작성한 분 조회 실패: ${error instanceof Error ? error.message : String(error)}`,
+		);
+
+		return { status: "failed" };
+	}
+};
+
 /** 값이 없는 이벤트는 "0건"과 같습니다. 호출부가 매번 옵셔널 체이닝을 하지 않게 채워 줍니다. */
 export const readEventStat = (events, eventName) =>
 	events[eventName] ?? {
@@ -381,12 +473,13 @@ export const detectOutliers = (events) =>
 	}).filter(Boolean);
 
 /**
- * 어제 하루치 지표를 세 번의 runReport 로 모읍니다.
+ * 어제 하루치 지표를 여러 번의 runReport 로 모읍니다.
  *
  * ① 어제 + 직전 7일의 이벤트별 사용자·발생 수 (운영 트래픽만)
  * ② 관측 시작일 이후 한 번이라도 나온 이벤트 이름 (미출시 판정용)
  * ③ 유입 참고치. gtag 자동 이벤트라 build_env 가 없어 필터 없이 봅니다
  * ④ 구글 검색 유입 사용자 (호스트 필터 기준, 실패해도 나머지는 계속)
+ * ⑤ 메모를 작성한 분 수 (memo_write, 실패해도 나머지는 계속)
  */
 export const fetchDailyGa4Report = async ({
 	serviceAccountJson,
@@ -399,7 +492,14 @@ export const fetchDailyGa4Report = async ({
 	});
 	const weekStart = shiftDate(targetDate, -MOVING_AVERAGE_DAYS);
 
-	const [daily, lifetime, traffic, observationStart, googleSearch] = await Promise.all([
+	const [
+		daily,
+		lifetime,
+		traffic,
+		observationStart,
+		googleSearch,
+		writingMinutes,
+	] = await Promise.all([
 		runReport({
 			accessToken,
 			propertyId,
@@ -440,6 +540,7 @@ export const fetchDailyGa4Report = async ({
 		}),
 		readObservationStart({ accessToken, propertyId, targetDate }),
 		fetchGoogleSearchVisitors({ accessToken, propertyId, targetDate }),
+		fetchWritingMinutes({ accessToken, propertyId, targetDate }),
 	]);
 
 	const events = aggregateDaily(readRows(daily), targetDate);
@@ -467,5 +568,6 @@ export const fetchDailyGa4Report = async ({
 			observationStart !== null && observationStart > OBSERVATION_SINCE,
 		trafficTotals,
 		googleSearch,
+		writingMinutes,
 	};
 };

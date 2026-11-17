@@ -15,7 +15,8 @@ vi.mock("node:fs", async (importOriginal) => ({
 	lstatSync: vi.fn(() => ({ isSymbolicLink: () => false })),
 }));
 
-import { MAX_EVENTS, TYPE_FILE, extractEventNames, isSourceFile, selectRecentFiles, validateCandidate, validateChanges } from "./validation.mjs";
+import { fetchPreviousPullRequests } from "../shared/previous-pull-requests.mjs";
+import { MAX_EVENTS, TYPE_FILE, extractEventNames, extractRejectedEvents, isSourceFile, selectRecentFiles, validateCandidate, validateChanges } from "./validation.mjs";
 
 const BASE_SHA = "a".repeat(40);
 const SOURCE_FILE = "apps/web/src/app/[lng]/(auth)/memos/_components/MemoItem.tsx";
@@ -189,5 +190,108 @@ describe("selectRecentFiles", () => {
 	it("30개 미만이면 있는 만큼, 없으면 빈 배열을 돌려준다", () => {
 		expect(selectRecentFiles(["pages/a.tsx", "pages/b.tsx"], tracked("pages/a.tsx", "pages/b.tsx"))).toEqual(["pages/a.tsx", "pages/b.tsx"]);
 		expect(selectRecentFiles([], tracked("pages/a.tsx"))).toEqual([]);
+	});
+});
+
+const closedBody = [
+	"## 설명",
+	"Two uncovered user actions found",
+	"",
+	"- `email_unsubscribe` (engagement) — User clicks the confirm-unsubscribe button",
+	"  - 속성: `result`",
+	"  - 답하려는 질문: What share of users",
+	"- `memo_candidate_select` (core_action) — User clicks an existing memo card",
+	"  - 속성: `action`, `candidate_count`",
+	"  - 답하려는 질문: ...",
+].join("\n");
+const pull = (overrides = {}) => ({ number: 841, url: "", branch: "chore/auto-ga-events-x", state: "closed", title: "t", body: closedBody, closedAt: "", ownerComments: [], ...overrides });
+
+describe("extractRejectedEvents", () => {
+	it("이전 PR이 없으면 빈 배열이다", () => {
+		expect(extractRejectedEvents({ pullRequests: [] })).toEqual([]);
+	});
+
+	it("닫힌 PR 본문의 이벤트 줄만 뽑고 속성 줄 백틱은 이벤트로 보지 않는다", () => {
+		const names = extractRejectedEvents({ pullRequests: [pull()] }).map((value) => value.name);
+
+		expect(names).toEqual(["email_unsubscribe", "memo_candidate_select"]);
+	});
+
+	it("머지된 PR은 제외한다", () => {
+		expect(extractRejectedEvents({ pullRequests: [pull({ state: "merged" })] })).toEqual([]);
+	});
+
+	it("닫힘+코멘트는 코멘트를 담고, 코멘트가 없으면 빈 배열이다", () => {
+		const [withComment] = extractRejectedEvents({ pullRequests: [pull({ ownerComments: ["필요 없음"] })] });
+		const [without] = extractRejectedEvents({ pullRequests: [pull()] });
+
+		expect(withComment).toEqual({ name: "email_unsubscribe", pullRequest: 841, ownerComments: ["필요 없음"] });
+		expect(without.ownerComments).toEqual([]);
+	});
+
+	it("코멘트는 500자·3개로 제한한다", () => {
+		const [value] = extractRejectedEvents({ pullRequests: [pull({ ownerComments: ["a", "b", "c", "d".repeat(900)] })] });
+
+		expect(value.ownerComments).toHaveLength(3);
+		expect(value.ownerComments[2]).toHaveLength(500);
+	});
+
+	it("규칙에 안 맞는 이름은 버린다", () => {
+		const body = ["- `Bad-Name` (engagement) — x", "- `ok_name` (engagement) — x", `- \`${"a".repeat(41)}\` (engagement) — x`].join("\n");
+
+		expect(extractRejectedEvents({ pullRequests: [pull({ body })] }).map((value) => value.name)).toEqual(["ok_name"]);
+	});
+
+	it("같은 이름은 가장 최근에 닫힌 PR 하나만 남긴다", () => {
+		const result = extractRejectedEvents({ pullRequests: [pull({ number: 900 }), pull({ number: 841 })] });
+
+		expect(result.filter((value) => value.name === "email_unsubscribe")).toEqual([{ name: "email_unsubscribe", pullRequest: 900, ownerComments: [] }]);
+	});
+});
+
+describe("공용 이전 PR 조회와 조합", () => {
+	const repository = "guesung/web-memo";
+	const makePull = (number: number, closedAt: string) => ({ number, html_url: "", title: "t", body: closedBody, closed_at: closedAt, merged_at: null, state: "closed", head: { ref: `chore/auto-ga-events-${number}`, repo: { full_name: repository } } });
+	const fakeFetch = (pulls: ReturnType<typeof makePull>[], comments: Record<number, unknown[]> = {}) =>
+		vi.fn(async (url: string) => {
+			const path = new URL(url).pathname;
+			const json = (value: unknown) => ({ ok: true, json: async () => value });
+			if (path === "/search/issues") return json({ items: pulls.map((value) => ({ number: value.number })) });
+			const comment = path.match(/issues\/(\d+)\/comments/);
+			if (comment) return json(comments[Number(comment[1])] ?? []);
+			return json(pulls.find((value) => path.endsWith(`/pulls/${value.number}`)));
+		});
+
+	it("소유자 아닌 코멘트는 rejectedEvents에 없다", async () => {
+		const fetchImpl = fakeFetch([makePull(1, "2026-01-01T00:00:00Z")], { 1: [{ author_association: "OWNER", body: "소유자 의견" }, { author_association: "NONE", body: "외부 코멘트" }] });
+		const pullRequests = await fetchPreviousPullRequests({ repository, token: "t", branchPrefix: "chore/auto-ga-events-", fetchImpl });
+		const rejected = extractRejectedEvents({ pullRequests });
+
+		expect(JSON.stringify(rejected)).toContain("소유자 의견");
+		expect(JSON.stringify(rejected)).not.toContain("외부 코멘트");
+	});
+
+	it("조회는 최근 닫힌 20건으로 제한된다", async () => {
+		const pulls = Array.from({ length: 25 }, (_, index) => makePull(index + 1, `2026-01-${String(index + 1).padStart(2, "0")}T00:00:00Z`));
+		const pullRequests = await fetchPreviousPullRequests({ repository, token: "t", branchPrefix: "chore/auto-ga-events-", fetchImpl: fakeFetch(pulls) });
+
+		expect(pullRequests).toHaveLength(20);
+	});
+});
+
+describe("validateCandidate rejectedEvents", () => {
+	const rejectedEvents = [{ name: "memo_share_click", pullRequest: 841, ownerComments: [] }];
+
+	it("후보 이름이 거절된 이벤트와 같으면 거부한다", () => {
+		expect(() => validateCandidate(gap, { ...context, rejectedEvents })).toThrow("사람이 닫은 PR에서 이미 거절된 이벤트입니다: memo_share_click");
+	});
+
+	it("이름이 다르면 통과한다", () => {
+		expect(validateCandidate(gap, { ...context, rejectedEvents: [{ name: "other_event", pullRequest: 1, ownerComments: [] }] })).toEqual(gap);
+	});
+
+	it("rejectedEvents가 없거나 빈 배열이면 기존과 같다", () => {
+		expect(validateCandidate(gap, context)).toEqual(gap);
+		expect(validateCandidate(gap, { ...context, rejectedEvents: [] })).toEqual(gap);
 	});
 });

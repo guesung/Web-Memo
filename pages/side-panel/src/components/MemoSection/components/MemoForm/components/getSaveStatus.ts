@@ -11,6 +11,8 @@ interface IFGetSaveStatusParams {
 	/** 마지막 flush 시도가 네트워크 오류로 중단됐는지 */
 	hasSyncNetworkError: boolean;
 	isSyncFailed: boolean;
+	/** 비로그인(기기 저장소)인지 */
+	isGuest?: boolean;
 }
 
 /**
@@ -19,6 +21,8 @@ interface IFGetSaveStatusParams {
  * 온라인이라도 flush가 끝나기 전까지 saveStatus(saved 등)를 그대로 보여주지 않는다 — 대기열은
  * 온라인·오프라인과 무관하게 그 메모의 최신 내용이 아직 서버에 없다는 뜻이기 때문이다.
  * 대기 항목이 없으면 useMemoForm의 온라인 저장 상태 머신을 그대로 쓴다.
+ * 비로그인은 서버·대기열이 없으므로 저장이 이 기기에 남았다는 상태("device")만 그린다. 오프라인이어도 같다.
+ * 저장 실패와 진행 중(slow)은 그대로 보여 준다.
  * 사용처: MemoForm/index.tsx
  */
 export const getSaveStatus = ({
@@ -28,7 +32,15 @@ export const getSaveStatus = ({
 	pendingOfflineStatus,
 	hasSyncNetworkError,
 	isSyncFailed,
+	isGuest = false,
 }: IFGetSaveStatusParams): TSaveStatus => {
+	if (isGuest) {
+		return saveStatus === "failed" ||
+			saveStatus === "retrying" ||
+			saveStatus === "slow"
+			? saveStatus
+			: "device";
+	}
 	if (pendingOfflineStatus === "error") return "failed";
 	if (pendingOfflineStatus === "loading") return "slow";
 	if (saveStatus === "failed" || saveStatus === "retrying") return saveStatus;

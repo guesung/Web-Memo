@@ -266,59 +266,14 @@
 	"control_disabled_offline_delete": {
 		"message": "You can't delete this offline"
 	},
-	"login_intro_title": {
-		"message": "Take notes while you read"
+	"login_button": {
+		"message": "Log in"
 	},
-	"login_intro_description": {
-		"message": "Sign in to start writing on the page you're viewing."
+	"login_required_notice": {
+		"message": "Log in to use this"
 	},
-	"login_example_label": {
-		"message": "Example"
-	},
-	"login_example_quote_before": {
-		"message": "Good writing is kind because "
-	},
-	"login_example_quote_highlight": {
-		"message": "it saves the reader's time"
-	},
-	"login_example_quote_after": {
-		"message": "."
-	},
-	"login_example_note": {
-		"message": "Quote this in the intro of my next talk"
-	},
-	"login_benefit_highlight_title": {
-		"message": "Drag to highlight any sentence"
-	},
-	"login_benefit_highlight_description": {
-		"message": "Your highlights stay in place when you come back"
-	},
-	"login_benefit_organize_title": {
-		"message": "Notes are organized by page automatically"
-	},
-	"login_benefit_organize_description": {
-		"message": "Saved with the title and URL, so there's nothing to file"
-	},
-	"login_benefit_web_title": {
-		"message": "Browse and search on the web"
-	},
-	"login_benefit_web_description": {
-		"message": "All your notes and highlights in one place at webmemo.xyz"
-	},
-	"login_kakao_button": {
-		"message": "Continue with Kakao"
-	},
-	"login_google_button": {
-		"message": "Continue with Google"
-	},
-	"login_kakao_pending": {
-		"message": "Signing in with Kakao…"
-	},
-	"login_google_pending": {
-		"message": "Signing in with Google…"
-	},
-	"login_failed": {
-		"message": "Couldn't sign you in. Please try again."
+	"save_status_device_only": {
+		"message": "Saved on this device only"
 	},
 	"login_network_unavailable": {
 		"message": "You're offline. We'll reload automatically once you're back online."

@@ -40,7 +40,9 @@ export default function useMemoCandidatesQuery({
 		Boolean(memoQuery.data?.error) || Boolean(samePathMemoQuery.data?.error);
 	const isDataMissing =
 		memoQuery.data === undefined || samePathMemoQuery.data === undefined;
-	const isOfflineWithoutCache = !isOnline && isDataMissing;
+	// 기기 저장소 조회는 오프라인에서도 멈추지 않으므로 도착을 기다리며 잠근다.
+	const isOfflineWithoutCache =
+		!isOnline && isDataMissing && memoStore.kind === "remote";
 	const isMemoLocked =
 		!isOfflineWithoutCache && (isDataMissing || hasResponseError);
 	const isFetching = memoQuery.isFetching || samePathMemoQuery.isFetching;

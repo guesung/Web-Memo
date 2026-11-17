@@ -106,4 +106,37 @@ describe("getSaveStatus", () => {
 			}),
 		).toBe("syncing");
 	});
+
+	describe("비로그인", () => {
+		it.each(["empty", "saved"] as const)(
+			"%s 상태도 오프라인 여부와 무관하게 기기 저장 상태로 보여준다",
+			(saveStatus) => {
+				expect(
+					getSaveStatus({
+						...BASE_PARAMS,
+						saveStatus,
+						isGuest: true,
+						isOffline: false,
+					}),
+				).toBe("device");
+				expect(
+					getSaveStatus({
+						...BASE_PARAMS,
+						saveStatus,
+						isGuest: true,
+						isOffline: true,
+					}),
+				).toBe("device");
+			},
+		);
+
+		it.each(["slow", "failed", "retrying"] as const)(
+			"%s 상태는 가리지 않고 그대로 보여준다",
+			(saveStatus) => {
+				expect(
+					getSaveStatus({ ...BASE_PARAMS, saveStatus, isGuest: true }),
+				).toBe(saveStatus);
+			},
+		);
+	});
 });

@@ -16,6 +16,7 @@ import {
 	settingQueryOptions,
 	supabaseClientQueryOptions,
 	useDeleteMemosMutation,
+	useMemoStoreQuery,
 	useRestoreMemosMutation,
 	userQueryOptions,
 	useSupabaseUserQuery,
@@ -24,9 +25,21 @@ import {
 import type { Database, IFPastMemoDuplicate } from "@web-memo/shared/types";
 import { getPageKey } from "@web-memo/shared/utils";
 import { I18n } from "@web-memo/shared/utils/extension";
-import { cn, ErrorBoundary, ToastAction, toast } from "@web-memo/ui";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import LoginSection from "../LoginSection";
+import {
+	cn,
+	ErrorBoundary,
+	ErrorFallback,
+	ToastAction,
+	toast,
+} from "@web-memo/ui";
+import {
+	type ComponentProps,
+	Suspense,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import NoticeBanner from "../NoticeBanner";
 import ReviewPromptBanner from "../ReviewPromptBanner";
 import useReviewPrompt from "../ReviewPromptBanner/useReviewPrompt";
@@ -35,6 +48,7 @@ import MemoForm, { type IFMemoFormSwitchHandle } from "./components/MemoForm";
 import { MemoFormSkeleton } from "./components/MemoForm/components";
 import { useMemoFieldRatios } from "./components/MemoForm/hooks/useMemoFieldResize";
 import MemoHeader from "./components/MemoHeader";
+import MemoUnavailable from "./components/MemoUnavailable";
 import PageHighlights from "./components/PageHighlights";
 import PastMemoView from "./components/PastMemoView";
 import useMemoCandidatesQuery from "./hooks/useMemoCandidatesQuery";
@@ -52,16 +66,20 @@ export default function MemoSection({
 }: MemoSectionProps) {
 	const loginBoundaryRef = useRef<ErrorBoundary>(null);
 	const tracking = useRef(new PastMemoTracking()).current;
-	const LoginFallback = useCallback(() => {
-		tracking.updateContext(undefined, "");
-		return <LoginSection />;
-	}, [tracking]);
+	const MemoErrorFallback = useCallback(
+		(props: ComponentProps<typeof ErrorFallback>) => {
+			tracking.updateContext(undefined, "");
+			return <ErrorFallback {...props} />;
+		},
+		[tracking],
+	);
 	const queryClient = useQueryClient();
 	const { data: tab } = useTabQuery();
 
 	useSyncLoginStatus(loginBoundaryRef);
 
 	// user·setting·category는 로그인 상태에서만 한 번 준비하면 되므로 tab.url과 무관하게 둔다.
+	// 세션이 없는 비로그인은 서버에서 읽을 것이 없다.
 	useEffect(
 		function prefetchUserSettingCategory() {
 			const prefetch = async () => {
@@ -76,7 +94,7 @@ export default function MemoSection({
 						queryClient.prefetchQuery(categoryQueryOptions(supabaseClient)),
 					]);
 				} catch {
-					// 세션이 없어 클라이언트를 준비하지 못하면 폼 안 Suspense 경로(LoginSection)가 처리한다.
+					// 세션이 없어 클라이언트를 준비하지 못하면 기기 저장소로 동작하므로 미리 받을 것이 없다.
 				}
 			};
 
@@ -103,7 +121,7 @@ export default function MemoSection({
 						),
 					]);
 				} catch {
-					// 세션이 없어 클라이언트를 준비하지 못하면 폼 안 Suspense 경로(LoginSection)가 처리한다.
+					// 저장소를 고르지 못하면 Suspense 경계 안의 MemoSectionContent가 같은 오류를 던져 재시도 폴백이 받는다.
 				}
 			};
 
@@ -124,7 +142,10 @@ export default function MemoSection({
 			)}
 			style={{ height: `${memoHeight}%` }}
 		>
-			<ErrorBoundary ref={loginBoundaryRef} FallbackComponent={LoginFallback}>
+			<ErrorBoundary
+				ref={loginBoundaryRef}
+				FallbackComponent={MemoErrorFallback}
+			>
 				<Suspense fallback={<MemoFormSkeleton />}>
 					<MemoSectionContent tracking={tracking} isAiTabOpen={isAiTabOpen} />
 				</Suspense>
@@ -140,28 +161,38 @@ const MemoSectionContent = ({
 	tracking: PastMemoTracking;
 	isAiTabOpen: boolean;
 }) => {
+	const { data: memoStore } = useMemoStoreQuery();
 	const { user } = useSupabaseUserQuery();
 	const { data: tab } = useTabQuery();
+	const userId = user?.data.user?.id;
+	const isGuest = memoStore.kind === "local";
 	const scope = `${tab?.id}:${tab?.url ? getPageKey(tab.url) : ""}`;
-	tracking.updateContext(user?.data.user?.id, scope);
+	tracking.updateContext(userId, scope);
 	useEffect(() => tracking.cancelOutsideScope(scope), [tracking, scope]);
 
-	if (!user?.data.user) {
-		return <LoginSection />;
+	// 세션은 있는데 사용자를 확인하지 못한 경우. 비로그인은 사용자가 없는 것이 정상이다.
+	if (!isGuest && !userId) {
+		return <MemoUnavailable />;
 	}
 
 	return (
 		<>
-			{/* 로그인 전에는 공지가 로그인 안내를 가린다. 공지는 로그인한 뒤에만 띄운다. */}
-			<NoticeBanner />
-			<PageHighlights
-				key={`${user.data.user.id}:${tab?.id}:${tab?.url ? getPageKey(tab.url) : ""}`}
-				userId={user.data.user.id}
-				tabId={tab?.id}
-				url={tab?.url ?? ""}
-			/>
-			<AuthenticatedMemoSectionContent
-				key={user.data.user.id}
+			{/* 공지는 로그인한 사용자에게만 띄운다. */}
+			{userId && (
+				<>
+					<NoticeBanner />
+					<PageHighlights
+						key={`${userId}:${tab?.id}:${tab?.url ? getPageKey(tab.url) : ""}`}
+						userId={userId}
+						tabId={tab?.id}
+						url={tab?.url ?? ""}
+					/>
+				</>
+			)}
+			<MemoSectionBody
+				key={userId ?? "guest"}
+				userId={userId}
+				isGuest={isGuest}
 				tracking={tracking}
 				isAiTabOpen={isAiTabOpen}
 			/>
@@ -169,17 +200,20 @@ const MemoSectionContent = ({
 	);
 };
 
-const AuthenticatedMemoSectionContent = ({
+const MemoSectionBody = ({
+	userId,
+	isGuest,
 	tracking,
 	isAiTabOpen,
 }: {
+	/** 로그인한 사용자 id. 비로그인이면 없다 */
+	userId: string | undefined;
+	isGuest: boolean;
 	tracking: PastMemoTracking;
 	isAiTabOpen: boolean;
 }) => {
 	const fieldResizeState = useMemoFieldRatios();
 	const { data: tab } = useTabQuery();
-	const { user } = useSupabaseUserQuery();
-	const userId = user.data.user?.id;
 	const reviewPrompt = useReviewPrompt({ userId, isAiTabOpen });
 	// 후보 조회를 기다리는 동안 폼 전체를 스켈레톤으로 바꾸지 않도록 Suspense 없이 읽는다.
 	const {
@@ -192,11 +226,12 @@ const AuthenticatedMemoSectionContent = ({
 	const queryClient = useQueryClient();
 	const { mutate: deleteMemos } = useDeleteMemosMutation();
 	const { mutate: restoreMemos } = useRestoreMemosMutation();
-	const isOnline = useOnlineStatus();
+	// 기기 저장소는 오프라인에서도 쓸 수 있으므로 비로그인은 오프라인 제한을 받지 않는다.
+	const isOffline = !useOnlineStatus() && !isGuest;
 	// handleUndoClick은 삭제 시점에 한 번 만들어져 토스트에 붙는다. 그 사이 오프라인으로
 	// 바뀌어도 최신 상태를 보도록 값이 아니라 ref로 읽는다.
-	const isOnlineRef = useRef(isOnline);
-	isOnlineRef.current = isOnline;
+	const isOfflineRef = useRef(isOffline);
+	isOfflineRef.current = isOffline;
 	// 쿼리만 다른 주소에 남긴 메모. 현재 주소에 메모가 없을 때도 고를 수 있게 후보로 보여 준다.
 	const otherUrlMemos = samePathMemos.filter(
 		(samePathMemo) => !memos.some((memo) => memo.id === samePathMemo.id),
@@ -409,7 +444,7 @@ const AuthenticatedMemoSectionContent = ({
 	const newMemoDisabledReason =
 		memos.length > 0
 			? getOfflineControlDisabledReason({
-					isOffline: !isOnline,
+					isOffline,
 					isSyncing,
 					kind: "create",
 				})
@@ -436,7 +471,7 @@ const AuthenticatedMemoSectionContent = ({
 	};
 
 	const handleMemoDelete = (memoId: number) => {
-		if (!isOnline || isSyncing) {
+		if (isOffline || isSyncing) {
 			return;
 		}
 
@@ -444,7 +479,7 @@ const AuthenticatedMemoSectionContent = ({
 
 		const handleUndoClick = () => {
 			// 토스트가 떠 있는 사이 오프라인으로 바뀌었을 수 있어 클릭 시점의 값을 ref로 읽는다.
-			if (!isOnlineRef.current) {
+			if (isOfflineRef.current) {
 				return;
 			}
 
@@ -618,7 +653,7 @@ const AuthenticatedMemoSectionContent = ({
 						newMemoDisabledReason={newMemoDisabledReason}
 						editingMemoId={lastEditedMemoId}
 						onMemoDelete={handleMemoDelete}
-						isOffline={!isOnline}
+						isOffline={isOffline}
 						isSyncing={isSyncing}
 					/>
 				) : (

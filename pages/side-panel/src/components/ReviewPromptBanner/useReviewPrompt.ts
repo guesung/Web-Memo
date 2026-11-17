@@ -1,5 +1,6 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { EXTERNAL_LINK } from "@web-memo/shared/constants";
-import { useSupabaseClientQuery } from "@web-memo/shared/hooks";
+import { supabaseClientQueryOptions } from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import {
 	ChromeSyncStorage,
@@ -47,7 +48,7 @@ export default function useReviewPrompt({
 	userId,
 	isAiTabOpen,
 }: IFUseReviewPromptParams) {
-	const { data: supabaseClient } = useSupabaseClientQuery();
+	const queryClient = useQueryClient();
 	const [isVisible, setIsVisible] = useState(false);
 	const isVisibleRef = useRef(false);
 	const isCheckingRef = useRef(false);
@@ -58,8 +59,6 @@ export default function useReviewPrompt({
 	isAiTabOpenRef.current = isAiTabOpen;
 	const userIdRef = useRef(userId);
 	userIdRef.current = userId;
-	const supabaseClientRef = useRef(supabaseClient);
-	supabaseClientRef.current = supabaseClient;
 
 	const hideBanner = () => {
 		isVisibleRef.current = false;
@@ -85,9 +84,12 @@ export default function useReviewPrompt({
 				return;
 			}
 
-			const memoCount = await new MemoService(
-				supabaseClientRef.current,
-			).getMyMemoCount(currentUserId);
+			const supabaseClient = await queryClient.ensureQueryData(
+				supabaseClientQueryOptions(),
+			);
+			const memoCount = await new MemoService(supabaseClient).getMyMemoCount(
+				currentUserId,
+			);
 			if (memoCount < REVIEW_PROMPT_MIN_MEMO_COUNT) {
 				return;
 			}
@@ -117,7 +119,7 @@ export default function useReviewPrompt({
 		} finally {
 			isCheckingRef.current = false;
 		}
-	}, []);
+	}, [queryClient]);
 
 	/** 이 패널에서만 배너를 닫는다. 저장소는 건드리지 않는다. */
 	const handleClose = () => {

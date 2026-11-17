@@ -1,5 +1,5 @@
 import ResizeHandle from "@src/components/ResizeHandle";
-import { useOnlineStatus } from "@src/hooks";
+import { useIsGuest, useOnlineStatus } from "@src/hooks";
 import type { MemoInput } from "@src/types/Input";
 import {
 	getMemoUrl,
@@ -102,7 +102,9 @@ const MemoFormContent = ({
 		categoryResizeObserverRef.current = observer;
 		updateWidth();
 	}, []);
-	const isOffline = !useOnlineStatus();
+	const isGuest = useIsGuest();
+	// 기기 저장소는 오프라인에서도 쓸 수 있으므로 비로그인은 오프라인 제한을 받지 않는다.
+	const isOffline = !useOnlineStatus() && !isGuest;
 	const queryClient = useQueryClient();
 	const { register, watch, getValues } = useFormContext<MemoInput>();
 	const { ref, ...rest } = register("memo");
@@ -225,6 +227,7 @@ const MemoFormContent = ({
 		pendingOfflineStatus,
 		hasSyncNetworkError,
 		isSyncFailed,
+		isGuest,
 	});
 
 	/**
@@ -315,6 +318,7 @@ const MemoFormContent = ({
 		currentCategoryId,
 		currentMemoId: memoData?.id ?? null,
 		firstSavedMemoId,
+		isEnabled: !isGuest,
 		isFirstSavedMemoReady:
 			!isMemoLocked &&
 			!isControlsDisabled &&
@@ -352,7 +356,8 @@ const MemoFormContent = ({
 
 		toast({
 			title: I18n.get(toastMessageKey),
-			action: (
+			// 기기 메모는 웹에 없으므로 웹 목록으로 가는 버튼을 두지 않는다.
+			action: isGuest ? undefined : (
 				<ToastAction altText={I18n.get("go_to")} onClick={navigateToMemoList}>
 					{I18n.get("go_to")}
 				</ToastAction>
@@ -386,7 +391,7 @@ const MemoFormContent = ({
 						}).format(parsePlanDateKey(result.plannedDate)),
 					)
 				: I18n.get("plan_removed"),
-			action: (
+			action: isGuest ? undefined : (
 				<ToastAction altText={I18n.get("go_to")} onClick={navigateToPlanTab}>
 					{I18n.get("go_to")}
 				</ToastAction>
@@ -405,7 +410,8 @@ const MemoFormContent = ({
 					{I18n.get("memo_candidates_selection_lost")}
 				</p>
 			)}
-			{!isMemoLocked && (
+			{/* 같은 글·관련 메모 판정은 AI를 부르므로 로그인했을 때만 한다. */}
+			{!isMemoLocked && !isGuest && (
 				<PastMemoNotice
 					hasMemoData={!!memoData?.created_at}
 					pageMemoCount={pageMemoCount}
@@ -443,7 +449,8 @@ const MemoFormContent = ({
 						layout={resizingFieldKey === null}
 						onKeyDown={(event) => {
 							// 오프라인·동기화 중에는 #을 눌러도 팝업 없이 문자만 입력되게 둔다.
-							if (isControlsDisabled) {
+							// 비로그인은 카테고리가 없으므로 항상 문자만 입력된다.
+							if (isControlsDisabled || isGuest) {
 								return;
 							}
 							handleKeyDown(event);
@@ -463,6 +470,7 @@ const MemoFormContent = ({
 								if (
 									!isMemoLocked &&
 									!isControlsDisabled &&
+									!isGuest &&
 									hasMemoData &&
 									hasMemoText &&
 									!hasCategory &&
@@ -680,66 +688,69 @@ const MemoFormContent = ({
 							/>
 						)}
 					</div>
-					<div
-						data-testid="category-slot"
-						className={cn(
-							"flex shrink-0 items-center justify-end",
-							animateCategory &&
-								"transition-[width] duration-[180ms] ease-out motion-reduce:transition-none",
-						)}
-						style={{ width: categoryWidth }}
-					>
-						{currentCategory ? (
-							<div
-								ref={setCategoryVisual}
-								key={currentCategory.id}
-								className={cn(
-									"w-max",
-									animateCategory && "category-chip-enter",
-								)}
-							>
-								<CategoryBadge
-									category={currentCategory}
-									badgeButtonRef={categoryBadgeButtonRef}
-									onBadgeButtonClick={handleCategoryButtonClick}
-									onRemoveButtonClick={handleCategoryRemove}
-									isDisabled={isMemoLocked}
-									isDimmed={isMemoUiDimmed}
-									disabledReason={changeDisabledReason}
-								/>
-							</div>
-						) : isSuggestingCategory ? (
-							// 추천 중에는 칩 자리를 대신해, 곧 카테고리가 붙는다는 걸 같은 자리에서 보여 준다.
-							<div
-								ref={setCategoryVisual}
-								data-testid="category-suggesting"
-								className={cn(
-									badgeVariants({ variant: "outline" }),
-									"text-muted-foreground shrink-0 gap-1 whitespace-nowrap border-dashed px-2 py-0.5",
-								)}
-							>
-								<Loader2Icon size={12} className="animate-spin" />
-								{I18n.get("category_suggesting")}
-							</div>
-						) : (
-							<div
-								ref={setCategoryVisual}
-								key="add"
-								className={cn(
-									"w-max",
-									animateCategory && "category-chip-enter",
-								)}
-							>
-								<CategoryAddChip
-									chipRef={categoryAddChipRef}
-									onChipClick={handleCategoryButtonClick}
-									isDisabled={isMemoLocked}
-									isDimmed={isMemoUiDimmed}
-									disabledReason={changeDisabledReason}
-								/>
-							</div>
-						)}
-					</div>
+					{/* 카테고리는 계정에 묶이므로 비로그인에서는 칩 자리를 두지 않는다. */}
+					{!isGuest && (
+						<div
+							data-testid="category-slot"
+							className={cn(
+								"flex shrink-0 items-center justify-end",
+								animateCategory &&
+									"transition-[width] duration-[180ms] ease-out motion-reduce:transition-none",
+							)}
+							style={{ width: categoryWidth }}
+						>
+							{currentCategory ? (
+								<div
+									ref={setCategoryVisual}
+									key={currentCategory.id}
+									className={cn(
+										"w-max",
+										animateCategory && "category-chip-enter",
+									)}
+								>
+									<CategoryBadge
+										category={currentCategory}
+										badgeButtonRef={categoryBadgeButtonRef}
+										onBadgeButtonClick={handleCategoryButtonClick}
+										onRemoveButtonClick={handleCategoryRemove}
+										isDisabled={isMemoLocked}
+										isDimmed={isMemoUiDimmed}
+										disabledReason={changeDisabledReason}
+									/>
+								</div>
+							) : isSuggestingCategory ? (
+								// 추천 중에는 칩 자리를 대신해, 곧 카테고리가 붙는다는 걸 같은 자리에서 보여 준다.
+								<div
+									ref={setCategoryVisual}
+									data-testid="category-suggesting"
+									className={cn(
+										badgeVariants({ variant: "outline" }),
+										"text-muted-foreground shrink-0 gap-1 whitespace-nowrap border-dashed px-2 py-0.5",
+									)}
+								>
+									<Loader2Icon size={12} className="animate-spin" />
+									{I18n.get("category_suggesting")}
+								</div>
+							) : (
+								<div
+									ref={setCategoryVisual}
+									key="add"
+									className={cn(
+										"w-max",
+										animateCategory && "category-chip-enter",
+									)}
+								>
+									<CategoryAddChip
+										chipRef={categoryAddChipRef}
+										onChipClick={handleCategoryButtonClick}
+										isDisabled={isMemoLocked}
+										isDimmed={isMemoUiDimmed}
+										disabledReason={changeDisabledReason}
+									/>
+								</div>
+							)}
+						</div>
+					)}
 				</div>
 			</form>
 

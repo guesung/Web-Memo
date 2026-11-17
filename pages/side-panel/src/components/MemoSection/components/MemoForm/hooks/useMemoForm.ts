@@ -38,6 +38,7 @@ import { useMemoTitleSync } from "./useMemoTitleSync";
  * @description empty·saved·slow·failed·retrying은 온라인 저장(upsert)의 상태 머신이다.
  * offline·offlineIdle·syncing·syncFailed는 오프라인 대기열의 상태로, MemoForm/index.tsx가
  * `hasPendingOfflineItem`·오프라인 여부·동기화 상태를 보고 이 값 위에 덮어 그린다.
+ * device는 비로그인(기기 저장소)의 상태로, 같은 곳에서 덮어 그린다.
  */
 export type TSaveStatus =
 	| "empty"
@@ -48,7 +49,8 @@ export type TSaveStatus =
 	| "offline"
 	| "offlineIdle"
 	| "syncing"
-	| "syncFailed";
+	| "syncFailed"
+	| "device";
 
 type MemoRow = Database["memo"]["Tables"]["memo"]["Row"];
 
@@ -92,7 +94,9 @@ export default function useMemoForm({
 	const queryClient = useQueryClient();
 	const { data: tab } = useTabQuery();
 	const { data: memoStore } = useMemoStoreQuery();
-	const isOnline = useOnlineStatus();
+	const isGuest = memoStore.kind === "local";
+	// 기기 저장소는 오프라인에서도 저장되므로 비로그인은 오프라인 제한을 받지 않는다.
+	const isOffline = !useOnlineStatus() && !isGuest;
 	const { user } = useSupabaseUserQuery();
 	const userId = user.data.user?.id;
 	const isMountedRef = useRef(true);
@@ -314,7 +318,8 @@ export default function useMemoForm({
 				hasUnsavedChangeRef.current = true;
 				return false;
 			}
-			if (pendingOfflineMemo.status === "error" || !userId) {
+			// 비로그인은 사용자 없이 기기 저장소에 저장한다. 로그인했는데 사용자가 없으면 저장하지 않는다.
+			if (pendingOfflineMemo.status === "error" || (!userId && !isGuest)) {
 				setSaveStatus("failed");
 				hasUnsavedChangeRef.current = true;
 				return false;
@@ -408,7 +413,8 @@ export default function useMemoForm({
 				resolveIsSaved: (isSaved: boolean) => void,
 				trigger: "offline" | "network_error" | "already_queued",
 			) => {
-				if (!isCurrentSave()) {
+				// 대기열은 로그인 사용자 전용이다. 기기 저장소는 이 경로로 오지 않는다.
+				if (!isCurrentSave() || saveUserId === undefined) {
 					failSave();
 					resolveIsSaved(false);
 					return;
@@ -446,25 +452,29 @@ export default function useMemoForm({
 				}
 			};
 
-			let isAlreadyQueued: boolean;
-			try {
-				isAlreadyQueued = await hasPendingOfflineMemo({
-					userId: saveUserId,
-					memoId,
-					url: tabInfo.url,
-				});
-			} catch {
-				failSave();
-				return false;
+			// 오프라인 대기열은 서버 저장을 미루는 장치라 로그인 사용자만 쓴다. 기기 저장소는 곧바로 저장한다.
+			let isAlreadyQueued = false;
+			if (saveUserId !== undefined) {
+				try {
+					isAlreadyQueued = await hasPendingOfflineMemo({
+						userId: saveUserId,
+						memoId,
+						url: tabInfo.url,
+					});
+				} catch {
+					failSave();
+					return false;
+				}
 			}
 			if (!isCurrentSave()) {
 				failSave();
 				return false;
 			}
-			const shouldQueueOffline = !isOnline || isAlreadyQueued;
+			const shouldQueueOffline =
+				saveUserId !== undefined && (isOffline || isAlreadyQueued);
 
 			if (shouldQueueOffline) {
-				const trigger = !isOnline ? "offline" : "already_queued";
+				const trigger = isOffline ? "offline" : "already_queued";
 				return new Promise<boolean>((resolveIsSaved) => {
 					void queueOffline(resolveIsSaved, trigger);
 				});
@@ -541,7 +551,8 @@ export default function useMemoForm({
 			upsertMemo,
 			onSaveSuccess,
 			onServerSaveSuccess,
-			isOnline,
+			isOffline,
+			isGuest,
 			userId,
 			pendingOfflineMemo.status,
 			isNewMemo,
@@ -638,7 +649,7 @@ export default function useMemoForm({
 		source: TCategoryChangeSource,
 	) => {
 		// UI가 이미 잠금·오프라인·동기화 중에는 막지만, 그 사이 상태가 바뀌었을 수 있어 한 번 더 막는다.
-		if (isMemoLocked || !isOnline || isSyncing) {
+		if (isMemoLocked || isOffline || isSyncing) {
 			return;
 		}
 
@@ -677,7 +688,7 @@ export default function useMemoForm({
 	 * 호출부는 이 `null`로 성공 토스트를 건너뛴다. 실패 알림 자체는 QueryProvider의 MutationCache가 맡는다.
 	 */
 	const toggleMemoStatus = async (statusKey: TMemoStatusKey) => {
-		if (isMemoLocked || !isOnline || isSyncing) {
+		if (isMemoLocked || isOffline || isSyncing) {
 			return null;
 		}
 
@@ -728,7 +739,7 @@ export default function useMemoForm({
 	const setPlannedDate = async (
 		plannedDate: string | null,
 	): Promise<{ plannedDate: string | null } | undefined> => {
-		if (isMemoLocked || !isOnline || isSyncing) {
+		if (isMemoLocked || isOffline || isSyncing) {
 			return undefined;
 		}
 

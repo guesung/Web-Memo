@@ -53,6 +53,8 @@ export const memoQueryOptions = ({
 			id,
 			...(memoStore.kind === "local" && { store: "local" as const }),
 		}),
+		// 기기 저장소는 네트워크가 필요 없다. 기본값이면 오프라인에서 조회가 일시정지돼 저장한 메모가 보이지 않는다.
+		networkMode: memoStore.kind === "local" ? "always" : "online",
 	});
 };
 

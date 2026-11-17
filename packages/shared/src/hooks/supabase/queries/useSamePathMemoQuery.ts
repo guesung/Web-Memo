@@ -45,6 +45,8 @@ export const samePathMemoQueryOptions = ({
 			pathKey ?? "",
 			memoStore.kind === "local" ? "local" : undefined,
 		),
+		// 기기 저장소는 네트워크가 필요 없다. 기본값이면 오프라인에서 조회가 일시정지된다.
+		networkMode: memoStore.kind === "local" ? "always" : "online",
 	});
 };
 

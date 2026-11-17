@@ -176,7 +176,9 @@ test.describe("하이라이트 페이지 (Mocked)", () => {
 			await openDeleteDialog(page, "Delete me");
 			await page.getByRole("button", { name: "Delete", exact: true }).click();
 
-			await expect(page.getByText("Highlight deleted")).toBeVisible();
+			await expect(
+				page.getByText("Highlight deleted", { exact: true }),
+			).toBeVisible();
 			await expect(page.getByText("Delete me")).toHaveCount(0);
 			await expect(page.getByText("Keep me")).toBeVisible();
 			await expect(page.getByText("1", { exact: true })).toBeVisible();
@@ -232,7 +234,9 @@ test.describe("하이라이트 페이지 (Mocked)", () => {
 			await page.getByRole("button", { name: "Delete", exact: true }).click();
 
 			await expect(
-				page.getByText("Couldn't delete the highlight. Please try again."),
+				page.getByText("Couldn't delete the highlight. Please try again.", {
+					exact: true,
+				}),
 			).toBeVisible();
 			await expect(page.getByText("Not deleted")).toBeVisible();
 		});

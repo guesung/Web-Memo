@@ -284,7 +284,8 @@ test("드래그 중에는 버블이 숨고 포인터를 놓으면 나타난다",
 test("칠한 문장 위에 마우스를 올리면 문서 커서가 pointer가 되고 벗어나면 원래대로 돌아온다", async ({
 	page,
 }) => {
-	await setupSupabaseMocks(page, new MockSupabaseStore());
+	const store = new MockSupabaseStore();
+	await setupSupabaseMocks(page, store);
 	await login(page);
 	await skipGuide(page);
 	await openSidePanel(page);
@@ -305,6 +306,14 @@ test("칠한 문장 위에 마우스를 올리면 문서 커서가 pointer가 �
 		const passage = document.createElement("p");
 		passage.id = "e2e-highlight-passage";
 		passage.textContent = text;
+		/** 레이아웃 아래로 밀려 화면 밖에 붙으면 마우스를 올릴 수 없어, 보이는 자리에 고정한다. */
+		Object.assign(passage.style, {
+			position: "fixed",
+			top: "200px",
+			left: "300px",
+			zIndex: "2147483646",
+			background: "white",
+		});
 		document.body.append(passage);
 	}, TEST_TEXT);
 	const rangeCenter = (start: number, end: number) =>
@@ -329,16 +338,21 @@ test("칠한 문장 위에 마우스를 올리면 문서 커서가 pointer가 �
 		.getByRole("toolbar", { name: labels.create })
 		.getByRole("button", { name: labels.yellow })
 		.click();
+	/** 저장 응답 뒤에야 렌더러에 칠해지므로 그 전의 hover는 판정 대상이 아니다. */
+	await expect.poll(() => store.getAllHighlights().length).toBe(1);
+
+	/** mousemove는 100ms throttle이라 매 확인마다 다시 움직여 최신 판정을 받는다. */
+	const hoverAndReadCursor = async (point: { x: number; y: number }) => {
+		await page.mouse.move(point.x, point.y);
+		await page.mouse.move(point.x + 1, point.y);
+		return readCursor();
+	};
 
 	const painted = await rangeCenter(0, 24);
-	await page.mouse.move(painted.x, painted.y);
-	await page.mouse.move(painted.x + 1, painted.y);
-	await expect.poll(readCursor).toBe("pointer");
+	await expect.poll(() => hoverAndReadCursor(painted)).toBe("pointer");
 
 	const unpainted = await rangeCenter(29, 54);
-	await page.mouse.move(unpainted.x, unpainted.y);
-	await page.mouse.move(unpainted.x + 1, unpainted.y);
-	await expect.poll(readCursor).not.toBe("pointer");
+	await expect.poll(() => hoverAndReadCursor(unpainted)).not.toBe("pointer");
 });
 
 test("첫 저장 성공 직후 편집 안내가 뜨고 다음 저장에서는 뜨지 않는다", async ({

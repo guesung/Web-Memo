@@ -341,6 +341,63 @@ test("칠한 문장 위에 마우스를 올리면 문서 커서가 pointer가 �
 	await expect.poll(readCursor).not.toBe("pointer");
 });
 
+test("첫 저장 성공 직후 편집 안내가 뜨고 다음 저장에서는 뜨지 않는다", async ({
+	page,
+}) => {
+	const store = new MockSupabaseStore();
+	await setupSupabaseMocks(page, store);
+	await login(page);
+	await skipGuide(page);
+	await openSidePanel(page);
+	const sidePanelPage = await findSidePanelPage(page);
+	await sidePanelPage.evaluate(async () => {
+		await chrome.storage.sync.set({
+			highlightBubbleEnabled: true,
+			highlightIntroSeen: true,
+			highlightEditHintSeen: false,
+			highlightDisabledSites: [],
+		});
+	});
+	const labels = await sidePanelPage.evaluate(() => ({
+		create: chrome.i18n.getMessage("highlight_create"),
+		yellow: chrome.i18n.getMessage("highlight_color_yellow"),
+		hint: chrome.i18n.getMessage("highlight_edit_hint_message"),
+	}));
+	await page.evaluate((text) => {
+		const passage = document.createElement("p");
+		passage.id = "e2e-highlight-passage";
+		passage.textContent = text;
+		document.body.append(passage);
+	}, TEST_TEXT);
+	const toolbar = page
+		.locator(TOOLBAR)
+		.getByRole("toolbar", { name: labels.create });
+	const hint = page.locator(TOOLBAR).getByRole("status");
+
+	await selectPassage(page, 0, 24);
+	await toolbar.getByRole("button", { name: labels.yellow }).click();
+	await expect.poll(() => store.getAllHighlights().length).toBe(1);
+	await expect(hint).toBeVisible();
+	await expect(hint).toHaveText(labels.hint);
+	await expect
+		.poll(() =>
+			sidePanelPage.evaluate(
+				async () =>
+					(await chrome.storage.sync.get("highlightEditHintSeen"))
+						.highlightEditHintSeen,
+			),
+		)
+		.toBe(true);
+
+	await page.mouse.click(1, 1);
+	await expect(hint).toBeHidden();
+
+	await selectPassage(page, 29, 54);
+	await toolbar.getByRole("button", { name: labels.yellow }).click();
+	await expect.poll(() => store.getAllHighlights().length).toBe(2);
+	await expect(hint).toBeHidden();
+});
+
 async function selectPassage(
 	page: import("@playwright/test").Page,
 	start: number,

@@ -503,6 +503,9 @@
 	"highlight_intro_message": {
 		"message": "This is Web Memo highlighting. Choose a color to save a passage. Add a comment or a linked memo separately. X dismisses this selection only. Use settings to change the popup position or turn it off."
 	},
+	"highlight_edit_hint_message": {
+		"message": "Click a highlighted sentence to edit or delete it"
+	},
 	"highlight_intro_confirm": {
 		"message": "Got it"
 	},

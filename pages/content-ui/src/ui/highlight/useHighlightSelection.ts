@@ -63,6 +63,12 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 		x: number;
 		y: number;
 	} | null>(null);
+	const [editHintPosition, setEditHintPosition] =
+		useState<IFHighlightEditHintPosition | null>(null);
+	/** 저장이 끝나면 선택이 먼저 비워지므로, 안내를 놓을 마지막 선택 위치를 따로 쥔다. */
+	const lastSelectionRef = useRef<IFHighlightSelectionState | null>(null);
+	/** 코멘트 경로는 편집 메뉴가 바로 열리므로 안내 대상에서 뺀다. */
+	const isNoteSaveRef = useRef(false);
 	useEffect(() => {
 		let generation = 0;
 		let isStopped = false;
@@ -118,6 +124,7 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			requestCreate: bridge.request.CREATE_HIGHLIGHT,
 			onSelectionChange: (nextState) => {
 				setSelectionState(nextState);
+				if (nextState) lastSelectionRef.current = nextState;
 				if (nextState) setPanelOpenErrorPosition(null);
 				if (!nextState) {
 					setIsMenuOpen(false);
@@ -136,6 +143,14 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 				if (isIntroPendingRef.current) {
 					void markIntroSeen();
 				}
+				const position = lastSelectionRef.current;
+				if (!isNoteSaveRef.current && position) {
+					void showEditHintOnce({
+						x: position.x,
+						y: position.y,
+						aboveY: position.aboveY,
+					});
+				}
 			},
 		});
 		const editor = createHighlightEditor({
@@ -153,6 +168,24 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			requestEdit: bridge.request.EDIT_HIGHLIGHT,
 		});
 		editorRef.current = editor;
+		/** 처음 저장한 사용자에게만 한 번 띄우고, 띄우는 즉시 본 것으로 기록한다. */
+		async function showEditHintOnce(position: IFHighlightEditHintPosition) {
+			try {
+				const seen = await ChromeSyncStorage.get<boolean | undefined>(
+					STORAGE_KEYS.highlightEditHintSeen,
+				);
+				if (seen === true) return;
+			} catch {
+				/** 읽지 못하면 반복 노출을 막으려고 띄우지 않는다. */
+				return;
+			}
+			setEditHintPosition(position);
+			try {
+				await ChromeSyncStorage.set(STORAGE_KEYS.highlightEditHintSeen, true);
+			} catch {
+				/** 기록 실패는 안내가 한 번 더 뜨는 것으로 끝난다. */
+			}
+		}
 		let stopFocus: (() => void) | undefined;
 		const stopScrollHandler = bridge.handle.SCROLL_TO_HIGHLIGHT(
 			(payload, _sender, sendResponse) => {
@@ -236,6 +269,25 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			window.removeEventListener("scroll", handlePageInteraction, true);
 		};
 	}, [disabledNoticePosition]);
+	useEffect(() => {
+		if (!editHintPosition) {
+			return;
+		}
+		const handlePageInteraction = () => setEditHintPosition(null);
+		/** 저장이 선택을 비울 때도 selectionchange가 오므로, 내용이 있는 새 선택일 때만 닫는다. */
+		const handleSelectionChange = () => {
+			if (!document.getSelection()?.isCollapsed) handlePageInteraction();
+		};
+		document.addEventListener("selectionchange", handleSelectionChange);
+		document.addEventListener("pointerdown", handlePageInteraction);
+		window.addEventListener("scroll", handlePageInteraction, true);
+
+		return () => {
+			document.removeEventListener("selectionchange", handleSelectionChange);
+			document.removeEventListener("pointerdown", handlePageInteraction);
+			window.removeEventListener("scroll", handlePageInteraction, true);
+		};
+	}, [editHintPosition]);
 	const handleHighlightColorClick = async (color: HighlightColor) => {
 		const row = await controllerRef.current?.save(color);
 		if (row) {
@@ -244,7 +296,17 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 	};
 	const handleHighlightNoteClick = async () => {
 		const position = selectionState;
-		const row = await controllerRef.current?.save(lastUsedColor);
+		isNoteSaveRef.current = true;
+		let row:
+			| Awaited<
+					ReturnType<ReturnType<typeof createHighlightController>["save"]>
+			  >
+			| undefined;
+		try {
+			row = await controllerRef.current?.save(lastUsedColor);
+		} finally {
+			isNoteSaveRef.current = false;
+		}
 		if (row && position) {
 			setIsCreatedNoteOpen(true);
 			editorRef.current?.open(row, position.x, position.y);
@@ -381,6 +443,7 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 		isIntroVisible: isIntroPending,
 		disabledNoticePosition,
 		panelOpenErrorPosition,
+		editHintPosition,
 		handlePanelOpenRetry: () => requestOpenPanel(panelOpenErrorPosition),
 		handleHighlightColorClick,
 		handleHighlightNoteClick,
@@ -411,6 +474,13 @@ const markIntroSeen = async () => {
 		/** 기록 실패는 말풍선이 한 번 더 뜨는 것으로 끝난다. */
 	}
 };
+
+/** 첫 저장 안내를 띄울 화면 좌표. 저장 직전 선택의 아래·위 기준점이다. */
+interface IFHighlightEditHintPosition {
+	x: number;
+	y: number;
+	aboveY: number;
+}
 
 /** 끔 안내를 띄울 화면 좌표. 사라진 버블의 자리를 그대로 쓴다. */
 interface IFHighlightNoticePosition {

@@ -165,6 +165,7 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 					setIsCreatedNoteOpen(false);
 				}
 			},
+			onOpen: () => analytics.trackEvent({ name: "highlight_edit_open" }),
 			requestEdit: bridge.request.EDIT_HIGHLIGHT,
 		});
 		editorRef.current = editor;
@@ -461,6 +462,12 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 			const didSave = await editorRef.current?.edit(action);
 			if (didSave && action.action === "note") {
 				analytics.trackEvent({ name: "highlight_note_update" });
+			}
+			if (didSave && action.action === "delete") {
+				analytics.trackEvent({
+					name: "highlight_delete",
+					params: { source: "extension_page" },
+				});
 			}
 		},
 	};

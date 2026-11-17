@@ -52,7 +52,7 @@ export default function HighlightScreen() {
 
 	const handleHighlightDelete = (highlight: HighlightRow) => {
 		deleteMutation.mutate(
-			{ id: highlight.id, url: highlight.url },
+			{ id: highlight.id, url: highlight.url, source: "app_list" },
 			{
 				onError: () =>
 					Alert.alert(

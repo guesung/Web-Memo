@@ -278,14 +278,17 @@ export function useWebViewHighlights({
 	/** 하이라이트를 삭제하고, 서버 반영이 확인된 뒤 WebView의 밑줄도 지운다. */
 	const deleteHighlight = useCallback(
 		(input: DeleteHighlightInput) => {
-			mutateHighlightDelete(input, {
-				onSuccess: () => {
-					webViewRef.current?.injectJavaScript(
-						`window.__webmemoRemove(${input.id}); true;`,
-					);
+			mutateHighlightDelete(
+				{ ...input, source: "app_browser" },
+				{
+					onSuccess: () => {
+						webViewRef.current?.injectJavaScript(
+							`window.__webmemoRemove(${input.id}); true;`,
+						);
+					},
+					onError: () => showToast("하이라이트를 삭제하지 못했습니다"),
 				},
-				onError: () => showToast("하이라이트를 삭제하지 못했습니다"),
-			});
+			);
 		},
 		[mutateHighlightDelete, showToast, webViewRef],
 	);

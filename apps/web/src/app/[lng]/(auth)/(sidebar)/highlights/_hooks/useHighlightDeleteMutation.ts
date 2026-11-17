@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
 import { useSupabaseClientQuery } from "@web-memo/shared/hooks";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import type { HighlightRow } from "@web-memo/shared/types";
 import { HighlightService } from "@web-memo/shared/utils";
 
@@ -33,6 +34,10 @@ export function useHighlightDeleteMutation() {
 			}
 		},
 		onSuccess: () => {
+			analytics.trackEvent({
+				name: "highlight_delete",
+				params: { source: "web_list" },
+			});
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.highlights() });
 		},
 	});

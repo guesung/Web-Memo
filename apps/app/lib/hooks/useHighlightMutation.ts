@@ -138,7 +138,11 @@ export function useHighlightDeleteMutation() {
 	const queryClient = useQueryClient();
 	const { session } = useAuth();
 
-	return useMutation<void, Error, { id: number; url: string }>({
+	return useMutation<
+		void,
+		Error,
+		{ id: number; url: string; source: "app_list" | "app_browser" }
+	>({
 		mutationFn: async ({ id, url }) => {
 			const userId = session?.user.id;
 			if (!userId) {
@@ -173,6 +177,10 @@ export function useHighlightDeleteMutation() {
 				queryKey: QUERY_KEY.highlightCountsPrefix(),
 			});
 			queryClient.invalidateQueries({ queryKey: QUERY_KEY.highlights() });
+			void trackAppEvent({
+				name: "highlight_delete",
+				params: { source: variables.source },
+			});
 		},
 	});
 }

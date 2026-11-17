@@ -253,6 +253,11 @@ export type TAnalyticsEvent =
 			};
 	  }
 	| { name: "highlight_bubble_dismiss" }
+	| {
+			name: "highlight_delete";
+			params: { source: "web_list" | "extension_page" };
+	  }
+	| { name: "highlight_edit_open" }
 	| { name: "notice_view"; params: { notice_id: number } }
 	| {
 			name: "notice_return";
@@ -447,6 +452,8 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	highlight_create: "core_action",
 	highlight_bubble_disable: "engagement",
 	highlight_bubble_dismiss: "engagement",
+	highlight_delete: "core_action",
+	highlight_edit_open: "engagement",
 	notice_view: "engagement",
 	notice_return: "engagement",
 	email_return: "engagement",

@@ -3,7 +3,7 @@ import { findSidePanelPage, openSidePanel, skipGuide } from "../lib";
 
 /**
  * 로그인하지 않아도 패널에서 메모를 쓸 수 있고, 메모는 이 기기에만 저장된다.
- * 로그인 안내 화면이 메모 화면을 막지 않고, 헤더 [로그인] 버튼이 진입점이다.
+ * 로그인 안내 화면이 메모 화면을 막지 않고, 헤더 [로그인] 버튼이 로그인 방법 메뉴를 여는 진입점이다.
  */
 test("로그인하지 않아도 메모를 쓰면 이 기기에 저장되고 다시 열어도 남아 있다 (Mocked)", async ({
 	page,
@@ -23,9 +23,22 @@ test("로그인하지 않아도 메모를 쓰면 이 기기에 저장되고 다�
 	const memoTextarea = sidePanelPage.locator("#memo-textarea");
 
 	await expect(memoTextarea).toBeEditable();
+	const loginButton = sidePanelPage.getByRole("button", {
+		name: /^(로그인|log in)$/i,
+	});
+	await expect(loginButton).toBeVisible();
+	await loginButton.click();
 	await expect(
-		sidePanelPage.getByRole("button", { name: /^(로그인|log in)$/i }),
+		sidePanelPage.getByRole("menuitem", {
+			name: /카카오로 시작하기|continue with kakao/i,
+		}),
 	).toBeVisible();
+	await expect(
+		sidePanelPage.getByRole("menuitem", {
+			name: /Google로 시작하기|continue with google/i,
+		}),
+	).toBeVisible();
+	await sidePanelPage.keyboard.press("Escape");
 	await expect(
 		sidePanelPage.getByText(/이 기기에만 저장돼요|saved on this device only/i),
 	).toBeVisible();

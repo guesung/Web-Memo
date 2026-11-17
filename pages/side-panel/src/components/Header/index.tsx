@@ -1,8 +1,9 @@
-import { useIsGuest, useLoginEntry, useOnlineStatus } from "@src/hooks";
+import { useIsGuest, useOnlineStatus } from "@src/hooks";
 import { useTabQuery } from "@web-memo/shared/hooks";
 import { I18n } from "@web-memo/shared/utils/extension";
 import { Button, IconTooltip } from "@web-memo/ui";
 import { GlobeIcon, SettingsIcon } from "lucide-react";
+import LoginProviderMenu from "../LoginProviderMenu";
 import { ToggleTheme } from "./components";
 
 export default function Header() {
@@ -27,20 +28,21 @@ export default function Header() {
 	);
 }
 
-/** 비로그인이고 온라인일 때만 보이는 로그인 진입 버튼. 오프라인에서는 로그인 탭을 열 수 없다. */
+/** 비로그인이고 온라인일 때만 보이는 로그인 진입 버튼. 오프라인에서는 로그인 창을 열 수 없다. */
 function LoginButton() {
 	const isGuest = useIsGuest();
 	const isOnline = useOnlineStatus();
-	const { openLogin } = useLoginEntry();
 
 	if (!isGuest || !isOnline) {
 		return null;
 	}
 
 	return (
-		<Button variant="outline" size="sm" onClick={() => void openLogin()}>
-			{I18n.get("login_button")}
-		</Button>
+		<LoginProviderMenu>
+			<Button variant="outline" size="sm">
+				{I18n.get("login_button")}
+			</Button>
+		</LoginProviderMenu>
 	);
 }
 

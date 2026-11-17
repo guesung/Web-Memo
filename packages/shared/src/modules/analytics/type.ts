@@ -137,8 +137,8 @@ export type TAnalyticsEvent =
 	| { name: "login_start"; params: { method: string } }
 	| {
 			name: "side_panel_login_click";
-			/** 패널에서 고른 로그인 수단. 로그인 탭을 열어 웹에서 고르는 [로그인] 버튼에는 없습니다 */
-			params: { method?: "kakao" | "google" };
+			/** 누른 제공자 버튼. 패널에서 고른 로그인 수단입니다 */
+			params: { method: "kakao" | "google" };
 	  }
 	| {
 			name: "header_login_click";

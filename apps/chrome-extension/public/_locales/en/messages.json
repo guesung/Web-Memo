@@ -266,6 +266,27 @@
 	"control_disabled_offline_delete": {
 		"message": "You can't delete this offline"
 	},
+	"login_kakao_button": {
+		"message": "Continue with Kakao"
+	},
+	"login_google_button": {
+		"message": "Continue with Google"
+	},
+	"login_kakao_pending": {
+		"message": "Signing in with Kakao…"
+	},
+	"login_google_pending": {
+		"message": "Signing in with Google…"
+	},
+	"login_failed": {
+		"message": "Couldn't sign you in. Please try again."
+	},
+	"login_method_label": {
+		"message": "Log in with"
+	},
+	"login_menu_hint": {
+		"message": "A sign-in window will open. Memos on this device will move to your account."
+	},
 	"login_button": {
 		"message": "Log in"
 	},

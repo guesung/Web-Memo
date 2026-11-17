@@ -1,5 +1,6 @@
 export { default as Header } from "./Header";
 export { default as ToggleTheme } from "./Header/components/ToggleTheme";
+export { default as LoginProviderMenu } from "./LoginProviderMenu";
 export { default as LoginRequiredNotice } from "./LoginRequiredNotice";
 export { default as MemoSection } from "./MemoSection";
 export { default as QueryProvider } from "./QueryProvider";

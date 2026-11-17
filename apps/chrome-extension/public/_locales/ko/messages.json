@@ -266,6 +266,27 @@
 	"control_disabled_offline_delete": {
 		"message": "오프라인에서는 지울 수 없어요"
 	},
+	"login_kakao_button": {
+		"message": "카카오로 시작하기"
+	},
+	"login_google_button": {
+		"message": "Google로 시작하기"
+	},
+	"login_kakao_pending": {
+		"message": "카카오 로그인 중…"
+	},
+	"login_google_pending": {
+		"message": "Google 로그인 중…"
+	},
+	"login_failed": {
+		"message": "로그인하지 못했어요. 다시 시도해 주세요."
+	},
+	"login_method_label": {
+		"message": "로그인 방법"
+	},
+	"login_menu_hint": {
+		"message": "로그인 창이 열려요. 이 기기 메모는 계정으로 옮겨져요"
+	},
 	"login_button": {
 		"message": "로그인"
 	},

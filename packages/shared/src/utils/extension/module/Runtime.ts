@@ -15,23 +15,14 @@ export class Runtime {
 		});
 	}
 
-	static sendMessageToExtension<TResponse>(
+	static sendMessageToExtension<TPayload, TResponse>(
 		type: BRIDGE_MESSAGE_TYPE,
-	): Promise<TResponse>;
-	static sendMessageToExtension<TResponse>(
-		type: BRIDGE_MESSAGE_TYPE,
-		callback: (response: TResponse) => void,
-	): void;
-	static sendMessageToExtension<TResponse>(
-		type: BRIDGE_MESSAGE_TYPE,
-		callback?: (response: TResponse) => void,
-	): Promise<TResponse> | undefined {
-		if (callback) {
-			chrome.runtime.sendMessage(CHROME_EXTENSION_ID, { type }, callback);
-			return undefined;
-		} else {
-			return chrome.runtime.sendMessage(CHROME_EXTENSION_ID, { type });
-		}
+		payload?: TPayload,
+	): Promise<TResponse> {
+		return chrome.runtime.sendMessage<BridgeRequest<TPayload>, TResponse>(
+			CHROME_EXTENSION_ID,
+			{ type, payload },
+		);
 	}
 
 	static onMessage<TPayload, TResponse>(

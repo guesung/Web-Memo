@@ -11,6 +11,7 @@ import type {
 	IFEditHighlightPayload,
 	IFGetLoginStatusResponse,
 	IFSettingUpdatedPayload,
+	IFSyncLoginStatusPayload,
 	PageContentResponse,
 	TCreateHighlightResponse,
 	TEditHighlightResponse,
@@ -43,7 +44,10 @@ export const bridge = createBridge({
 	GET_EXTENSION_MANIFEST: defineMessage<void, chrome.runtime.Manifest>(
 		"toExtension",
 	),
-	SYNC_LOGIN_STATUS: defineMessage<void, void>("toExtension"),
+	/** 웹의 로그인 상태가 바뀌었다는 신호. 구버전 웹은 payload 없이 보내므로 수신 쪽은 `undefined`도 받는다. */
+	SYNC_LOGIN_STATUS: defineMessage<IFSyncLoginStatusPayload, void>(
+		"toExtension",
+	),
 	CREATE_HIGHLIGHT: defineMessage<
 		IFCreateHighlightPayload,
 		TCreateHighlightResponse

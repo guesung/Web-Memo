@@ -81,6 +81,19 @@ const isAuthRejectionError = (error: unknown): boolean => {
 	);
 };
 
+/**
+ * `getSupabaseClient`가 던진 오류가 인증 거부가 아닌 세션 복원 실패인지 판별한다.
+ *
+ * @description 쿠키가 없는 순수 로그아웃(원인 없는 `SupabaseSessionRequiredError`)과 인증 서버의
+ * 거부(원인이 4xx `AuthApiError`·`AuthSessionMissingError`)는 정상 로그아웃 상태다. 원인이 네트워크·5xx·예상 밖
+ * 오류면 사용자는 로그인돼 있을 수 있는데 패널이 로그인 화면을 띄운 것이라 보고 대상이다.
+ * 두 경우 모두 메시지가 "로그인을 먼저 해주세요"라 `isLoggedOutError`로는 구분되지 않는다.
+ */
+export const isSessionRestoreFailure = (error: unknown): boolean =>
+	error instanceof Error &&
+	error.cause !== undefined &&
+	!isAuthRejectionError(error.cause);
+
 /** 인증 거부는 로그인 필요 오류로 바꾸고, 그 외는 원본을 그대로 돌려준다. */
 const toSessionRequiredError = (error: unknown): unknown => {
 	if (isAuthRejectionError(error)) {

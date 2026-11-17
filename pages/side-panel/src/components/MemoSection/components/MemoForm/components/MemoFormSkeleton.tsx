@@ -1,3 +1,4 @@
+import { useSkeletonTimeoutReport } from "@src/hooks";
 import { Badge, Skeleton } from "@web-memo/ui";
 import {
 	BookOpenIcon,
@@ -10,8 +11,11 @@ import {
  * MemoForm이 뜨기 전(user·setting·category 대기) 자리를 채우는 뼈대.
  * @description 실제 MemoForm과 같은 레이아웃 클래스(제목 줄 h-8·본문 칸 flex-1·하단
  * 버튼 줄)를 써서, 데이터가 도착해 실제 폼으로 바뀔 때 세로 위치가 움직이지 않게 한다.
+ * 5초 넘게 남으면 로딩이 멈춘 것으로 보고 Sentry에 보고한다.
  */
 export default function MemoFormSkeleton() {
+	useSkeletonTimeoutReport();
+
 	return (
 		<form className="relative flex min-h-0 flex-1 flex-col py-1">
 			<div className="mb-1 flex h-8 shrink-0 items-center gap-1">

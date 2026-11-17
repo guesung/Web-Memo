@@ -23,6 +23,9 @@ vi.mock("../../utils/extension", () => ({
 const schema = {
 	OPEN_SIDE_PANEL: defineMessage<{ token: string }, string>("internal"),
 	GET_SIDE_PANEL_OPEN: defineMessage<void, string>("toExtension"),
+	SYNC_LOGIN_STATUS: defineMessage<{ isLoggedIn: boolean }, void>(
+		"toExtension",
+	),
 	PAGE_CONTENT: defineMessage<{ url: string }, string>("toTab"),
 };
 const secret = "PRIVATE_LOGIN_TOKEN_AND_URL";
@@ -62,7 +65,10 @@ describe("extension bridge request logs", () => {
 		expect(mocks.internal).toHaveBeenCalledWith("OPEN_SIDE_PANEL", {
 			token: "value",
 		});
-		expect(mocks.external).toHaveBeenCalledWith("GET_SIDE_PANEL_OPEN");
+		expect(mocks.external).toHaveBeenCalledWith(
+			"GET_SIDE_PANEL_OPEN",
+			undefined,
+		);
 		expect(mocks.tab).toHaveBeenCalledWith("PAGE_CONTENT", {
 			url: "https://example.com",
 		});
@@ -94,6 +100,17 @@ describe("extension bridge request logs", () => {
 			{ id: 3, key: "PAGE_CONTENT", direction: "toTab", stage: "request" },
 			{ id: 3, key: "PAGE_CONTENT", direction: "toTab", stage: "response" },
 		]);
+	});
+
+	it("확장으로 보내는 메시지도 payload를 함께 전달한다", async () => {
+		const bridge = createBridge(schema);
+		mocks.external.mockResolvedValue(undefined);
+
+		await bridge.request.SYNC_LOGIN_STATUS({ isLoggedIn: true });
+
+		expect(mocks.external).toHaveBeenCalledWith("SYNC_LOGIN_STATUS", {
+			isLoggedIn: true,
+		});
 	});
 
 	it("Chrome 런타임이 없으면 전송하지 않고 skipped를 기록한다", async () => {

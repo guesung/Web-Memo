@@ -6,6 +6,7 @@ interface IFFeedbackRecord {
   content: string;
   user_id: string | null;
   email: string | null;
+  source_path?: string | null;
   created_at: string;
 }
 
@@ -32,6 +33,7 @@ const buildAdminLink = (feedbackId: string) => {
  * feedbacks 행 하나를 슬랙에 보낼 메시지로 만든다
  * @description feedbacks.content는 사용자가 헤더 피드백에 쓴 평문이다. 그대로 싣는다.
  * email은 사용자가 직접 적었을 때만 있으므로 있을 때만 회신 줄을 붙인다.
+ * source_path는 웹에서 보냈을 때만 있으므로 있을 때만 출처 줄을 붙인다.
  */
 const buildSlackMessage = (record: IFFeedbackRecord) => {
   const writer = record.user_id ?? "비로그인";
@@ -43,6 +45,10 @@ const buildSlackMessage = (record: IFFeedbackRecord) => {
 
   if (record.email) {
     lines.push(`회신 ${record.email}`);
+  }
+
+  if (record.source_path) {
+    lines.push(`출처 ${record.source_path}`);
   }
 
   const adminLink = buildAdminLink(record.id);

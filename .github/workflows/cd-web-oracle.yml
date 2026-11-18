@@ -9,9 +9,6 @@ name: CD - Web (Oracle Cloud)
 # 롤백: action=rollback으로 실행하면 직전 색으로 upstream만 되돌립니다.
 
 on:
-  # TEMP: master에 오기 전 검증용. 확인 뒤 지운다
-  push:
-    branches: [chore/web-oracle-deploy]
   workflow_call:
     inputs:
       ref:

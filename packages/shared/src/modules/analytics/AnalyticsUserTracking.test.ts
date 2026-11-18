@@ -62,10 +62,13 @@ let root: Root;
 let container: HTMLElement;
 let caughtErrors: Error[];
 
-const renderTracking = async () => {
+const renderTracking = async (
+	prepareCache?: (queryClient: QueryClient) => void,
+) => {
 	const queryClient = new QueryClient({
 		defaultOptions: { queries: { retry: false } },
 	});
+	prepareCache?.(queryClient);
 
 	await act(async () =>
 		root.render(
@@ -130,6 +133,20 @@ describe("AnalyticsUserTracking", () => {
 		expect(container.innerHTML).toBe("");
 		expect(mocks.getUser).toHaveBeenCalledWith(supabaseClient);
 		expect(mocks.setUserId).toHaveBeenCalledOnce();
+		expect(mocks.setUserId).toHaveBeenCalledWith("user-1");
+	});
+
+	it("다른 화면이 받아 둔 사용자가 있으면 다시 조회하지 않는다", async () => {
+		mocks.getClient.mockResolvedValue({ name: "client" });
+
+		await renderTracking((queryClient) =>
+			queryClient.setQueryData(["user"], {
+				data: { user: { id: "user-1" } },
+				error: null,
+			}),
+		);
+
+		expect(mocks.getUser).not.toHaveBeenCalled();
 		expect(mocks.setUserId).toHaveBeenCalledWith("user-1");
 	});
 

@@ -51,6 +51,10 @@ const useTrackedUserId = () => {
 			? userQueryOptions(supabaseClient).queryFn
 			: skipToken,
 		retry: false,
+		// 루트 레이아웃이라 다른 화면이 사용자를 받아 둔 뒤에 붙는 경우가 많다. 기본값(0)이면 붙자마자
+		// 같은 사용자를 한 번 더 조회한다. id만 읽으면 되니 캐시가 있으면 쓰고, 비어 있을 때만 조회한다.
+		// 로그아웃의 invalidateQueries는 staleTime과 무관하게 다시 조회한다.
+		staleTime: Number.POSITIVE_INFINITY,
 		throwOnError: isUnexpectedError,
 	});
 

@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import type { MemoSupabaseClient } from "../types";
-import { HighlightService, MemoService } from "./Supabase";
+import {
+	HighlightService,
+	MemoService,
+	memosInfiniteQueryOptions,
+} from "./Supabase";
 
 vi.mock("../modules/analytics", () => ({
 	analytics: { trackEvent: vi.fn() },
@@ -11,6 +15,7 @@ interface IFRecordedCalls {
 	schema: string[];
 	from: string[];
 	select: string[];
+	selectOptions: unknown[];
 	eq: [string, unknown][];
 	in: [string, unknown][];
 	is: [string, unknown][];
@@ -39,6 +44,7 @@ const createMockClient = (): {
 		schema: [],
 		from: [],
 		select: [],
+		selectOptions: [],
 		eq: [],
 		in: [],
 		is: [],
@@ -55,8 +61,9 @@ const createMockClient = (): {
 	};
 
 	const builder = {
-		select: (columns: string) => {
+		select: (columns: string, options?: unknown) => {
 			calls.select.push(columns);
+			calls.selectOptions.push(options);
 			return builder;
 		},
 		eq: (column: string, value: unknown) => {
@@ -394,6 +401,20 @@ describe("MemoService.getMemosPaginated", () => {
 		expect(calls.limit).toEqual([20]);
 	});
 
+	it("기본으로 전체 개수를 함께 센다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemosPaginated({});
+
+		expect(calls.selectOptions).toEqual([{ count: "exact" }]);
+	});
+
+	it("개수가 필요 없으면 COUNT를 요청하지 않는다", async () => {
+		const { client, calls } = createMockClient();
+		await new MemoService(client).getMemosPaginated({ withCount: false });
+
+		expect(calls.selectOptions).toEqual([undefined]);
+	});
+
 	it("기존 모바일 문자열 날짜 커서를 계속 지원한다", async () => {
 		const { client, calls } = createMockClient();
 		await new MemoService(client).getMemosPaginated({ cursor: "2026-09-23" });
@@ -413,6 +434,27 @@ describe("MemoService.getMemosPaginated", () => {
 			["title", { ascending: true }],
 			["id", { ascending: true }],
 		]);
+	});
+});
+
+describe("memosInfiniteQueryOptions", () => {
+	const runQueryFn = async (pageParam: unknown) => {
+		const { client, calls } = createMockClient();
+		const { queryFn } = memosInfiniteQueryOptions(client);
+		await queryFn?.({ pageParam } as never);
+		return calls;
+	};
+
+	it("첫 페이지는 전체 개수를 센다", async () => {
+		const calls = await runQueryFn(undefined);
+
+		expect(calls.selectOptions).toEqual([{ count: "exact" }]);
+	});
+
+	it("다음 페이지는 전체 개수를 다시 세지 않는다", async () => {
+		const calls = await runQueryFn({ value: "2026-09-23T00:00:00Z", id: 42 });
+
+		expect(calls.selectOptions).toEqual([undefined]);
 	});
 });
 

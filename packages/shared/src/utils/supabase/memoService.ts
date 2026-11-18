@@ -245,6 +245,7 @@ export class MemoService {
 		searchQuery,
 		domain,
 		sortBy = "updated_at",
+		withCount = true,
 	}: {
 		cursor?: string | IFMemoPageCursor;
 		limit?: number;
@@ -256,6 +257,8 @@ export class MemoService {
 		/** 도메인 하나로 거른다. `parseDomainFilter`를 거친 값이어야 한다. */
 		domain?: string;
 		sortBy?: "updated_at" | "created_at" | "title";
+		/** 전체 개수(`count`)를 함께 센다. 다음 페이지처럼 개수가 필요 없으면 끄면 COUNT 쿼리를 건너뛴다. */
+		withCount?: boolean;
 	}) => {
 		const selectQuery = category
 			? "*, category!inner(id, name, color)"
@@ -266,7 +269,7 @@ export class MemoService {
 		let query = this.supabaseClient
 			.schema(SUPABASE.table.memo)
 			.from(SUPABASE.table.memo)
-			.select(selectQuery, { count: "exact" })
+			.select(selectQuery, withCount ? { count: "exact" } : undefined)
 			.is("deleted_at", null)
 			.order(
 				sortBy,

@@ -24,6 +24,8 @@ interface IFHighlightEditorOptions {
 	updateRow: (row: HighlightRow) => void;
 	removeRow: (id: number) => void;
 	onChange: (state: IFHighlightEditState | null) => void;
+	/** 칠한 문장을 클릭해 편집 메뉴가 열릴 때 */
+	onOpen?: () => void;
 	requestEdit: (
 		payload: IFEditHighlightPayload,
 	) => Promise<TEditHighlightResponse>;
@@ -74,6 +76,7 @@ export const createHighlightEditor = (options: IFHighlightEditorOptions) => {
 		}
 		event.preventDefault();
 		open(row, event.clientX, event.clientY + 12);
+		options.onOpen?.();
 	};
 	const open = (row: HighlightRow, x: number, y: number) => {
 		state = {

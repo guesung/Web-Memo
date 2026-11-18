@@ -43,7 +43,7 @@
 | `session_id` | 확장 session storage의 30분 비활동 기준 재사용값. 웹은 gtag 관리. 모든 경로에 같은 세션 계약이 적용되는 것은 아님 |
 | 전달 보장 | 웹 gtag 미준비·차단·종료·확장 fetch 실패로 누락 가능. 전송 계층 전체에 exactly-once·자동 재시도·멱등 dedupe 없음. Promise 종료나 HTTP 2xx는 보고서 수신 확인과 다름 |
 | 개인정보 | 새 속성에 메모/인용/검색어/피드백 원문·이메일·개인 URL·메모 ID를 추가하지 않음. 기존 page_view의 위치/제목과 error reason은 별도 검토 필요하며 전역 sanitizer가 있다고 가정하지 않음 |
-| 앱 | apps/app에는 이 analytics 전송 계층이 없어 웹·확장 지표가 앱 사용까지 대표하지 않음 |
+| 앱 | apps/app은 이 공용 계층 대신 앱 전용 Measurement Protocol 모듈(`apps/app/lib/analytics/`, `trackAppEvent`)로 보낸다. 이벤트 목록은 `TAppAnalyticsEvent`가 원본이고 웹·확장 이벤트와 별개다. 앱 차원(`app_platform` 등) 등록 상태는 [analytics.md](analytics.md#앱appsapp) 참조 |
 
 ### 속성 전송과 GA 등록
 
@@ -369,6 +369,24 @@
 - **단위·중복:** 저장 완료 호출마다 1회. content UI는 저장 중 가드와 페이지 세대 검증이 있으나 웹의 동일 값 재저장까지 제거하는 계약은 없다.
 - **근거·테스트:** [useHighlightSelection](../pages/content-ui/src/ui/highlight/useHighlightSelection.ts), [useHighlightNoteMutation](../apps/web/src/app/%5Blng%5D/%28auth%29/%28sidebar%29/highlights/_hooks/useHighlightNoteMutation.ts), [메뉴 테스트](../pages/content-ui/src/ui/highlight/useHighlightSelectionMenu.test.ts).
 - **한계·이력:** 순수한 새 메모 추가와 기존 메모 수정/비우기를 구분하지 못한다. 도입 버전·일자 미확인.
+
+### `highlight_delete`
+
+- **질문:** 하이라이트를 어디서 지우는가 — 모아보기(웹·앱)에서 찾는가, 원본 페이지에서 칠한 문장을 눌러 지우는가?
+- **발생·제외:** 삭제가 실제로 성공한 뒤 발생. 웹 모아보기는 삭제 mutation `onSuccess`(오류·삭제 행 0건이면 throw하므로 성공만), 앱은 공용 삭제 mutation `onSuccess`, 확장은 편집 메뉴 삭제 요청이 true를 돌려준 뒤. 취소·실패는 제외(실패는 Sentry `feature: highlight`·`operation: delete`).
+- **속성:** 필수 `source` = `web_list`(웹 /highlights) · `app_list`(앱 하이라이트 탭) · `app_browser`(앱 인앱 브라우저 편집 시트) · `extension_page`(확장 원본 페이지 편집 메뉴). 하이라이트 ID·원문·URL은 보내지 않는다.
+- **단위·중복:** 삭제 성공 1회당 1회. 앱은 `trackAppEvent`로, 웹·확장은 `analytics.trackEvent`로 보내 두 경로의 사용자 식별이 다르다.
+- **근거·테스트:** [웹 useHighlightDeleteMutation](../apps/web/src/app/%5Blng%5D/%28auth%29/%28sidebar%29/highlights/_hooks/useHighlightDeleteMutation.ts), [앱 useHighlightMutation](../apps/app/lib/hooks/useHighlightMutation.ts), [useHighlightSelection](../pages/content-ui/src/ui/highlight/useHighlightSelection.ts).
+- **한계·이력:** `source`로 플랫폼을 구분한다(앱 `app_platform`은 GA 차원 미등록). 모아보기 삭제는 DB-1322에서 처음 생겼고, 확장 원본 페이지 삭제는 그 전부터 있었지만 이벤트는 DB-1322부터 기록한다. 도입 버전·일자 미확인.
+
+### `highlight_edit_open`
+
+- **질문:** 칠한 문장을 눌러 편집 메뉴를 여는가 — hover 커서·첫 저장 안내 이후 늘었는가?
+- **발생·제외:** 확장 원본 페이지에서 칠한 문장을 클릭해 편집 메뉴가 열릴 때(`createHighlightEditor`의 클릭 경로). 코멘트(연필) 저장 직후 자동으로 열리는 경우는 제외. 앱 인앱 브라우저는 보내지 않는다.
+- **속성:** 이벤트 전용 속성 없음. 공통 `extension_version`으로 안내 도입 전후 버전을 가른다.
+- **단위·중복:** 클릭으로 열린 1회당 1회. 같은 문장을 다시 눌러 여는 것도 매번 센다.
+- **근거·테스트:** [createHighlightEditor](../pages/content-ui/src/ui/highlight/createHighlightEditor.ts), [useHighlightSelection](../pages/content-ui/src/ui/highlight/useHighlightSelection.ts).
+- **한계·이력:** hover 커서와 첫 저장 안내가 같은 버전에 들어가 둘의 효과를 나눌 수 없다. 안내 노출 이벤트는 만들지 않았다(사용자당 1회라 안내 도입 버전 이후 첫 `highlight_create`가 노출 대상과 같다). DB-1322 도입; 버전·일자 미확인.
 
 ### `highlight_bubble_disable`
 

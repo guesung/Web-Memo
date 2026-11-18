@@ -1,3 +1,5 @@
+import type { LanguageParams } from "@src/modules/i18n";
+
 /**
  * 메모 목록을 어떤 기준으로 거를지. 라우트가 결정한다.
  *
@@ -5,3 +7,13 @@
  * 있으면 서버 컴포넌트가 지금 어느 탭인지 알 수 없어 사이드바에 활성 표시를 붙일 수 없었다.
  */
 export type TMemoFilter = "all" | "wish" | "star" | "reading" | "plan";
+
+/** 메모 목록 라우트가 받는 쿼리. 카테고리·보기·도메인이 실린다. */
+export type TMemoSearchParams = Promise<
+	Record<string, string | string[] | undefined>
+>;
+
+/** 메모 목록 라우트 페이지의 props. */
+export interface IFMemoPageParams extends LanguageParams {
+	searchParams: TMemoSearchParams;
+}

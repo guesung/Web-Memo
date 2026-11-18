@@ -4,16 +4,19 @@ import type { LanguageType } from "@src/modules/i18n";
 import { SidebarTrigger } from "@web-memo/ui";
 import { Suspense } from "react";
 
-import type { TMemoFilter } from "../../_types";
+import type { TMemoFilter, TMemoSearchParams } from "../../_types";
 import MemoSearchForm from "../MemoSearchForm";
 import MemoSearchFormProvider from "../MemoSearchFormProvider";
 import ClientMemoView from "../MemoView/ClientMemoView";
 import { MemoViewSkeleton } from "../MemoView/MemoListSkeleton";
+import MemoListHydrationBoundary from "./MemoListHydrationBoundary";
 import MemoShellProbe from "./MemoShellProbe";
 
 interface IFMemoPageProps extends LanguageType {
 	/** 이 화면이 보여줄 메모의 범위. 넘기지 않으면 전체를 본다 */
 	filter?: TMemoFilter;
+	/** 서버에서 첫 페이지를 미리 조회할 조건. 넘기지 않으면 prefetch하지 않는다 */
+	searchParams?: TMemoSearchParams;
 }
 
 /**
@@ -25,6 +28,7 @@ interface IFMemoPageProps extends LanguageType {
 export default async function MemoPage({
 	lng,
 	filter = "all",
+	searchParams,
 }: IFMemoPageProps) {
 	// 헤더 여백(HeaderMargin, 3rem)은 layout이 이미 넣는다. 100vh를 그대로 쓰면
 	// 그만큼 문서가 길어져 내용이 짧아도 스크롤이 생긴다.
@@ -44,7 +48,16 @@ export default async function MemoPage({
 						<MemoSearchForm lng={lng} />
 					</div>
 					<Suspense fallback={<MemoViewSkeleton />}>
-						<ClientMemoView lng={lng} filter={filter} />
+						{searchParams ? (
+							<MemoListHydrationBoundary
+								filter={filter}
+								searchParams={searchParams}
+							>
+								<ClientMemoView lng={lng} filter={filter} />
+							</MemoListHydrationBoundary>
+						) : (
+							<ClientMemoView lng={lng} filter={filter} />
+						)}
 					</Suspense>
 				</MemoSearchFormProvider>
 			</div>

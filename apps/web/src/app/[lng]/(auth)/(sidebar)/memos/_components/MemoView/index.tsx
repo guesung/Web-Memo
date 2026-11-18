@@ -8,11 +8,11 @@ import {
 	type TMemoRoute,
 } from "@src/modules/observability/client";
 import { useMemosInfiniteQuery } from "@web-memo/shared/hooks";
-import { parseDomainFilter } from "@web-memo/shared/utils";
 import { Skeleton } from "@web-memo/ui";
 import dynamic from "next/dynamic";
 import { Suspense, useEffect } from "react";
 import type { TMemoFilter } from "../../_types";
+import { getMemoListQueryParams } from "../../_utils";
 import {
 	useMemoListKeyboardNavigation,
 	useMemoSearchConditions,
@@ -56,10 +56,14 @@ const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
 	}, []);
 	const { category, view, isListView, searchQuery, domainParam } =
 		useMemoSearchConditions();
-	const domain = parseDomainFilter(domainParam);
-	const isWish = getWishlistFilter(filter);
-	const isStar = filter === "star" ? true : undefined;
-	const isReading = filter === "reading" ? true : undefined;
+	const queryParams = getMemoListQueryParams({
+		filter,
+		category,
+		view,
+		domainParam,
+		searchQuery,
+	});
+	const { domain, isWish, isStar, isReading } = queryParams;
 
 	const {
 		data,
@@ -68,15 +72,7 @@ const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
 		hasNextPage,
 		isFetchingNextPage,
 		fetchNextPage,
-	} = useMemosInfiniteQuery({
-		category,
-		sortBy: view === "list" ? "created_at" : "updated_at",
-		isWish,
-		isStar,
-		isReading,
-		searchQuery: searchQuery || undefined,
-		domain,
-	});
+	} = useMemosInfiniteQuery(queryParams);
 	const loadOutcome: TMemoLoadOutcome = data.pages[0]?.error
 		? "error"
 		: memos.length === 0
@@ -165,9 +161,6 @@ const PagedMemoView = ({ lng, filter }: IFPagedMemoViewProps) => {
 		</div>
 	);
 };
-
-/** 위시 탭만 위시 메모를 보여주고, 그 외 탭(별표·읽는 중 포함)은 위시 메모를 제외해 검색도 현재 탭 안에서만 한다. */
-const getWishlistFilter = (filter: TMemoFilter): boolean => filter === "wish";
 
 /** 메모 목록의 언어와 라우트 필터. */
 interface IFMemoViewProps extends LanguageType {

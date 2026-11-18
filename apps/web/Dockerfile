@@ -50,7 +50,13 @@ RUN --mount=type=secret,id=web_env,required=false \
     && rm -f apps/web/.env.production.local
 
 FROM node:${NODE_VERSION}-slim AS runner
-ENV NODE_ENV=production \
+# /api/version은 force-static이지만 revalidatePath("/", "layout")(로그인 처리)가 부르면 실행 중에 다시 만들어집니다.
+# 그때도 같은 커밋을 돌려주도록 빌드 인자를 실행 환경에도 남깁니다(Vercel은 VERCEL_GIT_COMMIT_SHA가 실행 중에도 있음).
+ARG GITHUB_SHA
+ARG GITHUB_REF_NAME
+ENV GITHUB_SHA=${GITHUB_SHA} \
+    GITHUB_REF_NAME=${GITHUB_REF_NAME} \
+    NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
     HOSTNAME=0.0.0.0

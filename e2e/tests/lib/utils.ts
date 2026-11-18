@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import { PATHS } from "@web-memo/shared/constants";
+import { PATHS, SUPABASE } from "@web-memo/shared/constants";
 import { LANGUAGE } from "./constants";
 
 interface GotoSafeParams {
@@ -14,6 +14,20 @@ export async function gotoSafely({ page, url, regexp }: GotoSafeParams) {
 }
 
 export async function login(page: Page) {
+	const authCookies = await page.context().cookies();
+	if (
+		authCookies.some(
+			(cookie) => cookie.name === SUPABASE.authCookie.accessToken,
+		) &&
+		authCookies.some(
+			(cookie) => cookie.name === SUPABASE.authCookie.refreshToken,
+		)
+	) {
+		await page.goto(`/${LANGUAGE}${PATHS.memos}`);
+		await page.waitForURL(new RegExp(PATHS.memos));
+		return;
+	}
+
 	await page.goto(`/${LANGUAGE}${PATHS.login}`);
 	await page.waitForURL(new RegExp(PATHS.login));
 

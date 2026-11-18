@@ -36,7 +36,7 @@ export default defineConfig({
 		baseURL: "http://localhost:3000",
 	},
 	// 폴더는 테스트 대상으로 나눈다. web은 확장 없는 일반 브라우저라 로그인 세션을 setup이 한 번 만들어
-	// 나눠 쓰고, extension·hybrid는 확장을 올린 persistent context라 테스트마다 로그인한다.
+	// 나눠 쓴다. extension·hybrid도 인증 쿠키만 복사하고 확장 persistent context는 테스트마다 새로 띄운다.
 	// 실제 Supabase 데이터를 읽거나 쓰는 테스트는 파일명을 `*.real.test.ts`로 짓는다.
 	projects: [
 		{
@@ -56,11 +56,13 @@ export default defineConfig({
 		{
 			name: "extension",
 			testDir: "./tests/extension",
+			dependencies: ["setup"],
 			use: { ...devices["Desktop Chrome"] },
 		},
 		{
 			name: "hybrid",
 			testDir: "./tests/hybrid",
+			dependencies: ["setup"],
 			use: { ...devices["Desktop Chrome"] },
 		},
 	],

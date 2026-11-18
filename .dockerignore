@@ -1,0 +1,22 @@
+# apps/web/Dockerfile의 빌드 컨텍스트(레포 루트)에서 뺄 것.
+# 워크스페이스 package.json은 lockfile 검증에 필요해 남기고, 무거운 산출물·시크릿만 뺍니다.
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/dist-zip
+**/build
+**/coverage
+**/.env*
+!packages/env/.env.development
+!packages/env/.env.staging
+!packages/env/.env.production
+.git
+.vercel
+.omc
+**/*.tsbuildinfo
+apps/app/ios
+apps/app/android
+e2e/test-results
+e2e/playwright-report
+infra

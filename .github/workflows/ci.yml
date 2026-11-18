@@ -183,6 +183,17 @@ jobs:
       # 승격합니다. PR은 검증 빌드만 합니다. (노션 「Slack에서 배포하기」(https://app.notion.com/p/40f89de02fde81f88baae972931fbc56))
       deploy_target: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' && 'staging' || 'staged') || 'build-only' }}
 
+  # Oracle Cloud VM으로의 이전(노션 DB-1327) 동안 develop을 Vercel과 함께 VM staging에도 올립니다.
+  # 저장소 변수 ORACLE_DEPLOY_ENABLED가 "true"일 때만 돌고, 실패해도 Vercel 배포·알림에는 영향이 없습니다.
+  cd-web-oracle:
+    needs: [ci, changes]
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && needs.changes.outputs.web == 'true' && vars.ORACLE_DEPLOY_ENABLED == 'true' }}
+    uses: ./.github/workflows/cd-web-oracle.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+
   # develop 푸시의 테섭 배포 결과를 머지 스레드에 댓글로 답니다.
   # cd-web만 기다리므로 앱 빌드(약 30분)와 무관하게 배포 직후 나갑니다.
   # slack-thread는 알림용 needs입니다. 실패·스킵돼도 always()라 이 잡은 돌고,

@@ -1,0 +1,147 @@
+name: CD - Web (Oracle Cloud)
+
+# 웹을 Oracle Cloud VM(infra/oracle)에 컨테이너로 배포합니다. Vercel 배포(cd-web.yml)와 따로 돌고,
+# 지금은 staging만 대상입니다(노션 DB-1327 이전 계획 3단계). 도메인이 아직 VM을 가리키지 않아
+# 실패해도 라이브에는 영향이 없습니다.
+#
+# 흐름: vercel pull(환경변수 원천은 Vercel) → arm64 이미지 빌드 → GHCR push
+#       → VM 대기 색에 기동(staged) → /api/version 커밋 확인 → Caddy 전환(promote)
+# 롤백: action=rollback으로 실행하면 직전 색으로 upstream만 되돌립니다.
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "체크아웃할 커밋 (비우면 호출한 워크플로의 기본 ref)"
+        type: string
+        default: ""
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "deploy = 빌드해서 배포, rollback = 직전 색으로 되돌리기"
+        type: choice
+        options:
+          - deploy
+          - rollback
+        default: deploy
+      ref:
+        description: "체크아웃할 커밋/태그 (비우면 실행한 브랜치)"
+        type: string
+        default: ""
+
+# 전환 도중 취소되면 upstream이 반쯤 바뀐 상태가 될 수 있어, 앞선 실행을 끊지 않고 줄 세웁니다.
+concurrency:
+  group: cd-web-oracle-staging
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/web-memo-web
+  DEPLOY_ENV: staging
+  REMOTE: deploy@${{ secrets.ORACLE_SSH_HOST }}
+
+jobs:
+  deploy:
+    name: Oracle 배포 (staging)
+    if: ${{ inputs.action != 'rollback' }}
+    # VM이 arm64(A1)라 arm 러너에서 네이티브로 빌드합니다. QEMU보다 빠르고 sharp가 linux-arm64 바이너리를 갖습니다.
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      # cd-web.yml의 staging과 같은 Preview 환경 값을 받습니다(결정 4: 환경변수 원천은 Vercel).
+      # VERCEL*로 시작하는 값은 Vercel 런타임 표식이라 컨테이너에 넘기지 않습니다. 넘기면 코드가 Vercel 위라고 판단합니다.
+      - name: Vercel Pull
+        run: |
+          vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+          grep -v '^VERCEL' .vercel/.env.preview.local > "$RUNNER_TEMP/web.env"
+          echo "DEPLOY_ENV=$DEPLOY_ENV" >> "$RUNNER_TEMP/web.env"
+          chmod 600 "$RUNNER_TEMP/web.env"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve commit
+        id: commit
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      # BUILD_ENV·NEXT_PUBLIC_*이 번들에 인라인되므로 태그에 환경을 넣어 production 이미지와 섞이지 않게 합니다.
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: ${{ env.IMAGE }}:${{ env.DEPLOY_ENV }}-${{ steps.commit.outputs.sha }}
+          build-args: |
+            BUILD_ENV=staging
+            DEPLOY_ENV=${{ env.DEPLOY_ENV }}
+            GITHUB_SHA=${{ steps.commit.outputs.sha }}
+            GITHUB_REF_NAME=${{ github.ref_name }}
+          secret-files: |
+            web_env=${{ runner.temp }}/web.env
+          secrets: |
+            sentry_auth_token=${{ secrets.SENTRY_AUTH_TOKEN }}
+          cache-from: type=gha,scope=web-oracle
+          cache-to: type=gha,scope=web-oracle,mode=max
+
+      - name: Setup SSH
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "${{ secrets.ORACLE_SSH_KEY }}" > ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.ORACLE_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+
+      # 서버 구성도 레포를 따라가게 매 배포마다 compose·Caddy·스크립트를 보냅니다.
+      # VM 상태(.env·env/·state/)는 보내지 않고, 런타임 환경변수만 env/web.env로 교체합니다.
+      - name: Ship config and env
+        run: |
+          rsync -az --delete infra/oracle/compose.yaml infra/oracle/caddy infra/oracle/scripts "$REMOTE:/opt/webmemo/"
+          rsync -az --chmod=F600 "$RUNNER_TEMP/web.env" "$REMOTE:/opt/webmemo/env/web.env"
+
+      # GHCR 패키지가 비공개라 VM이 받을 수 있도록 이 실행의 토큰으로 잠깐 로그인했다 나옵니다.
+      - name: Deploy (blue-green)
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ env.IMAGE }}:${{ env.DEPLOY_ENV }}-${{ steps.commit.outputs.sha }}
+          SHA: ${{ steps.commit.outputs.sha }}
+        run: |
+          printf '%s' "$GHCR_TOKEN" | ssh "$REMOTE" "docker login ghcr.io -u ${{ github.actor }} --password-stdin >/dev/null"
+          set +e
+          ssh "$REMOTE" "/opt/webmemo/scripts/deploy.sh '$TAG' '$SHA'"
+          STATUS=$?
+          ssh "$REMOTE" "docker logout ghcr.io >/dev/null" || true
+          echo "배포 이미지: \`$TAG\`" >> "$GITHUB_STEP_SUMMARY"
+          exit $STATUS
+
+  rollback:
+    name: Oracle 롤백 (staging)
+    if: ${{ inputs.action == 'rollback' }}
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Setup SSH
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "${{ secrets.ORACLE_SSH_KEY }}" > ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.ORACLE_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+
+      - name: Rollback
+        run: ssh "$REMOTE" /opt/webmemo/scripts/rollback.sh

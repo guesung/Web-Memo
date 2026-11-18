@@ -18,6 +18,11 @@ vi.mock("react", () => ({
 	],
 	useCallback: <T>(callback: T) => callback,
 	useEffect: vi.fn(),
+	useRef: <T>(initialValue: T) => ({ current: initialValue }),
+}));
+vi.mock("@/lib/storage/highlightEditHint", () => ({
+	getHighlightEditHintSeen: vi.fn().mockResolvedValue(true),
+	saveHighlightEditHintSeen: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("expo-clipboard", () => ({
 	setStringAsync: mocks.setStringAsync,

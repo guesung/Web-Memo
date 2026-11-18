@@ -25,7 +25,7 @@ export const EVENT_TAB = "이벤트";
 /**
  * 서울 기준 `YYYY-MM-DD HH:mm`. 기록 시각 열에 씁니다.
  *
- * 러너는 UTC 로 돌아서 toISOString 을 그대로 쓰면 월요일 아침 기록이 일요일
+ * 러너는 UTC 로 돌아서 toISOString 을 그대로 쓰면 토요일 아침 기록이 금요일
  * 밤으로 찍힙니다. 시트를 읽는 사람의 시계에 맞춥니다.
  */
 export const formatSeoulMinute = (date) => {
@@ -224,6 +224,26 @@ export const ensureTab = async ({ accessToken, spreadsheetId, title }) => {
 			requests: [{ addSheet: { properties: { title } } }],
 		}),
 	});
+};
+
+/**
+ * 탭의 행을 헤더 → 값 객체로 읽습니다. 탭이 없거나 비어 있으면 빈 배열입니다.
+ *
+ * 쓰기와 같은 이유로 원형 값(UNFORMATTED_VALUE)으로 받아 숫자는 숫자로 돌려줍니다.
+ */
+export const readTabRows = async ({ accessToken, spreadsheetId, title }) => {
+	const base = `${SHEETS_API}/${encodeURIComponent(spreadsheetId)}`;
+	const current = await requestJson(
+		`${base}/values/${encodeURIComponent(toSheetRange(title))}?valueRenderOption=UNFORMATTED_VALUE`,
+		{ headers: buildHeaders(accessToken) },
+	);
+	const [header = [], ...body] = current.values ?? [];
+
+	return body.map((cells) =>
+		Object.fromEntries(
+			header.map((column, index) => [column, cells[index] ?? ""]),
+		),
+	);
 };
 
 /**

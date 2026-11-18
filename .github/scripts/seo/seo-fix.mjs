@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /**
- * SEO AI 리포트의 P0·P1 발견을 Claude Code가 코드로 고치고 PR로 올리는 파이프라인의 결정적인 부분입니다.
+ * SEO AI 리포트의 P0·P1·P2 발견을 Claude Code가 코드로 고치고 PR로 올리는 파이프라인의 결정적인 부분입니다.
  * .github/workflows/report-seo.yml 의 세 잡이 하위 명령으로 나눠 호출합니다.
  *
  *   select  (inspect 잡)  수정 대상을 고르고, 이미 열린 자동 수정 PR이 있으면 건너뜁니다.
+ *                         닫힌(머지되지 않은) 자동 수정 PR의 근거와 같은 발견은 대상에서 뺍니다.
  *   summarize (fix 잡)    Claude의 최종 답변을 Step Summary에 남깁니다.
  *   changes (fix 잡)      Claude가 바꾼 파일을 검사하고 패치로 내보냅니다.
  *   publish (publish 잡)  검증된 패치를 새 브랜치에 커밋해 master 대상 PR을 열고 Slack 스레드에 알립니다.
@@ -15,10 +16,13 @@ import { execFileSync } from "node:child_process";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { loadPreviousPullRequests } from "../shared/previous-pull-requests.mjs";
 import { postSlackMessage, readSlackEnv, toSingleLine } from "../shared/slack-api.mjs";
 
 const BRANCH_PREFIX = "claude/seo-fix-";
-const FIX_PRIORITIES = ["P0", "P1"];
+/** 앞에 있을수록 먼저 고칩니다. P3는 사소한 것이라 자동 수정하지 않습니다. */
+const FIX_PRIORITIES = ["P0", "P1", "P2"];
+const PRIORITY_LABEL = FIX_PRIORITIES.join("·");
 const MAX_TARGETS = 3;
 const MAX_CHANGED_FILES = 10;
 /** 웹 사이트의 SEO 응답을 만드는 코드입니다. 워크플로·설정·의존성은 여기 없으므로 모델이 건드릴 수 없습니다. */
@@ -38,11 +42,14 @@ const isAllowedPath = (filePath) =>
 
 /**
  * AI 리포트에서 자동 수정 대상을 고릅니다.
- * @description P0·P1이면서 해결 방법이 코드 수정(fixability=code)이고 코드 위치가 수정 허용 경로 안에 있는 발견만 남깁니다. 위치가 허용 경로 밖이면 코드 위치에서 빼고, 남는 위치가 없으면 대상이 아닙니다.
+ * @description P0·P1·P2이면서 해결 방법이 코드 수정(fixability=code)이고 코드 위치가 수정 허용 경로 안에 있는 발견만 남깁니다. 위치가 허용 경로 밖이면 코드 위치에서 빼고, 남는 위치가 없으면 대상이 아닙니다. 건수 제한에서 급한 발견이 밀리지 않도록 우선순위 순으로 고릅니다. 근거 ID가 하나라도 rejectedEvidenceIds에 있는 발견은 건수 제한 전에 뺍니다(근거 ID가 없는 발견은 빼지 않습니다).
  */
-export const selectSeoFixTargets = ({ report }) =>
-	(Array.isArray(report?.findings) ? report.findings : [])
+export const selectSeoFixTargets = ({ report, rejectedEvidenceIds }) => {
+	const rejected = new Set(rejectedEvidenceIds ?? []);
+
+	return (Array.isArray(report?.findings) ? report.findings : [])
 		.filter((finding) => FIX_PRIORITIES.includes(finding?.priority) && finding?.fixability === "code")
+		.filter((finding) => !(Array.isArray(finding.evidenceIds) ? finding.evidenceIds : []).some((id) => rejected.has(id)))
 		.map((finding) => ({
 			priority: finding.priority,
 			title: finding.title,
@@ -55,7 +62,57 @@ export const selectSeoFixTargets = ({ report }) =>
 			),
 		}))
 		.filter((target) => target.codeRefs.length > 0)
+		.sort((left, right) => FIX_PRIORITIES.indexOf(left.priority) - FIX_PRIORITIES.indexOf(right.priority))
 		.slice(0, MAX_TARGETS);
+};
+
+const EVIDENCE_OPEN = "(근거: ";
+const EVIDENCE_CLOSE = ") · 코드:";
+
+/**
+ * 닫힌(머지되지 않은) 자동 수정 PR 본문에서 대상 발견의 근거 ID를 읽습니다.
+ * @description buildSeoFixPrBody가 만든 "### 대상 발견" 목록 줄의 마지막 `(근거: …) · 코드:` 부분을 읽습니다(근거 설명 문장에도 괄호·쉼표가 있고 URL ID에도 `)`가 있을 수 있어 ` · 코드:`까지 묶어 찾습니다). 본문에서 멘션 방지로 넣은 zero-width space는 제거해 원래 ID로 되돌립니다. 머지된 PR은 수정이 효과가 없었던 것이라 거절로 보지 않습니다. 근거 부분이 없는 옛 본문은 건너뜁니다. 같은 ID가 여러 PR에 있으면 가장 앞(최근) PR 번호를 남깁니다.
+ * @returns {Map<string, number>} 근거 ID -> 거절한 PR 번호
+ */
+export const collectRejectedEvidence = ({ pullRequests }) => {
+	const rejected = new Map();
+	for (const pullRequest of Array.isArray(pullRequests) ? pullRequests : []) {
+		if (pullRequest?.state !== "closed") {
+			continue;
+		}
+		const lines = String(pullRequest.body ?? "").split("\n");
+		const start = lines.findIndex((line) => line.trim() === "### 대상 발견");
+		if (start === -1) {
+			continue;
+		}
+		for (const line of lines.slice(start + 1)) {
+			if (line.startsWith("## ") || line.startsWith("### ")) {
+				break;
+			}
+			if (!line.startsWith("- ")) {
+				continue;
+			}
+			const close = line.lastIndexOf(EVIDENCE_CLOSE);
+			const open = close === -1 ? -1 : line.lastIndexOf(EVIDENCE_OPEN, close);
+			if (open === -1) {
+				continue;
+			}
+			const ids = line
+				.slice(open + EVIDENCE_OPEN.length, close)
+				.replaceAll("\u200b", "")
+				.split(", ")
+				.map((id) => id.trim())
+				.filter(Boolean);
+			for (const id of ids) {
+				if (!rejected.has(id)) {
+					rejected.set(id, pullRequest.number);
+				}
+			}
+		}
+	}
+
+	return rejected;
+};
 
 /**
  * claude-code-action이 남긴 실행 기록에서 Claude의 마지막 답변을 꺼냅니다.
@@ -93,7 +150,7 @@ export const buildSeoFixPrBody = ({ targets, runUrl }) =>
 	[
 		"## 설명",
 		"",
-		`SEO 모니터의 AI 리포트에서 P0·P1로 분류된 발견 ${targets.length}건을 근거로 Claude Code가 작성한 수정입니다.${runUrl ? ` (${runUrl})` : ""}`,
+		`SEO 모니터의 AI 리포트에서 ${PRIORITY_LABEL}로 분류된 발견 ${targets.length}건을 근거로 Claude Code가 작성한 수정입니다.${runUrl ? ` (${runUrl})` : ""}`,
 		"자동 머지는 하지 않습니다. 수정이 발견의 원인을 실제로 고치는지 diff를 확인한 뒤 머지합니다.",
 		"",
 		"### 대상 발견",
@@ -177,7 +234,7 @@ const commands = {
 		console.log(summary);
 	},
 
-	select: () => {
+	select: async () => {
 		const reportPath = "artifacts/seo/ai-report.json";
 		if (!existsSync(reportPath)) {
 			console.log("AI 리포트가 없어 SEO 자동 수정을 건너뜁니다");
@@ -186,11 +243,34 @@ const commands = {
 			return;
 		}
 		const report = JSON.parse(readFileSync(reportPath, "utf8")).report;
-		const targets = selectSeoFixTargets({ report });
 		const candidateCount = (report?.findings ?? []).filter((finding) => FIX_PRIORITIES.includes(finding?.priority)).length;
-		console.log(`P0·P1 발견 ${candidateCount}건 중 코드 수정 대상 ${targets.length}건`);
+		if (selectSeoFixTargets({ report }).length === 0) {
+			console.log(`${PRIORITY_LABEL} 발견 ${candidateCount}건 중 코드 수정 대상 0건`);
+			console.log(`수정 대상 발견(${PRIORITY_LABEL}, 해결 방법이 코드 수정, 허용 경로 안의 코드 위치)이 없습니다`);
+			output("has_targets", "false");
+
+			return;
+		}
+		// 사람이 닫은 자동 수정 PR과 근거가 같은 발견은 다시 고치지 않습니다. 조회에 실패하면 이전 기록 없이 진행합니다.
+		const previous = await loadPreviousPullRequests({
+			label: "SEO 자동 수정",
+			repository: process.env.GITHUB_REPOSITORY,
+			token: process.env.GH_TOKEN,
+			branchPrefix: BRANCH_PREFIX,
+		});
+		const rejectedEvidence = collectRejectedEvidence({ pullRequests: previous.pullRequests });
+		const targets = selectSeoFixTargets({ report, rejectedEvidenceIds: [...rejectedEvidence.keys()] });
+		console.log(`${PRIORITY_LABEL} 발견 ${candidateCount}건 중 코드 수정 대상 ${targets.length}건`);
+		for (const finding of report?.findings ?? []) {
+			const evidenceId = (Array.isArray(finding?.evidenceIds) ? finding.evidenceIds : []).find((id) => rejectedEvidence.has(id));
+			if (evidenceId !== undefined && FIX_PRIORITIES.includes(finding.priority) && finding.fixability === "code") {
+				console.log(
+					`이전에 닫힌 자동 수정 PR(#${rejectedEvidence.get(evidenceId)})과 근거가 같아 제외: ${finding.priority} ${toSingleLine(finding.title ?? "")}`,
+				);
+			}
+		}
 		if (targets.length === 0) {
-			console.log("수정 대상 발견(P0·P1, 해결 방법이 코드 수정, 허용 경로 안의 코드 위치)이 없습니다");
+			console.log("이전에 닫힌 자동 수정 PR과 근거가 같은 발견을 빼고 나니 수정 대상이 없습니다");
 			output("has_targets", "false");
 
 			return;
@@ -267,7 +347,7 @@ const commands = {
 					blocks: [
 						{
 							type: "section",
-							text: { type: "mrkdwn", text: `🛠 P0·P1 발견을 Claude Code가 수정한 PR을 열었습니다. 머지 전에 diff를 확인해 주세요.\n<${prUrl}|${toSingleLine(title).replace(/[&<>]/g, "")}>`, verbatim: true },
+							text: { type: "mrkdwn", text: `🛠 ${PRIORITY_LABEL} 발견을 Claude Code가 수정한 PR을 열었습니다. 머지 전에 diff를 확인해 주세요.\n<${prUrl}|${toSingleLine(title).replace(/[&<>]/g, "")}>`, verbatim: true },
 						},
 					],
 				},

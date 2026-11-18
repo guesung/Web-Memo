@@ -15,7 +15,16 @@ vi.mock("@web-memo/shared/modules/analytics", () => ({
 }));
 vi.mock("../_hooks", () => ({
 	useHighlightNoteMutation: () => ({ mutate: mocks.saveNote }),
+	useHighlightDeleteMutation: () => ({
+		mutateAsync: vi.fn(),
+		isPending: false,
+	}),
 }));
+vi.mock("./HighlightQuoteMenu", () => ({ HighlightQuoteMenu: () => null }));
+vi.mock("./HighlightDeleteDialog", () => ({
+	HighlightDeleteDialog: () => null,
+}));
+vi.mock("@web-memo/ui", () => ({ toast: vi.fn() }));
 let root: Root;
 let container: HTMLDivElement;
 beforeEach(() => {

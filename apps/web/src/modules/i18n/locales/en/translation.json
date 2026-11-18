@@ -727,6 +727,18 @@
 			"all": "All"
 		},
 		"noResult": "No matching highlights",
+		"menu": {
+			"label": "More highlight actions"
+		},
+		"delete": {
+			"menu": "Delete highlight",
+			"title": "Delete this highlight?",
+			"description": "The highlight and its note will be removed. Memos you wrote from it will stay.",
+			"cancel": "Cancel",
+			"confirm": "Delete",
+			"success": "Highlight deleted",
+			"failed": "Couldn't delete the highlight. Please try again."
+		},
 		"note": {
 			"label": "Highlight note",
 			"placeholder": "Add a note"

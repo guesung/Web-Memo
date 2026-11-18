@@ -281,6 +281,137 @@ test("드래그 중에는 버블이 숨고 포인터를 놓으면 나타난다",
 	await expect(toolbar).toBeVisible();
 });
 
+test("칠한 문장 위에 마우스를 올리면 문서 커서가 pointer가 되고 벗어나면 원래대로 돌아온다", async ({
+	page,
+}) => {
+	const store = new MockSupabaseStore();
+	await setupSupabaseMocks(page, store);
+	await login(page);
+	await skipGuide(page);
+	await openSidePanel(page);
+	const sidePanelPage = await findSidePanelPage(page);
+	await sidePanelPage.evaluate(async () => {
+		await chrome.storage.sync.set({
+			highlightBubbleEnabled: true,
+			highlightIntroSeen: true,
+			highlightEditHintSeen: true,
+			highlightDisabledSites: [],
+		});
+	});
+	const labels = await sidePanelPage.evaluate(() => ({
+		create: chrome.i18n.getMessage("highlight_create"),
+		yellow: chrome.i18n.getMessage("highlight_color_yellow"),
+	}));
+	await page.evaluate((text) => {
+		const passage = document.createElement("p");
+		passage.id = "e2e-highlight-passage";
+		passage.textContent = text;
+		/** 레이아웃 아래로 밀려 화면 밖에 붙으면 마우스를 올릴 수 없어, 보이는 자리에 고정한다. */
+		Object.assign(passage.style, {
+			position: "fixed",
+			top: "200px",
+			left: "300px",
+			zIndex: "2147483646",
+			background: "white",
+		});
+		document.body.append(passage);
+	}, TEST_TEXT);
+	const rangeCenter = (start: number, end: number) =>
+		page.evaluate(
+			({ start, end }) => {
+				const text = document.querySelector("#e2e-highlight-passage")
+					?.firstChild as Text;
+				const range = document.createRange();
+				range.setStart(text, start);
+				range.setEnd(text, end);
+				const rect = range.getBoundingClientRect();
+				return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+			},
+			{ start, end },
+		);
+	const readCursor = () =>
+		page.evaluate(() => getComputedStyle(document.documentElement).cursor);
+
+	await selectPassage(page, 0, 24);
+	await page
+		.locator(TOOLBAR)
+		.getByRole("toolbar", { name: labels.create })
+		.getByRole("button", { name: labels.yellow })
+		.click();
+	/** 저장 응답 뒤에야 렌더러에 칠해지므로 그 전의 hover는 판정 대상이 아니다. */
+	await expect.poll(() => store.getAllHighlights().length).toBe(1);
+
+	/** mousemove는 100ms throttle이라 매 확인마다 다시 움직여 최신 판정을 받는다. */
+	const hoverAndReadCursor = async (point: { x: number; y: number }) => {
+		await page.mouse.move(point.x, point.y);
+		await page.mouse.move(point.x + 1, point.y);
+		return readCursor();
+	};
+
+	const painted = await rangeCenter(0, 24);
+	await expect.poll(() => hoverAndReadCursor(painted)).toBe("pointer");
+
+	const unpainted = await rangeCenter(29, 54);
+	await expect.poll(() => hoverAndReadCursor(unpainted)).not.toBe("pointer");
+});
+
+test("첫 저장 성공 직후 편집 안내가 뜨고 다음 저장에서는 뜨지 않는다", async ({
+	page,
+}) => {
+	const store = new MockSupabaseStore();
+	await setupSupabaseMocks(page, store);
+	await login(page);
+	await skipGuide(page);
+	await openSidePanel(page);
+	const sidePanelPage = await findSidePanelPage(page);
+	await sidePanelPage.evaluate(async () => {
+		await chrome.storage.sync.set({
+			highlightBubbleEnabled: true,
+			highlightIntroSeen: true,
+			highlightEditHintSeen: false,
+			highlightDisabledSites: [],
+		});
+	});
+	const labels = await sidePanelPage.evaluate(() => ({
+		create: chrome.i18n.getMessage("highlight_create"),
+		yellow: chrome.i18n.getMessage("highlight_color_yellow"),
+		hint: chrome.i18n.getMessage("highlight_edit_hint_message"),
+	}));
+	await page.evaluate((text) => {
+		const passage = document.createElement("p");
+		passage.id = "e2e-highlight-passage";
+		passage.textContent = text;
+		document.body.append(passage);
+	}, TEST_TEXT);
+	const toolbar = page
+		.locator(TOOLBAR)
+		.getByRole("toolbar", { name: labels.create });
+	const hint = page.locator(TOOLBAR).getByRole("status");
+
+	await selectPassage(page, 0, 24);
+	await toolbar.getByRole("button", { name: labels.yellow }).click();
+	await expect.poll(() => store.getAllHighlights().length).toBe(1);
+	await expect(hint).toBeVisible();
+	await expect(hint).toHaveText(labels.hint);
+	await expect
+		.poll(() =>
+			sidePanelPage.evaluate(
+				async () =>
+					(await chrome.storage.sync.get("highlightEditHintSeen"))
+						.highlightEditHintSeen,
+			),
+		)
+		.toBe(true);
+
+	await page.mouse.click(1, 1);
+	await expect(hint).toBeHidden();
+
+	await selectPassage(page, 29, 54);
+	await toolbar.getByRole("button", { name: labels.yellow }).click();
+	await expect.poll(() => store.getAllHighlights().length).toBe(2);
+	await expect(hint).toBeHidden();
+});
+
 async function selectPassage(
 	page: import("@playwright/test").Page,
 	start: number,

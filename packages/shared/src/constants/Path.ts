@@ -13,6 +13,7 @@ export const MANUAL_PATHS = {
 	kakaoLogin: "/accounts.kakao.com",
 	googleLogin: "/accounts.google.com",
 	auth: "/auth",
+	startOAuth: "/auth/start",
 	callbackOAuth: "/auth/callback",
 	callbackEmail: "/auth/callback-email",
 };

@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import type { IFSentryEventContext } from "./eventContext";
-import { formatSentryAlertText, SLACK_TEXT_LIMIT } from "./formatAlert";
+import {
+	AI_TRIAGE_PENDING_LINE,
+	formatSentryAlertText,
+	SLACK_TEXT_LIMIT,
+} from "./formatAlert";
 import type { IFSentryIssueWebhookPayload } from "./request";
 
 const buildPayload = (
@@ -46,6 +50,21 @@ describe("formatSentryAlertText", () => {
 		expect(formatSentryAlertText(buildPayload("created"))).toContain("🆕 신규");
 		expect(formatSentryAlertText(buildPayload("unresolved"))).toContain(
 			"🔁 재발",
+		);
+	});
+
+	it("AI 분석이 뒤따르면 제목 바로 아래에 안내를 붙인다", () => {
+		const lines = formatSentryAlertText(buildPayload(), null, {
+			isAiTriagePending: true,
+		}).split("\n");
+
+		expect(lines[0]).toContain("TypeError: boom");
+		expect(lines[1]).toBe(AI_TRIAGE_PENDING_LINE);
+	});
+
+	it("AI 분석이 없으면 안내를 붙이지 않는다", () => {
+		expect(formatSentryAlertText(buildPayload())).not.toContain(
+			AI_TRIAGE_PENDING_LINE,
 		);
 	});
 

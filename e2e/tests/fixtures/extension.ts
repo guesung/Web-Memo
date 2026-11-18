@@ -4,6 +4,7 @@ import type { BrowserContext, Page } from "@playwright/test";
 import { test as base, chromium } from "@playwright/test";
 import { SUPABASE } from "@web-memo/shared/constants";
 import { AUTH_STORAGE_STATE_PATH } from "../lib/constants";
+import { channelTalkGuardFixture } from "../lib/mocks/channelTalkGuard";
 import { supabaseGuardFixture } from "../lib/mocks/supabaseGuard";
 
 process.env.PW_CHROMIUM_ATTACH_TO_OTHER = "1";
@@ -19,6 +20,8 @@ type ExtensionFixture = {
 	skipInitialGuide: boolean;
 	/** `*.real.test.ts`가 아니면 목이 처리하지 않은 Supabase 요청을 막고 테스트를 실패시킨다(supabaseGuard.ts). */
 	supabaseGuard: undefined;
+	/** 채널톡 SDK 요청을 막는다. 외부 SDK boot 실패 토스트가 Escape를 가로채는 흔들림을 없앤다(channelTalkGuard.ts). */
+	channelTalkGuard: undefined;
 	reuseWebAuth: boolean;
 };
 
@@ -63,6 +66,7 @@ export const test = base.extend<ExtensionFixture>({
 	},
 	baseURL: BASE_URL,
 	supabaseGuard: [supabaseGuardFixture, { auto: true }],
+	channelTalkGuard: [channelTalkGuardFixture, { auto: true }],
 });
 export const expect = test.expect;
 

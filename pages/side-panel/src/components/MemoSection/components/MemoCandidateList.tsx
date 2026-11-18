@@ -1,4 +1,5 @@
 import { getOfflineControlDisabledReason } from "@src/utils";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import type { Database } from "@web-memo/shared/types";
 import { I18n } from "@web-memo/shared/utils/extension";
 import { Button } from "@web-memo/ui";
@@ -38,6 +39,24 @@ export default function MemoCandidateList({
 	isOffline = false,
 	isSyncing = false,
 }: IFMemoCandidateListProps) {
+	const candidateCount = memos.length + otherUrlMemos.length;
+
+	const handleMemoSelect = (memoId: number) => {
+		analytics.trackEvent({
+			name: "memo_candidate_select",
+			params: { action: "select", candidate_count: candidateCount },
+		});
+		onMemoSelect(memoId);
+	};
+
+	const handleNewMemoClick = () => {
+		analytics.trackEvent({
+			name: "memo_candidate_select",
+			params: { action: "new", candidate_count: candidateCount },
+		});
+		onNewMemoClick();
+	};
+
 	const deleteDisabledReason = getOfflineControlDisabledReason({
 		isOffline,
 		isSyncing,
@@ -56,7 +75,7 @@ export default function MemoCandidateList({
 					className="gap-1"
 					disabled={!!newMemoDisabledReason}
 					title={newMemoDisabledReason}
-					onClick={onNewMemoClick}
+					onClick={handleNewMemoClick}
 				>
 					<PlusIcon className="size-4" aria-hidden="true" />
 					{I18n.get("memo_candidates_new")}
@@ -78,7 +97,7 @@ export default function MemoCandidateList({
 					className="flex items-center gap-2 rounded-md border border-dashed p-3 text-left text-sm hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
 					disabled={!!newMemoDisabledReason}
 					title={newMemoDisabledReason}
-					onClick={onNewMemoClick}
+					onClick={handleNewMemoClick}
 				>
 					<PlusIcon className="size-4 shrink-0" aria-hidden="true" />
 					{I18n.get("memo_candidates_new")}
@@ -88,7 +107,7 @@ export default function MemoCandidateList({
 						key={memo.id}
 						memo={memo}
 						isEditing={memo.id === editingMemoId}
-						onMemoSelect={onMemoSelect}
+						onMemoSelect={handleMemoSelect}
 						onMemoDelete={onMemoDelete}
 						deleteDisabledReason={deleteDisabledReason}
 					/>
@@ -104,7 +123,7 @@ export default function MemoCandidateList({
 						memo={memo}
 						urlLabel={getUrlLabel(memo.url)}
 						isEditing={memo.id === editingMemoId}
-						onMemoSelect={onMemoSelect}
+						onMemoSelect={handleMemoSelect}
 						onMemoDelete={onMemoDelete}
 						deleteDisabledReason={deleteDisabledReason}
 					/>

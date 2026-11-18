@@ -115,9 +115,34 @@ const describeCoreEvent = ({ label, users, count }) => {
 	return `${label}  *${formatCount(users.yesterday)}명 · ${formatCount(count.yesterday)}건*  (${detail})`;
 };
 
-const buildFunnelBlock = (events) => {
+/**
+ * 메모 작성 줄은 건수 대신 "작성한 분"을 적습니다. memo_write 는 자동저장마다 발생해
+ * 한 사람이 하루 수천 건을 내므로 건수가 작성량으로 읽히지 않습니다.
+ *
+ * 분은 사람별 합이 아닙니다 — 두 사람이 같은 분에 저장하면 1분입니다. 조회가 실패하면
+ * 0분으로 적지 않고 사람 수만 남깁니다. 증감률은 다른 퍼널 줄과 같이 사람 수 기준입니다.
+ */
+const describeMemoWriteUsers = ({ label, users, writingMinutes }) => {
+	const change = formatChange(users.yesterday, users.average7);
+	const hasMinutes = writingMinutes?.status === "ok";
+	const average = hasMinutes
+		? `7일 평균 ${formatAverage(users.average7)}명 · ${formatAverage(writingMinutes.average7)}분`
+		: `7일 평균 ${formatAverage(users.average7)}명`;
+	const value = hasMinutes
+		? `${formatCount(users.yesterday)}명 · ${formatCount(writingMinutes.yesterday)}분 작성`
+		: `${formatCount(users.yesterday)}명`;
+	const detail = [average, change].filter(Boolean).join(" · ");
+
+	return `${label}  *${value}*  (${detail})`;
+};
+
+const buildFunnelBlock = (events, writingMinutes) => {
 	const lines = FUNNEL_STEPS.map(({ eventName, label }) => {
 		const { users, count } = readEventStat(events, eventName);
+
+		if (eventName === "memo_write") {
+			return describeMemoWriteUsers({ label, users, writingMinutes });
+		}
 
 		return describeUsersWithCount({ label, users, count });
 	});
@@ -288,6 +313,7 @@ export const buildDailyReportPayload = ({ report, runUrl, searchQueries }) => {
 		observationTruncated,
 		trafficTotals,
 		googleSearch,
+		writingMinutes,
 	} = report;
 	const headline = `어제의 웹 메모 — ${formatHeaderDate(targetDate)}`;
 
@@ -302,7 +328,7 @@ export const buildDailyReportPayload = ({ report, runUrl, searchQueries }) => {
 				type: "header",
 				text: { type: "plain_text", text: headline, emoji: true },
 			},
-			buildFunnelBlock(events),
+			buildFunnelBlock(events, writingMinutes),
 			buildCoreEventsBlock(events),
 			buildGoogleSearchBlock(googleSearch, searchQueries),
 			{ type: "divider" },

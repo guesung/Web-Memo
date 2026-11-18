@@ -6,6 +6,7 @@ import {
 	getSentryAlertSlackChannel,
 	type IFSentryIssueWebhookPayload,
 	readVerifiedSentryWebhook,
+	shouldDispatchSentryTriage,
 } from "@src/modules/sentry";
 import { postSlackMessage, runAfterResponse } from "@src/modules/slack";
 import { NextResponse } from "next/server";
@@ -67,7 +68,9 @@ const relayToSlack = async (payload: IFSentryIssueWebhookPayload) => {
 	try {
 		slack = await postSlackMessage({
 			channel: getSentryAlertSlackChannel(),
-			text: formatSentryAlertText(payload, eventContext),
+			text: formatSentryAlertText(payload, eventContext, {
+				isAiTriagePending: shouldDispatchSentryTriage(payload),
+			}),
 		});
 	} catch (error) {
 		console.error("Sentry 알림을 Slack으로 릴레이하는 데 실패했습니다:", error);

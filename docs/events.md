@@ -6,7 +6,7 @@
 
 - **코드 계약:** [type.ts](../packages/shared/src/modules/analytics/type.ts)의 `TAnalyticsEvent`와 `EVENT_CATEGORY`.
 - **발생 동작:** 아래 호출부 코드가 원천입니다. 타입에 이름이 있어도 실행 경로가 없을 수 있습니다.
-- **문서 검토 기준:** 2026-10-28, master `445ea702`의 81종 명세에 PR #788의 신규 3종을 통합해 총 84개 이름을 기술했습니다. 소개 데모 수동 조작 1종과 웹스토어 리뷰 요청 4종(DB-1264), 주간 메일 복귀 1종(DB-1301)을 더해 현재 90개입니다.
+- **문서 검토 기준:** 2026-10-28, master `445ea702`의 81종 명세에 PR #788의 신규 3종을 통합해 총 84개 이름을 기술했습니다. 소개 데모 수동 조작 1종과 웹스토어 리뷰 요청 4종(DB-1264), 주간 메일 복귀 1종(DB-1301)을 더해 현재 92개입니다.
   기존 81종 문서화는 제품 동작을 바꾸지 않았으며, 신규 3종은 PR #788의 구현을 기준으로 기술했습니다.
   아래 한계는 AS-IS 기록이며, 오류 판정·개인정보 공백을 바람직한 동작으로 승인하는 것은 아닙니다.
 - **운영 확인과 구분:** 코드·테스트를 읽은 사실은 테스트 실행·배포·운영 수신의 증거가 아닙니다.
@@ -30,7 +30,7 @@
 
 | 항목 | 현재 동작과 한계 |
 | --- | --- |
-| 호출 | `analytics.trackEvent({ name, params })`. helper가 여러 이벤트를 만들기도 함. `install_guide_load`·`extension_uninstall` 서버 전송과 웹 자동 수집은 개별 명세의 예외 |
+| 호출 | `analytics.trackEvent({ name, params })`. helper가 여러 이벤트를 만들기도 함. `install_guide_load`·`extension_uninstall`·`/auth/start` 경로의 `login_start` 서버 전송과 웹 자동 수집은 개별 명세의 예외 |
 | 분류 | `EVENT_CATEGORY`의 `core_action` / `engagement`. 비즈니스 성공이나 트랜잭션 보장은 아님 |
 | 게이트 | 공통 계층은 development·운영자 계정을 제외, staging은 전송. 자동 gtag·서버 경로는 별도 게이트를 확인 |
 | `event_category` | 분류 문자열. 공통 계층이 덧붙임 |
@@ -43,7 +43,7 @@
 | `session_id` | 확장 session storage의 30분 비활동 기준 재사용값. 웹은 gtag 관리. 모든 경로에 같은 세션 계약이 적용되는 것은 아님 |
 | 전달 보장 | 웹 gtag 미준비·차단·종료·확장 fetch 실패로 누락 가능. 전송 계층 전체에 exactly-once·자동 재시도·멱등 dedupe 없음. Promise 종료나 HTTP 2xx는 보고서 수신 확인과 다름 |
 | 개인정보 | 새 속성에 메모/인용/검색어/피드백 원문·이메일·개인 URL·메모 ID를 추가하지 않음. 기존 page_view의 위치/제목과 error reason은 별도 검토 필요하며 전역 sanitizer가 있다고 가정하지 않음 |
-| 앱 | apps/app에는 이 analytics 전송 계층이 없어 웹·확장 지표가 앱 사용까지 대표하지 않음 |
+| 앱 | apps/app은 이 공용 계층 대신 앱 전용 Measurement Protocol 모듈(`apps/app/lib/analytics/`, `trackAppEvent`)로 보낸다. 이벤트 목록은 `TAppAnalyticsEvent`가 원본이고 웹·확장 이벤트와 별개다. 앱 차원(`app_platform` 등) 등록 상태는 [analytics.md](analytics.md#앱appsapp) 참조 |
 
 ### 속성 전송과 GA 등록
 
@@ -323,6 +323,15 @@
 - **근거·테스트:** [pastMemoTracking.ts](../pages/side-panel/src/components/MemoSection/utils/pastMemoTracking.ts) · [PastMemoView.tsx](../pages/side-panel/src/components/MemoSection/components/PastMemoView.tsx); 테스트: [pastMemoTracking.test.ts](../pages/side-panel/src/components/MemoSection/utils/pastMemoTracking.test.ts) · [PastMemoView.test.ts](../pages/side-panel/src/components/MemoSection/components/PastMemoView.test.ts).
 - **한계·이력:** 원문 로드 완료·읽음·문제 해결을 뜻하지 않는 재사용 행동 대리지표다. 개별 시도 토큰을 GA로 보내지 않아 사후 정확한 attempt join은 불가. DB-1251; 운영 도입 버전·일자는 별도 확인.
 
+### `memo_candidate_select`
+
+- **질문:** 같은 페이지에 메모가 여러 개일 때 사용자가 기존 메모와 새 메모 중 무엇을 선택하는가? 후보가 몇 개 표시됐을 때 각각 선택하는가?
+- **발생·제외:** MemoCandidateList에서 기존 메모 카드를 누르거나(onMemoSelect) 새 메모 버튼을 누를 때(onNewMemoClick) 콜백 실행 전에 발생. 삭제 버튼 클릭·키보드 단축키는 제외한다.
+- **속성:** 필수 `action: "select" | "new"`, `candidate_count: number`(현재 주소 메모 수 + 쿼리만 다른 주소 메모 수 합). 메모 ID는 보내지 않는다.
+- **단위·중복:** 클릭당 1회. 사용자·메모별 중복 제거 없음.
+- **근거·테스트:** [MemoCandidateList.tsx](../pages/side-panel/src/components/MemoSection/components/MemoCandidateList.tsx); 이벤트 전용 단위 검증 미확인.
+- **한계·이력:** 선택 후 실제 편집·저장 여부는 알 수 없다. candidate_count는 렌더 시점의 길이이며 select 시 최신 값임은 보장하지 않는다. DB-1269. 도입 버전·일자 미확인.
+
 ## 하이라이트·AI·카테고리·설정
 
 ### `highlight_source_jump`
@@ -360,6 +369,24 @@
 - **단위·중복:** 저장 완료 호출마다 1회. content UI는 저장 중 가드와 페이지 세대 검증이 있으나 웹의 동일 값 재저장까지 제거하는 계약은 없다.
 - **근거·테스트:** [useHighlightSelection](../pages/content-ui/src/ui/highlight/useHighlightSelection.ts), [useHighlightNoteMutation](../apps/web/src/app/%5Blng%5D/%28auth%29/%28sidebar%29/highlights/_hooks/useHighlightNoteMutation.ts), [메뉴 테스트](../pages/content-ui/src/ui/highlight/useHighlightSelectionMenu.test.ts).
 - **한계·이력:** 순수한 새 메모 추가와 기존 메모 수정/비우기를 구분하지 못한다. 도입 버전·일자 미확인.
+
+### `highlight_delete`
+
+- **질문:** 하이라이트를 어디서 지우는가 — 모아보기(웹·앱)에서 찾는가, 원본 페이지에서 칠한 문장을 눌러 지우는가?
+- **발생·제외:** 삭제가 실제로 성공한 뒤 발생. 웹 모아보기는 삭제 mutation `onSuccess`(오류·삭제 행 0건이면 throw하므로 성공만), 앱은 공용 삭제 mutation `onSuccess`, 확장은 편집 메뉴 삭제 요청이 true를 돌려준 뒤. 취소·실패는 제외(실패는 Sentry `feature: highlight`·`operation: delete`).
+- **속성:** 필수 `source` = `web_list`(웹 /highlights) · `app_list`(앱 하이라이트 탭) · `app_browser`(앱 인앱 브라우저 편집 시트) · `extension_page`(확장 원본 페이지 편집 메뉴). 하이라이트 ID·원문·URL은 보내지 않는다.
+- **단위·중복:** 삭제 성공 1회당 1회. 앱은 `trackAppEvent`로, 웹·확장은 `analytics.trackEvent`로 보내 두 경로의 사용자 식별이 다르다.
+- **근거·테스트:** [웹 useHighlightDeleteMutation](../apps/web/src/app/%5Blng%5D/%28auth%29/%28sidebar%29/highlights/_hooks/useHighlightDeleteMutation.ts), [앱 useHighlightMutation](../apps/app/lib/hooks/useHighlightMutation.ts), [useHighlightSelection](../pages/content-ui/src/ui/highlight/useHighlightSelection.ts).
+- **한계·이력:** `source`로 플랫폼을 구분한다(앱 `app_platform`은 GA 차원 미등록). 모아보기 삭제는 DB-1322에서 처음 생겼고, 확장 원본 페이지 삭제는 그 전부터 있었지만 이벤트는 DB-1322부터 기록한다. 도입 버전·일자 미확인.
+
+### `highlight_edit_open`
+
+- **질문:** 칠한 문장을 눌러 편집 메뉴를 여는가 — hover 커서·첫 저장 안내 이후 늘었는가?
+- **발생·제외:** 확장 원본 페이지에서 칠한 문장을 클릭해 편집 메뉴가 열릴 때(`createHighlightEditor`의 클릭 경로). 코멘트(연필) 저장 직후 자동으로 열리는 경우는 제외. 앱 인앱 브라우저는 보내지 않는다.
+- **속성:** 이벤트 전용 속성 없음. 공통 `extension_version`으로 안내 도입 전후 버전을 가른다.
+- **단위·중복:** 클릭으로 열린 1회당 1회. 같은 문장을 다시 눌러 여는 것도 매번 센다.
+- **근거·테스트:** [createHighlightEditor](../pages/content-ui/src/ui/highlight/createHighlightEditor.ts), [useHighlightSelection](../pages/content-ui/src/ui/highlight/useHighlightSelection.ts).
+- **한계·이력:** hover 커서와 첫 저장 안내가 같은 버전에 들어가 둘의 효과를 나눌 수 없다. 안내 노출 이벤트는 만들지 않았다(사용자당 1회라 안내 도입 버전 이후 첫 `highlight_create`가 노출 대상과 같다). DB-1322 도입; 버전·일자 미확인.
 
 ### `highlight_bubble_disable`
 
@@ -600,16 +627,16 @@
 ### `login_start`
 
 - **질문:** 웹에서 어느 로그인 수단을 선택하는가?
-- **발생·제외:** TrackLoginStartForm의 클릭 capture에서 data-login-method가 있는 가장 가까운 버튼을 찾고 비어 있지 않은 method일 때 기록. OAuth 완료 전.
+- **발생·제외:** TrackLoginStartForm의 클릭 capture에서 data-login-method가 있는 가장 가까운 버튼을 찾고 비어 있지 않은 method일 때 기록. OAuth 완료 전. 확장 사이드 패널의 제공자 버튼으로 들어오면 로그인 페이지를 거치지 않으므로 GET /auth/start가 OAuth 시작에 성공했을 때 after()로 서버 전송한다(development 제외).
 - **속성:** 필수 `method: string`; 현재 버튼은 google/kakao/apple. 타입은 문자열이며 허용값 검증은 별도 없음.
 - **단위·중복:** 조건을 만족하는 클릭당 1회; pending 제공자 버튼 반복 클릭도 전역 중복 제거하지 않음.
-- **근거·테스트:** [호출 코드](../apps/web/src/app/%5Blng%5D/%28no-auth%29/login/_components/TrackLoginStartForm/index.tsx); [관련 테스트](../e2e/tests/web/login.test.ts).
+- **근거·테스트:** [호출 코드](../apps/web/src/app/%5Blng%5D/%28no-auth%29/login/_components/TrackLoginStartForm/index.tsx); [관련 테스트](../e2e/tests/web/login.test.ts); [서버 호출 코드](../apps/web/src/app/auth/start/route.ts); [서버 테스트](../apps/web/src/app/auth/start/route.test.ts).
 - **한계·이력:** 로그인 요청/세션의 고유 식별자가 없고 키보드 form submit 전체를 포괄하는 이벤트도 아니다. login 사용자 수를 나눠 정확한 완료율로 삼지 않는다. DB-1160. 도입 버전·일자 미확인.
 
 ### `login`
 
 - **질문:** OAuth/email 콜백 뒤 메모 영역에 도달했는가?
-- **발생·제외:** 인증 사이드바 레이아웃 TrackLoginSuccess가 비어 있지 않은 login 쿼리를 읽으면 기록 후 login/signup 쿼리를 router.replace로 제거.
+- **발생·제외:** 인증 사이드바 레이아웃 TrackLoginSuccess가 비어 있지 않은 login 쿼리를 읽으면 기록 후 login/signup 쿼리를 router.replace로 제거. 확장 사이드 패널의 로그인 창에서 로그인하면 웹 메모 화면을 거치지 않으므로, 패널의 LoginSection이 로그인 창이 돌려준 주소의 login 값을 읽어 확장에서 기록한다.
 - **속성:** 필수 `method: string`; 콜백의 제공자 값 또는 email.
 - **단위·중복:** 쿼리 제거로 정상 재조회 중복을 줄이지만 ref/서버 idempotency 가드는 없음.
 - **근거·테스트:** [호출 코드](../apps/web/src/app/%5Blng%5D/%28auth%29/%28sidebar%29/_components/TrackLoginSuccess/index.tsx); [관련 테스트](../apps/web/src/app/auth/callback/route.test.ts).
@@ -618,7 +645,7 @@
 ### `sign_up`
 
 - **질문:** 콜백이 신규 계정으로 분류한 도착이 얼마나 있는가?
-- **발생·제외:** TrackLoginSuccess에서 login 쿼리가 있고 signup=true면 login에 앞서 함께 기록. signup만 있으면 없음.
+- **발생·제외:** TrackLoginSuccess에서 login 쿼리가 있고 signup=true면 login에 앞서 함께 기록. signup만 있으면 없음. 확장 사이드 패널의 로그인 창 경로에서는 LoginSection이 같은 규칙으로 기록한다.
 - **속성:** 필수 `method: string`; login과 같은 쿼리 값.
 - **단위·중복:** 신규 분류 콜백 도착당 시도; 쿼리 제거 정책은 login과 동일.
 - **근거·테스트:** [호출 코드](../apps/web/src/app/%5Blng%5D/%28auth%29/%28sidebar%29/_components/TrackLoginSuccess/index.tsx); [관련 테스트](../apps/web/src/app/auth/callback/route.test.ts).
@@ -635,12 +662,12 @@
 
 ### `side_panel_login_click`
 
-- **질문:** 패널 로그인 안내에서 웹 로그인으로 이동하려는가?
-- **발생·제외:** LoginSection 버튼 클릭 시 client ID 조회와 Tab.create 전에 기록. 네트워크 불가 안내에서는 버튼 미표시.
-- **속성:** 추가 속성 없음.
+- **질문:** 패널 로그인 안내에서 어느 제공자로 로그인을 시작하려는가?
+- **발생·제외:** LoginSection 제공자 버튼 클릭 시 client ID 조회와 로그인 창(로그인 창을 쓸 수 없는 브라우저에서는 새 탭)을 열기 전에 기록. 네트워크 불가 안내에서는 버튼 미표시.
+- **속성:** 필수 `method: "kakao" | "google"`; 누른 제공자 버튼. 버튼이 하나였던 이전 버전의 이벤트에는 없다.
 - **단위·중복:** 클릭당 1회; 별도 중복 제거 없음.
 - **근거·테스트:** [호출 코드](../pages/side-panel/src/components/LoginSection.tsx); [관련 테스트](../pages/side-panel/src/components/LoginSection.test.ts).
-- **한계·이력:** 탭 생성·로그인 성공을 뜻하지 않는다. ext_cid 전달 실패/GA 식별 분리 가능성을 별도로 확인한다. 도입 버전·일자 미확인.
+- **한계·이력:** 로그인 창 표시·로그인 성공을 뜻하지 않는다. ext_cid 전달 실패/GA 식별 분리 가능성을 별도로 확인한다. 도입 버전·일자 미확인.
 
 ### `header_login_click`
 
@@ -884,6 +911,15 @@
 - **단위·중복:** 성공 분기 핸들러당1회; 같은 쪽 재방문 포함.
 - **근거·테스트:** [호출 코드](../apps/web/src/app/%5Blng%5D/%28auth%29/%28sidebar%29/memos/blogs/_hooks/useBlogReading.ts); [관련 테스트](../e2e/tests/web/blogReading.test.ts); [계약](../packages/shared/src/types/blogReading.ts).
 - **한계·이력:** 목록 DOM 표시 완료나 글 읽음 아님. 다음 조회 오류는 전송하지 않으므로 이 이벤트만으로 실패율 계산 불가. DB-1134. 도입 버전·일자 미확인.
+
+### `email_unsubscribe`
+
+- **질문:** 수신 거부 페이지를 연 사용자가 실제로 수신 거부를 완료하는가? 토큰이 유효하지 않은 링크가 얼마나 되는가?
+- **발생·제외:** UnsubscribeCard에서 버튼을 누르고 requestUnsubscribe POST 요청이 완료(성공·오류·토큰 무효)된 뒤 발생. 토큰 없이 페이지를 연 경우는 버튼이 없어 발생하지 않는다. pending 상태 중 중복 클릭은 가드된다.
+- **속성:** 필수 `result: "ok" | "invalidToken" | "failed"`. `"ok"` = 수신 거부 성공, `"invalidToken"` = 유효하지 않은 토큰, `"failed"` = 서버 오류.
+- **단위·중복:** POST 요청 완료당 1회. 오류 후 재시도는 별도 이벤트.
+- **근거·테스트:** [UnsubscribeCard.tsx](../apps/web/src/app/%5Blng%5D/%28no-auth%29/unsubscribe/_components/UnsubscribeCard.tsx); 이벤트 전용 단위 검증 미확인.
+- **한계·이력:** 토큰 없이 페이지를 연 사용자의 의도는 측정할 수 없다. 수신 거부 성공이 메일 발송 실제 중단을 보장하지 않는다. 도입 버전·일자 미확인.
 
 ## 코드 반영과 운영 보급을 확인해야 할 항목
 

@@ -22,7 +22,8 @@ interface HighlightTooltipProps {
 }
 
 /**
- * 코멘트가 있는 하이라이트에 마우스를 올리면 코멘트를 띄운다.
+ * 코멘트가 있는 하이라이트에 마우스를 올리면 코멘트를 띄우고, 모든 하이라이트 위에서는
+ * 커서를 pointer로 바꿔 눌러서 편집할 수 있다는 단서를 준다.
  * @description CSS Custom Highlight API는 DOM 요소를 만들지 않아 밑줄에 마우스 이벤트를
  * 걸 수 없다. 그래서 문서 전체의 `mousemove`를 throttle해 받아 `hitTest`로 판별한다.
  * 스타일을 인라인으로 두는 이유는 요소가 하나뿐이라 클래스 체계가 필요 없고, Shadow DOM
@@ -37,9 +38,48 @@ export function HighlightTooltip({
 	useEffect(() => {
 		let lastRunAt = 0;
 		let trailingTimer: ReturnType<typeof setTimeout> | null = null;
+		/** 우리가 pointer를 입힌 동안만 담긴다. 페이지가 원래 지정한 인라인 cursor를 되돌리기 위함 */
+		let savedCursor: { value: string; priority: string } | null = null;
+		const rootStyle = document.documentElement.style;
+
+		function applyPointerCursor(): void {
+			if (savedCursor) {
+				return;
+			}
+
+			savedCursor = {
+				value: rootStyle.getPropertyValue("cursor"),
+				priority: rootStyle.getPropertyPriority("cursor"),
+			};
+			rootStyle.setProperty("cursor", "pointer");
+		}
+
+		function restoreCursor(): void {
+			if (!savedCursor) {
+				return;
+			}
+
+			if (savedCursor.value) {
+				rootStyle.setProperty(
+					"cursor",
+					savedCursor.value,
+					savedCursor.priority,
+				);
+			} else {
+				rootStyle.removeProperty("cursor");
+			}
+			savedCursor = null;
+		}
 
 		function evaluate(x: number, y: number): void {
 			const id = hitTest(x, y);
+
+			if (id === null) {
+				restoreCursor();
+			} else {
+				applyPointerCursor();
+			}
+
 			const note = id === null ? undefined : notesById.get(id);
 
 			if (!note) {
@@ -78,6 +118,7 @@ export function HighlightTooltip({
 
 		return () => {
 			document.removeEventListener("mousemove", handleMouseMove);
+			restoreCursor();
 
 			if (trailingTimer !== null) {
 				clearTimeout(trailingTimer);

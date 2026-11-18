@@ -97,6 +97,11 @@ export interface IFSettingUpdatedPayload {
 	userId: string;
 }
 
+/** 웹이 확장에 알리는 로그인 상태. `true`면 웹은 로그인돼 있어 패널도 로그인돼야 한다. */
+export interface IFSyncLoginStatusPayload {
+	isLoggedIn: boolean;
+}
+
 /** 실제 변경된 행 또는 검증·인증·저장 오류. */
 export type TEditHighlightResponse = TCreateHighlightResponse;
 

@@ -57,10 +57,13 @@ export const memosInfiniteQueryOptions = (
 				searchQuery,
 				domain,
 				sortBy,
+				// 화면은 첫 페이지의 개수만 쓴다. 다음 페이지마다 전체를 다시 세지 않는다.
+				withCount: pageParam === undefined,
 			});
 
 			return {
 				data: (result.data ?? []) as GetMemoResponse[],
+				/** 첫 페이지만 실제 개수다. 다음 페이지는 세지 않아 0이다. */
 				count: result.count ?? 0,
 				/** 화면은 실패를 빈 목록으로 보이지만, QueryCache가 이 값을 보고 Sentry에 보고한다. */
 				error: result.error,

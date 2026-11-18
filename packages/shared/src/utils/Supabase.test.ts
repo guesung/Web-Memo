@@ -298,6 +298,59 @@ describe("MemoService.getMemoDomains", () => {
 			["category.name", "Work"],
 		]);
 	});
+
+	/** 배치(range 시작 위치)마다 다른 행을 돌려주는 목. 동시에 읽는 배치를 구분하려고 빌더를 매번 새로 만든다. */
+	const createBatchClient = (rowsByFrom: Record<number, { url: string }[]>) => {
+		const ranges: number[] = [];
+		const createBuilder = () => {
+			let from = 0;
+			const builder = {
+				select: () => builder,
+				is: () => builder,
+				eq: () => builder,
+				order: () => builder,
+				range: (start: number) => {
+					from = start;
+					ranges.push(start);
+					return builder;
+				},
+				// biome-ignore lint/suspicious/noThenProperty: Supabase 쿼리 빌더는 실제로 thenable이라 await 가능해야 하는 목이다.
+				then: (resolve: (value: { data: unknown[]; error: null }) => unknown) =>
+					resolve({ data: rowsByFrom[from] ?? [], error: null }),
+			};
+			return builder;
+		};
+		const client = {
+			schema: () => ({ from: () => createBuilder() }),
+		} as unknown as MemoSupabaseClient;
+
+		return { client, ranges };
+	};
+
+	const fullBatch = (domain: string) =>
+		Array.from({ length: 1000 }, (_, index) => ({
+			url: `https://${domain}/${index}`,
+		}));
+
+	it("첫 배치가 꽉 차면 나머지 4배치를 함께 읽어 도메인을 합친다", async () => {
+		const { client, ranges } = createBatchClient({
+			0: fullBatch("b.com"),
+			1000: [{ url: "https://a.com/1" }],
+		});
+		const result = await new MemoService(client).getMemoDomains();
+
+		expect(ranges).toEqual([0, 1000, 2000, 3000, 4000]);
+		expect(result).toEqual({ data: ["a.com", "b.com"], error: null });
+	});
+
+	it("첫 배치가 덜 차면 더 읽지 않는다", async () => {
+		const { client, ranges } = createBatchClient({
+			0: [{ url: "https://a.com/1" }],
+		});
+		await new MemoService(client).getMemoDomains();
+
+		expect(ranges).toEqual([0]);
+	});
 });
 
 describe("MemoService.getMemosPaginated", () => {

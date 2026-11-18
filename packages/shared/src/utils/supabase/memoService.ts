@@ -323,6 +323,7 @@ export class MemoService {
 	/**
 	 * 삭제되지 않은 메모의 url에서 중복 없는 도메인 목록을 이름순으로 만든다.
 	 * @description 최근 수정 순으로 1000건씩 최대 5회(5000건) 읽는다. 그보다 오래된 메모의 도메인은 빠진다.
+	 * 첫 배치가 꽉 차면 나머지 4배치는 동시에 읽는다.
 	 * 목록 조회와 같은 탭·카테고리 조건으로 좁혀, 목록에서 고른 도메인이 빈 결과가 되지 않게 한다.
 	 */
 	getMemoDomains = async ({
@@ -336,13 +337,7 @@ export class MemoService {
 		isStar?: boolean;
 		isReading?: boolean;
 	} = {}) => {
-		const domains = new Set<string>();
-
-		for (
-			let batchIndex = 0;
-			batchIndex < MEMO_DOMAIN_MAX_BATCHES;
-			batchIndex += 1
-		) {
+		const fetchBatch = (batchIndex: number) => {
 			const from = batchIndex * MEMO_DOMAIN_BATCH_SIZE;
 			let query = this.supabaseClient
 				.schema(SUPABASE.table.memo)
@@ -370,24 +365,41 @@ export class MemoService {
 				query = query.eq("category.name", category);
 			}
 
-			const { data, error } = await query;
+			return query;
+		};
 
-			if (error) {
-				return { data: null, error };
+		// 메모가 한 배치보다 적은 사용자가 대부분이라 첫 배치는 혼자 읽는다. 꽉 찼을 때만 나머지를 한꺼번에 읽어
+		// 순서대로 최대 5번 왕복하던 것을 2번으로 줄인다.
+		const firstBatch = await fetchBatch(0);
+
+		if (firstBatch.error) {
+			return { data: null, error: firstBatch.error };
+		}
+
+		const batches = [firstBatch.data ?? []];
+
+		if (batches[0].length === MEMO_DOMAIN_BATCH_SIZE) {
+			const restBatches = await Promise.all(
+				Array.from({ length: MEMO_DOMAIN_MAX_BATCHES - 1 }, (_, index) =>
+					fetchBatch(index + 1),
+				),
+			);
+			const failedBatch = restBatches.find((batch) => batch.error);
+
+			if (failedBatch?.error) {
+				return { data: null, error: failedBatch.error };
 			}
 
-			const memos = data ?? [];
+			batches.push(...restBatches.map((batch) => batch.data ?? []));
+		}
 
-			for (const memo of memos) {
-				const domain = getDomainFromUrl(memo.url);
+		const domains = new Set<string>();
 
-				if (domain) {
-					domains.add(domain);
-				}
-			}
+		for (const memo of batches.flat()) {
+			const domain = getDomainFromUrl(memo.url);
 
-			if (memos.length < MEMO_DOMAIN_BATCH_SIZE) {
-				break;
+			if (domain) {
+				domains.add(domain);
 			}
 		}
 

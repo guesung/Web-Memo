@@ -21,11 +21,14 @@ const NEED_AUTH_PAGES = [
 	PATHS.admin,
 ];
 
-export async function updateAuthorization(request: NextRequest) {
-	const nextResponse = NextResponse.next({
+const createNextResponse = (request: NextRequest) =>
+	NextResponse.next({
 		request,
 		headers: request.headers,
 	});
+
+export async function updateAuthorization(request: NextRequest) {
+	let nextResponse = createNextResponse(request);
 
 	const supabaseClient = createServerClient<Database, "memo">(
 		SUPABASE.url,
@@ -45,6 +48,10 @@ export async function updateAuthorization(request: NextRequest) {
 					cookiesToSet.forEach(({ name, value }) =>
 						request.cookies.set(name, value),
 					);
+					// 갱신된 쿠키를 페이지 요청까지 넘기려면 응답을 다시 만들어야 한다.
+					// NextResponse.next()는 만들 때의 요청 헤더만 실어 보내서, 먼저 만든 응답을 쓰면
+					// Server Component가 만료된 토큰을 받고 다시 갱신하려다 쿠키 쓰기 에러를 낸다.
+					nextResponse = createNextResponse(request);
 					cookiesToSet.forEach(({ name, value, options }) =>
 						nextResponse.cookies.set(name, value, options),
 					);

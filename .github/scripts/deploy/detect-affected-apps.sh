@@ -60,4 +60,10 @@ if ! git diff --quiet "$BASE_REF...$DIFF_HEAD" -- \
   app_affected=true
 fi
 
+# vercel.json은 어느 패키지에도 속하지 않아 turbo가 변경으로 잡지 못한다. 함수 설정(fluid 등)은
+# 배포해야 반영되므로, 이 파일이 바뀌면 웹을 배포 대상으로 본다.
+if ! git diff --quiet "$BASE_REF...$DIFF_HEAD" -- vercel.json; then
+  web_affected=true
+fi
+
 emit "$app_affected" "$extension_affected" "$web_affected"

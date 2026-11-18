@@ -55,3 +55,31 @@ rules:
         <Check className="size-4" />
     pr: null
     replaced_by: null
+
+  - id: i18n-use-translation-wrapper
+    name: 번역 훅은 i18n 모듈의 래퍼에서만 가져온다
+    category: 관행
+    principles: [예측 가능성]
+    scope: ["apps/web/**"]
+    status: 적용중
+    severity: 필수
+    rule: |
+      useTranslation은 클라이언트에서 @src/modules/i18n/util.client, 서버에서 @src/modules/i18n/util.server의
+      getTranslation으로 가져온다. react-i18next를 직접 import하지 않는다. Biome noRestrictedImports가 막는다.
+    why: |
+      react-i18next의 useTranslation 첫 인자는 언어가 아니라 네임스페이스다. 래퍼와 같은 모양으로
+      useTranslation(lng)을 부르면 "ko" 네임스페이스를 따로 불러오느라 첫 렌더가 Suspense에 걸리고,
+      그 재시도가 React의 300ms 공개 지연에 묶여 화면이 늦게 뜬다. /memos 첫 카드가 이 때문에 200~300ms 늦었다.
+    exceptions:
+      - 래퍼 자신인 apps/web/src/modules/i18n/** 는 react-i18next를 직접 쓴다(biome.json overrides로 규칙을 끈다).
+    examples:
+      bad: |
+        import { useTranslation } from "react-i18next";
+
+        const { t } = useTranslation(lng);
+      good: |
+        import useTranslation from "@src/modules/i18n/util.client";
+
+        const { t } = useTranslation(lng);
+    pr: https://github.com/guesung/Web-Memo/pull/867
+    replaced_by: null

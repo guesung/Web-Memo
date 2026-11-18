@@ -44,7 +44,15 @@
 				"noStaticOnlyClass": "off"
 			},
 			"style": {
-				"noNonNullAssertion": "warn"
+				"noNonNullAssertion": "warn",
+				"noRestrictedImports": {
+					"level": "error",
+					"options": {
+						"paths": {
+							"react-i18next": "useTranslation은 @src/modules/i18n/util.client(서버는 util.server)에서 가져옵니다. react-i18next의 첫 인자는 언어가 아니라 네임스페이스라, lng를 넘기면 그 이름의 네임스페이스를 따로 불러오느라 첫 렌더가 Suspense에 걸립니다."
+						}
+					}
+				}
 			},
 			"suspicious": {
 				"noArrayIndexKey": "warn",
@@ -56,6 +64,18 @@
 			"react": "recommended"
 		}
 	},
+	"overrides": [
+		{
+			"includes": ["apps/web/src/modules/i18n/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": "off"
+					}
+				}
+			}
+		}
+	],
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"

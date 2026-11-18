@@ -1,5 +1,6 @@
 import { useSearchParams } from "next/navigation";
 import { useFormContext } from "react-hook-form";
+import { getMemoListView } from "../../../_utils";
 import type { SearchFormValues } from "../../MemoSearchFormProvider";
 
 /** 목록을 거르는 카테고리·도메인·검색어와 보기 방식. 카테고리·도메인·보기는 쿼리, 검색어는 검색 폼이 출처다. */
@@ -17,9 +18,4 @@ export default function useMemoSearchConditions() {
 		domainParam: searchParams.get("domain"),
 		searchQuery: watch("searchQuery"),
 	};
-}
-
-/** 쿼리의 보기 값. 작성일별(list)·도메인별(domain) 외에는 카드 보기(grid)로 본다. */
-function getMemoListView(view: string | null): "grid" | "list" | "domain" {
-	return view === "list" || view === "domain" ? view : "grid";
 }

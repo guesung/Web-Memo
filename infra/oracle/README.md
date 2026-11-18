@@ -55,6 +55,9 @@ VM에만 있고 레포에 없는 것: `/opt/webmemo/.env`(사이트 주소·이�
    - 네트워크 `webmemo-vcn` / `public subnet-webmemo-vcn`, 공인 IPv4 자동 할당
    - SSH 키 `~/.ssh/webmemo_oci.pub` 업로드
    - 화면에 "API Error"만 나오면 대부분 `Out of host capacity`(무료 A1 자리 없음)입니다. 시간을 두고 다시 시도합니다
+   - 콘솔 대신 `scripts/launch-vm.sh`(OCI CLI)로도 만들 수 있습니다. 자리가 없으면 `RESULT=capacity`로 끝납니다.
+     `.github/workflows/chore-oracle-vm-retry.yml`이 10분마다 이 스크립트를 불러, 만들어지면 Slack으로 공인 IP를 알리고
+     스스로 꺼집니다. 회수돼 다시 만들 때는 Actions에서 이 워크플로를 다시 켭니다. 인증은 GitHub Secrets `OCI_CLI_*`·`ORACLE_SSH_PUBLIC_KEY`입니다
 2. VCN 기본 Security List에 인바운드 TCP 80·443(소스 `0.0.0.0/0`) 추가
 3. cloud-init 완료 확인: `ssh -i ~/.ssh/webmemo_oci ubuntu@<IP> cloud-init status --wait`
 4. `infra/oracle/scripts/sync.sh deploy@<IP>`

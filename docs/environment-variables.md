@@ -46,7 +46,7 @@
 
 <!-- env-manifest:start -->
 
-### GitHub Secrets (34개)
+### GitHub Secrets (39개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
@@ -64,10 +64,15 @@
 | `GA4_SERVICE_ACCOUNT_JSON` | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/report-seo.yml`, `apps/web/src/modules/ga/config.ts` |
 | `GSC_SERVICE_ACCOUNT_JSON` (선택) | 없으면 공개 SEO 검사는 계속 실행되지만 Search Console 색인 상태와 주간 검색 성과 조회를 건너뛰고, 데일리 GA 리포트의 검색어 줄은 '연동 안 됨'으로 나간다 | `.github/workflows/report-seo.yml`, `.github/workflows/report-gsc-demand.yml`, `.github/workflows/report-ga-daily.yml` |
 | `NOTION_TOKEN` | 주간 리팩토링 점검 결과가 노션 작업 카드로 만들어지지 않는다 | `.github/workflows/audit-refactor.yml` |
+| `OCI_CLI_FINGERPRINT` (선택) | Oracle API 인증에 실패해 VM 생성 재시도가 멈춘다 | `.github/workflows/chore-oracle-vm-retry.yml` |
+| `OCI_CLI_KEY_CONTENT` (선택) | Oracle API 인증에 실패해 VM 생성 재시도가 멈춘다 | `.github/workflows/chore-oracle-vm-retry.yml` |
+| `OCI_CLI_TENANCY` (선택) | Oracle API 인증과 컴파트먼트 조회가 실패해 VM 생성 재시도가 멈춘다 | `.github/workflows/chore-oracle-vm-retry.yml` |
+| `OCI_CLI_USER` (선택) | Oracle API 인증에 실패해 VM 생성 재시도(chore-oracle-vm-retry)가 멈춘다 | `.github/workflows/chore-oracle-vm-retry.yml` |
 | `ORACLE_DEPLOY_ENABLED` (선택) | 값이 \"true\"가 아니면 develop 푸시가 Oracle VM staging에 배포되지 않는다. Vercel 배포는 그대로다 | `.github/workflows/ci.yml` |
 | `ORACLE_SSH_HOST` (선택) | Oracle VM에 접속하지 못해 VM staging 배포·롤백이 멈춘다. Vercel 배포에는 영향 없다 | `.github/workflows/cd-web-oracle.yml` |
 | `ORACLE_SSH_KEY` (선택) | Oracle VM의 deploy 사용자로 SSH 인증하지 못해 VM 배포·롤백이 멈춘다 | `.github/workflows/cd-web-oracle.yml` |
 | `ORACLE_SSH_KNOWN_HOSTS` (선택) | 호스트 키 검증이 실패해 VM 배포·롤백이 멈춘다 | `.github/workflows/cd-web-oracle.yml` |
+| `ORACLE_SSH_PUBLIC_KEY` (선택) | 새 VM에 SSH 공개키가 들어가지 않아 접속·배포를 할 수 없다 | `.github/workflows/chore-oracle-vm-retry.yml` |
 | `REFRESH_TOKEN` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `SENTRY_API_TOKEN` (선택) | Sentry 알림에 대표 이벤트 상세(환경·릴리스·브라우저·스택·breadcrumb)가 빠지고, AI 분석이 웹훅 입력만으로 진행된다 | `apps/web/src/modules/sentry/config.ts`, `.github/workflows/chore-sentry-triage.yml`, `.github/scripts/sentry/fetch-sentry-context.mjs` |
 | `SENTRY_AUTH_TOKEN` | Sentry 소스맵 업로드가 조용히 실패한다. 빌드는 통과하므로 스택 트레이스가 난독화된 채 보여야 알게 된다 | `.github/workflows/cd-extension.yml`, `.github/workflows/cd-app.yml`, `apps/web/next.config.mjs`, `packages/vite-config/lib/withPageConfig.mjs` |
@@ -77,7 +82,7 @@
 | `SLACK_CHANNEL_ID` | 머지 스레드가 생기지 않고 웹훅 알림으로 폴백한다 | `.github/workflows/ci.yml` |
 | `SLACK_REPORT_CHANNEL_ID` | SEO AI 리포트를 스레드로 보내지 못하고 기존 기계 판정 알림으로 대신한다. 봇(SLACK_BOT_TOKEN)이 이 채널에 초대돼 있어야 한다 | `.github/workflows/report-seo.yml` |
 | `SLACK_REPORT_WEBHOOK_URL` | 주간 리팩토링 점검 결과, 주간 GA 이벤트 누락 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다. GA 리포트는 봇(SLACK_BOT_TOKEN)으로 먼저 올리므로 이 값은 봇 게시가 실패했을 때의 폴백이며, 없으면 그날 리포트가 통째로 빠진다 | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/chore-ga-events.yml` |
-| `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/versions.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/audit-ga-cid-adoption.yml`, `.github/workflows/notify-extension-published.yml`, `.github/workflows/chore-e2e-coverage.yml` |
+| `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/versions.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/audit-ga-cid-adoption.yml`, `.github/workflows/notify-extension-published.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/chore-oracle-vm-retry.yml` |
 | `STAGING_WEB_URL_WITHOUT_PROTOCOL` | 스테이징 배포에 alias 도메인이 붙지 않는다 | `.github/workflows/cd-web.yml` |
 | `SUPABASE_ACCESS_TOKEN` | 등록 현황 감사가 Supabase secrets를 조회하지 못하고 Supabase 인벤토리 문서가 갱신되지 않는다 | `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml` |
 | `SUPABASE_REPORT_SERVICE_ROLE_KEY` | 주간 GA 리포트에서 메모 리텐션 섹션과 시트의 리텐션 칸만 빠진다(경고만 남고 나머지 리포트는 그대로 간다) | `.github/workflows/report-ga-weekly.yml`, `.github/scripts/ga/report-weekly-ga.mjs` |

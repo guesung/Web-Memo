@@ -1,6 +1,6 @@
 ---
 name: pr
-description: 현재 커밋 작업사항을 바탕으로 PR을 생성한다. draft가 아닌 일반 PR로, base는 레포의 기본 브랜치(main). 만든 PR이 base와 충돌하면 묻지 않고 base를 merge해 해결·검증·push한다. 커밋 안 된 변경이 있으면 /web-memo:commit을 먼저 제안한다. apps/web·apps/app·packages 변경이 있으면 PR 전에 develop 머지(md)를 반드시 한다. 사람이 승인한 디자인 시안이 있으면 Artifact 링크와 스크린샷을 본문에 항상 싣는다. "PR 올려줘", "PR 만들어줘" 같은 표현이 나오면 이 스킬을 사용한다. /web-memo:implement ③과 /web-memo:implement-loop ③(b)에서 호출된다.
+description: 현재 커밋 작업사항을 바탕으로 PR을 생성한다. draft가 아닌 일반 PR로, base는 레포의 기본 브랜치(main). 아직 머지되지 않은 PR 위에 이어지는 작업이면 직전 브랜치를 base로 하는 스택 PR로 쌓는다. 만든 PR이 base와 충돌하면 묻지 않고 base를 merge해 해결·검증·push한다. 커밋 안 된 변경이 있으면 /web-memo:commit을 먼저 제안한다. apps/web·apps/app·packages 변경이 있으면 PR 전에 develop 머지(md)를 반드시 한다. 사람이 승인한 디자인 시안이 있으면 Artifact 링크와 스크린샷을 본문에 항상 싣는다. "PR 올려줘", "PR 만들어줘" 같은 표현이 나오면 이 스킬을 사용한다. /web-memo:implement ③과 /web-memo:implement-loop ③(b)에서 호출된다.
 argument-hint: '[PR 제목·본문 추가 지시 (선택)]'
 ---
 
@@ -10,14 +10,15 @@ argument-hint: '[PR 제목·본문 추가 지시 (선택)]'
 
 1. `git branch --show-current`로 현재 브랜치를 확인한다.
    - **기본 브랜치(main) 위라면** 먼저 `feature/<작업명>` 브랜치를 만들어 옮긴다. 인자(`$ARGUMENTS`)가 있으면 브랜치명 힌트로 쓴다.
-2. **base 브랜치를 확정한다.** 사용자가 지정한 브랜치, 없으면 레포의 기본 브랜치(main). base가 **`master`**면 아래 "master 대상 PR — 작업 카드"를 먼저 통과해야 한다.
+2. **base 브랜치를 확정한다.** 사용자가 지정한 브랜치, 없으면 아래 **"스택 PR"**의 판정으로 찾은 직전 브랜치, 그것도 없으면 레포의 기본 브랜치(main). 작업 카드 접두사는 아래 "master 대상 PR — 작업 카드"를 먼저 통과해야 한다.
 3. 커밋 안 된 변경이 있으면 **`/web-memo:commit`을 먼저 제안**하고, 사용자가 확인한 뒤 진행한다.
 4. base 분기점 이후의 작업을 확인한다 (병렬 실행):
    - `git status` · `git log <base>..HEAD` · `git diff <base>...HEAD`
    - 원격 추적이 없으면 `git push -u origin <branch>`로, 있는데 로컬이 앞서 있으면 `git push`로 올린다. PR과 충돌 판정은 원격 브랜치를 기준으로 하므로 여기서 로컬과 원격을 맞춰 둔다.
    - 올린 뒤 아래 **"develop 머지 — 앱/웹 변경이 있으면 반드시"**를 수행한다. 묻지 않는다.
 5. **모든 커밋**을 훑어서 PR 제목·본문을 작성한다 (최신 커밋만 보지 말 것).
-   - 제목: 70자 이내의 짧고 명확한 문장. 상세는 본문에. master 대상이면 `[DB-<ID>]` 접두사를 붙인다.
+   - 제목: 70자 이내의 짧고 명확한 문장. 상세는 본문에. master 대상이거나 스택 PR이면 `[DB-<ID>]` 접두사를 붙인다.
+   - 스택 PR이면 본문에 체인 한 줄을 넣는다(아래 "스택 PR" 3).
    - 본문은 HEREDOC으로 전달한다:
      ```
      ## Summary
@@ -135,9 +136,23 @@ git status --porcelain                                     # 비어 있어야 �
 
 무엇이 실패했는지와 충돌 파일 목록을 보고한다. 호출자에게 상태 파일이 있으면(`/web-memo:implement`의 `.omc/state/web-memo-implement.json`) `pr`에 `stopped: conflict — <사유>`를 적는다. 기준은 [autonomy.md](../../autonomy.md)의 "타입체크·빌드 2회 연속 실패"와 같다.
 
+## 스택 PR — 이어지는 작업은 쌓는다
+
+앞 PR이 아직 머지되지 않았는데 그 코드 위에 이어지는 작업(같은 작업 카드의 다음 단계, 앞 PR의 코드가 필요한 후속 작업)은 **스택**으로 올린다. 각자 기본 브랜치에서 따서 앞 브랜치를 merge해 오면 뒤 PR에 앞 PR의 커밋이 전부 섞여 보여, 리뷰어가 이번 단계의 변경을 가려낼 수 없다.
+
+1. **브랜치는 직전 브랜치에서 딴다.** `git switch -c <새 브랜치> <직전 브랜치>`. 1단계에서 새 브랜치를 만들 때도 같다.
+2. **base는 직전 브랜치다.** 판정: `gh pr list --state open --json headRefName,number`의 각 브랜치 `h`(현재 브랜치 제외) 중 `git merge-base --is-ancestor origin/h HEAD`가 참이고 `git merge-base --is-ancestor origin/h origin/<기본 브랜치>`가 거짓인 것이 후보다. 후보가 여럿이면 다른 후보를 모두 조상으로 갖는 것, 곧 가장 가까운 것이 직전 브랜치다. 후보가 없으면 스택이 아니다.
+3. **체인을 적는다.** 본문 `## 관련 이슈`(템플릿에 없으면 Summary 끝)에 `스택: #A ← #B ← 이 PR`을 넣는다. 체인의 아래 PR들 본문에도 같은 줄을 `gh pr view --json body`로 읽은 전체에 덧붙여 `gh pr edit --body`로 갱신한다.
+4. **아래 브랜치를 고치면 위로 차례로 merge한다.** 아래 브랜치에 커밋을 더했으면 `git switch <위 브랜치> && git merge --no-edit <아래 브랜치> && git push`를 체인 끝까지 반복한다. rebase하지 않는다 — 위 브랜치들의 이력이 갈라져 force push가 필요해진다.
+5. **머지는 맨 위 PR 하나로 한다.** 9단계 출력에 `스택: #A ← #B ← #C — 맨 위 #C를 머지하면 함께 들어감`을 덧붙인다. GitHub는 스택 PR에 일반 머지 API를 거부하므로 사람이 머지할 때 `PUT /repos/{o}/{r}/pulls/{맨 위}/merge-async`(merge_method=merge)를 쓴다.
+
+develop 머지와 base 충돌 해결은 각 PR에서 그대로 한다. 충돌 판정의 `<base>`는 직전 브랜치다.
+
+서로 독립인 작업(앞 PR 코드가 필요 없음)은 스택으로 묶지 않고 기본 브랜치에서 딴다.
+
 ## master 대상 PR — 작업 카드
 
-base가 `master`인 PR은 **항상 작업 카드를 제목 접두사 `[DB-<ID>]`로 기입한다.** 본문에는 따로 적지 않는다.
+base가 `master`인 PR과 그 위에 쌓인 스택 PR은 **항상 작업 카드를 제목 접두사 `[DB-<ID>]`로 기입한다.** 본문에는 따로 적지 않는다.
 
 - 카드는 `$ARGUMENTS`의 `[DB-123]`, 브랜치명, 커밋 메시지 순으로 찾는다. `ID` 값 자체가 `DB-123` 형태이므로 `DB-`를 두 번 붙이지 않는다.
 - **찾지 못하면 추측하지 말고 `AskUserQuestion`으로 사용자에게 카드를 묻는다.** 답을 받기 전에는 `gh pr create`를 실행하지 않는다.
@@ -148,7 +163,8 @@ base가 `master`인 PR은 **항상 작업 카드를 제목 접두사 `[DB-<ID>]`
 
 - **승인되지 않은 시안을 싣지 않는다.** 본문의 시안은 "이 화면으로 승인받았다"는 기록이라, 초안이 섞이면 승인 범위를 거꾸로 읽게 된다.
 - **draft PR을 만들지 않는다.** 이 플러그인의 PR은 곧 사람 최종 검토 대상이고, draft 상태 전환은 손만 늘린다.
-- base 브랜치는 사용자가 달리 지정하지 않는 한 **기본 브랜치(main) 고정.** develop은 PR base가 아니라 테섭 배포용 머지 대상이다.
+- base 브랜치는 사용자 지정, 스택의 직전 브랜치, 기본 브랜치(main) 중 하나다. develop은 PR base가 아니라 테섭 배포용 머지 대상이다.
+- **이어지는 작업은 직전 브랜치 위에 쌓는다.** 기본 브랜치에서 따서 앞 브랜치를 merge해 오지 않는다.
 - **앱/웹 변경이 있는데 develop 머지를 빼먹지 않는다.** 머지했거나, 이미 반영됐거나, 실패 사유를 보고했거나 셋 중 하나로 끝난다.
 - **master 대상 PR을 작업 카드 없이 만들지 않는다.** 카드를 모르면 만들지 말고 묻는다.
 - co-author, 생성 표식, `🤖` 같은 메타 표기 추가 금지.

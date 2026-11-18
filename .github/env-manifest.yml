@@ -146,8 +146,48 @@
 - name: SLACK_WEBHOOK_URL
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/chore-ga-events.yml, .github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/workflows/audit-refactor.yml, .github/workflows/release-notify.yml, .github/workflows/versions.yml, .github/workflows/audit-env-registry.yml, .github/workflows/report-seo.yml, .github/workflows/audit-ga-cid-adoption.yml, .github/workflows/notify-extension-published.yml, .github/workflows/chore-e2e-coverage.yml]
+  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/chore-ga-events.yml, .github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/workflows/audit-refactor.yml, .github/workflows/release-notify.yml, .github/workflows/versions.yml, .github/workflows/audit-env-registry.yml, .github/workflows/report-seo.yml, .github/workflows/audit-ga-cid-adoption.yml, .github/workflows/notify-extension-published.yml, .github/workflows/chore-e2e-coverage.yml, .github/workflows/chore-oracle-vm-retry.yml]
   impact: "빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다"
+
+- name: OCI_CLI_USER
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/chore-oracle-vm-retry.yml]
+  impact: "Oracle API 인증에 실패해 VM 생성 재시도(chore-oracle-vm-retry)가 멈춘다"
+  note: "OCI 사용자 OCID. 콘솔 My profile → API keys의 설정 미리보기에서 확인"
+
+- name: OCI_CLI_TENANCY
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/chore-oracle-vm-retry.yml]
+  impact: "Oracle API 인증과 컴파트먼트 조회가 실패해 VM 생성 재시도가 멈춘다"
+  note: "테넌시 OCID. 루트 컴파트먼트로도 쓴다"
+
+- name: OCI_CLI_FINGERPRINT
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/chore-oracle-vm-retry.yml]
+  impact: "Oracle API 인증에 실패해 VM 생성 재시도가 멈춘다"
+  note: "OCI_CLI_KEY_CONTENT 공개키의 지문"
+
+- name: OCI_CLI_KEY_CONTENT
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/chore-oracle-vm-retry.yml]
+  impact: "Oracle API 인증에 실패해 VM 생성 재시도가 멈춘다"
+  note: "API 서명용 RSA 개인키 PEM 전문. 공개키는 콘솔 My profile → API keys에 등록돼 있다"
+
+- name: ORACLE_SSH_PUBLIC_KEY
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/chore-oracle-vm-retry.yml]
+  impact: "새 VM에 SSH 공개키가 들어가지 않아 접속·배포를 할 수 없다"
+  note: "~/.ssh/webmemo_oci.pub 내용. 비밀은 아니지만 VM 생성 입력을 한곳에 모으려고 Secrets에 둔다"
 
 - name: SLACK_REPORT_WEBHOOK_URL
   kind: secret

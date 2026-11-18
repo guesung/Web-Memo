@@ -1,0 +1,56 @@
+#cloud-config
+# One-time OS bootstrap for the Oracle Cloud A1 VM (Ubuntu 24.04 aarch64).
+# Keep this file ASCII-only: the OCI console rejects user_data with non-ASCII text.
+# App/proxy config (compose.yaml, Caddyfile) is shipped by scripts/sync.sh, not here.
+# See README.md for the why behind each step.
+
+groups:
+  - docker
+
+users:
+  - default
+  - name: deploy
+    shell: /bin/bash
+    groups: [docker]
+    lock_passwd: true
+
+package_update: true
+package_upgrade: true
+packages:
+  - ca-certificates
+  - curl
+  - rsync
+  - unattended-upgrades
+  - netfilter-persistent
+  - iptables-persistent
+
+write_files:
+  - path: /etc/docker/daemon.json
+    permissions: "0644"
+    content: |
+      {
+        "log-driver": "json-file",
+        "log-opts": { "max-size": "10m", "max-file": "3" }
+      }
+
+runcmd:
+  # 1) Firewall first, saved before Docker exists (see README).
+  - iptables -I INPUT -p tcp -m multiport --dports 80,443 -m state --state NEW -j ACCEPT
+  - iptables -I INPUT -p udp --dport 443 -m state --state NEW -j ACCEPT
+  - netfilter-persistent save
+
+  # 2) Docker Engine + Compose plugin from the official apt repo.
+  - install -m 0755 -d /etc/apt/keyrings
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  - chmod a+r /etc/apt/keyrings/docker.asc
+  - sh -c 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" > /etc/apt/sources.list.d/docker.list'
+  - apt-get update
+  - apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  - systemctl enable --now docker
+
+  # 3) Deploy user reuses the SSH key given in the console.
+  - install -d -m 700 -o deploy -g deploy /home/deploy/.ssh
+  - install -m 600 -o deploy -g deploy /home/ubuntu/.ssh/authorized_keys /home/deploy/.ssh/authorized_keys
+
+  # 4) App directory. state/ and env/ live only on the VM; sync.sh never overwrites them.
+  - install -d -m 755 -o deploy -g deploy /opt/webmemo /opt/webmemo/state /opt/webmemo/state/active /opt/webmemo/env

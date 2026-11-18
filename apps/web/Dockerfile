@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1.10
 # 웹(Next.js standalone) 컨테이너 이미지. 레포 루트를 빌드 컨텍스트로 씁니다.
 #
 #   docker buildx build -f apps/web/Dockerfile \

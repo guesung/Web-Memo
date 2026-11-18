@@ -271,3 +271,8 @@ verify_jwt = false
 
 [functions.weekly-report-click]
 verify_jwt = false
+
+# 확장이 웹 세션의 access token으로 부르는 함수. 게이트웨이 JWT 검증을 켠 채로 두고,
+# 함수 안에서 getUser로 한 번 더 확인한다. 이 블록이 없어도 기본값은 true다.
+[functions.extension-session]
+verify_jwt = true

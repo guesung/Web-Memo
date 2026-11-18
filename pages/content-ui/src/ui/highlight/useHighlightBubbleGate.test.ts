@@ -33,6 +33,10 @@ afterEach(() => {
 
 it("팝업 위치 조회 실패 시 위치 변경을 잠그고 고정 진단 코드를 남긴다", async () => {
 	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+	// 훅이 세션 변화를 chrome.storage.onChanged로 구독한다. jsdom에는 chrome이 없다
+	vi.stubGlobal("chrome", {
+		storage: { onChanged: { addListener: vi.fn(), removeListener: vi.fn() } },
+	});
 	vi.mocked(ChromeSyncStorage.get).mockImplementation(async (key) => {
 		if (key === "highlightBubblePosition") {
 			throw new Error("storage unavailable");

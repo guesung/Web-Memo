@@ -8,7 +8,7 @@ import {
 
 const mocks = vi.hoisted(() => ({
 	report: vi.fn((_params: unknown) => true),
-	getCookie: vi.fn(),
+	getAllCookies: vi.fn(),
 	getUser: vi.fn(),
 }));
 vi.mock("./reportError", () => ({
@@ -40,9 +40,9 @@ let queryClient: QueryClient;
 
 beforeEach(() => {
 	mocks.report.mockClear();
-	mocks.getCookie.mockReset().mockResolvedValue(null);
+	mocks.getAllCookies.mockReset().mockResolvedValue([]);
 	mocks.getUser.mockReset();
-	vi.stubGlobal("chrome", { cookies: { get: mocks.getCookie } });
+	vi.stubGlobal("chrome", { cookies: { getAll: mocks.getAllCookies } });
 	queryClient = new QueryClient();
 });
 
@@ -116,15 +116,22 @@ describe("reportLoginSyncMismatch", () => {
 		expect(mocks.report).not.toHaveBeenCalled();
 	});
 
-	it("클라이언트는 준비됐는데 사용자가 없으면 쿠키 유무·사용자 오류와 함께 보고한다", async () => {
+	it("클라이언트는 준비됐는데 사용자가 없으면 웹 세션 유무·사용자 오류와 함께 보고한다", async () => {
 		queryClient.setQueryData(["supabaseClient"], {});
 		mocks.getUser.mockResolvedValue({
 			data: { user: null },
 			error: { message: "Auth session missing!" },
 		});
-		mocks.getCookie.mockImplementation(async ({ name }: { name: string }) =>
-			name === "access_token" ? { value: "secret-token" } : null,
-		);
+		const webSession = JSON.stringify({
+			access_token: "secret-token",
+			expires_at: Math.floor(Date.now() / 1000) + 3600,
+		});
+		mocks.getAllCookies.mockResolvedValue([
+			{
+				name: "sb-czwtqukymcqoberdoltq-auth-token",
+				value: `base64-${Buffer.from(webSession).toString("base64url")}`,
+			},
+		]);
 
 		await reportLoginSyncMismatch(queryClient);
 
@@ -135,8 +142,7 @@ describe("reportLoginSyncMismatch", () => {
 			operation: "sync_login",
 			level: "warning",
 			extra: {
-				hasAccessTokenCookie: true,
-				hasRefreshTokenCookie: false,
+				hasWebSession: true,
 				userErrorMessage: "Auth session missing!",
 			},
 		});

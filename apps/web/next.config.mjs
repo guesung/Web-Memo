@@ -1,7 +1,15 @@
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { withSentryConfig } from "@sentry/nextjs/config";
+
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+	// 컨테이너(infra/oracle) 배포용 산출물. Vercel 빌드는 자체 출력 형식을 쓰므로 영향이 없습니다.
+	// 모노레포라 packages/*까지 추적하도록 루트를 레포 최상위로 둡니다.
+	output: "standalone",
+	outputFileTracingRoot: repoRoot,
 	images: {
 		remotePatterns: [
 			{

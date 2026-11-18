@@ -135,3 +135,62 @@ describe("확장 Supabase 초기화 오류 계약", () => {
 		},
 	);
 });
+
+describe("isSessionRestoreFailure", () => {
+	const authApiError = (status: number) =>
+		Object.assign(new Error("auth api"), { name: "AuthApiError", status });
+
+	it("원인 없는 로그인 필요 오류(쿠키 없음)는 세션 복원 실패가 아니다", async () => {
+		const { getSupabaseClient, isSessionRestoreFailure } = await import(
+			"./Supabase"
+		);
+		const error = await getSupabaseClient().catch((caught: unknown) => caught);
+
+		expect(isSessionRestoreFailure(error)).toBe(false);
+	});
+
+	it.each([
+		["4xx AuthApiError", authApiError(400)],
+		[
+			"AuthSessionMissingError",
+			Object.assign(new Error("missing"), { name: "AuthSessionMissingError" }),
+		],
+	])(
+		"인증 거부(%s)로 복원하지 못한 것은 세션 복원 실패가 아니다",
+		async (_, cause) => {
+			mocks.getCookie.mockResolvedValue({ value: "token" });
+			mocks.setSession.mockResolvedValue({ error: cause });
+			const { getSupabaseClient, isSessionRestoreFailure } = await import(
+				"./Supabase"
+			);
+			const error = await getSupabaseClient().catch(
+				(caught: unknown) => caught,
+			);
+
+			expect(isSessionRestoreFailure(error)).toBe(false);
+		},
+	);
+
+	it.each([
+		["네트워크 오류", new TypeError("Failed to fetch")],
+		["5xx AuthApiError", authApiError(503)],
+		["429 AuthApiError", authApiError(429)],
+		["예상 밖 오류", new Error("unexpected")],
+	])("%s로 복원하지 못하면 세션 복원 실패다", async (_, cause) => {
+		mocks.getCookie.mockResolvedValue({ value: "token" });
+		mocks.setSession.mockResolvedValue({ error: cause });
+		const { getSupabaseClient, isSessionRestoreFailure } = await import(
+			"./Supabase"
+		);
+		const error = await getSupabaseClient().catch((caught: unknown) => caught);
+
+		expect(isSessionRestoreFailure(error)).toBe(true);
+	});
+
+	it("Error가 아닌 값은 세션 복원 실패로 보지 않는다", async () => {
+		const { isSessionRestoreFailure } = await import("./Supabase");
+
+		expect(isSessionRestoreFailure("로그인을 먼저 해주세요")).toBe(false);
+		expect(isSessionRestoreFailure(undefined)).toBe(false);
+	});
+});

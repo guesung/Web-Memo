@@ -85,7 +85,7 @@ export function createBridge<
 						result = Runtime.sendMessage(messageType, payload);
 						break;
 					case "toExtension":
-						result = Runtime.sendMessageToExtension(messageType);
+						result = Runtime.sendMessageToExtension(messageType, payload);
 						break;
 					case "toTab":
 						result = Tab.sendMessage(messageType, payload);

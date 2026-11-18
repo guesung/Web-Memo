@@ -405,7 +405,7 @@ node .github/scripts/ga/measure-first-memo.mjs \
 | 스크립트 | 답하는 질문 | 실행 |
 | --- | --- | --- |
 | `report-daily-ga.mjs` | 로깅이 살아 있는가 | 매일 크론 |
-| `report-weekly-ga.mjs` | 직전 토~금 한 주에 무엇을 얼마나 썼고 어디서 새는가 | 매주 토요일 08:00 크론 |
+| `report-weekly-ga.mjs` | 직전 토~금 한 주에 무엇을 얼마나 썼고 어디서 새는가 | 매주 토요일 07:23 크론 |
 | `measure-feature-usage.mjs` | 이 기간에 이 기능을 몇 명이 몇 번 썼는가 | 손으로, 터미널 |
 | `measure-notice-return.mjs` | 공지 이후 후속 행동 또는 향후 공지별 D1–D7 관찰값은? | 손으로, 터미널 |
 | `measure-first-memo.mjs` | 계측 이후 신규 설치 식별자의 7일 내 유효 본문 저장 관측률과 저장 결과는? | 손으로, 터미널 |

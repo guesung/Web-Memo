@@ -141,8 +141,8 @@ export const shiftDate = (dateString, days) =>
 /**
  * 리포트가 다룰 날짜 = 서울 기준 "어제".
  *
- * 실행 시각에서 역산하지 않습니다. GitHub 크론은 수십 분 지연이 흔해,
- * 07:00 잡이 다음 날 00:30 에 돌면 하루를 통째로 건너뜁니다.
+ * 실행 시각에서 역산하지 않습니다. GitHub 크론은 수 시간씩 밀리기도 해,
+ * 06:23 잡이 다음 날 00:30 에 돌면 하루를 통째로 건너뜁니다.
  */
 export const resolveTargetDate = (now = new Date()) =>
 	shiftDate(formatSeoulDate(now), -1);

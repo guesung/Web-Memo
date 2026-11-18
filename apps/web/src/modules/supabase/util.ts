@@ -1,7 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { PATHS, SUPABASE } from "@web-memo/shared/constants";
-import type { Database, MemoSupabaseClient } from "@web-memo/shared/types";
-import { AuthService } from "@web-memo/shared/utils/services";
+import type { Database } from "@web-memo/shared/types";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { LOGIN_NEXT_PARAM } from "./nextPath";
@@ -60,9 +59,13 @@ export async function updateAuthorization(request: NextRequest) {
 		},
 	);
 
-	const isUserLogin = await new AuthService(
-		supabaseClient as unknown as MemoSupabaseClient,
-	).checkUserLogin();
+	// 서버 검증(getUser)은 요청마다 Supabase Auth를 왕복해 TTFB를 약 200ms 늘린다. 여기서는
+	// 로그인 화면으로 보낼지만 정하므로 쿠키의 세션으로 충분하고, 토큰이 만료됐을 때만
+	// refresh 왕복이 생긴다. 데이터는 RLS가, admin은 layout의 getUser가 따로 검증한다.
+	const {
+		data: { session },
+	} = await supabaseClient.auth.getSession();
+	const isUserLogin = !!session;
 	// API는 이 리다이렉트의 대상이 아니다. 위 `includes` 비교가 부분 문자열 매칭이라
 	// `/api/admin/...` 같은 경로까지 걸리는데, 그러면 JSON을 기대한 fetch가 로그인
 	// 페이지의 HTML을 받아 "Unexpected token '<'" 라는 엉뚱한 파싱 에러로 실패한다.

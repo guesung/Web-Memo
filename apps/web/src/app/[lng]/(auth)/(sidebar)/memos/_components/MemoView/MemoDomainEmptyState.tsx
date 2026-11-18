@@ -1,11 +1,11 @@
 "use client";
 
 import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { Button } from "@web-memo/ui";
 import { motion } from "framer-motion";
 import { SearchX } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 /**
  * 도메인 필터에 걸린 메모가 없을 때 보여주는 빈 상태.

@@ -2,11 +2,11 @@
 
 import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import { PATHS } from "@web-memo/shared/constants";
 import { Button } from "@web-memo/ui";
 import { motion } from "framer-motion";
 import { CalendarClock } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 /** 읽을 계획이 하나도 없을 때 보여주는 빈 상태. 검색 결과 없음은 MemoSearchEmptyState가 맡는다. */
 export default function PlanEmptyState({ lng }: LanguageType) {

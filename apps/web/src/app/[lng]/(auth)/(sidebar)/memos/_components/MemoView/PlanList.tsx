@@ -1,6 +1,7 @@
 "use client";
 
 import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import {
 	reportMemoLoadStage,
 	type TMemoLoadOutcome,
@@ -19,7 +20,6 @@ import {
 } from "@web-memo/ui";
 import { ChevronRight } from "lucide-react";
 import { useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import { useMemoSettings } from "./_hooks/useMemoSettings";
 import MemoGroup from "./MemoGroup";
 import { groupPlannedMemos, type IFPlanDateGroup } from "./planSections";

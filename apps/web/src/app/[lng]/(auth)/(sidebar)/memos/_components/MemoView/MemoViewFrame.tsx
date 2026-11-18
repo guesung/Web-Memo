@@ -2,6 +2,7 @@
 
 import { useGuide } from "@src/modules/guide";
 import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import { useDidMount, useHighlightMemoLinks } from "@web-memo/shared/hooks";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import type {
@@ -12,7 +13,6 @@ import type {
 import { Loading, Skeleton } from "@web-memo/ui";
 import dynamic from "next/dynamic";
 import { type ReactNode, Suspense } from "react";
-import { useTranslation } from "react-i18next";
 import MemoDialog from "../MemoDialog";
 import { useMemoDialog } from "./_hooks";
 import { useMemoHighlights } from "./_hooks/useMemoHighlights";

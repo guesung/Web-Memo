@@ -53,7 +53,7 @@ describe("GET /auth/callback", () => {
 		expect(setCookie).not.toHaveBeenCalled();
 	});
 
-	it("세션이 있으면 토큰을 저장하고 로그인 방법을 담아 메모로 이동한다", async () => {
+	it("세션이 있으면 토큰 쿠키를 따로 심지 않고 로그인 방법을 담아 메모로 이동한다", async () => {
 		exchangeCodeForSession.mockResolvedValue({
 			data: {
 				session: {
@@ -74,7 +74,8 @@ describe("GET /auth/callback", () => {
 		expect(response.headers.get("location")).toBe(
 			"http://localhost/ko/memos?login=google",
 		);
-		expect(setCookie).toHaveBeenCalledTimes(2);
+		// 확장은 웹 세션으로 전용 세션을 따로 발급받으므로 토큰 쿠키를 따로 심지 않는다.
+		expect(setCookie).not.toHaveBeenCalled();
 	});
 
 	describe("확장 로그인 창에서 시작한 로그인", () => {
@@ -85,7 +86,7 @@ describe("GET /auth/callback", () => {
 			cookieValues.set("login_return", "extension");
 		});
 
-		it("세션을 저장한 뒤 메모 화면 대신 확장 주소로 보내고, 돌아갈 곳을 지운다", async () => {
+		it("세션을 교환한 뒤 메모 화면 대신 확장 주소로 보내고, 돌아갈 곳을 지운다", async () => {
 			exchangeCodeForSession.mockResolvedValue({
 				data: {
 					session: {
@@ -106,7 +107,8 @@ describe("GET /auth/callback", () => {
 			expect(response.headers.get("location")).toBe(
 				`${EXTENSION_URL}?login=kakao&signup=true`,
 			);
-			expect(setCookie).toHaveBeenCalledTimes(2);
+			// 확장은 웹 세션으로 전용 세션을 따로 발급받으므로 토큰 쿠키를 따로 심지 않는다.
+			expect(setCookie).not.toHaveBeenCalled();
 			expect(deleteCookie).toHaveBeenCalledWith("login_return");
 		});
 

@@ -5,6 +5,7 @@ import {
 	QueryClient,
 	QueryClientProvider,
 } from "@tanstack/react-query";
+import { QUERY_KEY } from "@web-memo/shared/constants";
 import {
 	getResultError,
 	isAbortError,
@@ -15,7 +16,7 @@ import { I18n } from "@web-memo/shared/utils/extension";
 import { toast } from "@web-memo/ui";
 import type { PropsWithChildren } from "react";
 import { useState } from "react";
-import { reportSidePanelError } from "../utils";
+import { reportSessionRestoreFailure, reportSidePanelError } from "../utils";
 
 export default function QueryProvider({ children }: PropsWithChildren) {
 	const [queryClient] = useState(
@@ -33,6 +34,14 @@ export default function QueryProvider({ children }: PropsWithChildren) {
 				// 쿼리 키별 이슈가 쌓이며 breadcrumb에 방문 URL이 실려 보고하지 않는다.
 				queryCache: new QueryCache({
 					onError: (error, query) => {
+						// 세션 복원 실패는 로그아웃과 같은 문구로 던져져 아래 필터에 걸리므로 먼저 따로 본다.
+						if (
+							query.queryKey[0] === QUERY_KEY.supabaseClient()[0] &&
+							reportSessionRestoreFailure(error)
+						) {
+							return;
+						}
+
 						if (
 							isAbortError(error) ||
 							isLoggedOutError(error) ||

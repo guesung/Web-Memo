@@ -6,7 +6,7 @@ import {
 import { normalizeUrl } from "@web-memo/shared/utils/url";
 import * as Clipboard from "expo-clipboard";
 import type { RefObject } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type WebView from "react-native-webview";
 import type { WebViewCustomMenuItems } from "react-native-webview/lib/WebViewTypes";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -16,6 +16,10 @@ import {
 	useHighlightUpdateMutation,
 } from "@/lib/hooks/useHighlightMutation";
 import { useHighlightsByUrl } from "@/lib/hooks/useHighlights";
+import {
+	getHighlightEditHintSeen,
+	saveHighlightEditHintSeen,
+} from "@/lib/storage/highlightEditHint";
 
 /** 하이라이트 수정 입력. 색상 변경 시 WebView 밑줄 색도 함께 갱신한다. */
 interface UpdateHighlightInput {
@@ -33,6 +37,7 @@ interface DeleteHighlightInput {
 
 const HIGHLIGHT_MENU_KEY = "webmemo-highlight";
 const COPY_MENU_KEY = "webmemo-copy";
+const EDIT_HINT_DURATION_MS = 5000;
 
 /** WebView가 postMessage로 올려보내는 하이라이트 메시지 (JSON.parse 결과이므로 느슨한 형태) */
 export type WebViewHighlightMessage = { type: string; [key: string]: unknown };
@@ -66,9 +71,14 @@ export function useWebViewHighlights({
 	const [pageEpoch, setPageEpoch] = useState(0);
 
 	/** 앱에 토스트 라이브러리가 없어 기존 wishToast와 같은 방식으로 3초 후 스스로 사라지게 한다 */
-	const showToast = useCallback((message: string) => {
+	const toastTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+	const showToast = useCallback((message: string, durationMs = 3000) => {
+		clearTimeout(toastTimerRef.current);
 		setHighlightToast(message);
-		setTimeout(() => setHighlightToast(null), 3000);
+		toastTimerRef.current = setTimeout(
+			() => setHighlightToast(null),
+			durationMs,
+		);
 	}, []);
 
 	const normalizedUrl = /^https?:\/\//i.test(pageUrl)
@@ -123,6 +133,18 @@ export function useWebViewHighlights({
 		}
 	}
 
+	/** 첫 저장 직후 한 번만 편집·삭제 방법을 알린다. 표시와 동시에 봤다고 기록한다 */
+	const showEditHintOnce = useCallback(async () => {
+		if (await getHighlightEditHintSeen()) {
+			return;
+		}
+		showToast(
+			"칠한 문장을 누르면 고치거나 지울 수 있어요",
+			EDIT_HINT_DURATION_MS,
+		);
+		saveHighlightEditHintSeen();
+	}, [showToast]);
+
 	const handleHighlightMessage = useCallback(
 		(message: WebViewHighlightMessage) => {
 			/**
@@ -151,6 +173,7 @@ export function useWebViewHighlights({
 							webViewRef.current?.injectJavaScript(
 								`window.__webmemoAdd(${JSON.stringify(item)}); true;`,
 							);
+							showEditHintOnce();
 						},
 						onError: () => showToast("하이라이트를 저장하지 못했습니다"),
 					},
@@ -171,7 +194,7 @@ export function useWebViewHighlights({
 				);
 			}
 		},
-		[createHighlight, showToast, webViewRef],
+		[createHighlight, showToast, showEditHintOnce, webViewRef],
 	);
 
 	/**
@@ -255,14 +278,17 @@ export function useWebViewHighlights({
 	/** 하이라이트를 삭제하고, 서버 반영이 확인된 뒤 WebView의 밑줄도 지운다. */
 	const deleteHighlight = useCallback(
 		(input: DeleteHighlightInput) => {
-			mutateHighlightDelete(input, {
-				onSuccess: () => {
-					webViewRef.current?.injectJavaScript(
-						`window.__webmemoRemove(${input.id}); true;`,
-					);
+			mutateHighlightDelete(
+				{ ...input, source: "app_browser" },
+				{
+					onSuccess: () => {
+						webViewRef.current?.injectJavaScript(
+							`window.__webmemoRemove(${input.id}); true;`,
+						);
+					},
+					onError: () => showToast("하이라이트를 삭제하지 못했습니다"),
 				},
-				onError: () => showToast("하이라이트를 삭제하지 못했습니다"),
-			});
+			);
 		},
 		[mutateHighlightDelete, showToast, webViewRef],
 	);

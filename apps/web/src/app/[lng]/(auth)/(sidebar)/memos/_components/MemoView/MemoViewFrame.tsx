@@ -59,7 +59,8 @@ const MemoViewFrame = ({
 	const { moveNextGuideStep } = useGuide({ lng });
 	useDidMount(async () => {
 		try {
-			await bridge.request.SYNC_LOGIN_STATUS();
+			// 로그인한 사용자만 이 화면을 보므로 패널도 로그인돼 있어야 한다고 알린다.
+			await bridge.request.SYNC_LOGIN_STATUS({ isLoggedIn: true });
 		} catch {
 			// 확장이 없거나 사이드 패널이 닫혀 수신자가 없으면 알릴 대상이 없으므로 무시한다.
 		}

@@ -8,7 +8,6 @@ import * as Clipboard from "expo-clipboard";
 import { Check, Copy, Trash2 } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-	Alert,
 	Dimensions,
 	KeyboardAvoidingView,
 	Modal,
@@ -27,6 +26,7 @@ import Animated, {
 	withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { confirmHighlightDelete } from "@/lib/confirmHighlightDelete";
 import { useKeyboardHeight } from "@/lib/hooks/useKeyboardHeight";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -231,17 +231,10 @@ export function HighlightEditSheet({
 
 		const { id, url } = highlight;
 
-		Alert.alert("하이라이트 삭제", "이 하이라이트를 삭제하시겠습니까?", [
-			{ text: "취소", style: "cancel" },
-			{
-				text: "삭제",
-				style: "destructive",
-				onPress: () => {
-					onDelete({ id, url });
-					onClose();
-				},
-			},
-		]);
+		confirmHighlightDelete(() => {
+			onDelete({ id, url });
+			onClose();
+		});
 	}, [highlight, onDelete, onClose]);
 
 	return (

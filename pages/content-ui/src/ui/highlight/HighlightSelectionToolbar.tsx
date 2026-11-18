@@ -13,6 +13,7 @@ import {
 	X,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { HighlightEditHint } from "./HighlightEditHint";
 import { HighlightEditToolbar } from "./HighlightEditToolbar";
 import { HighlightIntroCoachmark } from "./HighlightIntroCoachmark";
 import {
@@ -22,6 +23,9 @@ import {
 
 /** 버블 위쪽 기준으로 아래에 말풍선을 놓는 데 필요한 세로 공간. */
 const INTRO_COACHMARK_REQUIRED_SPACE_PX = 200;
+
+/** 저장 직전 선택과 첫 저장 안내 사이 간격. */
+const EDIT_HINT_GAP_PX = 8;
 
 /** 원문 선택 옆에 색상·메모 버블과 설정 메뉴, 첫 선택 말풍선을 표시한다. */
 export const HighlightSelectionToolbar = (
@@ -38,6 +42,7 @@ export const HighlightSelectionToolbar = (
 		isIntroVisible,
 		disabledNoticePosition,
 		panelOpenErrorPosition,
+		editHintPosition,
 		handlePanelOpenRetry,
 		handleHighlightColorClick,
 		handleHighlightNoteClick,
@@ -126,6 +131,27 @@ export const HighlightSelectionToolbar = (
 					)}
 				</span>
 			</output>
+		);
+	}
+	if (editHintPosition) {
+		const hasRoomBelow =
+			window.innerHeight - editHintPosition.y >=
+			INTRO_COACHMARK_REQUIRED_SPACE_PX;
+
+		return (
+			<HighlightEditHint
+				x={editHintPosition.x}
+				placement={
+					hasRoomBelow
+						? { top: editHintPosition.y + EDIT_HINT_GAP_PX }
+						: {
+								bottom:
+									window.innerHeight -
+									editHintPosition.aboveY +
+									EDIT_HINT_GAP_PX,
+							}
+				}
+			/>
 		);
 	}
 	if (!selectionState) {

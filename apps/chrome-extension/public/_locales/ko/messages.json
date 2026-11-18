@@ -503,6 +503,9 @@
 	"highlight_intro_message": {
 		"message": "웹 메모의 하이라이트예요. 색상을 누르면 문장을 저장해요. 코멘트와 실제 메모는 별도로 추가할 수 있어요. X는 이번 선택만 닫고, 설정에서 위치를 바꾸거나 팝업을 끌 수 있어요."
 	},
+	"highlight_edit_hint_message": {
+		"message": "칠한 문장을 누르면 고치거나 지울 수 있어요"
+	},
 	"highlight_intro_confirm": {
 		"message": "확인"
 	},

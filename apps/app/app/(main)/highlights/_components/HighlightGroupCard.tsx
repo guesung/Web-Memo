@@ -8,6 +8,9 @@ interface HighlightGroupCardProps {
 	/** 이 URL에 저장된 하이라이트 총 개수. 카드에 보이는 문장 수와 다를 수 있다 */
 	count: number;
 	onHighlightPress: (highlight: HighlightRow) => void;
+	onHighlightDelete: (highlight: HighlightRow) => void;
+	/** 삭제 요청이 진행 중인 하이라이트 id */
+	deletingId?: number;
 }
 
 /** 같은 URL에서 그은 하이라이트를 한 카드로 모아 보여준다 */
@@ -15,6 +18,8 @@ export function HighlightGroupCard({
 	group,
 	count,
 	onHighlightPress,
+	onHighlightDelete,
+	deletingId,
 }: HighlightGroupCardProps) {
 	return (
 		<View className="mx-5 mb-3 rounded-xl border border-border dark:border-neutral-800 bg-card dark:bg-neutral-900 p-4">
@@ -43,6 +48,8 @@ export function HighlightGroupCard({
 					key={highlight.id}
 					highlight={highlight}
 					onPress={onHighlightPress}
+					onDelete={onHighlightDelete}
+					isDeleting={deletingId === highlight.id}
 				/>
 			))}
 		</View>

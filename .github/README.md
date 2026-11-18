@@ -37,8 +37,8 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | `audit-env-registry.yml` | pull_request, schedule, workflow_dispatch | 매일 07:30 KST, PR 이벤트 또는 수동 실행마다 | `env/audit-env-registry.mjs` |
 | `audit-ga-cid-adoption.yml` | schedule, workflow_dispatch | 매주 월요일 09:13 KST 또는 수동 실행마다 | 없음 (Playwright, `e2e/probes/`) |
 | `audit-refactor.yml` | schedule, workflow_dispatch | 매주 토요일 10:17 KST 또는 수동 실행마다 | `refactor/report-refactor-audit.mjs` |
-| `report-ga-daily.yml` | schedule, workflow_dispatch | 매일 07:00 KST 또는 수동 실행마다. `#ga-리포트`에 봇으로 게시하고 AI 인사이트를 스레드 댓글로 답니다 | `ga/report-daily-ga.mjs` · `ga/gsc-daily.mjs` (Search Console 상위 검색어) · `ga/query-ga-insight.mjs` (Claude 단계의 추가 조회) · `ga/send-ga-insight.mjs` |
-| `report-ga-weekly.yml` | schedule, workflow_dispatch | 매주 토요일 08:00 KST 또는 수동 실행마다. `#ga-주간-리포트`에 봇으로 게시하고 AI 인사이트를 스레드 댓글로 답니다(백필 제외) | `ga/report-weekly-ga.mjs` · `ga/query-ga-insight.mjs` (Claude 단계의 추가 조회) · `ga/send-ga-insight.mjs` |
+| `report-ga-daily.yml` | schedule, workflow_dispatch | 매일 06:23 KST 또는 수동 실행마다. `#ga-리포트`에 봇으로 게시하고 AI 인사이트를 스레드 댓글로 답니다 | `ga/report-daily-ga.mjs` · `ga/gsc-daily.mjs` (Search Console 상위 검색어) · `ga/query-ga-insight.mjs` (Claude 단계의 추가 조회) · `ga/send-ga-insight.mjs` |
+| `report-ga-weekly.yml` | schedule, workflow_dispatch | 매주 토요일 07:23 KST 또는 수동 실행마다. `#ga-주간-리포트`에 봇으로 게시하고 AI 인사이트를 스레드 댓글로 답니다(백필 제외) | `ga/report-weekly-ga.mjs` · `ga/query-ga-insight.mjs` (Claude 단계의 추가 조회) · `ga/send-ga-insight.mjs` |
 | `report-seo.yml` | schedule, workflow_dispatch | 매일 09:17 KST 또는 수동 실행마다 | `pnpm seo:check`·`seo:gsc`·`seo:sheets` · `seo/find-previous-seo-report.mjs` · `seo/build-seo-ai-context.mjs` · `seo/send-seo-ai-report.mjs` · `seo/seo-fix.mjs` · `seo/notify-seo-slack.mjs` · `shared/previous-pull-requests.mjs` |
 | `report-gsc-demand.yml` | workflow_dispatch | 수동 실행할 때마다 | `pnpm seo:gsc-demand` → `seo/export-gsc-demand.mjs` (조합 페이지 축 판단용 GSC 수요·사이트맵 리포트, 아티팩트만 남김) |
 | `chore-cleanup-unused.yml` | schedule, workflow_dispatch | 매주 토요일 10:00 KST 또는 수동 실행마다 | `cleanup/cleanup-unused-files.mjs` |

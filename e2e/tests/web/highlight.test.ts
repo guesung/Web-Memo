@@ -1,4 +1,5 @@
-import { PATHS } from "@web-memo/shared/constants";
+import type { Page } from "@playwright/test";
+import { PATHS, SUPABASE } from "@web-memo/shared/constants";
 import { expect, test } from "../fixtures/web";
 import { gotoSafely, LANGUAGE } from "../lib";
 import {
@@ -135,6 +136,110 @@ test.describe("하이라이트 페이지 (Mocked)", () => {
 		await page.reload();
 
 		await expect(page.getByRole("button", { name: noteText })).toBeVisible();
+	});
+
+	test.describe("하이라이트 삭제", () => {
+		const SHARED_URL = "https://example.com/delete-target";
+
+		const gotoHighlights = async (page: Page) => {
+			await gotoSafely({
+				page,
+				url: `${LANGUAGE}${PATHS.highlights}`,
+				regexp: new RegExp(PATHS.highlights),
+			});
+		};
+
+		const openDeleteDialog = async (page: Page, exactText: string) => {
+			const item = page.getByRole("listitem").filter({ hasText: exactText });
+			await item
+				.getByRole("button", { name: "More highlight actions" })
+				.click();
+			await page.getByRole("menuitem", { name: "Delete highlight" }).click();
+			await expect(
+				page.getByRole("alertdialog", { name: "Delete this highlight?" }),
+			).toBeVisible();
+		};
+
+		test("⋯ 메뉴에서 삭제를 확인하면 항목이 사라지고 개수가 줄며 토스트를 보여준다.", async ({
+			page,
+		}) => {
+			store.addHighlight(
+				createMockHighlight({ exact_text: "Keep me", url: SHARED_URL }),
+			);
+			store.addHighlight(
+				createMockHighlight({ exact_text: "Delete me", url: SHARED_URL }),
+			);
+			await gotoHighlights(page);
+			await expect(page.getByText("Delete me")).toBeVisible();
+			await expect(page.getByText("2", { exact: true })).toBeVisible();
+
+			await openDeleteDialog(page, "Delete me");
+			await page.getByRole("button", { name: "Delete", exact: true }).click();
+
+			await expect(
+				page.getByText("Highlight deleted", { exact: true }),
+			).toBeVisible();
+			await expect(page.getByText("Delete me")).toHaveCount(0);
+			await expect(page.getByText("Keep me")).toBeVisible();
+			await expect(page.getByText("1", { exact: true })).toBeVisible();
+		});
+
+		test("그룹의 마지막 하이라이트를 지우면 그룹이 사라지고 빈 상태를 보여준다.", async ({
+			page,
+		}) => {
+			store.addHighlight(
+				createMockHighlight({ exact_text: "Only one", url: SHARED_URL }),
+			);
+			await gotoHighlights(page);
+
+			await openDeleteDialog(page, "Only one");
+			await page.getByRole("button", { name: "Delete", exact: true }).click();
+
+			await expect(page.getByText("No highlights yet")).toBeVisible();
+		});
+
+		test("취소하면 항목이 그대로 남는다.", async ({ page }) => {
+			store.addHighlight(createMockHighlight({ exact_text: "Stay here" }));
+			await gotoHighlights(page);
+
+			await openDeleteDialog(page, "Stay here");
+			await page.getByRole("button", { name: "Cancel" }).click();
+
+			await expect(page.getByRole("alertdialog")).toHaveCount(0);
+			await expect(page.getByText("Stay here")).toBeVisible();
+			expect(store.getAllHighlights()).toHaveLength(1);
+		});
+
+		test("삭제된 행이 없다는 응답이 오면 에러 토스트를 보여주고 항목을 유지한다.", async ({
+			page,
+		}) => {
+			store.addHighlight(createMockHighlight({ exact_text: "Not deleted" }));
+			await page.route(
+				`${SUPABASE.url}/rest/v1/highlight?**`,
+				async (route) => {
+					if (route.request().method() !== "DELETE") {
+						await route.fallback();
+						return;
+					}
+					await route.fulfill({
+						status: 200,
+						contentType: "application/json",
+						body: "[]",
+					});
+				},
+			);
+			await gotoHighlights(page);
+
+			await openDeleteDialog(page, "Not deleted");
+			await page.getByRole("button", { name: "Delete", exact: true }).click();
+
+			await expect(
+				page.getByText("Couldn't delete the highlight. Please try again.", {
+					exact: true,
+				}),
+			).toBeVisible();
+			await expect(page.getByText("Not deleted")).toBeVisible();
+		});
 	});
 });
 

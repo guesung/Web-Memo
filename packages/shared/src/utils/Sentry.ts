@@ -14,7 +14,7 @@ const SENTRY_DSN = isExtension() ? SENTRY.dsnExtension : SENTRY.dsnWeb;
 /**
  * 로그인된 확장 사용자의 id를 Sentry 스코프에 붙인다.
  *
- * @description 웹(`_utils/Sentry.ts`)은 로그인 시점에 `setUser`를 부르지만,
+ * @description 웹(`InitSentryUserInfo`)은 인증 상태가 바뀔 때 `setUser`를 부르지만,
  * 확장은 그 훅이 없어 이슈에 누가 겪었는지가 안 남았다. 로그인 전이거나 세션
  * 조회가 실패해도 초기화 자체를 막으면 안 되므로 실패는 조용히 넘어간다.
  */

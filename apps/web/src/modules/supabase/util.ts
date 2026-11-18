@@ -1,7 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { PATHS, SUPABASE } from "@web-memo/shared/constants";
-import type { Database, MemoSupabaseClient } from "@web-memo/shared/types";
-import { AuthService } from "@web-memo/shared/utils/services";
+import type { Database } from "@web-memo/shared/types";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { LOGIN_NEXT_PARAM } from "./nextPath";
@@ -21,11 +20,14 @@ const NEED_AUTH_PAGES = [
 	PATHS.admin,
 ];
 
-export async function updateAuthorization(request: NextRequest) {
-	const nextResponse = NextResponse.next({
+const createNextResponse = (request: NextRequest) =>
+	NextResponse.next({
 		request,
 		headers: request.headers,
 	});
+
+export async function updateAuthorization(request: NextRequest) {
+	let nextResponse = createNextResponse(request);
 
 	const supabaseClient = createServerClient<Database, "memo">(
 		SUPABASE.url,
@@ -45,6 +47,10 @@ export async function updateAuthorization(request: NextRequest) {
 					cookiesToSet.forEach(({ name, value }) =>
 						request.cookies.set(name, value),
 					);
+					// 갱신된 쿠키를 페이지 요청까지 넘기려면 응답을 다시 만들어야 한다.
+					// NextResponse.next()는 만들 때의 요청 헤더만 실어 보내서, 먼저 만든 응답을 쓰면
+					// Server Component가 만료된 토큰을 받고 다시 갱신하려다 쿠키 쓰기 에러를 낸다.
+					nextResponse = createNextResponse(request);
 					cookiesToSet.forEach(({ name, value, options }) =>
 						nextResponse.cookies.set(name, value, options),
 					);
@@ -53,9 +59,13 @@ export async function updateAuthorization(request: NextRequest) {
 		},
 	);
 
-	const isUserLogin = await new AuthService(
-		supabaseClient as unknown as MemoSupabaseClient,
-	).checkUserLogin();
+	// 서버 검증(getUser)은 요청마다 Supabase Auth를 왕복해 TTFB를 약 200ms 늘린다. 여기서는
+	// 로그인 화면으로 보낼지만 정하므로 쿠키의 세션으로 충분하고, 토큰이 만료됐을 때만
+	// refresh 왕복이 생긴다. 데이터는 RLS가, admin은 layout의 getUser가 따로 검증한다.
+	const {
+		data: { session },
+	} = await supabaseClient.auth.getSession();
+	const isUserLogin = !!session;
 	// API는 이 리다이렉트의 대상이 아니다. 위 `includes` 비교가 부분 문자열 매칭이라
 	// `/api/admin/...` 같은 경로까지 걸리는데, 그러면 JSON을 기대한 fetch가 로그인
 	// 페이지의 HTML을 받아 "Unexpected token '<'" 라는 엉뚱한 파싱 에러로 실패한다.

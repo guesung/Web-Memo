@@ -29,9 +29,13 @@ export const getSupabaseClient = async () => {
 					options?: Record<string, unknown>;
 				}>,
 			) {
-				cookiesToSet.forEach(({ name, value, options }) =>
-					cookieStore.set(name, value, options),
-				);
+				// Server Component에서는 쿠키를 쓸 수 없어 set이 던진다. 세션 갱신은 미들웨어가
+				// 맡으므로 여기서는 건너뛴다. Server Action·Route Handler에서는 그대로 쓴다.
+				try {
+					cookiesToSet.forEach(({ name, value, options }) =>
+						cookieStore.set(name, value, options),
+					);
+				} catch {}
 			},
 		},
 		db: { schema: SUPABASE.table.memo },

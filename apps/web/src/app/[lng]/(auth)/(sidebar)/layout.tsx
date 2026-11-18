@@ -15,7 +15,6 @@ import {
 	TrackViewChange,
 } from "./_components";
 import CategoryHydrationBoundary from "./_components/CategoryHydrationBoundary";
-import { initSentryUserInfo } from "./_utils";
 
 interface LayoutProps extends LanguageParams, PropsWithChildren {}
 
@@ -31,8 +30,6 @@ interface LayoutProps extends LanguageParams, PropsWithChildren {}
 export default async function Layout({ children, params }: LayoutProps) {
 	const { lng } = await params;
 	const supabaseClient = await getSupabaseClient();
-
-	initSentryUserInfo({ lng });
 
 	return (
 		<CategoryHydrationBoundary supabaseClient={supabaseClient}>

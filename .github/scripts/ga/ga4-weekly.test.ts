@@ -397,8 +397,8 @@ describe("fetchWeeklyActiveUsers", () => {
 
 describe("resolveTargetWeek", () => {
 	it("토요일 아침에는 직전 토~금 7일을 가리킨다", () => {
-		// UTC 2026-11-20(금) 23:00 = 서울 2026-11-21(토) 08:00 — 정기 크론 시각
-		expect(resolveTargetWeek(new Date("2026-11-20T23:00:00Z"))).toEqual({
+		// UTC 2026-11-20(금) 22:23 = 서울 2026-11-21(토) 07:23 — 정기 크론 시각
+		expect(resolveTargetWeek(new Date("2026-11-20T22:23:00Z"))).toEqual({
 			start: "2026-11-14",
 			end: "2026-11-20",
 			previousStart: "2026-11-07",
@@ -506,8 +506,8 @@ describe("listWeeks", () => {
 	});
 
 	it("서울 기준으로 직전 주를 판단한다 — UTC 로는 금요일이어도 서울이 토요일이면 한 주가 더 끝났다", () => {
-		// UTC 2026-09-25(금) 23:00 = 서울 2026-09-26(토) 08:00
-		const saturdayMorning = new Date("2026-09-25T23:00:00Z");
+		// UTC 2026-09-25(금) 22:23 = 서울 2026-09-26(토) 07:23
+		const saturdayMorning = new Date("2026-09-25T22:23:00Z");
 
 		expect(
 			listWeeks({ from: "2026-09-19", to: "2026-09-19", now: saturdayMorning }),

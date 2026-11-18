@@ -47,18 +47,25 @@ export default async function MemoPage({
 					<div className="mb-6">
 						<MemoSearchForm lng={lng} />
 					</div>
-					<Suspense fallback={<MemoViewSkeleton />}>
-						{searchParams ? (
-							<MemoListHydrationBoundary
-								filter={filter}
-								searchParams={searchParams}
-							>
+					{/*
+					 * 비동기 경계는 Suspense 바깥에 둔다. 안에 두면 서버가 이 Suspense를 폴백 먼저·내용 나중으로
+					 * 나눠 스트리밍해, 브라우저가 목록 자리를 늦은(Idle) 레인에서 하이드레이션하고 목록 공개도 그만큼
+					 * 밀렸다. 이 경계가 기다리는 것은 searchParams와 cookies()뿐이라 바깥에 둬도 셸이 늦어지지 않는다.
+					 */}
+					{searchParams ? (
+						<MemoListHydrationBoundary
+							filter={filter}
+							searchParams={searchParams}
+						>
+							<Suspense fallback={<MemoViewSkeleton />}>
 								<ClientMemoView lng={lng} filter={filter} />
-							</MemoListHydrationBoundary>
-						) : (
+							</Suspense>
+						</MemoListHydrationBoundary>
+					) : (
+						<Suspense fallback={<MemoViewSkeleton />}>
 							<ClientMemoView lng={lng} filter={filter} />
-						)}
-					</Suspense>
+						</Suspense>
+					)}
 				</MemoSearchFormProvider>
 			</div>
 		</div>

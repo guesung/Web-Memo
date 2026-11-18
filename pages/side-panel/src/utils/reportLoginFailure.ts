@@ -1,9 +1,11 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { CONFIG } from "@web-memo/env";
-import { QUERY_KEY, SUPABASE } from "@web-memo/shared/constants";
+import { QUERY_KEY } from "@web-memo/shared/constants";
 import { userQueryOptions } from "@web-memo/shared/hooks";
 import type { MemoSupabaseClient } from "@web-memo/shared/types";
-import { isSessionRestoreFailure } from "@web-memo/shared/utils/extension";
+import {
+	getWebSessionAccessToken,
+	isSessionRestoreFailure,
+} from "@web-memo/shared/utils/extension";
 import { reportSidePanelError } from "./reportError";
 
 /** `Error`가 아니어도 `message`를 가진 값에서 메시지를 꺼낸다. 없으면 `undefined`. */
@@ -17,10 +19,10 @@ const getMessage = (value: unknown): string | undefined => {
 	return undefined;
 };
 
-/** 웹이 확장에 심은 로그인 쿠키가 있는지. 값은 토큰이라 유무만 본다. */
-const hasAuthCookie = async (name: string): Promise<boolean> => {
+/** 확장이 새 세션을 발급받을 수 있는 웹 세션(만료 전)이 있는지. 값은 토큰이라 유무만 본다. */
+const hasValidWebSession = async (): Promise<boolean> => {
 	try {
-		return !!(await chrome.cookies.get({ name, url: CONFIG.webUrl }));
+		return !!(await getWebSessionAccessToken());
 	} catch {
 		return false;
 	}
@@ -81,8 +83,8 @@ const getUserAfterSync = async (queryClient: QueryClient) => {
 /**
  * 웹이 로그인됐다고 알렸는데 패널이 여전히 비로그인이면 보고한다.
  *
- * @description 로그인 신호를 받아 쿼리를 다시 가져온 뒤에 호출한다. 웹 로그아웃이 확장용 쿠키를 지우지 않아
- * 쿠키 유무만으로는 로그인 여부를 알 수 없으므로, 쿠키 유무는 원인 추적용 정보로만 싣는다.
+ * @description 로그인 신호를 받아 쿼리를 다시 가져온 뒤에 호출한다. 웹 세션 유무는 확장 세션 발급이
+ * 어디서 막혔는지(웹 세션 없음·만료 vs 발급 실패) 가르는 원인 추적용 정보로만 싣는다.
  */
 export const reportLoginSyncMismatch = async (
 	queryClient: QueryClient,
@@ -93,10 +95,7 @@ export const reportLoginSyncMismatch = async (
 		return;
 	}
 
-	const [hasAccessTokenCookie, hasRefreshTokenCookie] = await Promise.all([
-		hasAuthCookie(SUPABASE.authCookie.accessToken),
-		hasAuthCookie(SUPABASE.authCookie.refreshToken),
-	]);
+	const hasWebSession = await hasValidWebSession();
 
 	reportSidePanelError({
 		error: new Error("로그인 신호를 받았지만 패널에 사용자 정보가 없습니다"),
@@ -105,8 +104,7 @@ export const reportLoginSyncMismatch = async (
 		stage: "refresh",
 		level: "warning",
 		extra: {
-			hasAccessTokenCookie,
-			hasRefreshTokenCookie,
+			hasWebSession,
 			supabaseClientErrorMessage: result.supabaseClientErrorMessage,
 			userErrorMessage: result.userErrorMessage,
 			isOnline: navigator.onLine,

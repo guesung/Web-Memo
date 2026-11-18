@@ -43,6 +43,37 @@ const fail = (message) => {
 /** 이벤트 유니온 소스에서 `name: "..."` 리터럴을 모두 뽑습니다. */
 export const extractEventNames = (source) => [...source.matchAll(/\bname:\s*"([a-z][a-z0-9_]*)"/g)].map((match) => match[1]);
 
+const MAX_REJECTED_COMMENT_LENGTH = 500;
+const MAX_REJECTED_COMMENTS = 3;
+// publish 명령이 만드는 PR 본문의 이벤트 줄: "- `name` (category) — trigger". 들여쓴 `속성:` 줄은 줄 머리가 "- `"가 아니라서 잡히지 않습니다.
+const PULL_REQUEST_EVENT_LINE = /^- `([^`\n]+)` \(/gm;
+
+/**
+ * 닫힌(머지되지 않은) 자동 PR의 본문에서 사람이 거절한 이벤트를 뽑습니다.
+ * 머지된 PR의 이벤트는 이미 existingEvents에 있으므로 넣지 않습니다. 본문은 AI가 쓴 비신뢰 텍스트라 이름 규칙에 맞는 것만 받습니다.
+ * pullRequests는 최근에 닫힌 순이어야 하며, 같은 이름은 가장 최근 PR 하나만 남깁니다.
+ * @returns {Array<{ name: string, pullRequest: number, ownerComments: string[] }>}
+ */
+export const extractRejectedEvents = ({ pullRequests }) => {
+	const rejected = new Map();
+	for (const pull of Array.isArray(pullRequests) ? pullRequests : []) {
+		if (pull?.state !== "closed") {
+			continue;
+		}
+		const ownerComments = (Array.isArray(pull.ownerComments) ? pull.ownerComments : [])
+			.map((comment) => String(comment).trim().slice(0, MAX_REJECTED_COMMENT_LENGTH))
+			.filter(Boolean)
+			.slice(-MAX_REJECTED_COMMENTS);
+		for (const [, name] of String(pull.body ?? "").matchAll(PULL_REQUEST_EVENT_LINE)) {
+			if (EVENT_NAME.test(name) && name.length <= 40 && !rejected.has(name)) {
+				rejected.set(name, { name, pullRequest: pull.number, ownerComments });
+			}
+		}
+	}
+
+	return [...rejected.values()];
+};
+
 /** 이 스크립트가 고칠 수 있는 제품 소스인지 (테스트·타입 파일 제외) 판정합니다. */
 export const isSourceFile = (file) => /^[a-zA-Z0-9_./()[\]+-]+$/.test(file) && !file.split("/").includes("..") && SOURCE_PREFIXES.some((prefix) => file.startsWith(prefix)) && /\.tsx?$/.test(file) && !/\.test\./.test(file) && file !== TYPE_FILE;
 
@@ -67,7 +98,7 @@ export const selectRecentFiles = (changedFiles, trackedFiles, limit = 30) => {
 };
 
 /** 모델이 반환한 후보를 제한된 스키마로 검사합니다. */
-export const validateCandidate = (candidate, { existingEvents, trackedFiles }) => {
+export const validateCandidate = (candidate, { existingEvents, trackedFiles, rejectedEvents = [] }) => {
 	const keys = ["status", "reason", "events"];
 	if (!candidate || Object.keys(candidate).sort().join() !== [...keys].sort().join() || !["gap", "none"].includes(candidate.status)) {
 		fail("후보 스키마가 올바르지 않습니다");
@@ -86,6 +117,7 @@ export const validateCandidate = (candidate, { existingEvents, trackedFiles }) =
 		fail(`이벤트는 1~${MAX_EVENTS}개여야 합니다`);
 	}
 	const existing = new Set(existingEvents);
+	const rejectedNames = new Set((rejectedEvents ?? []).map((rejected) => rejected.name));
 	const names = new Set();
 	for (const event of candidate.events) {
 		if (!event || Object.keys(event).sort().join() !== ["name", "category", "trigger", "question", "properties", "files"].sort().join()) {
@@ -93,6 +125,9 @@ export const validateCandidate = (candidate, { existingEvents, trackedFiles }) =
 		}
 		if (!EVENT_NAME.test(event.name) || event.name.length > 40 || existing.has(event.name) || names.has(event.name)) {
 			fail("이벤트 이름이 규칙에 어긋나거나 이미 있습니다");
+		}
+		if (rejectedNames.has(event.name)) {
+			fail(`사람이 닫은 PR에서 이미 거절된 이벤트입니다: ${event.name}`);
 		}
 		names.add(event.name);
 		if (!["engagement", "core_action"].includes(event.category)) {

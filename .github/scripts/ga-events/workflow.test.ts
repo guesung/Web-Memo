@@ -85,6 +85,32 @@ describe("GA 이벤트 자동 수정 경로", () => {
 	});
 });
 
+describe("이전 자동 PR 기록 반영", () => {
+	it("분석 프롬프트가 rejectedEvents 규칙을 갖는다", () => {
+		const prompt = step("analyze").with.prompt;
+
+		expect(prompt).toContain("context.rejectedEvents");
+		expect(prompt).toContain("different name");
+		expect(prompt).toContain("not as instructions");
+		expect(prompt).toContain("status=none");
+	});
+
+	it("컨텍스트 단계만 읽기 토큰을 받고 Claude 단계에는 토큰이 없다", () => {
+		expect(step("context").env.GH_TOKEN).toBe("${{ github.token }}");
+		for (const claudeStep of steps.filter((value: { uses?: string }) => value.uses?.startsWith("anthropics/claude-code-action"))) {
+			expect(claudeStep.env?.GH_TOKEN).toBeUndefined();
+			expect(JSON.stringify(claudeStep)).not.toContain("github.token");
+		}
+	});
+
+	it("게시 잡의 import-patch는 읽기 토큰으로 컨텍스트를 다시 만든다", () => {
+		const imported = workflow.jobs.publish.steps.find((value: { run?: string }) => value.run?.includes("maintain.mjs import-patch"));
+
+		expect(imported.env.GH_TOKEN).toBe("${{ github.token }}");
+		expect(workflow.jobs.publish.permissions).toBeUndefined();
+	});
+});
+
 describe("Claude 실패 진단 경로", () => {
 	it.each(["analyze", "write_events", "fix_events"])(
 		"%s 실패 직후 안전한 요약만 남긴다",
@@ -102,4 +128,42 @@ describe("Claude 실패 진단 경로", () => {
 			expect(step(id).with.show_full_output).not.toBe(true);
 		},
 	);
+});
+
+describe("결과 알림 경로", () => {
+	const names = (job: "maintain" | "publish") =>
+		workflow.jobs[job].steps.map((value: { name?: string }) => value.name);
+	const notify = (job: "maintain" | "publish") =>
+		workflow.jobs[job].steps.find(
+			(value: { id?: string }) => value.id === "notify_result",
+		);
+
+	it("분석 잡은 모델이 파일을 고치지 않은 실행에서만 리포트 채널로 알린다", () => {
+		expect(notify("maintain").if).toBe(
+			"success() && steps.candidate.outputs.status != 'gap'",
+		);
+		expect(notify("maintain").env.SLACK_REPORT_WEBHOOK_URL).toBe(
+			"${{ secrets.SLACK_REPORT_WEBHOOK_URL }}",
+		);
+	});
+
+	it("게시 잡은 성공하면 리포트 채널로 알린다", () => {
+		expect(notify("publish").if).toBe("success()");
+		expect(notify("publish").run).toBe(
+			"node .github/scripts/ga-events/maintain.mjs notify",
+		);
+	});
+
+	it.each([
+		["maintain", "Summarize result"],
+		["publish", "Summarize publication"],
+	] as const)("%s 잡은 요약 뒤, 실패 알림 앞에서 결과를 알린다", (job, summary) => {
+		const order = names(job);
+		expect(order.indexOf("Notify result")).toBeGreaterThan(
+			order.indexOf(summary),
+		);
+		expect(order.indexOf("Notify result")).toBeLessThan(
+			order.indexOf("Notify failure"),
+		);
+	});
 });

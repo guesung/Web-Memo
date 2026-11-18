@@ -15,7 +15,9 @@ const readSitemapUrls = async () => {
 	return [
 		...new Set(
 			source.pages
-				.filter((page) => page.kind === "page")
+				// `/ko`·`/en` 처럼 다른 주소로 넘기기만 하는 URL은 색인 대상이 아니라 리다이렉트 확인용입니다.
+				// 넣으면 색인될 수 없는 URL이 매일 미색인으로 집계됩니다. 리다이렉트가 깨지는 것은 공개 SEO 검사가 잡습니다.
+				.filter((page) => page.kind === "page" && !page.expectedDestination)
 				.map((page) => page.url),
 		),
 	];

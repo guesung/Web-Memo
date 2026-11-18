@@ -16,6 +16,7 @@ export const STORAGE_KEYS = {
 	highlightBubblePosition: "highlightBubblePosition",
 	highlightDisabledSites: "highlightDisabledSites",
 	highlightIntroSeen: "highlightIntroSeen",
+	highlightEditHintSeen: "highlightEditHintSeen",
 	dismissedNoticeIds: "dismissedNoticeIds",
 	pastMemoDismissedUrls: "pastMemoDismissedUrls",
 	reviewPrompt: "reviewPrompt",

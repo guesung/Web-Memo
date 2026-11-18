@@ -1,6 +1,6 @@
 name: Weekly GA Report
 
-# 지난주 한 주의 GA4 사용 현황을 집계해 Slack에 게시합니다.
+# 직전 토~금 한 주의 GA4 사용 현황을 집계해 Slack에 게시합니다.
 # report-ga-daily.yml 과 목적이 다릅니다 — 그쪽은 로깅 감시이고, 이쪽은
 # "사람들이 무엇을 쓰고 있고 다음에 무엇을 만들어야 하는가"에 답합니다.
 # 두 질문을 한 메시지에 섞지 않으려고 잡을 따로 두었습니다.
@@ -9,20 +9,28 @@ name: Weekly GA Report
 #
 # 같은 수치를 구글 시트(GA_SHEET_ID)에도 주 단위로 쌓습니다. 손으로 돌릴 때 from·to 를
 # 주면 그 범위의 지난 주들을 시트에만 채워 넣는 백필이 됩니다(Slack 에는 게시하지 않음).
+#
+# 리포트는 봇으로 #ga-주간-리포트 에 올리고(일일은 #ga-리포트), 같은 수치와 시트의 최근 8주
+# 추이를 Claude 가 해석한 인사이트를 그 메시지의 스레드 댓글로 답니다. 댓글은 추이 · 가장
+# 임팩트가 컸던 것 · 보완할 것 · 제거를 검토해도 될 기능의 네 부분입니다.
+# 봇 게시가 실패하면 웹훅으로 본문만 올리고(웹훅은 #ga-리포트 고정), AI 단계가 실패해도
+# 리포트와 잡은 그대로 성공입니다. 백필은 Slack 에 게시하지 않으므로 AI 단계도 돌지 않습니다.
+#
+# Claude는 구독 토큰(CLAUDE_CODE_OAUTH_TOKEN)으로 돌아 한도가 빠듯한 날에는 인사이트만 빠질 수 있습니다.
 on:
   schedule:
-    # UTC 일요일 23:00 = Asia/Seoul 월요일 08:00. 크론은 수십 분 지연이 흔하지만,
-    # 스크립트가 실행 시각이 아니라 서울 기준 "지난주 월~일"을 직접 계산하므로
-    # 화요일로 밀려 실행되더라도 같은 주를 가리킵니다.
-    - cron: "0 23 * * 0"
+    # UTC 금요일 22:23 = Asia/Seoul 토요일 07:23. 정각(:00)은 전 세계 예약이 몰려
+    # 수 시간씩 밀리므로 비켜 둡니다. 늦게 돌아도 스크립트가 실행 시각이 아니라 서울
+    # 기준 "직전 토~금"을 직접 계산하므로 일요일로 밀려 실행되더라도 같은 주를 가리킵니다.
+    - cron: "23 22 * * 5"
   workflow_dispatch:
     inputs:
       from:
-        description: "백필 시작 주 — 월요일 YYYY-MM-DD, 비우면 지난주 정기 리포트"
+        description: "백필 시작 주 — 토요일 YYYY-MM-DD, 비우면 직전 토~금 정기 리포트"
         required: false
         type: string
       to:
-        description: "백필 마지막 주 — 월요일 YYYY-MM-DD(지난주 월요일 이하), 비우면 지난주 정기 리포트"
+        description: "백필 마지막 주 — 토요일 YYYY-MM-DD(직전 주 토요일 이하), 비우면 직전 토~금 정기 리포트"
         required: false
         type: string
 
@@ -34,6 +42,7 @@ concurrency:
 
 # 체크아웃 외에는 아무것도 건드리지 않습니다. 재사용 워크플로가 아니어도 권한이
 # 호출자를 넘으면 로그도 annotation 도 없이 startup_failure 로 끝납니다.
+# AI 인사이트 단계는 base-action 이라 GitHub 토큰을 교환하지 않습니다. id-token 권한이 필요 없습니다.
 permissions:
   contents: read
 
@@ -44,7 +53,8 @@ jobs:
     # 정기 실행은 1분 안에 끝나지만, 백필은 약 90주를 한 주씩 차례로 조회합니다
     # (주마다 토큰 교환 + GA 조회 최대 6건). 5분이면 중간에 잘려 시트에 아무것도
     # 쓰지 못한 채 끝납니다 — 행은 모든 주를 조회한 뒤 한 번에 씁니다.
-    timeout-minutes: 15
+    # 정기 실행에는 AI 인사이트 단계(단계 한도 10분)가 뒤따릅니다.
+    timeout-minutes: 25
     steps:
       # 이벤트 목록을 packages/shared 의 type.ts 에서 직접 읽으므로 체크아웃이
       # 필수입니다. 얕은 체크아웃으로 충분합니다.
@@ -56,8 +66,18 @@ jobs:
 
       # 리포트 스크립트는 의존성이 없습니다(node:crypto + fetch). pnpm install을 건너뜁니다.
       - name: Report weekly GA metrics
+        id: report
         env:
+          # 봇으로 올려야 메시지 ts 를 받아 AI 인사이트를 그 스레드에 달 수 있습니다.
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          # #ga-주간-리포트. 채널 ID는 비밀이 아닙니다(아래 GA4_PROPERTY_ID 와 같은 이유로 상수로 둡니다).
+          # 봇(Web Memo CI)이 이 채널에 초대돼 있어야 합니다.
+          GA_REPORT_CHANNEL_ID: "C0CJ1031UAV"
+          # 봇 게시가 실패했을 때의 폴백입니다. 웹훅은 채널이 #ga-리포트 로 고정이고 ts 를 주지
+          # 않아, 이 경로로 나간 주는 일일 채널에 본문만 올라가고 인사이트 댓글을 건너뜁니다.
           SLACK_REPORT_WEBHOOK_URL: ${{ secrets.SLACK_REPORT_WEBHOOK_URL }}
+          # 조회한 수치·추이와 게시된 메시지 ts 를 AI 인사이트 단계의 입력으로 남길 경로입니다.
+          GA_INSIGHT_CONTEXT_PATH: artifacts/ga/insight-context.json
           GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
           # Data API 가 요구하는 것은 속성 ID(숫자)입니다. packages/shared 의
           # G-6HHNP7KJM5 는 gtag 용 측정 ID라 여기 넣으면 403/404 가 납니다.
@@ -78,12 +98,69 @@ jobs:
           # 적지 않습니다.
         run: node .github/scripts/ga/report-weekly-ga.mjs
 
+      # 리포트가 봇으로 올라간 실행에서만 돕니다(insight_ready). 웹훅으로 내려간 메시지에는 댓글을 달 수 없습니다.
+      #
+      # 이 단계가 실패해도 잡은 실패하지 않습니다. 리포트 본문은 이미 채널에 나갔고, 구독 토큰이라
+      # 한도 소진·만료로도 실패할 수 있습니다. 실패는 다음 단계가 ::warning:: 으로 남깁니다.
+      #
+      # Claude 는 파일을 읽고(Read·Grep·Glob) query-ga-insight.mjs 하나만 실행할 수 있습니다. 그 스크립트가
+      # 리포트와 같은 호스트·production 필터를 강제합니다. --permission-mode default 는 허용 목록 밖의
+      # 도구를 전부 거절하게 합니다(기본인 auto 는 검토를 통과한 다른 명령도 실행합니다).
+      # Slack 토큰은 이 단계에 없습니다. 글은 다음 단계가 검증한 뒤에만 나갑니다.
+      #
+      # report-seo.yml 과 달리 base-action 을 씁니다(chore-ga-events.yml 과 같은 방식). 이 단계는 GitHub 에
+      # 아무것도 쓰지 않아 App 토큰이 필요 없고, 전체 액션은 워크플로 파일이 기본 브랜치와 다르면
+      # 실행을 건너뛰어 브랜치에서 수동 실행으로 확인할 수 없습니다.
+      - name: Write AI insight
+        id: ai-insight
+        if: ${{ !cancelled() && steps.report.outputs.insight_ready == 'true' }}
+        continue-on-error: true
+        timeout-minutes: 10
+        uses: anthropics/claude-code-action/base-action@v1
+        env:
+          # query-ga-insight.mjs 가 읽습니다. 읽기 전용 scope 로만 토큰을 받습니다.
+          GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
+          GA4_PROPERTY_ID: "471860782"
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            .github/scripts/ga/prompts/insight-weekly.md 를 읽고 그 지시대로 주간 GA 리포트의 인사이트를 써 주세요.
+            입력은 artifacts/ga/insight-context.json 입니다. 파일을 수정하지 마세요.
+            결과는 지정된 JSON 스키마로만 냅니다.
+          claude_args: |
+            --model claude-sonnet-5
+            --max-turns 50
+            --permission-mode default
+            --allowedTools "Read,Grep,Glob,Bash(node .github/scripts/ga/query-ga-insight.mjs:*)"
+            --json-schema '{"type":"object","additionalProperties":false,"properties":{"summary":{"type":"string"},"trend":{"type":"array","items":{"type":"object","additionalProperties":false,"properties":{"title":{"type":"string"},"detail":{"type":"string"},"action":{"type":"string"}},"required":["title","detail","action"]}},"impact":{"type":"array","items":{"type":"object","additionalProperties":false,"properties":{"title":{"type":"string"},"detail":{"type":"string"},"action":{"type":"string"}},"required":["title","detail","action"]}},"improvements":{"type":"array","items":{"type":"object","additionalProperties":false,"properties":{"title":{"type":"string"},"detail":{"type":"string"},"action":{"type":"string"}},"required":["title","detail","action"]}},"removalCandidates":{"type":"array","items":{"type":"object","additionalProperties":false,"properties":{"title":{"type":"string"},"detail":{"type":"string"},"action":{"type":"string"}},"required":["title","detail","action"]}},"caveats":{"type":"array","items":{"type":"string"}}},"required":["summary","trend","impact","improvements","removalCandidates","caveats"]}'
+
+      # 모델 출력을 검증해 리포트 메시지의 스레드 댓글로 답니다. 결과가 없거나 틀렸으면 경고만 남기고
+      # 정상 종료합니다 — 인사이트가 빠졌다고 그날 리포트 잡을 실패로 만들지 않습니다.
+      - name: Reply AI insight in thread
+        id: ai-send
+        if: ${{ !cancelled() && steps.report.outputs.insight_ready == 'true' }}
+        env:
+          AI_INSIGHT_RESULT: ${{ steps.ai-insight.outputs.structured_output }}
+          GA_INSIGHT_CONTEXT_PATH: artifacts/ga/insight-context.json
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        run: node .github/scripts/ga/send-ga-insight.mjs
+
+      # 인사이트가 이상할 때 모델이 무엇을 보고 썼는지 되짚을 수 있게 입력을 남깁니다.
+      - name: Upload AI insight context
+        if: ${{ !cancelled() && steps.report.outputs.insight_ready == 'true' }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: ga-weekly-insight-context-${{ github.run_id }}
+          path: artifacts/ga/insight-context.json
+          if-no-files-found: warn
+          retention-days: 14
+
       # 주 1회 도는 무인 잡이라 실패가 알림 부재와 구분되지 않습니다. 리포트가 안 온
       # 주가 "조용한 주"인지 "잡이 깨진 주"인지 채널에서 바로 드러나야 합니다.
       # 실패 알림에 별도 스크립트를 두지 않습니다 — 그 스크립트가 깨지면 같은 문제가 반복됩니다.
       #
-      # 본 알림과 웹훅을 일부러 가릅니다. 리포트는 SLACK_REPORT_WEBHOOK_URL 로 가지만
-      # 실패는 CI·릴리스 채널(SLACK_WEBHOOK_URL)로 보냅니다. 리포트 채널 웹훅이 폐기되거나
+      # 본 알림과 경로를 일부러 가릅니다. 리포트는 봇(폴백은 SLACK_REPORT_WEBHOOK_URL)으로 가지만
+      # 실패는 CI·릴리스 채널(SLACK_WEBHOOK_URL)로 보냅니다. 봇 토큰과 리포트 채널 웹훅이 함께
       # 만료되면 본 알림과 그 실패 알림이 같이 죽어 아무 일도 없는 것처럼 보입니다.
       - name: Notify failure
         if: ${{ failure() }}

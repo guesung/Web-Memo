@@ -87,26 +87,29 @@ const RARE_MAX_USERS = 5;
 const NEW_EVENT_WINDOW_DAYS = 14;
 
 /**
- * 이벤트·퍼널을 조회할 수 있는 첫 주(월요일).
+ * 이벤트·퍼널을 조회할 수 있는 첫 주(토요일).
  *
  * 커스텀 이벤트와 퍼널은 build_env=production 으로 거르는데, 그 조건에 걸리는
  * 운영 데이터는 이 주부터만 있습니다. 그 전 주를 같은 조건으로 조회하면
  * 운영 트래픽이 (not set) 으로 통째로 빠져 "아무도 안 썼다"는 0명이 나옵니다 —
  * 실제로 안 쓴 것과 구분되지 않는 틀린 기록이 시트에 남습니다. 그래서 백필은
  * 이 주 이전에는 호스트 필터만 쓰는 활성 사용자만 적고 이벤트·퍼널은 비워 둡니다.
+ *
+ * 운영 데이터는 2026-09-07(월)부터 있습니다. 주가 토요일에 시작하므로 그 날짜를 온전히
+ * 포함하는 첫 주는 2026-09-12(토)부터입니다.
  */
-export const EVENT_BACKFILL_SINCE = "2026-09-07";
+export const EVENT_BACKFILL_SINCE = "2026-09-12";
 
 /**
- * 활성 사용자를 백필할 수 있는 첫 주(월요일).
+ * 활성 사용자를 백필할 수 있는 첫 주(토요일).
  *
- * 확장 트래픽((not set)·빈 호스트)이 GA 에 처음 찍힌 것이 2025-10-11(토)이라,
- * 온전한 한 주로 셀 수 있는 것은 그다음 월요일부터입니다. 그 전 주는 확장
+ * 확장 트래픽((not set)·빈 호스트)이 GA 에 처음 찍힌 것이 2025-10-11(토)입니다. 첫날은
+ * 하루 중간부터 찍혀 온전하다고 볼 수 없어, 한 주로 셀 수 있는 것은 그다음 토요일부터입니다. 그 전 주는 확장
  * 사용자가 어느 호스트로 들어왔는지 확인되지 않아, 조회하면 웹 사용자만 세거나
  * 호스트 필터에 아무것도 걸리지 않아 0명이 됩니다. 둘 다 실제와 구분되지 않는
  * 틀린 기록이라 백필 범위에서 막습니다.
  */
-export const ACTIVE_USERS_BACKFILL_SINCE = "2025-10-13";
+export const ACTIVE_USERS_BACKFILL_SINCE = "2025-10-18";
 
 /**
  * EVENT_BACKFILL_SINCE 이전 주에 운영 웹이 쓰던 호스트.
@@ -114,7 +117,7 @@ export const ACTIVE_USERS_BACKFILL_SINCE = "2025-10-13";
  * 운영 웹 도메인은 2026-09-02 에 www.webmemo.site 에서 www.webmemo.xyz 로
  * 옮겨졌습니다. 지금 허용 목록만으로 그 전 주를 세면 웹 사용자가 통째로 빠져
  * 확장 사용자만 남고, 9월에 갑자기 뛰는 가짜 성장 곡선이 됩니다. 옛 주의 활성
- * 사용자는 지금 목록에 이 호스트를 더해 셉니다. 2026-08-31 주는 두 도메인을
+ * 사용자는 지금 목록에 이 호스트를 더해 셉니다. 2026-08-29(토) 주는 두 도메인을
  * 모두 썼으므로 합집합이어야 빠지지 않습니다.
  */
 const LEGACY_WEB_HOST_NAMES = ["www.webmemo.site"];
@@ -182,7 +185,7 @@ const readWeekday = (dateString) =>
 	new Date(`${dateString}T00:00:00Z`).getUTCDay();
 
 /**
- * 월요일 start 로 주 객체를 만듭니다. 정기 리포트와 백필이 같은 모양을 써야
+ * 토요일 start 로 주 객체를 만듭니다. 정기 리포트와 백필이 같은 모양을 써야
  * 시트의 한 행이 어느 쪽에서 왔든 같은 기간을 가리킵니다.
  */
 const buildWeek = (start) => ({
@@ -193,19 +196,22 @@ const buildWeek = (start) => ({
 });
 
 /**
- * 리포트가 다룰 기간 = 서울 기준 지난주 월요일부터 일요일까지.
+ * 리포트가 다룰 기간 = 서울 기준 직전 토요일부터 금요일까지 7일.
  *
- * 실행 시각에서 역산하지 않습니다. GitHub 크론은 수십 분 지연이 흔해서, 월요일
- * 08:00 잡이 자정을 넘겨 돌 수 있습니다. 데일리가 같은 이유로 resolveTargetDate 를
- * 따로 두고 있습니다. 여기서는 "오늘이 속한 주의 월요일에서 7일 앞"으로 기간을
- * 잡아, 화요일로 밀려 실행되더라도 같은 주를 가리키게 했습니다.
+ * 리포트는 토요일 아침(서울 07:23)에 나갑니다. 월~일로 자르면 토요일에 받는 리포트가
+ * 5일 묵은 데이터가 되므로, 받는 날 바로 전날(금요일)까지를 한 주로 봅니다.
+ *
+ * 실행 시각에서 역산하지 않습니다. GitHub 크론은 수 시간씩 밀리기도 해서, 토요일
+ * 07:23 잡이 자정을 넘겨 돌 수 있습니다. 데일리가 같은 이유로 resolveTargetDate 를
+ * 따로 두고 있습니다. 여기서는 "오늘이 속한 주의 토요일에서 7일 앞"으로 기간을
+ * 잡아, 일요일로 밀려 실행되더라도 같은 주를 가리키게 했습니다.
  */
 export const resolveTargetWeek = (now = new Date()) => {
 	const today = formatSeoulDate(now);
-	// getUTCDay 는 일요일이 0 이라 월요일이 0 이 되도록 옮깁니다.
-	const daysSinceMonday = (readWeekday(today) + 6) % 7;
+	// getUTCDay 는 일요일이 0, 토요일이 6 이라 토요일이 0 이 되도록 옮깁니다.
+	const daysSinceSaturday = (readWeekday(today) + 1) % 7;
 
-	return buildWeek(shiftDate(today, -daysSinceMonday - 7));
+	return buildWeek(shiftDate(today, -daysSinceSaturday - 7));
 };
 
 /**
@@ -219,8 +225,8 @@ const isCalendarDate = (dateString) =>
 /**
  * from 주부터 to 주까지 주 객체를 오름차순으로 돌려줍니다. 백필이 도는 범위입니다.
  *
- * 입력이 어긋나면 조회를 시작하기 전에 던집니다. 월요일이 아닌 날을 받아 조용히
- * 월요일로 맞춰 주면 사람이 의도한 것과 다른 주가 시트에 적히고, 끝난 적 없는
+ * 입력이 어긋나면 조회를 시작하기 전에 던집니다. 토요일이 아닌 날을 받아 조용히
+ * 토요일로 맞춰 주면 사람이 의도한 것과 다른 주가 시트에 적히고, 끝난 적 없는
  * 이번 주를 받으면 반쪽짜리 수치가 "그 주의 값"으로 남습니다. 둘 다 시트에서는
  * 멀쩡한 행이라 나중에 알아챌 방법이 없습니다.
  */
@@ -235,8 +241,8 @@ export const listWeeks = ({ from, to, now = new Date() }) => {
 			);
 		}
 
-		if (readWeekday(value) !== 1) {
-			throw new Error(`${name} 은(는) 월요일이어야 합니다: ${value}`);
+		if (readWeekday(value) !== 6) {
+			throw new Error(`${name} 은(는) 토요일이어야 합니다: ${value}`);
 		}
 	}
 
@@ -254,7 +260,7 @@ export const listWeeks = ({ from, to, now = new Date() }) => {
 
 	if (to > lastCompleteWeek) {
 		throw new Error(
-			`to(${to}) 는 끝난 주여야 합니다. 서울 기준 지난주 월요일(${lastCompleteWeek}) 이하로 주세요`,
+			`to(${to}) 는 끝난 주여야 합니다. 서울 기준 직전 주의 토요일(${lastCompleteWeek}) 이하로 주세요`,
 		);
 	}
 
@@ -269,7 +275,7 @@ export const listWeeks = ({ from, to, now = new Date() }) => {
 
 /**
  * 이 주에 이벤트·퍼널을 조회할지. EVENT_BACKFILL_SINCE 이전 주는 활성 사용자만
- * 적습니다. 두 값 모두 월요일 YYYY-MM-DD 라 문자열 비교가 날짜 비교와 같습니다.
+ * 적습니다. 두 값 모두 토요일 YYYY-MM-DD 라 문자열 비교가 날짜 비교와 같습니다.
  */
 export const shouldFetchEvents = (week) => week.start >= EVENT_BACKFILL_SINCE;
 
@@ -277,7 +283,7 @@ export const shouldFetchEvents = (week) => week.start >= EVENT_BACKFILL_SINCE;
  * 이번 실행이 무엇을 할지 정합니다. 주간 리포트 스크립트의 분기를 여기로 빼
  * 네트워크 없이 검증합니다.
  *
- * - from·to 가 둘 다 비었으면 정기 모드: 지난주 한 주. 크론이면 "정기", 손으로
+ * - from·to 가 둘 다 비었으면 정기 모드: 직전 토~금 한 주. 크론이면 "정기", 손으로
  *   돌렸으면 "재실행"으로 기록합니다. 같은 주의 행이 덮어써졌을 때 시트에서 그
  *   경위를 알아볼 수 있어야 합니다.
  * - 둘 다 있으면 백필 모드: listWeeks 가 검증한 범위.

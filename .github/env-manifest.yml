@@ -102,8 +102,8 @@
 - name: CLAUDE_CODE_OAUTH_TOKEN
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/audit-refactor.yml, .github/workflows/report-seo.yml, .github/workflows/chore-ga-events.yml, .github/workflows/chore-sentry-triage.yml, .github/workflows/chore-e2e-coverage.yml]
-  impact: "주간 리팩토링 점검과 SEO AI 리포트, GA 이벤트 점검, Sentry AI 분석이 인증에 실패한다. 리팩토링 점검은 노션 카드와 Slack 알림이 오지 않고, SEO는 기존 기계 판정 알림으로 대신한다. 구독 토큰이라 만료·한도 소진으로도 실패한다"
+  consumers: [.github/workflows/audit-refactor.yml, .github/workflows/report-seo.yml, .github/workflows/chore-ga-events.yml, .github/workflows/chore-sentry-triage.yml, .github/workflows/chore-e2e-coverage.yml, .github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml]
+  impact: "주간 리팩토링 점검과 SEO AI 리포트, GA 이벤트 점검, Sentry AI 분석, GA 리포트 AI 인사이트가 인증에 실패한다. 리팩토링 점검은 노션 카드와 Slack 알림이 오지 않고, SEO는 기존 기계 판정 알림으로 대신하며, GA 리포트는 본문만 나가고 인사이트 스레드 댓글이 빠진다. 구독 토큰이라 만료·한도 소진으로도 실패한다"
 
 - name: NOTION_TOKEN
   kind: secret
@@ -120,8 +120,9 @@
 - name: SLACK_REPORT_WEBHOOK_URL
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/workflows/audit-refactor.yml, .github/workflows/report-seo.yml]
-  impact: "GA 리포트, 주간 리팩토링 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다"
+  consumers: [.github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/workflows/audit-refactor.yml, .github/workflows/report-seo.yml, .github/workflows/chore-ga-events.yml]
+  impact: "주간 리팩토링 점검 결과, 주간 GA 이벤트 누락 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다. GA 리포트는 봇(SLACK_BOT_TOKEN)으로 먼저 올리므로 이 값은 봇 게시가 실패했을 때의 폴백이며, 없으면 그날 리포트가 통째로 빠진다"
+  note: "웹훅은 채널이 #ga-리포트 로 고정이고 메시지 ts를 주지 않는다. 폴백으로 나간 GA 리포트에는 AI 인사이트 댓글이 달리지 않고, 주간 리포트도 #ga-주간-리포트 가 아닌 #ga-리포트 에 올라간다"
 
 - name: SLACK_REPORT_CHANNEL_ID
   kind: secret
@@ -186,9 +187,9 @@
 - name: SLACK_BOT_TOKEN
   kind: secret
   stores: [github, vercel]
-  consumers: [.github/workflows/ci.yml, apps/web/src/modules/slack/config.ts, .github/workflows/report-seo.yml, .github/workflows/chore-sentry-triage.yml, .github/scripts/sentry/report-sentry-triage.mjs]
-  impact: "GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다"
-  note: "같은 값이어야 하지만 서로 읽지 못해 따로 등록한다"
+  consumers: [.github/workflows/ci.yml, apps/web/src/modules/slack/config.ts, .github/workflows/report-seo.yml, .github/workflows/chore-sentry-triage.yml, .github/scripts/sentry/report-sentry-triage.mjs, .github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/scripts/ga/report-delivery.mjs, .github/scripts/ga/send-ga-insight.mjs]
+  impact: "GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다. GA 리포트는 웹훅 폴백으로 #ga-리포트 에 본문만 올라가고 AI 인사이트 댓글과 주간 채널 분리가 빠진다"
+  note: "같은 값이어야 하지만 서로 읽지 못해 따로 등록한다. 봇(Web Memo CI)이 #ga-리포트(C0C19MXDLKD)와 #ga-주간-리포트(C0CJ1031UAV)에 초대돼 있어야 GA 리포트를 올린다"
 
 - name: BLOG_CATALOG_INGEST_SECRET
   kind: secret
@@ -202,6 +203,7 @@
   stores: [github, vercel]
   consumers: [.github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/workflows/report-seo.yml, apps/web/src/modules/ga/config.ts]
   impact: "GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시)"
+  note: "GA 리포트 워크플로는 AI 인사이트 단계에도 이 값을 넘긴다. Claude가 query-ga-insight.mjs 로 읽기 전용 추가 조회를 할 때 쓴다"
 
 - name: GA_SHEET_ID
   kind: secret

@@ -10,6 +10,10 @@ export type TFeedbackMutationVariables = FeedbackTable["Insert"] & {
 	feedbackType?: "general" | "uninstall";
 };
 
+/** 피드백이 들어온 페이지의 경로. 쿼리스트링·해시는 제외하며, 브라우저가 아니면 null */
+const getCurrentPathname = () =>
+	typeof window !== "undefined" ? window.location.pathname : null;
+
 /** 피드백을 저장하고 `feedback_submit` 이벤트를 남기는 뮤테이션 훅. */
 export default function useFeedbackMutation() {
 	const { data: supabaseClient } = useSupabaseFeedbackClientQuery();
@@ -21,7 +25,10 @@ export default function useFeedbackMutation() {
 			stage: "save",
 		},
 		mutationFn: ({ feedbackType, ...feedback }: TFeedbackMutationVariables) =>
-			new FeedbackService(supabaseClient).insertFeedback(feedback),
+			new FeedbackService(supabaseClient).insertFeedback({
+				source_path: getCurrentPathname(),
+				...feedback,
+			}),
 		onSuccess: (_data, variables) => {
 			analytics.trackEvent({
 				name: "feedback_submit",

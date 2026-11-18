@@ -20,6 +20,7 @@ export type Database = {
 					created_at: string;
 					email: string | null;
 					id: number;
+					source_path: string | null;
 					user_id: string | null;
 				};
 				Insert: {
@@ -27,6 +28,7 @@ export type Database = {
 					created_at?: string;
 					email?: string | null;
 					id?: number;
+					source_path?: string | null;
 					user_id?: string | null;
 				};
 				Update: {
@@ -34,6 +36,7 @@ export type Database = {
 					created_at?: string;
 					email?: string | null;
 					id?: number;
+					source_path?: string | null;
 					user_id?: string | null;
 				};
 				Relationships: [];
@@ -718,14 +721,44 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			weekly_report_click: {
+				Row: {
+					clicked_at: string;
+					id: number;
+					kind: string;
+					position: string;
+					user_id: string;
+					week_start: string;
+				};
+				Insert: {
+					clicked_at?: string;
+					id?: never;
+					kind: string;
+					position: string;
+					user_id: string;
+					week_start: string;
+				};
+				Update: {
+					clicked_at?: string;
+					id?: never;
+					kind?: string;
+					position?: string;
+					user_id?: string;
+					week_start?: string;
+				};
+				Relationships: [];
+			};
 			weekly_report_log: {
 				Row: {
 					created_at: string;
 					email: string;
 					id: number;
 					is_test: boolean;
+					kind: string;
+					memo_ids: number[] | null;
 					status: string;
 					user_id: string;
+					variant: string | null;
 					week_start: string;
 				};
 				Insert: {
@@ -733,8 +766,11 @@ export type Database = {
 					email: string;
 					id?: never;
 					is_test?: boolean;
+					kind?: string;
+					memo_ids?: number[] | null;
 					status: string;
 					user_id: string;
+					variant?: string | null;
 					week_start: string;
 				};
 				Update: {
@@ -742,8 +778,11 @@ export type Database = {
 					email?: string;
 					id?: never;
 					is_test?: boolean;
+					kind?: string;
+					memo_ids?: number[] | null;
 					status?: string;
 					user_id?: string;
+					variant?: string | null;
 					week_start?: string;
 				};
 				Relationships: [];
@@ -907,6 +946,10 @@ export type Database = {
 				}[];
 			};
 			get_memo_count: { Args: never; Returns: number };
+			get_memo_retention_stats: {
+				Args: { p_granularity: string; p_range: string };
+				Returns: Json;
+			};
 			get_public_stats: { Args: never; Returns: Json };
 			get_user_growth: {
 				Args: { days_ago?: number; include_admin?: boolean };
@@ -949,6 +992,17 @@ export type Database = {
 					cohort_size: number;
 					cohort_week: string;
 					week_offset: number;
+				}[];
+			};
+			weekly_resurface_candidates: {
+				Args: {
+					p_range_end: string;
+					p_range_start: string;
+					p_week_start: string;
+				};
+				Returns: {
+					last_memo_at: string;
+					user_id: string;
 				}[];
 			};
 		};

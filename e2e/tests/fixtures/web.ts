@@ -1,4 +1,5 @@
 import { test as base } from "@playwright/test";
+import { channelTalkGuardFixture } from "../lib/mocks/channelTalkGuard";
 import { supabaseGuardFixture } from "../lib/mocks/supabaseGuard";
 
 /**
@@ -8,10 +9,14 @@ import { supabaseGuardFixture } from "../lib/mocks/supabaseGuard";
  * en-US로 고정해, 언어 경로 없는 이동이 브라우저 언어(ko)로 떨어지지 않게 한다.
  * `*.real.test.ts`가 아니면 목이 처리하지 않은 Supabase 요청을 막고 테스트를 실패시킨다(supabaseGuard.ts).
  */
-export const test = base.extend<{ supabaseGuard: undefined }>({
+export const test = base.extend<{
+	supabaseGuard: undefined;
+	channelTalkGuard: undefined;
+}>({
 	baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000",
 	locale: "en-US",
 	supabaseGuard: [supabaseGuardFixture, { auto: true }],
+	channelTalkGuard: [channelTalkGuardFixture, { auto: true }],
 });
 
 /** web 프로젝트용 expect. */

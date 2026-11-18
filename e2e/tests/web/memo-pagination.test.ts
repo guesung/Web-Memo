@@ -15,20 +15,11 @@ const SEEDED_COUNT = 25;
 
 test.describe("메모 무한 스크롤 (Mocked)", () => {
 	let store: MockSupabaseStore;
-	let finishedInitialAuxiliaryRequests: URL[];
+	let auxiliaryRequests: URL[];
 	test.beforeEach(async ({ page }) => {
 		resetMockIds();
 		store = new MockSupabaseStore();
-		finishedInitialAuxiliaryRequests = [];
-		page.on("requestfinished", (request) => {
-			const url = new URL(request.url());
-			if (
-				url.pathname.endsWith("/highlight") ||
-				url.pathname.endsWith("/highlight_memo_source")
-			) {
-				finishedInitialAuxiliaryRequests.push(url);
-			}
-		});
+		auxiliaryRequests = [];
 
 		for (let order = 1; order <= SEEDED_COUNT; order++) {
 			store.addMemo(
@@ -40,6 +31,15 @@ test.describe("메모 무한 스크롤 (Mocked)", () => {
 		}
 
 		await setupSupabaseMocks(page, store);
+		page.on("request", (request) => {
+			const url = new URL(request.url());
+			if (
+				url.pathname.endsWith("/highlight") ||
+				url.pathname.endsWith("/highlight_memo_source")
+			) {
+				auxiliaryRequests.push(url);
+			}
+		});
 
 		await gotoSafely({
 			page,
@@ -86,68 +86,45 @@ test.describe("메모 무한 스크롤 (Mocked)", () => {
 	test("추가 페이지의 보조 조회는 첫 페이지 범위를 다시 요청하지 않는다.", async ({
 		page,
 	}) => {
+		const highlightRequests = () =>
+			auxiliaryRequests.filter((url) => url.pathname.endsWith("/highlight"));
+		const sourceRequests = () =>
+			auxiliaryRequests.filter((url) =>
+				url.pathname.endsWith("/highlight_memo_source"),
+			);
+		const parseInFilter = (url: URL, column: string) => {
+			const filter = url.searchParams.get(column);
+			expect(filter).toMatch(/^in\.\(.*\)$/);
+			return filter?.slice(4, -1).split(",") ?? [];
+		};
+
 		await expect(page.locator(".memo-item")).toHaveCount(PAGE_SIZE);
-		await expect
-			.poll(() => {
-				const paths = finishedInitialAuxiliaryRequests.map(
-					(url) => url.pathname,
-				);
-				return [
-					paths.filter((path) => path.endsWith("/highlight")).length,
-					paths.filter((path) => path.endsWith("/highlight_memo_source"))
-						.length,
-				];
-			})
-			.toEqual([1, 1]);
-		const initialHighlightRequest = finishedInitialAuxiliaryRequests.find(
-			(url) => url.pathname.endsWith("/highlight"),
-		);
-		const initialSourceRequest = finishedInitialAuxiliaryRequests.find((url) =>
-			url.pathname.endsWith("/highlight_memo_source"),
-		);
-		expect(initialHighlightRequest?.searchParams.get("page_key")).toMatch(
-			/page-1(?:\D|$)/,
-		);
-		expect(initialHighlightRequest?.searchParams.get("page_key")).toMatch(
-			/page-20(?:\D|$)/,
-		);
-		expect(initialHighlightRequest?.searchParams.get("page_key")).not.toMatch(
-			/page-21(?:\D|$)/,
-		);
-		expect(initialSourceRequest?.searchParams.get("memo_id")).toMatch(/\b1\b/);
-		expect(initialSourceRequest?.searchParams.get("memo_id")).toMatch(/\b20\b/);
-		expect(initialSourceRequest?.searchParams.get("memo_id")).not.toMatch(
-			/\b21\b/,
-		);
-		const auxiliaryRequests: URL[] = [];
-		page.on("request", (request) => {
-			const url = new URL(request.url());
-			if (
-				url.pathname.endsWith("/highlight") ||
-				url.pathname.endsWith("/highlight_memo_source")
-			) {
-				auxiliaryRequests.push(url);
-			}
-		});
+		await expect.poll(() => highlightRequests().length).toBe(1);
+		await expect.poll(() => sourceRequests().length).toBe(1);
 		await expect
 			.poll(async () => {
 				await page.mouse.wheel(0, 2000);
 				return page.locator(".memo-item").count();
 			})
 			.toBe(SEEDED_COUNT);
-		await expect.poll(() => auxiliaryRequests.length).toBeGreaterThanOrEqual(2);
-		const highlightRequests = auxiliaryRequests.filter((url) =>
-			url.pathname.endsWith("/highlight"),
-		);
-		const sourceRequests = auxiliaryRequests.filter((url) =>
-			url.pathname.endsWith("/highlight_memo_source"),
-		);
-		expect(highlightRequests).toHaveLength(1);
-		expect(sourceRequests).toHaveLength(1);
-		expect(highlightRequests[0].searchParams.get("page_key")).not.toContain(
-			"page-1",
-		);
-		expect(sourceRequests[0].searchParams.get("memo_id")).not.toMatch(/\b1\b/);
+		await expect.poll(() => highlightRequests().length).toBe(2);
+		await expect.poll(() => sourceRequests().length).toBe(2);
+		const memos = store.getAllMemos();
+		for (const [index, batch] of [
+			memos.slice(0, PAGE_SIZE),
+			memos.slice(PAGE_SIZE),
+		].entries()) {
+			const pageKeys = parseInFilter(highlightRequests()[index], "page_key");
+			expect(pageKeys).toHaveLength(batch.length + 1);
+			expect(new Set(pageKeys)).toEqual(
+				new Set([...batch.map((memo) => memo.page_key), ""]),
+			);
+			const memoIds = parseInFilter(sourceRequests()[index], "memo_id");
+			expect(memoIds).toHaveLength(batch.length);
+			expect(new Set(memoIds)).toEqual(
+				new Set(batch.map((memo) => String(memo.id))),
+			);
+		}
 
 		const firstCard = page.locator(".memo-item").first();
 		const memoId = Number(await firstCard.getAttribute("id"));

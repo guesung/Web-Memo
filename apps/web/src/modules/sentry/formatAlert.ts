@@ -20,6 +20,10 @@ const formatKst = (iso?: string): string | null => {
 	return `${new Date(time + KST_OFFSET_MS).toISOString().slice(0, 16).replace("T", " ")} KST`;
 };
 
+/** AI 분석이 뒤따를 때 제목 바로 아래에 붙는 안내. 직접 원인을 찾기 전에 결과를 기다릴 수 있게 합니다. */
+export const AI_TRIAGE_PENDING_LINE =
+	"🤖 AI가 원인을 분석 중입니다. 결과는 이 메시지의 스레드에 달립니다.";
+
 const ACTION_LABEL: Record<string, string> = {
 	created: "🆕 신규",
 	unresolved: "🔁 재발",
@@ -40,10 +44,12 @@ const truncate = (body: string, link?: string): string => {
  * @description 이벤트 조회가 실패해도 웹훅 필드만으로 메시지가 나갑니다. 수집하지 못한
  * 값은 0이나 production으로 추정하지 않고 `미수집`으로 적거나 줄을 생략합니다.
  * 발생 횟수·영향 사용자 수는 웹훅 수신 시점의 값입니다.
+ * `isAiTriagePending`이면 제목 아래에 AI 분석 안내 한 줄을 붙입니다.
  */
 export const formatSentryAlertText = (
 	payload: IFSentryIssueWebhookPayload,
 	eventContext?: IFSentryEventContext | null,
+	{ isAiTriagePending = false }: { isAiTriagePending?: boolean } = {},
 ): string => {
 	const issue = payload.data?.issue;
 	const title = sanitizeForSlack(
@@ -102,6 +108,7 @@ export const formatSentryAlertText = (
 
 	const lines = [
 		`${actionLabel} 🚨 *${title}*`,
+		isAiTriagePending ? AI_TRIAGE_PENDING_LINE : null,
 		tagLine,
 		summaryLine,
 		envLine,

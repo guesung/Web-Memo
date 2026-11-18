@@ -219,8 +219,13 @@ function MemoFavIcon({ favIconUrl }: { favIconUrl?: string | null }) {
 		return <Globe className="w-5 h-5 text-muted-foreground flex-shrink-0" />;
 	}
 
+	// 메모 그리드(@egjs/grid)는 카드 안 이미지가 다 로드된 뒤에 배치한다. 파비콘은 크기가 고정이라
+	// 기다릴 이유가 없는데, 외부 사이트 하나가 느리면 카드 20개가 전부 그만큼 늦게 떴다.
 	return (
-		<div className="flex-shrink-0 w-5 h-5 rounded overflow-hidden">
+		<div
+			className="flex-shrink-0 w-5 h-5 rounded overflow-hidden"
+			data-grid-skip="true"
+		>
 			<Image
 				src={favIconUrl}
 				width={20}

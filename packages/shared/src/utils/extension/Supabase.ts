@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
-import { CONFIG } from "@web-memo/env";
 import { SUPABASE } from "../../constants";
 import type { Database } from "../../types";
+import { getWebSessionAccessToken } from "./webSessionCookie";
 
 /**
  * 예전 버전이 세션을 `chrome.storage.sync`에 저장했다. 그 세션은 웹과 같은 refresh token 계열이라
@@ -54,6 +54,8 @@ const createPublicMemoSupabaseClient = () =>
 		},
 	});
 
+type MemoSupabaseClient = ReturnType<typeof createMemoSupabaseClient>;
+
 let publicMemoSupabaseClient: ReturnType<
 	typeof createPublicMemoSupabaseClient
 > | null = null;
@@ -65,13 +67,13 @@ let feedbackSupabaseClient: ReturnType<
 	typeof createFeedbackSupabaseClient
 > | null = null;
 
-/** 로그인 쿠키와 저장 세션이 모두 없는 경우. 다른 인증 장애와 구분한다. */
+/** 저장 세션과 웹 로그인 쿠키가 모두 없거나 인증 서버가 거부한 경우. 다른 인증 장애와 구분한다. */
 export class SupabaseSessionRequiredError extends Error {}
 
 /**
  * Supabase 인증 서버가 세션을 거부한 오류인지 판별한다.
  *
- * @description 웹 쿠키 refresh token 만료·이미 사용됨 같은 4xx(429 제외) 거부와 세션 부재는
+ * @description 세션 발급 거부·refresh token 만료 같은 4xx(429 제외) 거부와 세션 부재는
  * 장애가 아니라 로그인 만료 상태다. 네트워크·5xx(`AuthRetryableFetchError` 포함)는 제외한다.
  * `supabase-js` 모듈 의존을 피하려고 name·status로 덕타이핑한다.
  */
@@ -120,6 +122,74 @@ const toSessionRequiredError = (error: unknown): unknown => {
 	return error;
 };
 
+const EXTENSION_SESSION_LOCK = "web-memo-extension-session";
+
+/** 사이드 패널과 서비스 워커가 동시에 발급하지 않도록 lock 안에서 실행한다. lock을 못 쓰면 그대로 실행한다. */
+const withSessionLock = async <T>(task: () => Promise<T>): Promise<T> => {
+	if (typeof navigator === "undefined" || !navigator.locks) {
+		return task();
+	}
+
+	return await navigator.locks.request(EXTENSION_SESSION_LOCK, task);
+};
+
+/** 웹 세션 access token으로 `extension-session`을 호출해 일회용 token_hash를 받는다. */
+const fetchExtensionSessionTokenHash = async (webAccessToken: string) => {
+	const response = await fetch(
+		`${SUPABASE.url}/functions/v1/extension-session`,
+		{
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${webAccessToken}`,
+				apikey: SUPABASE.anonKey,
+			},
+		},
+	);
+	if (response.status === 401 || response.status === 422) {
+		throw new SupabaseSessionRequiredError("로그인을 먼저 해주세요");
+	}
+	if (!response.ok) {
+		throw new Error(`extension-session 요청 실패: ${response.status}`);
+	}
+	const { token_hash: tokenHash } = (await response.json()) as {
+		token_hash?: unknown;
+	};
+	if (typeof tokenHash !== "string") {
+		throw new Error("extension-session 응답에 token_hash가 없습니다");
+	}
+
+	return tokenHash;
+};
+
+/** 웹 세션 access token을 빌려 확장 전용 세션을 발급받는다. 웹과 refresh token을 공유하지 않는다. */
+const issueExtensionSession = (client: MemoSupabaseClient) =>
+	withSessionLock(async () => {
+		const {
+			data: { session },
+			error: sessionError,
+		} = await client.auth.getSession();
+		if (sessionError) {
+			throw toSessionRequiredError(sessionError);
+		}
+		if (session) {
+			return;
+		}
+
+		const webAccessToken = await getWebSessionAccessToken();
+		if (!webAccessToken) {
+			throw new SupabaseSessionRequiredError("로그인을 먼저 해주세요");
+		}
+
+		const tokenHash = await fetchExtensionSessionTokenHash(webAccessToken);
+		const { error: verifyError } = await client.auth.verifyOtp({
+			token_hash: tokenHash,
+			type: "magiclink",
+		});
+		if (verifyError) {
+			throw toSessionRequiredError(verifyError);
+		}
+	});
+
 /** 확장 세션을 복원하고 안전한 사용자용 오류 메시지와 원인 정보를 유지한다. */
 export const getSupabaseClient = async () => {
 	try {
@@ -138,26 +208,7 @@ export const getSupabaseClient = async () => {
 			return memoSupabaseClient;
 		}
 
-		const accessTokenFromWeb = await chrome.cookies.get({
-			name: SUPABASE.authCookie.accessToken,
-			url: CONFIG.webUrl,
-		});
-		const refreshTokenCookieFromWeb = await chrome.cookies.get({
-			name: SUPABASE.authCookie.refreshToken,
-			url: CONFIG.webUrl,
-		});
-
-		if (!accessTokenFromWeb || !refreshTokenCookieFromWeb) {
-			throw new SupabaseSessionRequiredError("로그인을 먼저 해주세요");
-		}
-
-		const { error: restoreError } = await memoSupabaseClient.auth.setSession({
-			access_token: accessTokenFromWeb.value,
-			refresh_token: refreshTokenCookieFromWeb.value,
-		});
-		if (restoreError) {
-			throw toSessionRequiredError(restoreError);
-		}
+		await issueExtensionSession(memoSupabaseClient);
 
 		return memoSupabaseClient;
 	} catch (error) {

@@ -4,27 +4,38 @@ vi.mock("@web-memo/env", () => ({
 	CONFIG: { webUrl: "https://webmemo.example" },
 }));
 
+vi.mock("./webSessionCookie", () => ({
+	getWebSessionAccessToken: () => mocks.getWebToken(),
+}));
+
 const mocks = vi.hoisted(() => ({
 	getSession: vi.fn(),
-	setSession: vi.fn(),
-	getCookie: vi.fn(),
+	verifyOtp: vi.fn(),
+	getWebToken: vi.fn(),
+	fetch: vi.fn(),
 	removeSync: vi.fn(),
 }));
 vi.mock("@supabase/supabase-js", () => ({
 	createClient: () => ({
-		auth: { getSession: mocks.getSession, setSession: mocks.setSession },
+		auth: { getSession: mocks.getSession, verifyOtp: mocks.verifyOtp },
 	}),
 }));
+
+const jsonResponse = (status: number, body: unknown) =>
+	new Response(JSON.stringify(body), { status });
 
 beforeEach(() => {
 	vi.resetModules();
 	vi.stubGlobal("chrome", {
-		cookies: { get: mocks.getCookie },
 		storage: { sync: { remove: mocks.removeSync } },
 	});
 	mocks.getSession.mockReset().mockResolvedValue({ data: { session: null } });
-	mocks.setSession.mockReset().mockResolvedValue({ error: null });
-	mocks.getCookie.mockReset().mockResolvedValue(null);
+	mocks.verifyOtp.mockReset().mockResolvedValue({ error: null });
+	mocks.getWebToken.mockReset().mockResolvedValue(null);
+	mocks.fetch
+		.mockReset()
+		.mockResolvedValue(jsonResponse(200, { token_hash: "hash" }));
+	vi.stubGlobal("fetch", mocks.fetch);
 	mocks.removeSync.mockReset().mockResolvedValue(undefined);
 });
 
@@ -47,16 +58,17 @@ describe("확장 Supabase 초기화 오류 계약", () => {
 		expect(error).toMatchObject({ message: "로그인을 먼저 해주세요", cause });
 		expect(error).not.toBeInstanceOf(SupabaseSessionRequiredError);
 	});
-	it("기존 세션이 있으면 쿠키를 읽지 않고 같은 클라이언트를 반환한다", async () => {
+	it("기존 세션이 있으면 쿠키를 읽거나 발급을 호출하지 않고 같은 클라이언트를 반환한다", async () => {
 		mocks.getSession.mockResolvedValue({
 			data: { session: { access_token: "test" } },
 		});
 		const { getSupabaseClient } = await import("./Supabase");
 		const client = await getSupabaseClient();
 		expect(await getSupabaseClient()).toBe(client);
-		expect(mocks.getCookie).not.toHaveBeenCalled();
+		expect(mocks.getWebToken).not.toHaveBeenCalled();
+		expect(mocks.fetch).not.toHaveBeenCalled();
 	});
-	it.each(["getSession", "setSession"] as const)(
+	it.each(["getSession", "verifyOtp"] as const)(
 		"%s가 오류 값을 반환하면 원인을 보존하고 실패한다",
 		async (method) => {
 			const cause = new Error("auth transport failure");
@@ -66,8 +78,8 @@ describe("확장 Supabase 초기화 오류 계약", () => {
 					error: cause,
 				});
 			} else {
-				mocks.getCookie.mockResolvedValue({ value: "test-token" });
-				mocks.setSession.mockResolvedValue({ error: cause });
+				mocks.getWebToken.mockResolvedValue("web-token");
+				mocks.verifyOtp.mockResolvedValue({ error: cause });
 			}
 			const { getSupabaseClient, SupabaseSessionRequiredError } = await import(
 				"./Supabase"
@@ -79,7 +91,7 @@ describe("확장 Supabase 초기화 오류 계약", () => {
 			expect(error).not.toBeInstanceOf(SupabaseSessionRequiredError);
 		},
 	);
-	it.each(["getSession", "setSession"] as const)(
+	it.each(["getSession", "verifyOtp"] as const)(
 		"%s가 4xx AuthApiError를 반환하면 로그인 필요 오류로 변환한다",
 		async (method) => {
 			const cause = Object.assign(new Error("Invalid Refresh Token"), {
@@ -92,8 +104,8 @@ describe("확장 Supabase 초기화 오류 계약", () => {
 					error: cause,
 				});
 			} else {
-				mocks.getCookie.mockResolvedValue({ value: "test-token" });
-				mocks.setSession.mockResolvedValue({ error: cause });
+				mocks.getWebToken.mockResolvedValue("web-token");
+				mocks.verifyOtp.mockResolvedValue({ error: cause });
 			}
 			const { getSupabaseClient, SupabaseSessionRequiredError } = await import(
 				"./Supabase"
@@ -126,8 +138,8 @@ describe("확장 Supabase 초기화 오류 계약", () => {
 				name: "AuthApiError",
 				status,
 			});
-			mocks.getCookie.mockResolvedValue({ value: "test-token" });
-			mocks.setSession.mockResolvedValue({ error: cause });
+			mocks.getWebToken.mockResolvedValue("web-token");
+			mocks.verifyOtp.mockResolvedValue({ error: cause });
 			const { getSupabaseClient, SupabaseSessionRequiredError } = await import(
 				"./Supabase"
 			);
@@ -138,6 +150,78 @@ describe("확장 Supabase 초기화 오류 계약", () => {
 			expect(error).not.toBeInstanceOf(SupabaseSessionRequiredError);
 		},
 	);
+});
+
+describe("확장 세션 발급", () => {
+	const load = () => import("./Supabase");
+
+	it("웹 세션이 있으면 extension-session을 호출하고 verifyOtp로 세션을 만든다", async () => {
+		mocks.getWebToken.mockResolvedValue("web-token");
+		const { getSupabaseClient } = await load();
+		await getSupabaseClient();
+		expect(mocks.fetch).toHaveBeenCalledWith(
+			expect.stringContaining("/functions/v1/extension-session"),
+			expect.objectContaining({
+				method: "POST",
+				headers: expect.objectContaining({
+					Authorization: "Bearer web-token",
+				}),
+			}),
+		);
+		expect(mocks.verifyOtp).toHaveBeenCalledWith({
+			token_hash: "hash",
+			type: "magiclink",
+		});
+	});
+	it.each([401, 422])("%i 응답은 로그인 필요 오류다", async (status) => {
+		mocks.getWebToken.mockResolvedValue("web-token");
+		mocks.fetch.mockResolvedValue(jsonResponse(status, { error: "x" }));
+		const {
+			getSupabaseClient,
+			SupabaseSessionRequiredError,
+			isSessionRestoreFailure,
+		} = await load();
+		const error = await getSupabaseClient().catch((caught: unknown) => caught);
+		expect(error).toBeInstanceOf(SupabaseSessionRequiredError);
+		expect(isSessionRestoreFailure(error)).toBe(false);
+		expect(mocks.verifyOtp).not.toHaveBeenCalled();
+	});
+	it.each([
+		["500 응답", () => mocks.fetch.mockResolvedValue(jsonResponse(500, {}))],
+		[
+			"네트워크 오류",
+			() => mocks.fetch.mockRejectedValue(new TypeError("Failed to fetch")),
+		],
+	])("%s는 일반 오류이며 세션 복원 실패다", async (_, arrange) => {
+		mocks.getWebToken.mockResolvedValue("web-token");
+		arrange();
+		const {
+			getSupabaseClient,
+			SupabaseSessionRequiredError,
+			isSessionRestoreFailure,
+		} = await load();
+		const error = await getSupabaseClient().catch((caught: unknown) => caught);
+		expect(error).toBeInstanceOf(Error);
+		expect(error).not.toBeInstanceOf(SupabaseSessionRequiredError);
+		expect(isSessionRestoreFailure(error)).toBe(true);
+	});
+	it("lock 안에서 다시 확인했을 때 세션이 있으면 발급을 생략한다", async () => {
+		mocks.getSession
+			.mockResolvedValueOnce({ data: { session: null } })
+			.mockResolvedValueOnce({ data: { session: { access_token: "t" } } });
+		const request = vi.fn((_name: string, task: () => Promise<unknown>) =>
+			task(),
+		);
+		vi.stubGlobal("navigator", { locks: { request } });
+		const { getSupabaseClient } = await load();
+		await getSupabaseClient();
+		expect(request).toHaveBeenCalledWith(
+			"web-memo-extension-session",
+			expect.any(Function),
+		);
+		expect(mocks.getWebToken).not.toHaveBeenCalled();
+		expect(mocks.fetch).not.toHaveBeenCalled();
+	});
 });
 
 describe("예전 sync 세션 정리", () => {
@@ -183,8 +267,8 @@ describe("isSessionRestoreFailure", () => {
 	])(
 		"인증 거부(%s)로 복원하지 못한 것은 세션 복원 실패가 아니다",
 		async (_, cause) => {
-			mocks.getCookie.mockResolvedValue({ value: "token" });
-			mocks.setSession.mockResolvedValue({ error: cause });
+			mocks.getWebToken.mockResolvedValue("web-token");
+			mocks.verifyOtp.mockResolvedValue({ error: cause });
 			const { getSupabaseClient, isSessionRestoreFailure } = await import(
 				"./Supabase"
 			);
@@ -202,8 +286,8 @@ describe("isSessionRestoreFailure", () => {
 		["429 AuthApiError", authApiError(429)],
 		["예상 밖 오류", new Error("unexpected")],
 	])("%s로 복원하지 못하면 세션 복원 실패다", async (_, cause) => {
-		mocks.getCookie.mockResolvedValue({ value: "token" });
-		mocks.setSession.mockResolvedValue({ error: cause });
+		mocks.getWebToken.mockResolvedValue("web-token");
+		mocks.verifyOtp.mockResolvedValue({ error: cause });
 		const { getSupabaseClient, isSessionRestoreFailure } = await import(
 			"./Supabase"
 		);

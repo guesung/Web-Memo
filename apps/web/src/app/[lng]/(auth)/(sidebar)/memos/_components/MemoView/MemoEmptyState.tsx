@@ -2,6 +2,7 @@
 
 import LocalizedLink from "@src/components/LocalizedLink";
 import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import { EXTERNAL_LINK } from "@web-memo/shared/constants";
 import { isMac } from "@web-memo/shared/utils";
 import { Button } from "@web-memo/ui";
@@ -15,7 +16,6 @@ import {
 	Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { useTranslation } from "react-i18next";
 
 interface MemoEmptyStateProps extends LanguageType {}
 

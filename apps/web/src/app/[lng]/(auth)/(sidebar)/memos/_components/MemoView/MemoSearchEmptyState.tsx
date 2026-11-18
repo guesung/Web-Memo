@@ -1,9 +1,9 @@
 "use client";
 
 import type { LanguageType } from "@src/modules/i18n";
+import useTranslation from "@src/modules/i18n/util.client";
 import { motion } from "framer-motion";
 import { SearchX } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 interface MemoSearchEmptyStateProps extends LanguageType {
 	searchQuery: string;

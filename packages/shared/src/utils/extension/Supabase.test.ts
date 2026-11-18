@@ -8,20 +8,24 @@ const mocks = vi.hoisted(() => ({
 	getSession: vi.fn(),
 	setSession: vi.fn(),
 	getCookie: vi.fn(),
+	removeSync: vi.fn(),
 }));
 vi.mock("@supabase/supabase-js", () => ({
 	createClient: () => ({
 		auth: { getSession: mocks.getSession, setSession: mocks.setSession },
 	}),
 }));
-vi.mock("../../modules/chrome-storage", () => ({ ChromeSyncStorage: {} }));
 
 beforeEach(() => {
 	vi.resetModules();
-	vi.stubGlobal("chrome", { cookies: { get: mocks.getCookie } });
+	vi.stubGlobal("chrome", {
+		cookies: { get: mocks.getCookie },
+		storage: { sync: { remove: mocks.removeSync } },
+	});
 	mocks.getSession.mockReset().mockResolvedValue({ data: { session: null } });
 	mocks.setSession.mockReset().mockResolvedValue({ error: null });
 	mocks.getCookie.mockReset().mockResolvedValue(null);
+	mocks.removeSync.mockReset().mockResolvedValue(undefined);
 });
 
 describe("확장 Supabase 초기화 오류 계약", () => {
@@ -134,6 +138,27 @@ describe("확장 Supabase 초기화 오류 계약", () => {
 			expect(error).not.toBeInstanceOf(SupabaseSessionRequiredError);
 		},
 	);
+});
+
+describe("예전 sync 세션 정리", () => {
+	it("클라이언트를 처음 만들 때 한 번만 sync 세션 키를 지운다", async () => {
+		const { getSupabaseClient } = await import("./Supabase");
+		await getSupabaseClient().catch(() => {});
+		await getSupabaseClient().catch(() => {});
+		expect(mocks.removeSync).toHaveBeenCalledTimes(1);
+		expect(mocks.removeSync).toHaveBeenCalledWith(
+			"sb-czwtqukymcqoberdoltq-auth-token",
+		);
+	});
+	it("삭제가 실패해도 무시한다", async () => {
+		mocks.removeSync.mockRejectedValue(new Error("sync unavailable"));
+		const { getSupabaseClient, SupabaseSessionRequiredError } = await import(
+			"./Supabase"
+		);
+		await expect(getSupabaseClient()).rejects.toBeInstanceOf(
+			SupabaseSessionRequiredError,
+		);
+	});
 });
 
 describe("isSessionRestoreFailure", () => {

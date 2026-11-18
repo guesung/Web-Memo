@@ -1,27 +1,42 @@
 import { createClient } from "@supabase/supabase-js";
 import { CONFIG } from "@web-memo/env";
 import { SUPABASE } from "../../constants";
-import type { StorageKeyType } from "../../modules/chrome-storage";
-import { ChromeSyncStorage } from "../../modules/chrome-storage";
 import type { Database } from "../../types";
 
-const createMemoSupabaseClient = () =>
-	createClient<Database, "memo">(SUPABASE.url, SUPABASE.anonKey, {
+/**
+ * 예전 버전이 세션을 `chrome.storage.sync`에 저장했다. 그 세션은 웹과 같은 refresh token 계열이라
+ * 옮기지 않고 지운다. 실패해도 새 세션 발급에는 영향이 없으므로 무시한다.
+ */
+const removeLegacySyncSession = () => {
+	try {
+		chrome.storage.sync.remove(SUPABASE.authToken).catch(() => {});
+	} catch {
+		/** sync 저장소를 쓸 수 없어도 확장 세션 흐름에는 영향이 없다. */
+	}
+};
+
+/** 세션은 기기마다 따로 발급받으므로 동기화되지 않는 local 저장소에 둔다. */
+const extensionSessionStorage = {
+	getItem: async (key: string) => {
+		const stored = await chrome.storage.local.get(key);
+		return (stored[key] as string | undefined) ?? null;
+	},
+	setItem: async (key: string, value: string) => {
+		await chrome.storage.local.set({ [key]: value });
+	},
+	removeItem: async (key: string) => {
+		await chrome.storage.local.remove(key);
+	},
+};
+
+const createMemoSupabaseClient = () => {
+	removeLegacySyncSession();
+
+	return createClient<Database, "memo">(SUPABASE.url, SUPABASE.anonKey, {
 		db: { schema: SUPABASE.schema.memo },
-		auth: {
-			storage: {
-				getItem: async (key) => {
-					return (await ChromeSyncStorage.get(key as StorageKeyType)) ?? null;
-				},
-				setItem: async (key, value) => {
-					return await ChromeSyncStorage.set(key as StorageKeyType, value);
-				},
-				removeItem: async (key) => {
-					return await ChromeSyncStorage.remove(key as StorageKeyType);
-				},
-			},
-		},
+		auth: { storage: extensionSessionStorage },
 	});
+};
 
 const createFeedbackSupabaseClient = () =>
 	createClient<Database, "feedback">(SUPABASE.url, SUPABASE.anonKey, {

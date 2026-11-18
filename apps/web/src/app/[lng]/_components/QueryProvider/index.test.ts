@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-import { useQueryClient } from "@tanstack/react-query";
-import { act, createElement } from "react";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { act, createElement, Suspense } from "react";
 import { createRoot } from "react-dom/client";
+import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import QueryProvider from ".";
 
@@ -24,6 +25,82 @@ vi.mock("@web-memo/env", () => ({ CONFIG: { buildEnv: "development" } }));
 
 afterEach(() => {
 	vi.clearAllMocks();
+});
+
+describe("web QueryProvider initial suspense", () => {
+	it("keeps the browser QueryClient across initial suspense retries", async () => {
+		vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+		let resolveFirstQuery!: (value: string) => void;
+		const firstQuery = new Promise<string>((resolve) => {
+			resolveFirstQuery = resolve;
+		});
+		const queryFn = vi
+			.fn()
+			.mockImplementationOnce(() => firstQuery)
+			.mockImplementation(() => new Promise<string>(() => {}));
+		let queryClient: ReturnType<typeof useQueryClient> | undefined;
+
+		function SuspendedQuery() {
+			queryClient = useQueryClient();
+			const { data } = useSuspenseQuery({
+				queryKey: ["initial-suspense"],
+				queryFn,
+			});
+			return createElement("span", null, data);
+		}
+
+		const container = document.createElement("div");
+		const root = createRoot(container);
+		try {
+			await act(async () => {
+				root.render(
+					createElement(
+						Suspense,
+						{ fallback: createElement("span", null, "loading") },
+						createElement(
+							QueryProvider,
+							{ lng: "en" },
+							createElement(SuspendedQuery),
+						),
+					),
+				);
+			});
+			expect(container.textContent).toBe("loading");
+
+			await act(async () => {
+				resolveFirstQuery("ready");
+			});
+
+			expect(queryFn).toHaveBeenCalledTimes(1);
+			expect(container.textContent).toBe("ready");
+		} finally {
+			await act(async () => root.unmount());
+			queryClient?.clear();
+		}
+	});
+
+	it("creates a separate QueryClient for each server render", () => {
+		const clients: ReturnType<typeof useQueryClient>[] = [];
+		function CaptureClient() {
+			clients.push(useQueryClient());
+			return null;
+		}
+
+		vi.stubGlobal("window", undefined);
+		try {
+			const tree = createElement(
+				QueryProvider,
+				{ lng: "en" },
+				createElement(CaptureClient),
+			);
+			renderToString(tree);
+			renderToString(tree);
+			expect(clients).toHaveLength(2);
+			expect(clients[0]).not.toBe(clients[1]);
+		} finally {
+			vi.unstubAllGlobals();
+		}
+	});
 });
 
 describe("web QueryProvider mutation synchronization", () => {
@@ -123,7 +200,10 @@ async function renderClient() {
 				queryFn,
 				retry: false,
 			}),
-		unmount: async () => act(async () => root.unmount()),
+		unmount: async () => {
+			await act(async () => root.unmount());
+			queryClient.clear();
+		},
 	};
 }
 
@@ -151,6 +231,9 @@ async function renderMutation(onSuccess?: ReturnType<typeof vi.fn>) {
 					onSuccess,
 				})
 				.execute(undefined),
-		unmount: async () => act(async () => root.unmount()),
+		unmount: async () => {
+			await act(async () => root.unmount());
+			queryClient.clear();
+		},
 	};
 }

@@ -46,7 +46,7 @@
 
 <!-- env-manifest:start -->
 
-### GitHub Secrets (30개)
+### GitHub Secrets (34개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
@@ -64,6 +64,10 @@
 | `GA4_SERVICE_ACCOUNT_JSON` | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/report-seo.yml`, `apps/web/src/modules/ga/config.ts` |
 | `GSC_SERVICE_ACCOUNT_JSON` (선택) | 없으면 공개 SEO 검사는 계속 실행되지만 Search Console 색인 상태와 주간 검색 성과 조회를 건너뛰고, 데일리 GA 리포트의 검색어 줄은 '연동 안 됨'으로 나간다 | `.github/workflows/report-seo.yml`, `.github/workflows/report-gsc-demand.yml`, `.github/workflows/report-ga-daily.yml` |
 | `NOTION_TOKEN` | 주간 리팩토링 점검 결과가 노션 작업 카드로 만들어지지 않는다 | `.github/workflows/audit-refactor.yml` |
+| `ORACLE_DEPLOY_ENABLED` (선택) | 값이 \"true\"가 아니면 develop 푸시가 Oracle VM staging에 배포되지 않는다. Vercel 배포는 그대로다 | `.github/workflows/ci.yml` |
+| `ORACLE_SSH_HOST` (선택) | Oracle VM에 접속하지 못해 VM staging 배포·롤백이 멈춘다. Vercel 배포에는 영향 없다 | `.github/workflows/cd-web-oracle.yml` |
+| `ORACLE_SSH_KEY` (선택) | Oracle VM의 deploy 사용자로 SSH 인증하지 못해 VM 배포·롤백이 멈춘다 | `.github/workflows/cd-web-oracle.yml` |
+| `ORACLE_SSH_KNOWN_HOSTS` (선택) | 호스트 키 검증이 실패해 VM 배포·롤백이 멈춘다 | `.github/workflows/cd-web-oracle.yml` |
 | `REFRESH_TOKEN` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `SENTRY_API_TOKEN` (선택) | Sentry 알림에 대표 이벤트 상세(환경·릴리스·브라우저·스택·breadcrumb)가 빠지고, AI 분석이 웹훅 입력만으로 진행된다 | `apps/web/src/modules/sentry/config.ts`, `.github/workflows/chore-sentry-triage.yml`, `.github/scripts/sentry/fetch-sentry-context.mjs` |
 | `SENTRY_AUTH_TOKEN` | Sentry 소스맵 업로드가 조용히 실패한다. 빌드는 통과하므로 스택 트레이스가 난독화된 채 보여야 알게 된다 | `.github/workflows/cd-extension.yml`, `.github/workflows/cd-app.yml`, `apps/web/next.config.mjs`, `packages/vite-config/lib/withPageConfig.mjs` |

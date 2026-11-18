@@ -26,7 +26,9 @@ Cloudflare(프록시) → VM:80/443 Caddy ─┬─ web-blue:3000
 | `cloud-init.yaml` | 첫 부팅 때 한 번: 방화벽, Docker, `deploy` 사용자, `/opt/webmemo` | VM 생성 시 콘솔의 Initialization script |
 | `compose.yaml` | Caddy + `web-blue` + `web-green` | VM `/opt/webmemo` |
 | `caddy/Caddyfile` | 프록시, Cloudflare 신뢰 대역, 활성 색 import | VM (compose가 마운트) |
-| `scripts/sync.sh` | 위 두 파일을 VM에 보내고 `docker compose up` | 로컬·CI |
+| `scripts/sync.sh` | compose·Caddy·scripts를 VM에 보내고 `docker compose up` | 로컬 |
+| `scripts/deploy.sh` | 대기 색에 새 이미지 기동 → `/api/version` 커밋 확인 → Caddy 전환 | VM (CI가 SSH로 실행) |
+| `scripts/rollback.sh` | 트래픽을 직전 색으로 되돌림 | VM (CI `action=rollback`) |
 
 VM에만 있고 레포에 없는 것: `/opt/webmemo/.env`(사이트 주소·이미지 태그), `env/web.env`(앱 런타임 환경변수),
 `state/active/upstream.caddy`(지금 트래픽을 받는 색). `sync.sh`는 이 셋을 덮어쓰지 않습니다.
@@ -57,3 +59,23 @@ VM에만 있고 레포에 없는 것: `/opt/webmemo/.env`(사이트 주소·이�
 3. cloud-init 완료 확인: `ssh -i ~/.ssh/webmemo_oci ubuntu@<IP> cloud-init status --wait`
 4. `infra/oracle/scripts/sync.sh deploy@<IP>`
 5. `curl http://<IP>/` 가 확인용 whoami 응답을 돌려주면 끝입니다
+
+## 배포 (CI)
+
+`.github/workflows/cd-web-oracle.yml`이 맡습니다. 지금은 staging만 대상이고 도메인은 아직 VM을 가리키지 않습니다.
+
+```
+vercel pull(Preview) → arm64 이미지 빌드(ubuntu-24.04-arm) → ghcr.io/guesung/web-memo-web:staging-<sha>
+  → compose·Caddy·scripts와 env/web.env를 VM에 rsync → scripts/deploy.sh
+```
+
+- **staged·promote**: `deploy.sh`가 대기 색만 새 이미지로 다시 띄우고, 컨테이너 안에서 `/api/version`의 `commit`이
+  배포한 SHA와 같아질 때까지(최대 120초) 기다린 뒤 `upstream.caddy`를 바꿔 `caddy reload` 합니다.
+  확인이 안 되면 전환하지 않고 실패합니다. 트래픽은 이전 색에 그대로 있습니다.
+- **이전 색은 멈추지 않습니다.** 롤백은 upstream만 되돌리면 되므로 즉시 끝나고, 이전 색은 다음 배포 때 교체됩니다.
+  두 색이 함께 떠 있어도 6GB 안에 들어갑니다.
+- **롤백**: Actions에서 `CD - Web (Oracle Cloud)`를 `action=rollback`으로 실행합니다.
+- **환경변수**: Vercel Preview 값을 받아 `VERCEL*` 표식만 빼고 빌드 secret과 VM `env/web.env`로 씁니다.
+- **켜기**: VM을 만든 뒤 GitHub Secrets `ORACLE_SSH_HOST`·`ORACLE_SSH_KEY`·`ORACLE_SSH_KNOWN_HOSTS`를 등록하고,
+  저장소 변수 `ORACLE_DEPLOY_ENABLED=true`로 두면 develop 푸시마다 `ci.yml`이 함께 부릅니다. 켜기 전에는
+  Actions에서 수동 실행(`action=deploy`)으로 먼저 확인합니다.

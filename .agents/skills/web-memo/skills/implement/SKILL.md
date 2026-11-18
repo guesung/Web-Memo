@@ -201,7 +201,7 @@ model: sonnet
 
 ## ③ PR
 
-`/web-memo:pr`을 실행한다. base는 main(기본 브랜치), draft 아님 — 규칙은 그 스킬이 SSOT다.
+`/web-memo:pr`을 실행한다. base는 기본 브랜치, 아직 머지되지 않은 PR 위에 이어지는 작업이면 스택의 직전 브랜치다. draft 아님 — 규칙은 그 스킬이 SSOT다.
 
 노션 모드면 제목 접두사로 속성 `ID`를 넘긴다.
 

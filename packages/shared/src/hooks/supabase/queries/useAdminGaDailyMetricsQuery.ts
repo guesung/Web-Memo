@@ -10,7 +10,7 @@ export interface GaDailyMetricRow {
 	metric: string;
 	/** 그 이벤트를 낸 사람 수 */
 	users: number;
-	/** 이벤트 발생 건수. `active_users`는 건수가 없어 null이다(생성 타입은 number라 여기서 좁힌다) */
+	/** 이벤트 발생 건수. `active_users`는 건수가 없어 null이다 */
 	events: number | null;
 }
 
@@ -24,6 +24,9 @@ interface UseAdminGaDailyMetricsQueryParams {
  *
  * @description 섹션 안에서 에러와 다시 시도를 직접 그리므로 Suspense 쿼리가 아니다.
  * RPC가 throw 하지 않고 `error`를 돌려주므로, 실패를 캐시하지 않게 여기서 던진다.
+ *
+ * RPC는 행 목록이 아니라 jsonb 배열 하나를 돌려준다. 행으로 돌려주면 PostgREST의 max_rows(1000)에
+ * 잘려 90일치 중 앞쪽만 내려온다. 생성 타입이 `Json`이라 여기서 행 모양으로 좁힌다.
  */
 export default function useAdminGaDailyMetricsQuery({
 	days = 90,
@@ -39,7 +42,7 @@ export default function useAdminGaDailyMetricsQuery({
 
 			if (error) throw error;
 
-			return data as GaDailyMetricRow[];
+			return (data ?? []) as unknown as GaDailyMetricRow[];
 		},
 		retry: 1,
 	});

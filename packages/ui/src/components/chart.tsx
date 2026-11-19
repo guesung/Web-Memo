@@ -371,6 +371,8 @@ export {
 	Bar,
 	BarChart,
 	CartesianGrid,
+	Cell,
+	LabelList,
 	Line,
 	LineChart,
 	Pie,

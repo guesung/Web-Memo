@@ -6,5 +6,7 @@ export { default as GaChartEmptyState } from "./GaChartEmptyState";
 export { default as GaMetricsSection } from "./GaMetricsSection";
 export { default as GaMetricsSkeleton } from "./GaMetricsSkeleton";
 export { default as IncludeAdminToggle } from "./IncludeAdminToggle";
+export { default as RetentionSection } from "./RetentionSection";
+export { default as RetentionTabSkeleton } from "./RetentionTabSkeleton";
 export { default as StatsCards } from "./StatsCards";
 export { default as UserGrowthChart } from "./UserGrowthChart";

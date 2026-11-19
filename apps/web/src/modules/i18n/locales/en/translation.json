@@ -1201,7 +1201,7 @@
 		},
 		"gaMetrics": {
 			"title": "GA metrics",
-			"subtitle": "Through {{date}} · loaded by the daily report every morning",
+			"subtitle": "Through {{- date}} · loaded by the daily report every morning",
 			"subtitle_empty": "Loaded by the daily report every morning",
 			"period_label": "Period",
 			"period": {
@@ -1255,6 +1255,46 @@
 				"sign_up": "Sign up",
 				"extension_installed": "Extension installs",
 				"first_visit": "First visits"
+			}
+		},
+		"retention": {
+			"title": "Memo retention",
+			"subtitle": "Based on memos and highlights saved in Supabase · admin and test accounts excluded",
+			"tabs_label": "Retention view",
+			"tab_weekly": "Weekly cohorts",
+			"tab_monthly": "Monthly rewrite rate",
+			"error_title": "Couldn't load retention",
+			"error_description": "Please try again in a moment.",
+			"retry": "Try again",
+			"weekly": {
+				"title": "Share still writing N weeks after their first-activity week",
+				"description": "Same definition as the weekly GA report (Sat–Fri weeks) · average after 1 week {{week1}} · after 4 weeks {{week4}}",
+				"cohort_week": "Cohort week",
+				"size_header": "Size",
+				"size": "{{size}}",
+				"offset": "Week {{offset}}",
+				"cell_title": "{{- week}} cohort, week {{offset}}: {{users}}/{{size}}",
+				"not_yet": "This week hasn't happened yet",
+				"legend_low": "Low",
+				"legend_high": "High",
+				"legend_note": "Faded rows are cohorts under 5 people and swing wildly on one or two users. Empty cells are weeks that haven't happened yet.",
+				"empty_title": "No cohorts yet",
+				"empty_description": "The weekly table fills in once users start their first activity."
+			},
+			"monthly": {
+				"title": "Share who write again 7–30 days after their first memo",
+				"description": "By the month of the first memo · the number above each bar is new writers",
+				"rate": "Rewrite rate",
+				"chart_label": "Monthly rewrite rate after the first memo, bar chart",
+				"tooltip": "{{percent}}% ({{rewriters}}/{{newWriters}})",
+				"quarter": "Q{{quarter}} '{{year}}",
+				"quarter_count": "{{rewriters}}/{{newWriters}}",
+				"legend_enough": "10 or more new writers",
+				"legend_small": "Under 10 (read with care)",
+				"legend_incomplete": "Month where 30 days haven't passed yet",
+				"highlight_warning": "Since 2026-08-16, creating a highlight also creates an empty memo. Figures from September on include users who only wrote highlights.",
+				"empty_title": "No months yet",
+				"empty_description": "The monthly bars fill in once users write their first memo."
 			}
 		},
 		"activity": {

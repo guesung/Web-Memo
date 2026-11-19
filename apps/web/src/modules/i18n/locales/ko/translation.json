@@ -1196,7 +1196,7 @@
 		},
 		"gaMetrics": {
 			"title": "GA 지표",
-			"subtitle": "{{date}}까지 집계 · 매일 아침 데일리 리포트가 적재",
+			"subtitle": "{{- date}}까지 집계 · 매일 아침 데일리 리포트가 적재",
 			"subtitle_empty": "매일 아침 데일리 리포트가 적재",
 			"period_label": "기간",
 			"period": {
@@ -1250,6 +1250,46 @@
 				"sign_up": "가입",
 				"extension_installed": "확장 설치",
 				"first_visit": "첫 방문"
+			}
+		},
+		"retention": {
+			"title": "메모 리텐션",
+			"subtitle": "Supabase에 저장된 메모·하이라이트 기준 · 관리자와 테스트 계정 제외",
+			"tabs_label": "리텐션 보기",
+			"tab_weekly": "주간 코호트",
+			"tab_monthly": "월별 재작성률",
+			"error_title": "리텐션을 불러오지 못했어요",
+			"error_description": "잠시 뒤에 다시 시도해 주세요.",
+			"retry": "다시 시도",
+			"weekly": {
+				"title": "첫 활동 주별, N주 뒤에도 쓰는 비율",
+				"description": "주간 GA 리포트와 같은 정의(토~금 주) · 1주 뒤 평균 {{week1}} · 4주 뒤 평균 {{week4}}",
+				"cohort_week": "코호트 주",
+				"size_header": "인원",
+				"size": "{{size}}명",
+				"offset": "{{offset}}주",
+				"cell_title": "{{- week}} 코호트 {{offset}}주 뒤 {{users}}/{{size}}명",
+				"not_yet": "아직 오지 않은 주",
+				"legend_low": "낮음",
+				"legend_high": "높음",
+				"legend_note": "흐린 행은 5명 미만 코호트라 한두 명에 크게 흔들립니다. 빈 칸은 아직 오지 않은 주입니다.",
+				"empty_title": "아직 집계된 코호트가 없어요",
+				"empty_description": "첫 활동을 한 사용자가 생기면 주별 표가 채워져요."
+			},
+			"monthly": {
+				"title": "첫 메모 뒤 7~30일 안에 다시 쓰는 비율",
+				"description": "첫 메모를 쓴 달 기준 · 막대 위 숫자는 신규 작성자 수",
+				"rate": "재작성률",
+				"chart_label": "첫 메모 월별 재작성률 막대 그래프",
+				"tooltip": "{{percent}}% ({{rewriters}}/{{newWriters}}명)",
+				"quarter": "{{year}}년 {{quarter}}분기",
+				"quarter_count": "{{rewriters}}/{{newWriters}}명",
+				"legend_enough": "신규 작성자 10명 이상",
+				"legend_small": "10명 미만(해석 주의)",
+				"legend_incomplete": "30일이 안 지난 미완성 달",
+				"highlight_warning": "2026-08-16부터 하이라이트를 만들면 빈 메모가 함께 생깁니다. 9월 이후 수치에는 하이라이트만 쓴 사용자도 섞여 있습니다.",
+				"empty_title": "아직 집계된 달이 없어요",
+				"empty_description": "첫 메모를 쓴 사용자가 생기면 월별 막대가 채워져요."
 			}
 		},
 		"activity": {

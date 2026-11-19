@@ -375,6 +375,7 @@ export {
 	LineChart,
 	Pie,
 	PieChart,
+	ReferenceArea,
 	ResponsiveContainer,
 	XAxis,
 	YAxis,

@@ -1,4 +1,6 @@
 export { default as useActiveUsersStatsQuery } from "./useActiveUsersStatsQuery";
+export type { GaDailyMetricRow } from "./useAdminGaDailyMetricsQuery";
+export { default as useAdminGaDailyMetricsQuery } from "./useAdminGaDailyMetricsQuery";
 export { default as useAdminStatsQuery } from "./useAdminStatsQuery";
 export { default as useAdminUsersQuery } from "./useAdminUsersQuery";
 export { default as useAiFeatureSettingsQuery } from "./useAiFeatureSettingsQuery";

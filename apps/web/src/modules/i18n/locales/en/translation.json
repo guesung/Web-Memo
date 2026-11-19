@@ -1199,6 +1199,64 @@
 			"error_description": "Please try again in a moment.",
 			"retry": "Try again"
 		},
+		"gaMetrics": {
+			"title": "GA metrics",
+			"subtitle": "Through {{date}} · loaded by the daily report every morning",
+			"subtitle_empty": "Loaded by the daily report every morning",
+			"period_label": "Period",
+			"period": {
+				"days_7": "Last 7 days",
+				"days_30": "Last 30 days",
+				"days_90": "Last 90 days"
+			},
+			"unit_label": "Unit",
+			"unit": {
+				"users": "Users",
+				"events": "Events"
+			},
+			"inflated_warning": "This event fires on every autosave, so the event count is inflated. Read it as users.",
+			"summary": "Yesterday {{yesterday}} · previous 7-day average {{average}} ({{delta}})",
+			"summary_no_average": "Yesterday {{yesterday}} · no previous 7-day average",
+			"chart_label": "{{metric}} trend over the last {{days}} days",
+			"missing_label": "Not loaded",
+			"missing_hint": "Gray areas are days when the scheduled run was skipped and nothing was loaded. Running the report manually fills them in.",
+			"badge": {
+				"surge": "Surge",
+				"zero": "Zero"
+			},
+			"cards_title": "Daily metrics",
+			"card_footer": "Yesterday · 7-day average {{average}}",
+			"others": {
+				"title": "Other events",
+				"search": "Search",
+				"search_placeholder": "Event name",
+				"event": "Event",
+				"yesterday_users": "Users yesterday",
+				"yesterday_events": "Events yesterday",
+				"average_users": "7-day average (users)",
+				"show_chart": "Show chart",
+				"no_result": "No matching events"
+			},
+			"error_title": "Couldn't load the GA metrics",
+			"error_description": "Please try again in a moment.",
+			"retry": "Try again",
+			"empty_title": "No metrics have been loaded yet",
+			"empty_description": "Metrics appear here once the daily report runs.",
+			"metrics": {
+				"active_users": "Active users",
+				"side_panel_open": "Side panel opens",
+				"memo_write": "Memo writes",
+				"memo_open": "Memo opens",
+				"memo_search": "Memo searches",
+				"summary_complete": "Summaries completed",
+				"summary_fail": "Summaries failed",
+				"chat_message_send": "Chat messages sent",
+				"login": "Log in",
+				"sign_up": "Sign up",
+				"extension_installed": "Extension installs",
+				"first_visit": "First visits"
+			}
+		},
 		"activity": {
 			"title": "Memo Activity",
 			"today": "Today",

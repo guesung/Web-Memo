@@ -1194,6 +1194,64 @@
 			"error_description": "잠시 뒤에 다시 시도해 주세요.",
 			"retry": "다시 시도"
 		},
+		"gaMetrics": {
+			"title": "GA 지표",
+			"subtitle": "{{date}}까지 집계 · 매일 아침 데일리 리포트가 적재",
+			"subtitle_empty": "매일 아침 데일리 리포트가 적재",
+			"period_label": "기간",
+			"period": {
+				"days_7": "최근 7일",
+				"days_30": "최근 30일",
+				"days_90": "최근 90일"
+			},
+			"unit_label": "단위",
+			"unit": {
+				"users": "사람 수",
+				"events": "건수"
+			},
+			"inflated_warning": "이 이벤트는 자동저장마다 쌓여 건수가 부풀려집니다. 사람 수로 읽으세요.",
+			"summary": "어제 {{yesterday}} · 직전 7일 평균 {{average}} ({{delta}})",
+			"summary_no_average": "어제 {{yesterday}} · 직전 7일 평균 없음",
+			"chart_label": "{{metric}} 최근 {{days}}일 추이",
+			"missing_label": "미적재",
+			"missing_hint": "회색 칸은 예약 실행이 빠져 적재되지 않은 날입니다. 리포트를 수동 실행하면 채워집니다.",
+			"badge": {
+				"surge": "급등",
+				"zero": "0건"
+			},
+			"cards_title": "매일 보는 지표",
+			"card_footer": "어제 · 7일 평균 {{average}}",
+			"others": {
+				"title": "나머지 이벤트",
+				"search": "검색",
+				"search_placeholder": "이벤트 이름",
+				"event": "이벤트",
+				"yesterday_users": "어제 사람 수",
+				"yesterday_events": "어제 건수",
+				"average_users": "7일 평균(명)",
+				"show_chart": "그래프 보기",
+				"no_result": "검색 결과가 없어요"
+			},
+			"error_title": "GA 지표를 불러오지 못했어요",
+			"error_description": "잠시 뒤에 다시 시도해 주세요.",
+			"retry": "다시 시도",
+			"empty_title": "아직 적재된 수치가 없어요",
+			"empty_description": "데일리 리포트가 실행되면 이곳에 지표가 채워져요.",
+			"metrics": {
+				"active_users": "활성 사용자",
+				"side_panel_open": "사이드 패널 열기",
+				"memo_write": "메모 작성",
+				"memo_open": "메모 열기",
+				"memo_search": "메모 검색",
+				"summary_complete": "요약 완료",
+				"summary_fail": "요약 실패",
+				"chat_message_send": "채팅 전송",
+				"login": "로그인",
+				"sign_up": "가입",
+				"extension_installed": "확장 설치",
+				"first_visit": "첫 방문"
+			}
+		},
 		"activity": {
 			"title": "메모 활동",
 			"today": "오늘",

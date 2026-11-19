@@ -118,5 +118,33 @@ resource "cloudflare_ruleset" "cache" {
         browser_ttl = { mode = "respect_origin" }
       }
     },
+    {
+      # 경로에 확장자가 없어 Cloudflare 기본 규칙(확장자 기준)에서 빠집니다. 쿼리(url·w·q)가 캐시 키에 들어가
+      # 크기별로 따로 저장됩니다. TTL은 앱이 보내는 max-age(4시간). Next가 Accept로 포맷을 고르지만
+      # images.formats 기본값이 webp 하나라 Cloudflare가 Vary: Accept를 무시해도 영향이 작습니다.
+      # URL이 원본마다 달라 배포 때 목록으로 비우지 않습니다 — 원본을 바꾸면 최대 4시간 옛 이미지가 보일 수 있습니다.
+      ref         = "staging_next_image"
+      description = "staging Next 이미지 최적화 응답 캐시"
+      expression = join(" and ", [
+        "http.host eq \"${local.staging_host}\"",
+        "http.request.method in {\"GET\" \"HEAD\" \"PURGE\"}",
+        "http.request.uri.path eq \"/_next/image\"",
+      ])
+      action = "set_cache_settings"
+      action_parameters = {
+        cache       = true
+        edge_ttl    = { mode = "respect_origin" }
+        browser_ttl = { mode = "respect_origin" }
+      }
+    },
   ]
+}
+
+# Cloudflare가 HTML의 이메일 주소를 __cf_email__로 바꾸고 email-decode 스크립트를 끼워 넣습니다.
+# 서버 HTML과 React 렌더 결과가 달라질 수 있어 끕니다(2026-11-19 확인 시 hydration 오류는 없었음).
+# 존 전체 설정이지만 지금 프록시를 켠 레코드는 staging뿐입니다.
+resource "cloudflare_zone_setting" "email_obfuscation" {
+  zone_id    = var.zone_id
+  setting_id = "email_obfuscation"
+  value      = "off"
 }

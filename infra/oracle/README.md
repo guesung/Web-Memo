@@ -9,6 +9,8 @@
 ```
 Cloudflare(프록시) → VM:80/443 Caddy ─┬─ web-blue:3000
                                       └─ web-green:3000
+                     VM alloy ── 컨테이너 로그·지표 ──→ Grafana Cloud (Loki·Prometheus)
+Grafana Synthetic Monitoring ── 1분마다 /api/version ──┘ → Grafana Alerting → Slack
 ```
 
 | 항목 | 값 |
@@ -30,8 +32,11 @@ Cloudflare(프록시) → VM:80/443 Caddy ─┬─ web-blue:3000
 | `scripts/lib.sh` | 활성 색 읽기·쓰기, 컨테이너 안 HTTP 확인, 전환 대기 | VM (deploy·rollback이 source) |
 | `scripts/deploy.sh` | 대기 색에 새 이미지 기동 → `/api/version` 커밋 확인 → Caddy 전환 | VM (CI가 SSH로 실행) |
 | `scripts/rollback.sh` | 트래픽을 직전 색으로 되돌림 | VM (CI `action=rollback`) |
+| `alloy/config.alloy` | 컨테이너 로그 → Loki, 호스트·컨테이너 지표 → Prometheus | VM (compose `alloy`, `observability` 프로필) |
+| `terraform/grafana/` | 알림 규칙 6종·Slack 연락처·외부 헬스체크 | CI `cd-grafana.yml` (Grafana Cloud) |
 
 VM에만 있고 레포에 없는 것: `/opt/webmemo/.env`(사이트 주소·이미지 태그), `env/web.env`(앱 런타임 환경변수),
+`env/alloy.env`(Grafana Cloud 쓰기 자격 증명),
 `state/color/active`(지금 트래픽을 받는 색 `blue`·`green`). `sync.sh`는 이 셋을 덮어쓰지 않습니다.
 
 ## 왜 이렇게 했나
@@ -88,3 +93,18 @@ vercel pull(Preview) → arm64 이미지 빌드(ubuntu-24.04-arm) → ghcr.io/gu
 - **켜기**: VM을 만든 뒤 GitHub Secrets `ORACLE_SSH_HOST`·`ORACLE_SSH_KEY`·`ORACLE_SSH_KNOWN_HOSTS`를 등록하고,
   저장소 변수 `ORACLE_DEPLOY_ENABLED=true`로 두면 develop 푸시마다 `ci.yml`이 함께 부릅니다. 켜기 전에는
   Actions에서 수동 실행(`action=deploy`)으로 먼저 확인합니다.
+
+## 관측·알림
+
+Vercel 무료 플랜에서 받지 못하던 플랫폼 레벨 오류(타임아웃·크래시·서버 다운)를 Slack으로 받기 위한 구성입니다.
+
+- **수집(`alloy`)**: docker 소켓으로 모든 컨테이너 로그를 Loki로 보냅니다(`service`·`color` 라벨). Caddy 접근 로그가
+  JSON이라 앱이 죽어 Caddy가 낸 502·504도 `status`로 잡힙니다. 지표는 unix·cadvisor exporter에서 알림에 쓰는 것만
+  남겨(`keep_metrics`) 무료 티어 시리즈 한도를 지킵니다. `env/alloy.env`가 없으면 `deploy.sh`가 alloy를 띄우지 않고,
+  수집기가 실패해도 배포는 막지 않습니다.
+- **알림(`terraform/grafana`)**: 5xx 급증, OOM, 메모리 85% 초과, 회수 위험(24시간 평균 메모리 22% 미만),
+  외부 헬스체크 실패, 수집 끊김. 모두 `webmemo-slack` 연락처(기존 `SLACK_WEBHOOK_URL`)로 갑니다.
+  회수 위험은 Oracle이 7일간 CPU·네트워크·메모리가 모두 20% 미만인 Always Free 인스턴스를 회수할 수 있어서 둡니다.
+- **적용**: `cd-grafana.yml`이 PR에서는 `plan`만, develop 푸시·수동 실행에서 `apply` 합니다. state는 Oracle Object
+  Storage 버킷(`TF_STATE_*`)에 있습니다. 잠금을 쓰지 않으니 로컬에서 apply 하지 말고 워크플로로 적용합니다.
+- **UI에서 고치지 않습니다.** 고치면 다음 `plan`에서 코드 기준으로 되돌아갑니다.

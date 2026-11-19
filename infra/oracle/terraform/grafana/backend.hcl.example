@@ -1,0 +1,6 @@
+# terraform init -backend-config=backend.hcl 로 씁니다. 실제 파일(backend.hcl)은 커밋하지 않습니다.
+# 키는 OCI 콘솔(또는 oci iam customer-secret-key create)의 Customer Secret Key입니다.
+bucket     = "webmemo-tfstate"
+endpoints  = { s3 = "https://<namespace>.compat.objectstorage.ap-osaka-1.oraclecloud.com" }
+access_key = "<customer secret key의 access key>"
+secret_key = "<customer secret key의 secret>"

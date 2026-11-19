@@ -36,8 +36,8 @@ variable "staging_target" {
 variable "staging_proxied" {
   description = "Cloudflare 프록시(=Access 적용) 여부. Caddy가 인증서를 처음 받을 때만 잠깐 false로 둡니다"
   type        = bool
-  # 전환 1단계: DNS만 VM으로 돌려 Caddy가 인증서를 받게 한다. 받은 뒤 true로 바꾼다
-  default = false
+  # VM을 새로 만들어 Caddy가 첫 인증서를 받아야 할 때만 잠깐 false로 바꿉니다(README 「staging」 참고)
+  default = true
 }
 
 variable "oracle_vm_ip" {

@@ -11,6 +11,11 @@ name: Daily GA Report
 # 봇 게시가 실패하면 웹훅으로 본문만 올리고, AI 단계가 실패해도 리포트와 잡은 그대로 성공입니다.
 #
 # Claude는 구독 토큰(CLAUDE_CODE_OAUTH_TOKEN)으로 돌아 한도가 빠듯한 날에는 인사이트만 빠질 수 있습니다.
+#
+# 리포트 게시 뒤 같은 GA4 키로 일별 지표(이벤트별 사용자·발생 수, 활성 사용자)를 Supabase
+# memo.ga_daily_metrics 에 적재합니다. 관리자 대시보드 그래프가 이 테이블을 읽습니다 — GA 키를
+# Vercel 에 두지 않으려는 것입니다. 적재는 부가 작업이라 키가 없거나 실패해도 경고만 남기고 잡은
+# 성공합니다(다음 날 8일치를 다시 덮어써 메웁니다). 과거를 한 번에 채울 때는 notice_task=backfill 입니다.
 on:
   schedule:
     # UTC 21:23 = Asia/Seoul 06:23. 정각(:00)은 전 세계 예약이 몰려 수 시간씩 밀리므로
@@ -22,8 +27,12 @@ on:
       notice_task:
         description: "공지 계측 일회성 작업"
         type: choice
-        options: [daily, register-dimension, historical]
+        options: [daily, register-dimension, historical, backfill]
         default: daily
+      backfill_days:
+        description: "backfill 일 때 서울 기준 어제부터 거슬러 올라가 적재할 일수"
+        type: string
+        default: "90"
 
 concurrency:
   group: daily-ga-report
@@ -73,6 +82,8 @@ jobs:
           # G-6HHNP7KJM5 는 gtag 용 측정 ID라 여기 넣으면 403/404 가 납니다.
           # 속성 ID는 비밀이 아닙니다. 시크릿에 넣으면 로그에서 가려져 디버깅만 어려워집니다.
           GA4_PROPERTY_ID: "471860782"
+          # 일별 지표 적재용 service_role 키. 주간 리포트와 같은 시크릿입니다. 없으면 적재만 건너뜁니다.
+          SUPABASE_REPORT_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_REPORT_SERVICE_ROLE_KEY }}
         run: node .github/scripts/ga/report-daily-ga.mjs
 
       # 리포트가 봇으로 올라간 실행에서만 돕니다(insight_ready). 웹훅으로 내려간 메시지에는 댓글을 달 수 없습니다.
@@ -155,7 +166,7 @@ jobs:
             "$SLACK_WEBHOOK_URL"
 
   notice:
-    name: 공지 GA 계측 확인
+    name: 공지 GA 계측 확인·일별 지표 백필
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.notice_task != 'daily' }}
     runs-on: ubuntu-26.04
     timeout-minutes: 5
@@ -169,11 +180,17 @@ jobs:
           GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
           GA4_PROPERTY_ID: "471860782"
           NOTICE_TASK: ${{ inputs.notice_task }}
+          # backfill 전용. 입력은 셸에 보간하지 않고 env 로 받아 스크립트가 정수인지 검증합니다.
+          BACKFILL_DAYS: ${{ inputs.backfill_days }}
+          SUPABASE_REPORT_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_REPORT_SERVICE_ROLE_KEY }}
         run: |
           if [ "$NOTICE_TASK" = "register-dimension" ]; then
             node .github/scripts/ga/register-notice-dimension.mjs
           elif [ "$NOTICE_TASK" = "historical" ]; then
             node .github/scripts/ga/measure-notice-return.mjs --mode historical --from 2026-09-30 --to 2026-10-01
+          elif [ "$NOTICE_TASK" = "backfill" ]; then
+            # 백필은 적재가 목적이라 키가 없거나 실패하면 그대로 실패해야 합니다(데일리와 달리 경고로 넘기지 않음).
+            node .github/scripts/ga/ga-daily-snapshot.mjs --backfill-days "$BACKFILL_DAYS"
           else
             echo "Unknown notice task" >&2
             exit 1

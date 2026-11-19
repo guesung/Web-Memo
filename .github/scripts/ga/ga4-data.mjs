@@ -148,7 +148,7 @@ export const resolveTargetDate = (now = new Date()) =>
 	shiftDate(formatSeoulDate(now), -1);
 
 /** 운영 트래픽만 남기는 필터. staging·development 이벤트를 지표에서 걸러냅니다. */
-const PRODUCTION_FILTER = {
+export const PRODUCTION_FILTER = {
 	filter: {
 		fieldName: "customEvent:build_env",
 		stringFilter: { matchType: "EXACT", value: "production" },

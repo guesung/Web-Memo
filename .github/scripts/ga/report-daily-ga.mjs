@@ -21,6 +21,7 @@
  */
 
 import { buildDailyReportPayload } from "./daily-report-blocks.mjs";
+import { resolveDailyRange, snapshotDailyMetrics } from "./ga-daily-snapshot.mjs";
 import { fetchDailyGa4Report } from "./ga4-data.mjs";
 import { fetchTopSearchQueries } from "./gsc-daily.mjs";
 import {
@@ -30,6 +31,37 @@ import {
 } from "./insight-context.mjs";
 import { publishGaReport } from "./report-delivery.mjs";
 import { requireEnv } from "../shared/run-context.mjs";
+
+const snapshotAfterReport = async ({
+	serviceAccountJson,
+	propertyId,
+	targetDate,
+}) => {
+	const serviceRoleKey = process.env.SUPABASE_REPORT_SERVICE_ROLE_KEY;
+
+	if (!serviceRoleKey) {
+		console.warn(
+			"::warning::SUPABASE_REPORT_SERVICE_ROLE_KEY 가 없어 GA 일별 지표 적재를 건너뜁니다",
+		);
+
+		return;
+	}
+
+	try {
+		const count = await snapshotDailyMetrics({
+			serviceAccountJson,
+			propertyId,
+			serviceRoleKey,
+			...resolveDailyRange(targetDate),
+		});
+
+		console.log(`ga_daily_metrics ${count}행 적재`);
+	} catch (error) {
+		console.warn(
+			`::warning::GA 일별 지표 적재 실패: ${error instanceof Error ? error.message : error}`,
+		);
+	}
+};
 
 const main = async () => {
 	const serviceAccountJson = requireEnv("GA4_SERVICE_ACCOUNT_JSON");
@@ -52,6 +84,14 @@ const main = async () => {
 			: null;
 	const payload = buildDailyReportPayload({ report, searchQueries, runUrl });
 	const delivery = await publishGaReport({ payload });
+
+	// 관리자 그래프용 일별 스냅샷. 리포트는 이미 나갔으므로 키가 없거나 적재가 실패해도 잡을
+	// 실패시키지 않고 경고만 남깁니다. 다음 날 8일치를 다시 덮어써 빈 날이 메워집니다.
+	await snapshotAfterReport({
+		serviceAccountJson,
+		propertyId,
+		targetDate: report.targetDate,
+	});
 	const contextPath = process.env.GA_INSIGHT_CONTEXT_PATH;
 	let ready = false;
 

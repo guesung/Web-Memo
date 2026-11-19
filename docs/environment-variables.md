@@ -61,7 +61,7 @@
 | `EXPO_TOKEN` | EAS 로그인이 실패해 앱 빌드가 멈춘다 | `.github/workflows/cd-app.yml` |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | develop 앱 빌드의 Firebase App Distribution(App Tester) 배포가 실패한다 | `.github/workflows/cd-app.yml` |
 | `GA_SHEET_ID` | 주간 GA 수치가 Google Sheets에 쌓이지 않는다(Slack 리포트는 그대로 가고 경고만 남는다) | `.github/workflows/report-ga-weekly.yml` |
-| `GA4_SERVICE_ACCOUNT_JSON` | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/report-seo.yml`, `apps/web/src/modules/ga/config.ts` |
+| `GA4_SERVICE_ACCOUNT_JSON` | GA 리포트와 SEO Sheets 적재가 동작하지 않는다 | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/report-seo.yml` |
 | `GSC_SERVICE_ACCOUNT_JSON` (선택) | 없으면 공개 SEO 검사는 계속 실행되지만 Search Console 색인 상태와 주간 검색 성과 조회를 건너뛰고, 데일리 GA 리포트의 검색어 줄은 '연동 안 됨'으로 나간다 | `.github/workflows/report-seo.yml`, `.github/workflows/report-gsc-demand.yml`, `.github/workflows/report-ga-daily.yml` |
 | `NOTION_TOKEN` | 주간 리팩토링 점검 결과가 노션 작업 카드로 만들어지지 않는다 | `.github/workflows/audit-refactor.yml` |
 | `OCI_CLI_FINGERPRINT` (선택) | Oracle API 인증에 실패해 VM 생성 재시도가 멈춘다 | `.github/workflows/chore-oracle-vm-retry.yml` |
@@ -81,18 +81,17 @@
 | `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/versions.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/audit-ga-cid-adoption.yml`, `.github/workflows/notify-extension-published.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/chore-oracle-vm-retry.yml` |
 | `STAGING_WEB_URL_WITHOUT_PROTOCOL` | 스테이징 배포에 alias 도메인이 붙지 않는다 | `.github/workflows/cd-web.yml` |
 | `SUPABASE_ACCESS_TOKEN` | 등록 현황 감사가 Supabase secrets를 조회하지 못하고 Supabase 인벤토리 문서가 갱신되지 않는다 | `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml` |
-| `SUPABASE_REPORT_SERVICE_ROLE_KEY` | 주간 GA 리포트에서 메모 리텐션 섹션과 시트의 리텐션 칸만 빠진다(경고만 남고 나머지 리포트는 그대로 간다) | `.github/workflows/report-ga-weekly.yml`, `.github/scripts/ga/report-weekly-ga.mjs` |
+| `SUPABASE_REPORT_SERVICE_ROLE_KEY` | 주간 GA 리포트에서 메모 리텐션 섹션과 시트의 리텐션 칸만 빠지고, 데일리 GA 일별 지표가 적재되지 않아 관리자 GA 그래프가 갱신되지 않는다(경고만 남고 나머지 리포트는 그대로 간다) | `.github/workflows/report-ga-weekly.yml`, `.github/scripts/ga/report-weekly-ga.mjs`, `.github/workflows/report-ga-daily.yml`, `.github/scripts/ga/report-daily-ga.mjs`, `.github/scripts/ga/ga-daily-snapshot.mjs` |
 | `TURBO_TEAM` | Turborepo 원격 캐시 팀을 못 찾아 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/chore-ga-events.yml` |
 | `TURBO_TOKEN` | Turborepo 원격 캐시를 못 써 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/chore-ga-events.yml` |
 | `VERCEL_TOKEN` | vercel pull, build, deploy, alias가 인증에 실패해 웹 배포가 멈추고, e2e가 웹 서버 환경 변수를 받지 못한다 | `.github/workflows/cd-web.yml`, `.github/workflows/e2e.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-e2e-coverage.yml` |
 
-### Vercel 프로젝트 환경변수 (19개)
+### Vercel 프로젝트 환경변수 (18개)
 
 | 이름 | 환경 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- | --- |
 | `BUILD_ENV` | production, preview | 대시보드에서 수동 재배포할 때 development로 구워져 운영에 localhost:3000이 실린다. tsup.config.ts의 가드가 빌드를 실패시켜 막는다 | `packages/env/src/config.ts`, `packages/env/tsup.config.ts`, `apps/web/next.config.mjs`, `packages/zipper/index.ts` |
 | `ENABLE_EXPERIMENTAL_COREPACK` | 전체 | corepack이 꺼져 packageManager의 pnpm 버전이 무시된다 | 코드 밖 |
-| `GA4_SERVICE_ACCOUNT_JSON` | 전체 | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/report-seo.yml`, `apps/web/src/modules/ga/config.ts` |
 | `GITHUB_DISPATCH_TOKEN` | 전체 | Slack에서 release.yml과 versions.yml을 실행하지 못하고, Sentry AI 분석 워크플로(chore-sentry-triage.yml)를 디스패치하지 못한다 | `apps/web/src/modules/slack/config.ts` |
 | `GRAFANA_OTLP_AUTHORIZATION` (선택) | 전체 | 메모 경로의 Next.js 서버 요청 span 인증이 되지 않아 Grafana Tempo에 전송되지 않는다 | `apps/web/src/modules/observability/serverTracing.ts` |
 | `GRAFANA_OTLP_ENDPOINT` (선택) | 전체 | 메모 경로의 Next.js 서버 요청 span이 Grafana Tempo에 전송되지 않는다 | `apps/web/src/modules/observability/serverTracing.ts` |

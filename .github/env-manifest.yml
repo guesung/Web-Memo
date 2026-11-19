@@ -240,9 +240,9 @@
 
 - name: GA4_SERVICE_ACCOUNT_JSON
   kind: secret
-  stores: [github, vercel]
-  consumers: [.github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/workflows/report-seo.yml, apps/web/src/modules/ga/config.ts]
-  impact: "GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시)"
+  stores: [github]
+  consumers: [.github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/workflows/report-seo.yml]
+  impact: "GA 리포트와 SEO Sheets 적재가 동작하지 않는다"
   note: "GA 리포트 워크플로는 AI 인사이트 단계에도 이 값을 넘긴다. Claude가 query-ga-insight.mjs 로 읽기 전용 추가 조회를 할 때 쓴다"
 
 - name: GA_SHEET_ID
@@ -256,9 +256,9 @@
 - name: SUPABASE_REPORT_SERVICE_ROLE_KEY
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/report-ga-weekly.yml, .github/scripts/ga/report-weekly-ga.mjs]
-  impact: "주간 GA 리포트에서 메모 리텐션 섹션과 시트의 리텐션 칸만 빠진다(경고만 남고 나머지 리포트는 그대로 간다)"
-  note: "Supabase 대시보드의 Project Settings > API Keys에서 service_role 키를 복사한다. 이 워크플로는 집계 함수 memo.weekly_creation_retention 하나만 호출한다. Edge Function에 플랫폼이 주입하는 SUPABASE_SERVICE_ROLE_KEY와 이름을 나눈다. 번들·Vercel에 넣지 않는다"
+  consumers: [.github/workflows/report-ga-weekly.yml, .github/scripts/ga/report-weekly-ga.mjs, .github/workflows/report-ga-daily.yml, .github/scripts/ga/report-daily-ga.mjs, .github/scripts/ga/ga-daily-snapshot.mjs]
+  impact: "주간 GA 리포트에서 메모 리텐션 섹션과 시트의 리텐션 칸만 빠지고, 데일리 GA 일별 지표가 적재되지 않아 관리자 GA 그래프가 갱신되지 않는다(경고만 남고 나머지 리포트는 그대로 간다)"
+  note: "Supabase 대시보드의 Project Settings > API Keys에서 service_role 키를 복사한다. 주간 워크플로는 집계 함수 memo.weekly_creation_retention 하나만 호출하고, 데일리 워크플로는 memo.ga_daily_metrics 테이블에 일별 지표를 upsert 한다. Edge Function에 플랫폼이 주입하는 SUPABASE_SERVICE_ROLE_KEY와 이름을 나눈다. 번들·Vercel에 넣지 않는다"
 
 - name: SEO_SHEET_ID
   kind: secret

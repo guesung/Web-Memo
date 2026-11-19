@@ -138,4 +138,7 @@ Cloudflare는 기본으로 HTML을 캐시하지 않아, 빌드 때 미리 만든
   `edgeCache/index.ts`를 함께 고치면 테스트가 둘이 같은지 확인합니다. 비우기 API는 Free 플랜에서 요청당
   URL 100개까지라(지금 26개) 그보다 늘리면 스크립트를 나눠 보내게 고칩니다
 - 캐시 규칙의 method 조건에는 `PURGE`가 들어 있어야 합니다. 빠지면 비우기 API가 성공해도 캐시가 남습니다
+- `/_next/image`(이미지 최적화)도 같은 규칙 묶음에서 캐시합니다. 쿼리가 캐시 키라 크기별로 저장되고 TTL은 앱의 max-age(4시간)이며, 배포 때 비우지 않습니다
+- JS·CSS·폰트(`/_next/static/*`)는 Cloudflare 기본 규칙(확장자)으로 캐시되므로 따로 두지 않습니다
+- Cloudflare 이메일 난독화(`email_obfuscation`)는 HTML을 고쳐 끕니다
 - 확인: 응답 헤더 `cf-cache-status`가 `HIT`면 엣지에서 나온 것입니다. 비운 직후 첫 요청은 `MISS`여야 합니다

@@ -79,12 +79,14 @@ https://www.webmemo.xyz/ko/introduce?utm_source=threads&utm_medium=social&utm_ca
 `core_action`은 분류이지 저장 성공·실제 읽음의 증명이 아닙니다. 자동 수집 `page_view`,
 서버 Measurement Protocol, 확장 전송은 경로가 다르므로 명세의 공통 계약과 개별 예외를 함께 봅니다.
 
-**신규 이벤트 (2종)**
+**신규 이벤트 (4종)**
 
 | 이름 | 분류 | 속성 |
 | --- | --- | --- |
 | `email_unsubscribe` | `engagement` | `result: "ok" \| "invalidToken" \| "failed"` |
 | `memo_candidate_select` | `core_action` | `action: "select" \| "new"`, `candidate_count: number` |
+| `plan_past_section_expand` | `engagement` | `past_memo_count: number` |
+| `highlight_bubble_position_change` | `engagement` | `position: "above" \| "below"` |
 
 ## 앱(apps/app)
 

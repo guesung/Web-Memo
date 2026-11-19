@@ -1,6 +1,12 @@
 export { default as useActiveUsersStatsQuery } from "./useActiveUsersStatsQuery";
+export type { GaDailyMetricRow } from "./useAdminGaDailyMetricsQuery";
+export { default as useAdminGaDailyMetricsQuery } from "./useAdminGaDailyMetricsQuery";
+export type { MonthlyRewriteRateRow } from "./useAdminMonthlyRewriteRateQuery";
+export { default as useAdminMonthlyRewriteRateQuery } from "./useAdminMonthlyRewriteRateQuery";
 export { default as useAdminStatsQuery } from "./useAdminStatsQuery";
 export { default as useAdminUsersQuery } from "./useAdminUsersQuery";
+export type { WeeklyRetentionRow } from "./useAdminWeeklyRetentionQuery";
+export { default as useAdminWeeklyRetentionQuery } from "./useAdminWeeklyRetentionQuery";
 export { default as useAiFeatureSettingsQuery } from "./useAiFeatureSettingsQuery";
 export {
 	categoryQueryOptions,

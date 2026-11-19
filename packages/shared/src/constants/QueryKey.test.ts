@@ -201,3 +201,23 @@ describe("QUERY_KEY.memosPaginatedPrefix", () => {
 		queryClient.clear();
 	});
 });
+
+describe("관리자 GA·리텐션 쿼리 키", () => {
+	it("조회 인자가 다르면 키가 다르다", () => {
+		expect(QUERY_KEY.adminGaDailyMetrics(30)).not.toEqual(
+			QUERY_KEY.adminGaDailyMetrics(90),
+		);
+		expect(QUERY_KEY.adminWeeklyRetention("2026-11-07", 8)).not.toEqual(
+			QUERY_KEY.adminWeeklyRetention("2026-10-31", 8),
+		);
+		expect(QUERY_KEY.adminWeeklyRetention("2026-11-07", 8)).not.toEqual(
+			QUERY_KEY.adminWeeklyRetention("2026-11-07", 12),
+		);
+	});
+
+	it("월별 재작성률 키는 고정이다", () => {
+		expect(QUERY_KEY.adminMonthlyRewriteRate()).toEqual([
+			"adminMonthlyRewriteRate",
+		]);
+	});
+});

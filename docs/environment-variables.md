@@ -46,7 +46,7 @@
 
 <!-- env-manifest:start -->
 
-### GitHub Secrets (58개)
+### GitHub Secrets (35개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
@@ -56,36 +56,18 @@
 | `CLAUDE_CODE_OAUTH_TOKEN` | 주간 리팩토링 점검과 SEO AI 리포트, GA 이벤트 점검, Sentry AI 분석, GA 리포트 AI 인사이트가 인증에 실패한다. 리팩토링 점검은 노션 카드와 Slack 알림이 오지 않고, SEO는 기존 기계 판정 알림으로 대신하며, GA 리포트는 본문만 나가고 인사이트 스레드 댓글이 빠진다. 구독 토큰이라 만료·한도 소진으로도 실패한다 | `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/chore-sentry-triage.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml` |
 | `CLIENT_ID` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `CLIENT_SECRET` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
-| `CLOUDFLARE_ACCOUNT_ID` (선택) | Access 앱을 적용하지 못한다 | `.github/workflows/cd-terraform.yml` |
-| `CLOUDFLARE_API_TOKEN` (선택) | staging DNS·SSL·Access를 Terraform으로 적용하지 못한다 | `.github/workflows/cd-terraform.yml` |
-| `CLOUDFLARE_ZONE_ID` (선택) | staging DNS·SSL 설정을 적용하지 못한다 | `.github/workflows/cd-terraform.yml` |
 | `EXPO_ANDROID_SERVICE_ACCOUNT_JSON` | master 릴리스(release.yml)의 Google Play 내부 테스트 제출과 현황 조회가 실패한다 | `.github/workflows/cd-app.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `EXPO_ASC_API_KEY_P8` | TestFlight 제출과 App Store 현황 조회가 실패한다 | `.github/workflows/cd-app.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `EXPO_TOKEN` | EAS 로그인이 실패해 앱 빌드가 멈춘다 | `.github/workflows/cd-app.yml` |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | develop 앱 빌드의 Firebase App Distribution(App Tester) 배포가 실패한다 | `.github/workflows/cd-app.yml` |
 | `GA_SHEET_ID` | 주간 GA 수치가 Google Sheets에 쌓이지 않는다(Slack 리포트는 그대로 가고 경고만 남는다) | `.github/workflows/report-ga-weekly.yml` |
-| `GA4_SERVICE_ACCOUNT_JSON` | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/report-seo.yml`, `apps/web/src/modules/ga/config.ts` |
-| `GRAFANA_CLOUD_LOKI_URL` (선택) | VM 컨테이너 로그가 Loki로 가지 않아 5xx 알림이 오지 않는다. 앱·배포에는 영향 없다 | `.github/workflows/cd-web-oracle.yml` |
-| `GRAFANA_CLOUD_LOKI_USER` (선택) | Loki 인증 실패로 로그 수집이 멈춘다 | `.github/workflows/cd-web-oracle.yml` |
-| `GRAFANA_CLOUD_PROM_URL` (선택) | VM 지표가 가지 않아 메모리·OOM·수집 끊김 알림이 오지 않는다 | `.github/workflows/cd-web-oracle.yml` |
-| `GRAFANA_CLOUD_PROM_USER` (선택) | Prometheus 인증 실패로 지표 수집이 멈춘다 | `.github/workflows/cd-web-oracle.yml` |
-| `GRAFANA_CLOUD_WRITE_TOKEN` (선택) | Alloy가 로그·지표를 쓰지 못한다 | `.github/workflows/cd-web-oracle.yml` |
-| `GRAFANA_LOKI_DATASOURCE_UID` (선택) | 5xx 알림 규칙을 만들지 못한다 | `.github/workflows/cd-terraform.yml` |
-| `GRAFANA_PROM_DATASOURCE_UID` (선택) | 지표 기반 알림 규칙을 만들지 못한다 | `.github/workflows/cd-terraform.yml` |
-| `GRAFANA_SM_TOKEN` (선택) | 외부 헬스체크를 적용하지 못한다 | `.github/workflows/cd-terraform.yml` |
-| `GRAFANA_SM_URL` (선택) | 외부 헬스체크를 적용하지 못한다 | `.github/workflows/cd-terraform.yml` |
-| `GRAFANA_TF_TOKEN` (선택) | 알림 규칙·연락처를 적용하지 못한다 | `.github/workflows/cd-terraform.yml` |
-| `GRAFANA_URL` (선택) | 알림 규칙을 Terraform으로 적용하지 못한다 | `.github/workflows/cd-terraform.yml` |
+| `GA4_SERVICE_ACCOUNT_JSON` | GA 리포트와 SEO Sheets 적재가 동작하지 않는다 | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/report-seo.yml` |
 | `GSC_SERVICE_ACCOUNT_JSON` (선택) | 없으면 공개 SEO 검사는 계속 실행되지만 Search Console 색인 상태와 주간 검색 성과 조회를 건너뛰고, 데일리 GA 리포트의 검색어 줄은 '연동 안 됨'으로 나간다 | `.github/workflows/report-seo.yml`, `.github/workflows/report-gsc-demand.yml`, `.github/workflows/report-ga-daily.yml` |
 | `NOTION_TOKEN` | 주간 리팩토링 점검 결과가 노션 작업 카드로 만들어지지 않는다 | `.github/workflows/audit-refactor.yml` |
 | `OCI_CLI_FINGERPRINT` (선택) | Oracle API 인증에 실패해 VM 생성 재시도가 멈춘다 | `.github/workflows/chore-oracle-vm-retry.yml` |
 | `OCI_CLI_KEY_CONTENT` (선택) | Oracle API 인증에 실패해 VM 생성 재시도가 멈춘다 | `.github/workflows/chore-oracle-vm-retry.yml` |
 | `OCI_CLI_TENANCY` (선택) | Oracle API 인증과 컴파트먼트 조회가 실패해 VM 생성 재시도가 멈춘다 | `.github/workflows/chore-oracle-vm-retry.yml` |
 | `OCI_CLI_USER` (선택) | Oracle API 인증에 실패해 VM 생성 재시도(chore-oracle-vm-retry)가 멈춘다 | `.github/workflows/chore-oracle-vm-retry.yml` |
-| `ORACLE_DEPLOY_ENABLED` (선택) | 값이 \"true\"가 아니면 develop 푸시가 Oracle VM staging에 배포되지 않는다. Vercel 배포는 그대로다 | `.github/workflows/ci.yml` |
-| `ORACLE_SSH_HOST` (선택) | Oracle VM에 접속하지 못해 VM staging 배포·롤백이 멈춘다. Vercel 배포에는 영향 없다 | `.github/workflows/cd-web-oracle.yml` |
-| `ORACLE_SSH_KEY` (선택) | Oracle VM의 deploy 사용자로 SSH 인증하지 못해 VM 배포·롤백이 멈춘다 | `.github/workflows/cd-web-oracle.yml` |
-| `ORACLE_SSH_KNOWN_HOSTS` (선택) | 호스트 키 검증이 실패해 VM 배포·롤백이 멈춘다 | `.github/workflows/cd-web-oracle.yml` |
 | `ORACLE_SSH_PUBLIC_KEY` (선택) | 새 VM에 SSH 공개키가 들어가지 않아 접속·배포를 할 수 없다 | `.github/workflows/chore-oracle-vm-retry.yml` |
 | `REFRESH_TOKEN` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `SENTRY_API_TOKEN` (선택) | Sentry 알림에 대표 이벤트 상세(환경·릴리스·브라우저·스택·breadcrumb)가 빠지고, AI 분석이 웹훅 입력만으로 진행된다 | `apps/web/src/modules/sentry/config.ts`, `.github/workflows/chore-sentry-triage.yml`, `.github/scripts/sentry/fetch-sentry-context.mjs` |
@@ -96,26 +78,20 @@
 | `SLACK_CHANNEL_ID` | 머지 스레드가 생기지 않고 웹훅 알림으로 폴백한다 | `.github/workflows/ci.yml` |
 | `SLACK_REPORT_CHANNEL_ID` | SEO AI 리포트를 스레드로 보내지 못하고 기존 기계 판정 알림으로 대신한다. 봇(SLACK_BOT_TOKEN)이 이 채널에 초대돼 있어야 한다 | `.github/workflows/report-seo.yml` |
 | `SLACK_REPORT_WEBHOOK_URL` | 주간 리팩토링 점검 결과, 주간 GA 이벤트 누락 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다. GA 리포트는 봇(SLACK_BOT_TOKEN)으로 먼저 올리므로 이 값은 봇 게시가 실패했을 때의 폴백이며, 없으면 그날 리포트가 통째로 빠진다 | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/chore-ga-events.yml` |
-| `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/versions.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/audit-ga-cid-adoption.yml`, `.github/workflows/notify-extension-published.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/chore-oracle-vm-retry.yml`, `.github/workflows/cd-terraform.yml` |
-| `STAGING_ACCESS_EMAILS` (선택) | Access 허용 정책을 만들지 못해 staging에 아무도 들어가지 못한다 | `.github/workflows/cd-terraform.yml` |
+| `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/versions.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/audit-ga-cid-adoption.yml`, `.github/workflows/notify-extension-published.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/chore-oracle-vm-retry.yml` |
 | `STAGING_WEB_URL_WITHOUT_PROTOCOL` | 스테이징 배포에 alias 도메인이 붙지 않는다 | `.github/workflows/cd-web.yml` |
 | `SUPABASE_ACCESS_TOKEN` | 등록 현황 감사가 Supabase secrets를 조회하지 못하고 Supabase 인벤토리 문서가 갱신되지 않는다 | `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-supabase-inventory.yml` |
-| `SUPABASE_REPORT_SERVICE_ROLE_KEY` | 주간 GA 리포트에서 메모 리텐션 섹션과 시트의 리텐션 칸만 빠진다(경고만 남고 나머지 리포트는 그대로 간다) | `.github/workflows/report-ga-weekly.yml`, `.github/scripts/ga/report-weekly-ga.mjs` |
-| `TF_STATE_ACCESS_KEY` (선택) | Terraform state 저장소 인증에 실패한다 | `.github/workflows/cd-terraform.yml` |
-| `TF_STATE_BUCKET` (선택) | Terraform state를 읽지 못해 plan·apply가 문법 확인만 하고 끝난다 | `.github/workflows/cd-terraform.yml` |
-| `TF_STATE_ENDPOINT` (선택) | Terraform state 저장소에 접속하지 못한다 | `.github/workflows/cd-terraform.yml` |
-| `TF_STATE_SECRET_KEY` (선택) | Terraform state 저장소 인증에 실패한다 | `.github/workflows/cd-terraform.yml` |
+| `SUPABASE_REPORT_SERVICE_ROLE_KEY` | 주간 GA 리포트에서 메모 리텐션 섹션과 시트의 리텐션 칸만 빠지고, 데일리 GA 일별 지표가 적재되지 않아 관리자 GA 그래프가 갱신되지 않는다(경고만 남고 나머지 리포트는 그대로 간다) | `.github/workflows/report-ga-weekly.yml`, `.github/scripts/ga/report-weekly-ga.mjs`, `.github/workflows/report-ga-daily.yml`, `.github/scripts/ga/report-daily-ga.mjs`, `.github/scripts/ga/ga-daily-snapshot.mjs` |
 | `TURBO_TEAM` | Turborepo 원격 캐시 팀을 못 찾아 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/chore-ga-events.yml` |
 | `TURBO_TOKEN` | Turborepo 원격 캐시를 못 써 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/chore-ga-events.yml` |
 | `VERCEL_TOKEN` | vercel pull, build, deploy, alias가 인증에 실패해 웹 배포가 멈추고, e2e가 웹 서버 환경 변수를 받지 못한다 | `.github/workflows/cd-web.yml`, `.github/workflows/e2e.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-e2e-coverage.yml` |
 
-### Vercel 프로젝트 환경변수 (19개)
+### Vercel 프로젝트 환경변수 (18개)
 
 | 이름 | 환경 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- | --- |
 | `BUILD_ENV` | production, preview | 대시보드에서 수동 재배포할 때 development로 구워져 운영에 localhost:3000이 실린다. tsup.config.ts의 가드가 빌드를 실패시켜 막는다 | `packages/env/src/config.ts`, `packages/env/tsup.config.ts`, `apps/web/next.config.mjs`, `packages/zipper/index.ts` |
 | `ENABLE_EXPERIMENTAL_COREPACK` | 전체 | corepack이 꺼져 packageManager의 pnpm 버전이 무시된다 | 코드 밖 |
-| `GA4_SERVICE_ACCOUNT_JSON` | 전체 | GitHub는 GA 리포트와 SEO Sheets 적재가, Vercel은 관리자 대시보드 활성 사용자 그래프가 동작하지 않는다(연결 없음으로 표시) | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/report-seo.yml`, `apps/web/src/modules/ga/config.ts` |
 | `GITHUB_DISPATCH_TOKEN` | 전체 | Slack에서 release.yml과 versions.yml을 실행하지 못하고, Sentry AI 분석 워크플로(chore-sentry-triage.yml)를 디스패치하지 못한다 | `apps/web/src/modules/slack/config.ts` |
 | `GRAFANA_OTLP_AUTHORIZATION` (선택) | 전체 | 메모 경로의 Next.js 서버 요청 span 인증이 되지 않아 Grafana Tempo에 전송되지 않는다 | `apps/web/src/modules/observability/serverTracing.ts` |
 | `GRAFANA_OTLP_ENDPOINT` (선택) | 전체 | 메모 경로의 Next.js 서버 요청 span이 Grafana Tempo에 전송되지 않는다 | `apps/web/src/modules/observability/serverTracing.ts` |
@@ -161,8 +137,6 @@
 | `__FIREFOX__` | Firefox 빌드 스크립트가 넣는 분기 스위치 | `apps/chrome-extension/utils/plugins/make-manifest-plugin.ts` |
 | `CATEGORY_STREAMING_BASE_URL` | 카테고리 streaming 회귀 프로브의 로컬 production 서버 주소. 선택 값이며 외부 서비스에 등록하지 않는다 | `e2e/playwright.category-streaming.config.ts` |
 | `CI` | GitHub Actions가 자동으로 넣는다. Playwright의 test.only 금지·워커 수·서버 재사용 정책을 가른다 | `e2e/playwright.config.ts` |
-| `DEPLOY_COLOR` | Oracle VM의 blue·green 컨테이너에 compose(infra/oracle/compose.yaml)가 넣는다. 없으면 /api/health가 항상 200이다 | `apps/web/src/app/api/health/route.ts` |
-| `DEPLOY_ENV` | 컨테이너 빌드(apps/web/Dockerfile)가 build arg로 넣는다. Vercel에서는 VERCEL_ENV를 쓰므로 등록하지 않는다 | `apps/web/src/app/api/version/route.ts`, `apps/web/Dockerfile` |
 | `E2E_RUN_ID` | E2E 실행 ID. globalSetup이 한 번 정해 워커·teardown이 같은 값으로 자기 실행 데이터를 찾는다. 등록할 곳 없음 | `e2e/globalSetup.ts`, `e2e/tests/lib/namespace.ts` |
 | `GITHUB_REF_NAME` | GitHub Actions가 넣는다. Vercel 값이 없을 때의 폴백으로 읽는다 | `apps/web/src/app/api/version/route.ts` |
 | `GITHUB_RUN_ATTEMPT` | GitHub Actions가 넣는다. E2E 실행 ID를 재시도마다 다르게 만든다 | `e2e/globalSetup.ts` |
@@ -178,9 +152,9 @@
 | `PROBE_BASE_URL` | 운영 프로브의 대상 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 운영 도메인을 본다. 등록하지 않는다 | `e2e/playwright.probe.config.ts` |
 | `PW_CHROMIUM_ATTACH_TO_OTHER` | Playwright가 넣는 내부 플래그 | `e2e/tests/fixtures/extension.ts` |
 | `SUPABASE_ANON_KEY` | Supabase가 Edge Function에 주입한다. 테스트 발송에서 사용자 토큰을 auth.getUser로 검증할 때만 쓴다 | `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase가 Edge Function에 주입한다. Vercel에는 등록하지 않는다 | `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/extension-session/index.ts`, `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-report-click/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-report-unsubscribe/index.ts` |
-| `SUPABASE_URL` | Supabase가 Edge Function에 주입한다 | `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/extension-session/index.ts`, `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-report-click/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-report-unsubscribe/index.ts` |
-| `VERCEL` | Vercel 빌드와 런타임이 넣는다 | `packages/env/tsup.config.ts` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase가 Edge Function에 주입한다. Vercel에는 등록하지 않는다 | `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-report-click/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-report-unsubscribe/index.ts` |
+| `SUPABASE_URL` | Supabase가 Edge Function에 주입한다 | `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/kakao-auth/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-report-click/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-report-unsubscribe/index.ts` |
+| `VERCEL` | Vercel 빌드와 런타임이 넣는다 | `apps/web/src/modules/slack/afterResponse.ts`, `packages/env/tsup.config.ts` |
 | `VERCEL_ENV` | Vercel이 배포 환경(production, preview, development)을 넣는다 | `apps/web/src/app/api/version/route.ts` |
 | `VERCEL_GIT_COMMIT_REF` | Vercel이 넣는다 | `apps/web/src/app/api/version/route.ts` |
 | `VERCEL_GIT_COMMIT_SHA` | Vercel이 넣는다 | `apps/web/src/app/api/version/route.ts` |
@@ -335,10 +309,10 @@ Vercel 프로젝트 환경변수에 두고 서버에서만 읽습니다.
 
 ## 2. 웹 전용 서버 시크릿 — Vercel이 원천, 로컬은 pull
 
-웹의 서버 시크릿(`OPENAI_API_KEY`, `UPSTASH_*`, `GA4_SERVICE_ACCOUNT_JSON`, Slack·GitHub 토큰 등)은
+웹의 서버 시크릿(`OPENAI_API_KEY`, `UPSTASH_*`, Slack·GitHub 토큰 등)은
 **Vercel 프로젝트 환경변수가 유일한 원천**입니다. 로컬 파일을 따로 관리하지 않습니다. 키 목록과 용도는 위
-[전체 목록](#전체-목록)의 Vercel 표가 원천입니다. 웹의 `GA4_PROPERTY_ID`는 비밀이 아니고 환경마다 다르지 않아
-환경변수가 아니라 코드 상수(`apps/web/src/modules/ga/config.ts`)입니다.
+[전체 목록](#전체-목록)의 Vercel 표가 원천입니다. 웹은 GA를 직접 조회하지 않으므로 `GA4_*` 값을 읽지 않습니다.
+관리자 대시보드의 GA 지표는 데일리 리포트가 Supabase에 적재한 스냅샷을 읽습니다.
 
 로컬에서 실행할 때는 development 환경 값을 받아 씁니다.
 
@@ -358,10 +332,6 @@ pnpm env:pull                        # 저장소 루트에서 실행. apps/web/.
 - **development 값은 프로젝트 접근 권한이 있는 사람이 읽을 수 있습니다.** production·preview 값은 sensitive라
   pull로 받을 수 없지만, Vercel은 development 대상을 sensitive로 만들 수 없기 때문입니다. 세 환경을 같게
   두면 production 값도 development 등록본으로 읽을 수 있다는 뜻이니 접근 권한 범위를 그렇게 다루세요.
-- **`GA4_SERVICE_ACCOUNT_JSON`은** 서비스 계정 키 JSON 전문을 한 줄로 넣습니다. 같은 이름의 값이
-  GitHub Secrets에도 있지만(§5, `report-ga-daily.yml`이 읽습니다) 서로 다른 곳이라 **양쪽에 각각
-  등록해야 합니다.** 값이 없으면 실패하지 않고 `/api/admin/ga/active-users`가 `connected: false`를
-  돌려주며, 대시보드는 그래프 대신 "연결 없음"을 그립니다.
 - **e2e도 같은 방식입니다.** `e2e.yml`이 `VERCEL_TOKEN`으로 development 값을 받아
   `apps/web/.env.local`에 씁니다(토큰이 없으면 경고만 하고 넘어갑니다).
 

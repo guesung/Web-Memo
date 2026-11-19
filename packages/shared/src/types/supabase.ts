@@ -305,6 +305,30 @@ export type Database = {
 				};
 				Relationships: [];
 			};
+			ga_daily_metrics: {
+				Row: {
+					date: string;
+					events: number | null;
+					metric: string;
+					updated_at: string;
+					users: number;
+				};
+				Insert: {
+					date: string;
+					events?: number | null;
+					metric: string;
+					updated_at?: string;
+					users: number;
+				};
+				Update: {
+					date?: string;
+					events?: number | null;
+					metric?: string;
+					updated_at?: string;
+					users?: number;
+				};
+				Relationships: [];
+			};
 			highlight: {
 				Row: {
 					color: string;
@@ -914,8 +938,35 @@ export type Database = {
 				};
 				Returns: Json;
 			};
+			get_admin_ga_daily_metrics: {
+				Args: { p_days?: number };
+				Returns: {
+					date: string;
+					events: number;
+					metric: string;
+					users: number;
+				}[];
+			};
+			get_admin_monthly_rewrite_rate: {
+				Args: never;
+				Returns: {
+					cohort_month: string;
+					incomplete: boolean;
+					new_writers: number;
+					rewriters: number;
+				}[];
+			};
 			get_admin_stats: { Args: { include_admin?: boolean }; Returns: Json };
 			get_admin_users: { Args: { search_query?: string }; Returns: Json };
+			get_admin_weekly_retention: {
+				Args: { p_week_start: string; p_weeks?: number };
+				Returns: {
+					active_users: number;
+					cohort_size: number;
+					cohort_week: string;
+					week_offset: number;
+				}[];
+			};
 			get_blog_digest_candidates: {
 				Args: { p_blog_id: string; p_user_id: string };
 				Returns: Json;

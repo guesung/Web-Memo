@@ -150,11 +150,20 @@ jobs:
         run: |
           printf '%s' "$GHCR_TOKEN" | ssh "$REMOTE" "docker login ghcr.io -u ${{ github.actor }} --password-stdin >/dev/null"
           set +e
+          # 값은 러너에서 펼쳐 VM에 넘기는 것이 의도입니다
+          # shellcheck disable=SC2029
           ssh "$REMOTE" "SITE_ADDRESS='$SITE_ADDRESS' /opt/webmemo/scripts/deploy.sh '$TAG' '$SHA'"
           STATUS=$?
           ssh "$REMOTE" "docker logout ghcr.io >/dev/null" || true
           echo "배포 이미지: \`$TAG\`" >> "$GITHUB_STEP_SUMMARY"
           exit $STATUS
+
+      # 전환이 끝난 뒤 엣지에 남은 옛 HTML을 비웁니다(infra/oracle/edge-cache-paths.json).
+      - name: Purge edge cache
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: .github/scripts/deploy/purge-cloudflare-cache.sh "$SITE_ADDRESS"
 
   rollback:
     name: Oracle 롤백 (staging)
@@ -170,3 +179,15 @@ jobs:
 
       - name: Rollback
         run: ssh "$REMOTE" /opt/webmemo/scripts/rollback.sh
+
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            .github/scripts/deploy
+            infra/oracle/edge-cache-paths.json
+
+      - name: Purge edge cache
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: .github/scripts/deploy/purge-cloudflare-cache.sh "$SITE_ADDRESS"

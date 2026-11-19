@@ -1,0 +1,19 @@
+{
+  "$comment": "Cloudflare 엣지에서 HTML을 캐시하는 공개 정적 페이지(빌드 때 미리 만든 페이지). 언어 접두사는 languages와 조합합니다. terraform/cloudflare(캐시 규칙)·purge-cloudflare-cache.sh(배포 후 비우기)·apps/web edgeCache(미들웨어 세션 갱신 건너뛰기)가 이 목록을 씁니다. 동적 페이지·Set-Cookie가 나가는 페이지는 넣지 않습니다.",
+  "languages": ["ko", "en"],
+  "paths": [
+    "/introduce",
+    "/privacy",
+    "/compare/chrome-memo-extensions",
+    "/features/memo",
+    "/features/save-articles",
+    "/features/youtube-summary",
+    "/use-cases/developer",
+    "/use-cases/job-hunting",
+    "/use-cases/learning",
+    "/use-cases/news-reading",
+    "/use-cases/research",
+    "/use-cases/tech-article",
+    "/use-cases/youtube-notes"
+  ]
+}

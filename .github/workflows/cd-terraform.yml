@@ -13,11 +13,13 @@ on:
   pull_request:
     paths:
       - "infra/oracle/terraform/**"
+      - "infra/oracle/edge-cache-paths.json"
       - ".github/workflows/cd-terraform.yml"
   push:
     branches: [develop]
     paths:
       - "infra/oracle/terraform/**"
+      - "infra/oracle/edge-cache-paths.json"
       - ".github/workflows/cd-terraform.yml"
   workflow_dispatch:
 

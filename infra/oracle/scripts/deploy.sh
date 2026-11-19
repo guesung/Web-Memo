@@ -25,8 +25,14 @@ IDLE_VAR="WEB_IMAGE_$(echo "$IDLE" | tr '[:lower:]' '[:upper:]')"
 echo "활성: web-$ACTIVE → 대기 색 web-$IDLE 에 $IMAGE 를 올립니다"
 
 touch .env
-grep -v "^${IDLE_VAR}=" .env > .env.next || true
+grep -v -e "^${IDLE_VAR}=" -e '^SITE_ADDRESS=' .env > .env.next || true
 echo "${IDLE_VAR}=${IMAGE}" >> .env.next
+# 사이트 주소(도메인)를 넘기면 Caddy가 그 도메인으로 HTTPS를 엽니다. 안 넘기면 이전 값을 그대로 둡니다
+if [ -n "${SITE_ADDRESS:-}" ]; then
+	echo "SITE_ADDRESS=${SITE_ADDRESS}" >> .env.next
+else
+	grep '^SITE_ADDRESS=' .env >> .env.next || true
+fi
 mv .env.next .env
 
 # 활성 색 파일이 없던 첫 배포면 지금 활성 색으로 만들어 둡니다(없으면 두 색 모두 200)

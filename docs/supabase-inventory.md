@@ -96,6 +96,7 @@
 | `content` | `text` |
 | `user_id` | `uuid` |
 | `email` | `text` |
+| `source_path` | `text` |
 
 ### `memo`
 
@@ -194,6 +195,16 @@
 | `title` | `text` |
 | `favIconUrl` | `text` |
 | `created_at` | `timestamp with time zone` |
+
+#### 테이블 `memo.ga_daily_metrics`
+
+| 컬럼 | 타입 |
+| --- | --- |
+| `date` | `date` |
+| `metric` | `text` |
+| `users` | `integer` |
+| `events` | `integer` |
+| `updated_at` | `timestamp with time zone` |
 
 #### 테이블 `memo.highlight`
 
@@ -341,6 +352,17 @@
 | `weekly_report_enabled` | `boolean` |
 | `weekly_report_email` | `text` |
 
+#### 테이블 `memo.weekly_report_click`
+
+| 컬럼 | 타입 |
+| --- | --- |
+| `id` | `bigint` |
+| `user_id` | `uuid` |
+| `week_start` | `date` |
+| `kind` | `text` |
+| `position` | `text` |
+| `clicked_at` | `timestamp with time zone` |
+
 #### 테이블 `memo.weekly_report_log`
 
 | 컬럼 | 타입 |
@@ -352,8 +374,11 @@
 | `is_test` | `boolean` |
 | `status` | `text` |
 | `created_at` | `timestamp with time zone` |
+| `kind` | `text` |
+| `variant` | `text` |
+| `memo_ids` | `bigint[]` |
 
-#### DB 함수 (44개)
+#### DB 함수 (48개)
 
 | 함수 | 반환 타입 |
 | --- | --- |
@@ -378,8 +403,11 @@
 | `get_active_users_stats(include_admin boolean)` | `json` |
 | `get_admin_feedback(feedback_id bigint)` | `json` |
 | `get_admin_feedbacks(search_query text, page_offset integer, page_limit integer)` | `json` |
+| `get_admin_ga_daily_metrics(p_days integer)` | `jsonb` |
+| `get_admin_monthly_rewrite_rate()` | `TABLE(cohort_month date, new_writers integer, rewriters integer, incomplete boolean)` |
 | `get_admin_stats(include_admin boolean)` | `json` |
 | `get_admin_users(search_query text)` | `json` |
+| `get_admin_weekly_retention(p_week_start date, p_weeks integer)` | `TABLE(cohort_week date, cohort_size integer, week_offset integer, active_users integer)` |
 | `get_blog_digest_candidates(p_user_id uuid, p_blog_id text)` | `jsonb` |
 | `get_blog_reading_page(p_blog_id text, p_sort text, p_page_size integer, p_cursor jsonb, p_catalog_version timestamp with time zone)` | `jsonb` |
 | `get_blog_reading_summary()` | `jsonb` |
@@ -401,6 +429,7 @@
 | `update_profile_updated_at()` | `trigger` |
 | `update_shared_at()` | `trigger` |
 | `weekly_creation_retention(p_week_start date, p_weeks integer)` | `TABLE(cohort_week date, cohort_size integer, week_offset integer, active_users integer)` |
+| `weekly_resurface_candidates(p_week_start date, p_range_start timestamp with time zone, p_range_end timestamp with time zone)` | `TABLE(user_id uuid, last_memo_at timestamp with time zone)` |
 
 ### `public`
 
@@ -663,6 +692,7 @@ Supabase가 만들고 관리하는 스키마입니다. 플랫폼 업데이트로
 | `created_at` | `timestamp without time zone` |
 | `updated_at` | `timestamp without time zone` |
 | `expires_at` | `timestamp with time zone` |
+| `link_token_hash` | `text` |
 
 #### 테이블 `auth.refresh_tokens`
 
@@ -691,6 +721,7 @@ Supabase가 만들고 관리하는 스키마입니다. 플랫폼 업데이트로
 | `created_at` | `timestamp with time zone` |
 | `updated_at` | `timestamp with time zone` |
 | `name_id_format` | `text` |
+| `dedicated_scope` | `boolean` |
 
 #### 테이블 `auth.saml_relay_states`
 
@@ -1244,11 +1275,13 @@ Supabase가 만들고 관리하는 스키마입니다. 플랫폼 업데이트로
 
 | 함수 | 배포 버전 |
 | --- | --- |
-| `blog-catalog-ingest` | 4 |
-| `daily-article-reminder` | 10 |
-| `get-categories-with-count` | 13 |
-| `kakao-auth` | 9 |
-| `send-feedback` | 7 |
-| `send-signup-slack-notification` | 3 |
-| `send-welcome-email` | 6 |
-| `weekly-memo-report` | 6 |
+| `blog-catalog-ingest` | 8 |
+| `daily-article-reminder` | 14 |
+| `get-categories-with-count` | 17 |
+| `kakao-auth` | 13 |
+| `send-feedback` | 11 |
+| `send-signup-slack-notification` | 7 |
+| `send-welcome-email` | 10 |
+| `weekly-memo-report` | 12 |
+| `weekly-report-click` | 5 |
+| `weekly-report-unsubscribe` | 5 |

@@ -938,15 +938,7 @@ export type Database = {
 				};
 				Returns: Json;
 			};
-			get_admin_ga_daily_metrics: {
-				Args: { p_days?: number };
-				Returns: {
-					date: string;
-					events: number;
-					metric: string;
-					users: number;
-				}[];
-			};
+			get_admin_ga_daily_metrics: { Args: { p_days?: number }; Returns: Json };
 			get_admin_monthly_rewrite_rate: {
 				Args: never;
 				Returns: {

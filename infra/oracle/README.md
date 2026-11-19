@@ -9,12 +9,14 @@
 ```
 Cloudflare(프록시) → VM:80/443 Caddy ─┬─ web-blue:3000
                                       └─ web-green:3000
+                     VM alloy ── 컨테이너 로그·지표 ──→ Grafana Cloud (Loki·Prometheus)
+Grafana Synthetic Monitoring ── 1분마다 /api/version ──┘ → Grafana Alerting → Slack
 ```
 
 | 항목 | 값 |
 | --- | --- |
 | 리전 | `ap-osaka-1` (Japan Central). 무료 계층 홈 영역에 서울·춘천이 없어서 골랐습니다 |
-| 셰이프 | `VM.Standard.A1.Flex` 1 OCPU · 6GB (Always Free) |
+| 셰이프 | `VM.Standard.A1.Flex` 1 OCPU · 4GB (Always Free). 처음엔 6GB였는데 메모리 사용률이 회수 기준 20% 아래(약 19%)로 나와 2026-11-19에 4GB로 줄였습니다 |
 | 이미지 | Canonical Ubuntu 24.04 (aarch64) |
 | 네트워크 | `webmemo-vcn`의 `public subnet-webmemo-vcn`, 공인 IPv4 |
 | 접속 | `deploy@<VM 공인 IP>`, 키 `~/.ssh/webmemo_oci` (레포에 두지 않음) |
@@ -30,8 +32,11 @@ Cloudflare(프록시) → VM:80/443 Caddy ─┬─ web-blue:3000
 | `scripts/lib.sh` | 활성 색 읽기·쓰기, 컨테이너 안 HTTP 확인, 전환 대기 | VM (deploy·rollback이 source) |
 | `scripts/deploy.sh` | 대기 색에 새 이미지 기동 → `/api/version` 커밋 확인 → Caddy 전환 | VM (CI가 SSH로 실행) |
 | `scripts/rollback.sh` | 트래픽을 직전 색으로 되돌림 | VM (CI `action=rollback`) |
+| `alloy/config.alloy` | 컨테이너 로그 → Loki, 호스트·컨테이너 지표 → Prometheus | VM (compose `alloy`, `observability` 프로필) |
+| `terraform/grafana/` | 알림 규칙 6종·Slack 연락처·외부 헬스체크 | CI `cd-grafana.yml` (Grafana Cloud) |
 
 VM에만 있고 레포에 없는 것: `/opt/webmemo/.env`(사이트 주소·이미지 태그), `env/web.env`(앱 런타임 환경변수),
+`env/alloy.env`(Grafana Cloud 쓰기 자격 증명),
 `state/color/active`(지금 트래픽을 받는 색 `blue`·`green`). `sync.sh`는 이 셋을 덮어쓰지 않습니다.
 
 ## 왜 이렇게 했나
@@ -50,12 +55,12 @@ VM에만 있고 레포에 없는 것: `/opt/webmemo/.env`(사이트 주소·이�
   들어온 요청을 끊었습니다(전환마다 1건, `Empty reply from server`). 그래서 설정은 고정하고 파일만 바꿉니다.
   둘 다 준비 전인 짧은 순간은 `lb_try_duration 5s`가 기다려 줍니다.
 - **회수 대비.** 7일간 CPU·네트워크·메모리 95백분위가 모두 20% 미만이면 Oracle이 회수할 수 있습니다.
-  1 OCPU·6GB로 작게 잡아 상시 메모리 사용률이 20%를 넘게 하고, 회수돼도 아래 절차로 다시 만듭니다.
+  1 OCPU·4GB로 작게 잡아 상시 메모리 사용률이 20%를 넘게 하고(6GB에서는 약 19%였음, Grafana `회수 위험` 알림으로 감시), 회수돼도 아래 절차로 다시 만듭니다.
 
 ## VM을 처음부터 다시 만들기
 
 1. 콘솔 → Compute → Create instance
-   - 이미지 Ubuntu 24.04, 셰이프 Ampere `VM.Standard.A1.Flex` 1 OCPU · 6GB
+   - 이미지 Ubuntu 24.04, 셰이프 Ampere `VM.Standard.A1.Flex` 1 OCPU · 4GB
    - Advanced options → Initialization script에 `cloud-init.yaml` 업로드
    - 네트워크 `webmemo-vcn` / `public subnet-webmemo-vcn`, 공인 IPv4 자동 할당
    - SSH 키 `~/.ssh/webmemo_oci.pub` 업로드
@@ -82,9 +87,24 @@ vercel pull(Preview) → arm64 이미지 빌드(ubuntu-24.04-arm) → ghcr.io/gu
   Caddyfile이 바뀐 배포에서만 한 번 `caddy reload` 합니다.
   확인이 안 되면 전환하지 않고 실패합니다. 트래픽은 이전 색에 그대로 있습니다.
 - **이전 색은 멈추지 않습니다.** 롤백은 활성 색 파일만 되돌리면 되므로 즉시 끝나고, 이전 색은 다음 배포 때 교체됩니다.
-  두 색이 함께 떠 있어도 6GB 안에 들어갑니다.
+  두 색이 함께 떠 있어도 4GB 안에 들어갑니다(두 색 합쳐 약 450MB).
 - **롤백**: Actions에서 `CD - Web (Oracle Cloud)`를 `action=rollback`으로 실행합니다.
 - **환경변수**: Vercel Preview 값을 받아 `VERCEL*` 표식만 빼고 빌드 secret과 VM `env/web.env`로 씁니다.
 - **켜기**: VM을 만든 뒤 GitHub Secrets `ORACLE_SSH_HOST`·`ORACLE_SSH_KEY`·`ORACLE_SSH_KNOWN_HOSTS`를 등록하고,
   저장소 변수 `ORACLE_DEPLOY_ENABLED=true`로 두면 develop 푸시마다 `ci.yml`이 함께 부릅니다. 켜기 전에는
   Actions에서 수동 실행(`action=deploy`)으로 먼저 확인합니다.
+
+## 관측·알림
+
+Vercel 무료 플랜에서 받지 못하던 플랫폼 레벨 오류(타임아웃·크래시·서버 다운)를 Slack으로 받기 위한 구성입니다.
+
+- **수집(`alloy`)**: docker 소켓으로 모든 컨테이너 로그를 Loki로 보냅니다(`service`·`color` 라벨). Caddy 접근 로그가
+  JSON이라 앱이 죽어 Caddy가 낸 502·504도 `status`로 잡힙니다. 지표는 unix·cadvisor exporter에서 알림에 쓰는 것만
+  남겨(`keep_metrics`) 무료 티어 시리즈 한도를 지킵니다. `env/alloy.env`가 없으면 `deploy.sh`가 alloy를 띄우지 않고,
+  수집기가 실패해도 배포는 막지 않습니다.
+- **알림(`terraform/grafana`)**: 5xx 급증, OOM, 메모리 85% 초과, 회수 위험(24시간 평균 메모리 22% 미만),
+  외부 헬스체크 실패, 수집 끊김. 모두 `webmemo-slack` 연락처(기존 `SLACK_WEBHOOK_URL`)로 갑니다.
+  회수 위험은 Oracle이 7일간 CPU·네트워크·메모리가 모두 20% 미만인 Always Free 인스턴스를 회수할 수 있어서 둡니다.
+- **적용**: `cd-grafana.yml`이 PR에서는 `plan`만, develop 푸시·수동 실행에서 `apply` 합니다. state는 Oracle Object
+  Storage 버킷(`TF_STATE_*`)에 있습니다. 잠금을 쓰지 않으니 로컬에서 apply 하지 말고 워크플로로 적용합니다.
+- **UI에서 고치지 않습니다.** 고치면 다음 `plan`에서 코드 기준으로 되돌아갑니다.

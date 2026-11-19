@@ -4,6 +4,9 @@
 #   WEB_IMAGE_BLUE   blue 색 이미지. 비우면 확인용 whoami
 #   WEB_IMAGE_GREEN  green 색 이미지. 비우면 확인용 whoami
 #
+# alloy(관측 수집기)는 observability 프로필이라 `docker compose up -d`로는 뜨지 않습니다.
+# env/alloy.env(Grafana Cloud 자격 증명)가 있을 때 deploy.sh가 `docker compose up -d alloy`로 띄웁니다.
+#
 # 트래픽을 받는 색은 state/color/active 파일 한 줄(blue·green)이 정합니다. 앱의 /api/health가
 # 이 파일과 자기 DEPLOY_COLOR를 비교해 200·503을 돌려주고, Caddy는 200인 쪽으로만 보냅니다.
 name: webmemo
@@ -42,6 +45,32 @@ services:
       - caddy_data:/data
       - caddy_config:/config
 
+  # 컨테이너 로그 → Loki, 호스트·컨테이너 지표 → Prometheus (Grafana Cloud). 설정: alloy/config.alloy
+  # cadvisor가 cgroup·docker 상태를 읽으려면 privileged와 호스트 경로 마운트가 필요합니다(Alloy 공식 문서의 Docker 예시).
+  alloy:
+    image: grafana/alloy:v1.22.0
+    profiles: [observability]
+    restart: unless-stopped
+    privileged: true
+    env_file:
+      - path: ./env/alloy.env
+        required: false
+    command:
+      - run
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - alloy_data:/var/lib/alloy/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    # 회수 방지 기준(메모리 20%)과 별개로, 수집기가 앱 메모리를 잡아먹지 않게 상한을 둡니다
+    mem_limit: 256m
+
   web-blue:
     <<: *web
     image: ${WEB_IMAGE_BLUE:-traefik/whoami:v1.10}
@@ -59,3 +88,4 @@ services:
 volumes:
   caddy_data:
   caddy_config:
+  alloy_data:

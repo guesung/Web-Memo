@@ -12,6 +12,14 @@
 {$SITE_ADDRESS} {
 	encode zstd gzip
 
+	# 접근 로그를 JSON으로 stdout에 남겨 Alloy가 Loki로 보냅니다. 앱이 죽어 Caddy가 낸 502·504도
+	# status 필드로 잡혀 5xx 알림의 근거가 됩니다(Vercel 무료 플랜에서 못 받던 오류).
+	# 헬스체크(/api/health)는 Caddy 내부 요청이라 여기 남지 않습니다.
+	log {
+		output stdout
+		format json
+	}
+
 	# blue-green: 두 색을 모두 두고 /api/health가 200인 쪽으로만 보냅니다(활성 색이 아니면 503).
 	# 전환은 state/color/active 파일만 바꾸고 이 설정은 다시 불러오지 않습니다.
 	# caddy reload는 서버를 갈아끼우는 순간 들어온 요청을 끊기 때문입니다.

@@ -28,6 +28,8 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | `cd-app.yml` | workflow_call | 검증된 develop 후보를 큐에서 재판정해 Android APK 빌드·Firebase App Distribution 배포, master·PR은 빌드만, release는 새 빌드·Play 내부 테스트 제출 | `deploy/prepareStagingApp.mjs` · `deploy/appDeploymentState.mjs` · `deploy/detect-affected-apps.sh` (EAS CLI·firebase-tools) |
 | `cd-extension.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-reusable-artifact.sh` · `deploy/upload-extension-to-store.mjs` |
 | `cd-web.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-staged-deployment.mjs` · `deploy/staged-deployment.mjs` · `deploy/notify-staging-deploy.mjs` |
+| `cd-web-oracle.yml` | workflow_call, workflow_dispatch | `ci.yml`이 develop 푸시에서 웹이나 VM 서버 구성(`infra/oracle`)이 바뀌었고 `ORACLE_DEPLOY_ENABLED=true`일 때, 또는 수동 실행마다 | 없음 (VM의 `infra/oracle/scripts/deploy.sh`·`rollback.sh`를 SSH로 실행) |
+| `cd-grafana.yml` | pull_request, push(develop), workflow_dispatch | `infra/oracle/terraform/grafana`가 바뀐 PR(plan)·develop 푸시(apply) 또는 수동 실행마다 | 없음 (Terraform) |
 | `release.yml` | workflow_dispatch | 수동 실행할 때마다 | `deploy/sync-next-version-pr.mjs`. `cd-app`·`cd-extension`·`cd-web`·`release-notify` 호출 |
 | `release-notify.yml` | workflow_call | `release.yml`에서 호출할 때마다 | `deploy/record-deploy.mjs` · `deploy/collect-deploy-prs.mjs` · `deploy/detect-affected-apps.sh` · `deploy/notify-release-result.mjs` |
 | `release-github.yml` | push(tag `v*`) | `v*` 태그 push마다 | 없음 |
@@ -66,7 +68,7 @@ dispatch해도 스크립트는 master의 것이 돕니다.
 
 자동 PR을 닫을 때 이유를 코멘트로 남기면 다음 실행이 그 이유를 읽습니다(Sentry·GA 이벤트). 이유 없이 닫으면 같은 제안을 피하기만 합니다.
 
-`detect-affected-apps.sh`는 Turbo 패키지 영향 판정에 더해 CI·앱·릴리스 워크플로와 앱 판정 스크립트 변경을 앱 변경으로 처리합니다. push 실행 전체는 취소하지 않고 develop의 검증·웹·확장 잡만 각각 이전 잡을 취소합니다. 앱의 실제 빌드 잡이 `release-app` 그룹(`cancel-in-progress: false`, `queue: max`)을 단독으로 소유해 운영 요청을 최대 100개까지 대기시킵니다. develop 후보는 실행권을 얻은 뒤 최신 검증 성공 후보와 플랫폼별 마지막 배포 성공 SHA를 확인하고, 오래되었거나 앱 변경이 없는 후보를 EAS 전에 생략합니다. 성공 SHA는 Firebase 배포가 끝난 뒤 `staging-app-success-<platform>-<sha>-<run>-<attempt>` 아티팩트로 90일간 보관합니다. 기준이 없거나 만료됐으면 전체 앱 빌드하며, 조회 실패는 실패로 처리합니다. Android 운영 릴리스의 master CI 산출물 재사용은 유지합니다.
+`detect-affected-apps.sh`는 Turbo 패키지 영향 판정에 더해 CI·앱·릴리스 워크플로와 앱 판정 스크립트 변경을 앱 변경으로 처리합니다. `oracle` 출력은 웹 변경에 더해 VM 서버 구성(`infra/oracle`, terraform 제외)이 바뀌어도 true라 Vercel 배포 없이 VM만 다시 배포합니다. push 실행 전체는 취소하지 않고 develop의 검증·웹·확장 잡만 각각 이전 잡을 취소합니다. 앱의 실제 빌드 잡이 `release-app` 그룹(`cancel-in-progress: false`, `queue: max`)을 단독으로 소유해 운영 요청을 최대 100개까지 대기시킵니다. develop 후보는 실행권을 얻은 뒤 최신 검증 성공 후보와 플랫폼별 마지막 배포 성공 SHA를 확인하고, 오래되었거나 앱 변경이 없는 후보를 EAS 전에 생략합니다. 성공 SHA는 Firebase 배포가 끝난 뒤 `staging-app-success-<platform>-<sha>-<run>-<attempt>` 아티팩트로 90일간 보관합니다. 기준이 없거나 만료됐으면 전체 앱 빌드하며, 조회 실패는 실패로 처리합니다. Android 운영 릴리스의 master CI 산출물 재사용은 유지합니다.
 
 `ci.yml`의 `notify-staging-app`은 `deploy/notify-thread-reply.mjs`를 `REPLY_PHASE=store-submit`으로 호출해 develop 앱 App Tester 배포 결과를 머지 스레드에 알립니다. 웹 결과 알림과 독립적으로 실행하며, 앱 댓글에는 배포 버튼 없이 Actions 로그 링크만 붙입니다. 큐에서 생략한 후보는 `attempted=false`로 결과 댓글을 억제합니다.
 

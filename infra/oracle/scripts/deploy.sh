@@ -39,6 +39,7 @@ for attempt in 1 2 3; do
 	[ "$attempt" = 3 ] && exit 1
 	sleep 3
 done
+start_alloy_if_configured
 docker compose pull --quiet "web-$IDLE"
 docker compose up -d --no-deps --force-recreate "web-$IDLE"
 

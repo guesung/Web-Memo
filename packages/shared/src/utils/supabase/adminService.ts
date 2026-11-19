@@ -87,6 +87,20 @@ export interface IFUserGrowthParams extends IFAdminStatsParams {
 	daysAgo?: number;
 }
 
+/** GA 일별 지표 조회 인자 */
+export interface IFGaDailyMetricsParams {
+	/** 적재된 최신 날짜부터 거슬러 올라갈 일수. DB가 1~365로 보정한다. */
+	days?: number;
+}
+
+/** 주간 리텐션 조회 인자 */
+export interface IFWeeklyRetentionParams {
+	/** 기준 주의 시작일(토요일, YYYY-MM-DD). `getLastCompleteWeekStart()`가 만든다. */
+	weekStart: string;
+	/** 기준 주를 포함해 몇 주 전 코호트까지 볼지 */
+	weeks?: number;
+}
+
 /** 관리자 통계와 사용자 및 피드백 조회를 처리한다. */
 export class AdminService {
 	supabaseClient: MemoSupabaseClient;
@@ -117,6 +131,34 @@ export class AdminService {
 			.rpc("get_active_users_stats", {
 				include_admin: includeAdmin,
 			});
+
+	/**
+	 * GA 일별 지표(이벤트별 사용자·발생 수와 active_users)를 읽는다.
+	 * @description `memo.ga_daily_metrics`는 직접 읽을 수 없어 관리자 검사를 하는 RPC로만 읽는다.
+	 * `metric`은 GA 이벤트 이름이거나 `active_users`(events는 null)다.
+	 */
+	getGaDailyMetrics = async ({ days = 90 }: IFGaDailyMetricsParams = {}) =>
+		this.supabaseClient
+			.schema(SUPABASE.schema.memo)
+			.rpc("get_admin_ga_daily_metrics", { p_days: days });
+
+	/** 주간 코호트 리텐션. 정의는 `memo.weekly_creation_retention`이 갖는다. */
+	getWeeklyRetention = async ({
+		weekStart,
+		weeks = 8,
+	}: IFWeeklyRetentionParams) =>
+		this.supabaseClient
+			.schema(SUPABASE.schema.memo)
+			.rpc("get_admin_weekly_retention", {
+				p_week_start: weekStart,
+				p_weeks: weeks,
+			});
+
+	/** 첫 메모를 쓴 달별 신규 작성자 수와, 첫 메모 +7~30일에 메모를 더 만든 사람 수. */
+	getMonthlyRewriteRate = async () =>
+		this.supabaseClient
+			.schema(SUPABASE.schema.memo)
+			.rpc("get_admin_monthly_rewrite_rate");
 
 	getUsers = async ({ searchQuery }: IFGetAdminUsersParams = {}) =>
 		this.supabaseClient.schema(SUPABASE.schema.memo).rpc("get_admin_users", {

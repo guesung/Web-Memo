@@ -16,3 +16,4 @@ export * from "./Supabase";
 export * from "./Tailwind";
 export * from "./Textarea";
 export * from "./Url";
+export * from "./weeklyCohort";

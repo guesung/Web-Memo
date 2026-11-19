@@ -96,6 +96,16 @@ export const QUERY_KEY = {
 	 * 무효화하는 키가 어긋나도 눈에 띄지 않는다. 실제로 그렇게 어긋나 검색이 죽어 있었다.
 	 */
 	adminUsers: (search?: string) => ["adminUsers", search],
+	/** 관리자 GA 일별 지표. 조회 일수마다 별도 캐시다. */
+	adminGaDailyMetrics: (days: number) => ["adminGaDailyMetrics", days],
+	/** 관리자 주간 리텐션. 기준 주 시작일(토요일)과 코호트 주 수마다 별도 캐시다. */
+	adminWeeklyRetention: (weekStart: string, weeks: number) => [
+		"adminWeeklyRetention",
+		weekStart,
+		weeks,
+	],
+	/** 관리자 월별 재작성률. 인자가 없다. */
+	adminMonthlyRewriteRate: () => ["adminMonthlyRewriteRate"],
 	/** 관리자 피드백 목록. 검색어·페이지·페이지 크기 조합마다 별도 캐시다. */
 	feedbacks: (search?: string, page?: number, pageSize?: number) => [
 		"feedbacks",

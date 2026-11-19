@@ -71,7 +71,7 @@ fi
 
 # VM 서버 구성(compose·Caddy·Alloy·배포 스크립트)은 웹 패키지 밖이라 turbo가 잡지 못한다.
 # 이것만 바뀌어도 VM에 다시 보내야 반영되므로 Oracle 배포 대상으로 본다. Vercel 배포는 하지 않는다.
-# 알림 규칙(terraform)은 cd-grafana.yml이 따로 적용하므로 제외한다.
+# 알림 규칙(terraform)은 cd-terraform.yml이 따로 적용하므로 제외한다.
 oracle_affected="$web_affected"
 if ! git diff --quiet "$BASE_REF...$DIFF_HEAD" -- infra/oracle .github/workflows/cd-web-oracle.yml ':!infra/oracle/terraform'; then
   oracle_affected=true

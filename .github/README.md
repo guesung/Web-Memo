@@ -29,7 +29,7 @@ GitHub Actions는 `.github/workflows/` 아래 하위 폴더를 인식하지 않�
 | `cd-extension.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-reusable-artifact.sh` · `deploy/upload-extension-to-store.mjs` |
 | `cd-web.yml` | workflow_call, workflow_dispatch | 다른 워크플로에서 호출하거나 수동 실행할 때마다 | `deploy/find-staged-deployment.mjs` · `deploy/staged-deployment.mjs` · `deploy/notify-staging-deploy.mjs` |
 | `cd-web-oracle.yml` | workflow_call, workflow_dispatch | `ci.yml`이 develop 푸시에서 웹이나 VM 서버 구성(`infra/oracle`)이 바뀌었고 `ORACLE_DEPLOY_ENABLED=true`일 때, 또는 수동 실행마다 | 없음 (VM의 `infra/oracle/scripts/deploy.sh`·`rollback.sh`를 SSH로 실행) |
-| `cd-grafana.yml` | pull_request, push(develop), workflow_dispatch | `infra/oracle/terraform/grafana`가 바뀐 PR(plan)·develop 푸시(apply) 또는 수동 실행마다 | 없음 (Terraform) |
+| `cd-terraform.yml` | pull_request, push(develop), workflow_dispatch | `infra/oracle/terraform/`(grafana·cloudflare 스택)가 바뀐 PR(plan)·develop 푸시(apply) 또는 수동 실행마다 | 없음 (Terraform) |
 | `release.yml` | workflow_dispatch | 수동 실행할 때마다 | `deploy/sync-next-version-pr.mjs`. `cd-app`·`cd-extension`·`cd-web`·`release-notify` 호출 |
 | `release-notify.yml` | workflow_call | `release.yml`에서 호출할 때마다 | `deploy/record-deploy.mjs` · `deploy/collect-deploy-prs.mjs` · `deploy/detect-affected-apps.sh` · `deploy/notify-release-result.mjs` |
 | `release-github.yml` | push(tag `v*`) | `v*` 태그 push마다 | 없음 |

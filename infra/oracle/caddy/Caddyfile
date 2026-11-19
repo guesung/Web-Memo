@@ -3,14 +3,20 @@
 		# Cloudflare 프록시를 거친 요청만 앞단 IP를 믿고, 실제 사용자 IP는 CF-Connecting-IP에서 꺼냅니다.
 		# 이게 없으면 앱의 x-forwarded-for 첫 값이 Cloudflare 엣지 IP가 되어
 		# rate limit이 모든 사용자를 한 사람으로 묶습니다.
-		# 출처: https://www.cloudflare.com/ips-v4/ , https://www.cloudflare.com/ips-v6/ (2026-11-18)
-		trusted_proxies static 173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22 2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 2405:8100::/32 2a06:98c0::/29 2c0f:f248::/32
+		# 대역 목록은 compose.yaml의 CLOUDFLARE_IPS 한 곳에 있습니다(아래 접근 제한과 같이 씀)
+		trusted_proxies static {$CLOUDFLARE_IPS}
 		client_ip_headers CF-Connecting-IP X-Forwarded-For
 	}
 }
 
 {$SITE_ADDRESS} {
 	encode zstd gzip
+
+	# Cloudflare를 거치지 않은 연결은 거절합니다. VM IP로 직접 붙으면 Cloudflare Access를 우회할 수 있기
+	# 때문입니다(실제로 확인함). remote_ip는 TCP 상대 주소라 헤더로 속일 수 없습니다.
+	# ACME HTTP-01 응답은 Caddy가 라우트보다 먼저 처리합니다.
+	@not_cloudflare not remote_ip {$CLOUDFLARE_IPS}
+	respond @not_cloudflare "Forbidden" 403
 
 	# 접근 로그를 JSON으로 stdout에 남겨 Alloy가 Loki로 보냅니다. 앱이 죽어 Caddy가 낸 502·504도
 	# status 필드로 잡혀 5xx 알림의 근거가 됩니다(Vercel 무료 플랜에서 못 받던 오류).

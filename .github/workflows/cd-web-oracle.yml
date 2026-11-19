@@ -41,6 +41,8 @@ permissions:
 env:
   IMAGE: ghcr.io/${{ github.repository_owner }}/web-memo-web
   DEPLOY_ENV: staging
+  # Caddy가 이 주소로 Let's Encrypt 인증서를 받고 HTTPS로 서비스합니다(DNS는 terraform/cloudflare가 VM으로 돌림)
+  SITE_ADDRESS: staging.webmemo.xyz
   REMOTE: deploy@${{ secrets.ORACLE_SSH_HOST }}
 
 jobs:
@@ -148,7 +150,7 @@ jobs:
         run: |
           printf '%s' "$GHCR_TOKEN" | ssh "$REMOTE" "docker login ghcr.io -u ${{ github.actor }} --password-stdin >/dev/null"
           set +e
-          ssh "$REMOTE" "/opt/webmemo/scripts/deploy.sh '$TAG' '$SHA'"
+          ssh "$REMOTE" "SITE_ADDRESS='$SITE_ADDRESS' /opt/webmemo/scripts/deploy.sh '$TAG' '$SHA'"
           STATUS=$?
           ssh "$REMOTE" "docker logout ghcr.io >/dev/null" || true
           echo "배포 이미지: \`$TAG\`" >> "$GITHUB_STEP_SUMMARY"

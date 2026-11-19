@@ -49,6 +49,29 @@ resource "grafana_synthetic_monitoring_check" "staging" {
   }
 }
 
+# 비교 기준: 운영(Vercel) 응답 시간. 5단계 관찰 동안 VM(오사카)과 Vercel(서울 icn1)을 같은 프로브로 나란히 봅니다.
+# 알림은 걸지 않습니다. 실행 횟수를 아끼려고 2분 간격입니다.
+resource "grafana_synthetic_monitoring_check" "production_baseline" {
+  job                = "webmemo-production-vercel"
+  target             = "https://www.webmemo.xyz/api/version"
+  enabled            = true
+  frequency          = 120000
+  timeout            = 10000
+  basic_metrics_only = true
+  probes             = [for name in var.probe_names : data.grafana_synthetic_monitoring_probes.public.probes[name]]
+  labels = {
+    service = "webmemo"
+  }
+
+  settings {
+    http {
+      method             = "GET"
+      ip_version         = "V4"
+      valid_status_codes = [200]
+    }
+  }
+}
+
 # ---------- 알림 규칙 ----------
 locals {
   # datasource: prom | loki, op: gt | lt, no_data: OK | Alerting, range: 쿼리 시간 범위(초)

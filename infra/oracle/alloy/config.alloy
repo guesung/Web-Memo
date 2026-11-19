@@ -1,0 +1,110 @@
+// VM의 컨테이너 로그와 호스트·컨테이너 지표를 Grafana Cloud로 보냅니다(노션 DB-1327 4단계).
+// 자격 증명은 env/alloy.env(배포 워크플로가 GitHub Secrets에서 만듦)를 환경변수로 읽습니다.
+//
+// 무료 티어 지표 시리즈 한도를 넘지 않도록 알림·대시보드에 쓰는 지표만 남기고 버립니다(keep_metrics).
+
+// ---------- 로그: 모든 컨테이너 → Loki ----------
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "containers" {
+  targets = []
+
+  // compose 서비스 이름(caddy, web-blue, web-green, alloy)을 service 라벨로
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    regex         = "web-(blue|green)"
+    target_label  = "color"
+  }
+}
+
+loki.source.docker "containers" {
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.docker.containers.targets
+  labels        = {"host" = "webmemo-1", "env" = "staging"}
+  relabel_rules = discovery.relabel.containers.rules
+  forward_to    = [loki.write.cloud.receiver]
+}
+
+loki.write "cloud" {
+  endpoint {
+    url = sys.env("GRAFANA_CLOUD_LOKI_URL")
+
+    basic_auth {
+      username = sys.env("GRAFANA_CLOUD_LOKI_USER")
+      password = sys.env("GRAFANA_CLOUD_WRITE_TOKEN")
+    }
+  }
+}
+
+// ---------- 지표: 호스트(unix) + 컨테이너(cadvisor) → Prometheus ----------
+prometheus.exporter.unix "host" {
+  procfs_path    = "/host/proc"
+  sysfs_path     = "/host/sys"
+  rootfs_path    = "/rootfs"
+  set_collectors = ["cpu", "meminfo", "loadavg", "filesystem", "netdev"]
+
+  filesystem {
+    mount_points_exclude = "^/(dev|proc|run|sys|var/lib/docker/.+)($|/)"
+  }
+  netdev {
+    device_exclude = "^(veth.*|br-.*|docker.*|lo)$"
+  }
+}
+
+prometheus.exporter.cadvisor "containers" {
+  docker_host      = "unix:///var/run/docker.sock"
+  docker_only      = true
+  storage_duration = "5m"
+}
+
+prometheus.scrape "host" {
+  targets         = prometheus.exporter.unix.host.targets
+  scrape_interval = "60s"
+  forward_to      = [prometheus.relabel.keep_metrics.receiver]
+}
+
+prometheus.scrape "containers" {
+  targets         = prometheus.exporter.cadvisor.containers.targets
+  scrape_interval = "60s"
+  forward_to      = [prometheus.relabel.keep_metrics.receiver]
+}
+
+prometheus.relabel "keep_metrics" {
+  forward_to = [prometheus.remote_write.cloud.receiver]
+
+  rule {
+    source_labels = ["__name__"]
+    regex         = "up|node_memory_(MemTotal|MemAvailable)_bytes|node_cpu_seconds_total|node_load(1|5)|node_filesystem_(size|avail)_bytes|node_network_(receive|transmit)_bytes_total|container_(start_time_seconds|oom_events_total|memory_working_set_bytes|cpu_usage_seconds_total|last_seen)"
+    action        = "keep"
+  }
+  // cadvisor는 compose 서비스 라벨을 container_label_* 로 붙입니다. 알림에서 쓰기 좋게 service로 옮깁니다
+  rule {
+    source_labels = ["container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+  rule {
+    regex  = "container_label_.*|id|image"
+    action = "labeldrop"
+  }
+  rule {
+    target_label = "host"
+    replacement  = "webmemo-1"
+  }
+}
+
+prometheus.remote_write "cloud" {
+  endpoint {
+    url = sys.env("GRAFANA_CLOUD_PROM_URL")
+
+    basic_auth {
+      username = sys.env("GRAFANA_CLOUD_PROM_USER")
+      password = sys.env("GRAFANA_CLOUD_WRITE_TOKEN")
+    }
+  }
+}

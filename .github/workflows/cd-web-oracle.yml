@@ -113,8 +113,31 @@ jobs:
       # VM 상태(.env·env/·state/)는 보내지 않고, 런타임 환경변수만 env/web.env로 교체합니다.
       - name: Ship config and env
         run: |
-          rsync -az --delete infra/oracle/compose.yaml infra/oracle/caddy infra/oracle/scripts "$REMOTE:/opt/webmemo/"
+          rsync -az --delete infra/oracle/compose.yaml infra/oracle/caddy infra/oracle/alloy infra/oracle/scripts "$REMOTE:/opt/webmemo/"
           rsync -az --chmod=F600 "$RUNNER_TEMP/web.env" "$REMOTE:/opt/webmemo/env/web.env"
+
+      # 관측 수집기(alloy) 자격 증명. Secrets가 비어 있으면 보내지 않고 deploy.sh도 alloy를 띄우지 않습니다.
+      - name: Ship observability env
+        env:
+          LOKI_URL: ${{ secrets.GRAFANA_CLOUD_LOKI_URL }}
+          LOKI_USER: ${{ secrets.GRAFANA_CLOUD_LOKI_USER }}
+          PROM_URL: ${{ secrets.GRAFANA_CLOUD_PROM_URL }}
+          PROM_USER: ${{ secrets.GRAFANA_CLOUD_PROM_USER }}
+          WRITE_TOKEN: ${{ secrets.GRAFANA_CLOUD_WRITE_TOKEN }}
+        run: |
+          if [ -z "$LOKI_URL" ] || [ -z "$PROM_URL" ] || [ -z "$WRITE_TOKEN" ]; then
+            echo "Grafana Cloud Secrets가 없어 alloy 설정을 건너뜁니다"
+            exit 0
+          fi
+          umask 077
+          {
+            echo "GRAFANA_CLOUD_LOKI_URL=$LOKI_URL"
+            echo "GRAFANA_CLOUD_LOKI_USER=$LOKI_USER"
+            echo "GRAFANA_CLOUD_PROM_URL=$PROM_URL"
+            echo "GRAFANA_CLOUD_PROM_USER=$PROM_USER"
+            echo "GRAFANA_CLOUD_WRITE_TOKEN=$WRITE_TOKEN"
+          } > "$RUNNER_TEMP/alloy.env"
+          rsync -az --chmod=F600 "$RUNNER_TEMP/alloy.env" "$REMOTE:/opt/webmemo/env/alloy.env"
 
       # GHCR 패키지가 비공개라 VM이 받을 수 있도록 이 실행의 토큰으로 잠깐 로그인했다 나옵니다.
       - name: Deploy (blue-green)

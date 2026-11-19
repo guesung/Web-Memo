@@ -82,6 +82,7 @@ jobs:
       app: ${{ steps.detect.outputs.app }}
       extension: ${{ steps.detect.outputs.extension }}
       web: ${{ steps.detect.outputs.web }}
+      oracle: ${{ steps.detect.outputs.oracle }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -187,7 +188,7 @@ jobs:
   # 저장소 변수 ORACLE_DEPLOY_ENABLED가 "true"일 때만 돌고, 실패해도 Vercel 배포·알림에는 영향이 없습니다.
   cd-web-oracle:
     needs: [ci, changes]
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && needs.changes.outputs.web == 'true' && vars.ORACLE_DEPLOY_ENABLED == 'true' }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && needs.changes.outputs.oracle == 'true' && vars.ORACLE_DEPLOY_ENABLED == 'true' }}
     uses: ./.github/workflows/cd-web-oracle.yml
     secrets: inherit
     permissions:

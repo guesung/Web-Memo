@@ -37,9 +37,9 @@ variable "loki_datasource_uid" {
 }
 
 variable "health_check_target" {
-  description = "외부 헬스체크 대상. 5단계에서 staging 도메인으로 바꿉니다"
+  description = "외부 헬스체크 대상. Cloudflare·Access(이 경로는 bypass)·Caddy를 모두 거치는 공개 주소"
   type        = string
-  default     = "http://161.33.33.168/api/version"
+  default     = "https://staging.webmemo.xyz/api/version"
 }
 
 variable "probe_names" {

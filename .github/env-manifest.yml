@@ -125,7 +125,7 @@
   kind: secret
   stores: [github]
   required: false
-  consumers: [.github/workflows/cd-grafana.yml]
+  consumers: [.github/workflows/cd-terraform.yml]
   impact: "알림 규칙을 Terraform으로 적용하지 못한다"
   note: "Grafana Cloud 스택 주소"
 
@@ -133,7 +133,7 @@
   kind: secret
   stores: [github]
   required: false
-  consumers: [.github/workflows/cd-grafana.yml]
+  consumers: [.github/workflows/cd-terraform.yml]
   impact: "알림 규칙·연락처를 적용하지 못한다"
   note: "Terraform 전용 서비스 계정 토큰(Editor)"
 
@@ -141,7 +141,7 @@
   kind: secret
   stores: [github]
   required: false
-  consumers: [.github/workflows/cd-grafana.yml]
+  consumers: [.github/workflows/cd-terraform.yml]
   impact: "외부 헬스체크를 적용하지 못한다"
   note: "Synthetic Monitoring API 주소(스택 리전별)"
 
@@ -149,7 +149,7 @@
   kind: secret
   stores: [github]
   required: false
-  consumers: [.github/workflows/cd-grafana.yml]
+  consumers: [.github/workflows/cd-terraform.yml]
   impact: "외부 헬스체크를 적용하지 못한다"
   note: "Synthetic Monitoring 액세스 토큰"
 
@@ -157,7 +157,7 @@
   kind: secret
   stores: [github]
   required: false
-  consumers: [.github/workflows/cd-grafana.yml]
+  consumers: [.github/workflows/cd-terraform.yml]
   impact: "지표 기반 알림 규칙을 만들지 못한다"
   note: "grafanacloud-<stack>-prom 데이터 소스 UID"
 
@@ -165,7 +165,7 @@
   kind: secret
   stores: [github]
   required: false
-  consumers: [.github/workflows/cd-grafana.yml]
+  consumers: [.github/workflows/cd-terraform.yml]
   impact: "5xx 알림 규칙을 만들지 못한다"
   note: "grafanacloud-<stack>-logs 데이터 소스 UID"
 
@@ -173,7 +173,7 @@
   kind: secret
   stores: [github]
   required: false
-  consumers: [.github/workflows/cd-grafana.yml]
+  consumers: [.github/workflows/cd-terraform.yml]
   impact: "Terraform state를 읽지 못해 plan·apply가 문법 확인만 하고 끝난다"
   note: "Oracle Object Storage 버킷 이름"
 
@@ -181,7 +181,7 @@
   kind: secret
   stores: [github]
   required: false
-  consumers: [.github/workflows/cd-grafana.yml]
+  consumers: [.github/workflows/cd-terraform.yml]
   impact: "Terraform state 저장소에 접속하지 못한다"
   note: "https://<namespace>.compat.objectstorage.ap-osaka-1.oraclecloud.com"
 
@@ -189,7 +189,7 @@
   kind: secret
   stores: [github]
   required: false
-  consumers: [.github/workflows/cd-grafana.yml]
+  consumers: [.github/workflows/cd-terraform.yml]
   impact: "Terraform state 저장소 인증에 실패한다"
   note: "OCI Customer Secret Key의 access key"
 
@@ -197,9 +197,41 @@
   kind: secret
   stores: [github]
   required: false
-  consumers: [.github/workflows/cd-grafana.yml]
+  consumers: [.github/workflows/cd-terraform.yml]
   impact: "Terraform state 저장소 인증에 실패한다"
   note: "OCI Customer Secret Key의 secret"
+
+- name: CLOUDFLARE_API_TOKEN
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-terraform.yml]
+  impact: "staging DNS·SSL·Access를 Terraform으로 적용하지 못한다"
+  note: "webmemo.xyz Zone DNS·Zone Settings 편집 + 계정 Access 앱·정책 편집 권한만 가진 토큰"
+
+- name: CLOUDFLARE_ACCOUNT_ID
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-terraform.yml]
+  impact: "Access 앱을 적용하지 못한다"
+  note: "Cloudflare 계정 ID"
+
+- name: CLOUDFLARE_ZONE_ID
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-terraform.yml]
+  impact: "staging DNS·SSL 설정을 적용하지 못한다"
+  note: "webmemo.xyz zone ID"
+
+- name: STAGING_ACCESS_EMAILS
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-terraform.yml]
+  impact: "Access 허용 정책을 만들지 못해 staging에 아무도 들어가지 못한다"
+  note: "staging에 들어갈 이메일 JSON 배열. 공개 레포라 Secret에 둔다"
 
 - name: ORACLE_DEPLOY_ENABLED
   kind: config
@@ -266,7 +298,7 @@
 - name: SLACK_WEBHOOK_URL
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/chore-ga-events.yml, .github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/workflows/audit-refactor.yml, .github/workflows/release-notify.yml, .github/workflows/versions.yml, .github/workflows/audit-env-registry.yml, .github/workflows/report-seo.yml, .github/workflows/audit-ga-cid-adoption.yml, .github/workflows/notify-extension-published.yml, .github/workflows/chore-e2e-coverage.yml, .github/workflows/chore-oracle-vm-retry.yml, .github/workflows/cd-grafana.yml]
+  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/chore-ga-events.yml, .github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/workflows/audit-refactor.yml, .github/workflows/release-notify.yml, .github/workflows/versions.yml, .github/workflows/audit-env-registry.yml, .github/workflows/report-seo.yml, .github/workflows/audit-ga-cid-adoption.yml, .github/workflows/notify-extension-published.yml, .github/workflows/chore-e2e-coverage.yml, .github/workflows/chore-oracle-vm-retry.yml, .github/workflows/cd-terraform.yml]
   impact: "빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다"
 
 - name: OCI_CLI_USER

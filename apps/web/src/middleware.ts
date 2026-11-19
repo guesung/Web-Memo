@@ -2,6 +2,7 @@ import { PATHS } from "@web-memo/shared/constants";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+import { isEdgeCachePath } from "./modules/edgeCache";
 import { getLanguage, SUPPORTED_LANGUAGES } from "./modules/i18n";
 import { updateAuthorization } from "./modules/supabase";
 
@@ -95,6 +96,11 @@ export async function middleware(request: NextRequest) {
 		return NextResponse.next();
 	}
 	if (PUBLIC_SEO_PATHS.includes(pathname)) {
+		return NextResponse.next();
+	}
+	// Cloudflare 엣지가 HTML을 캐시하는 페이지. 세션 갱신이 Set-Cookie를 붙이면 캐시되지 않고
+	// 다른 사람의 쿠키가 캐시에 섞일 수 있어 건너뛴다. 로그인 상태는 클라이언트가 판단한다.
+	if (isEdgeCachePath(pathname)) {
 		return NextResponse.next();
 	}
 

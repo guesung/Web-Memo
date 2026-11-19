@@ -17,7 +17,7 @@ argument-hint: '[PR 제목·본문 추가 지시 (선택)]'
    - 원격 추적이 없으면 `git push -u origin <branch>`로, 있는데 로컬이 앞서 있으면 `git push`로 올린다. PR과 충돌 판정은 원격 브랜치를 기준으로 하므로 여기서 로컬과 원격을 맞춰 둔다.
    - 올린 뒤 아래 **"develop 머지 — 앱/웹 변경이 있으면 반드시"**를 수행한다. 묻지 않는다.
 5. **모든 커밋**을 훑어서 PR 제목·본문을 작성한다 (최신 커밋만 보지 말 것).
-   - 제목: 70자 이내의 짧고 명확한 문장. 상세는 본문에. master 대상이거나 스택 PR이면 `[DB-<ID>]` 접두사를 붙인다.
+   - 제목: 70자 이내의 짧고 명확한 문장. 상세는 본문에. base가 master인 PR이면 `[DB-<ID>]` 접두사를 붙인다. 그 위에 쌓인 스택 PR(base가 master가 아님)에는 붙이지 않는다.
    - 스택 PR이면 본문에 체인 한 줄을 넣는다(아래 "스택 PR" 3).
    - 본문은 HEREDOC으로 전달한다:
      ```
@@ -144,7 +144,7 @@ git status --porcelain                                     # 비어 있어야 �
 2. **base는 직전 브랜치다.** 판정: `gh pr list --state open --json headRefName,number`의 각 브랜치 `h`(현재 브랜치 제외) 중 `git merge-base --is-ancestor origin/h HEAD`가 참이고 `git merge-base --is-ancestor origin/h origin/<기본 브랜치>`가 거짓인 것이 후보다. 후보가 여럿이면 다른 후보를 모두 조상으로 갖는 것, 곧 가장 가까운 것이 직전 브랜치다. 후보가 없으면 스택이 아니다.
 3. **체인을 적는다.** 본문 `## 관련 이슈`(템플릿에 없으면 Summary 끝)에 `스택: #A ← #B ← 이 PR`을 넣는다. 체인의 아래 PR들 본문에도 같은 줄을 `gh pr view --json body`로 읽은 전체에 덧붙여 `gh pr edit --body`로 갱신한다.
 4. **아래 브랜치를 고치면 위로 차례로 merge한다.** 아래 브랜치에 커밋을 더했으면 `git switch <위 브랜치> && git merge --no-edit <아래 브랜치> && git push`를 체인 끝까지 반복한다. rebase하지 않는다 — 위 브랜치들의 이력이 갈라져 force push가 필요해진다.
-5. **머지는 맨 위 PR 하나로 한다.** 9단계 출력에 `스택: #A ← #B ← #C — 맨 위 #C를 머지하면 함께 들어감`을 덧붙인다. GitHub는 스택 PR에 일반 머지 API를 거부하므로 사람이 머지할 때 `PUT /repos/{o}/{r}/pulls/{맨 위}/merge-async`(merge_method=merge)를 쓴다.
+5. **머지한 뒤 master에 들어갔는지 확인한다.** 9단계 출력에 `스택: #A ← #B ← #C`를 덧붙인다. GitHub는 스택 PR에 일반 머지 API를 거부하므로 사람이 머지할 때 `PUT /repos/{o}/{r}/pulls/{맨 위}/merge-async`(merge_method=merge)를 쓴다. 이 API가 체인 전체를 master에 넣을 때도 있지만, 맨 위 PR을 **바로 아래 브랜치에만** 머지하고 끝날 때도 있다(2026-11-18 #879는 base `chore/oracle-infra`에만 들어가고 #873은 열린 채 남았다). 그래서 머지 뒤 `git merge-base --is-ancestor <맨 위 head SHA> origin/<기본 브랜치>`로 확인하고, 거짓이면 아래부터 차례로 넣는다: 맨 아래 PR을 기본 브랜치에 머지 → 다음 PR을 `gh pr edit <번호> --base <기본 브랜치>`로 옮겨 머지 → 체인 끝까지 반복.
 
 develop 머지와 base 충돌 해결은 각 PR에서 그대로 한다. 충돌 판정의 `<base>`는 직전 브랜치다.
 
@@ -152,7 +152,7 @@ develop 머지와 base 충돌 해결은 각 PR에서 그대로 한다. 충돌 �
 
 ## master 대상 PR — 작업 카드
 
-base가 `master`인 PR과 그 위에 쌓인 스택 PR은 **항상 작업 카드를 제목 접두사 `[DB-<ID>]`로 기입한다.** 본문에는 따로 적지 않는다.
+base가 `master`인 PR은 **항상 작업 카드를 제목 접두사 `[DB-<ID>]`로 기입한다.** 본문에는 따로 적지 않는다. 스택에서는 맨 아래(base가 master인) PR에만 붙이고, 그 위에 쌓인 PR에는 붙이지 않는다 — 체인 줄로 맨 아래 PR과 이어져 있어 카드를 찾을 수 있다.
 
 - 카드는 `$ARGUMENTS`의 `[DB-123]`, 브랜치명, 커밋 메시지 순으로 찾는다. `ID` 값 자체가 `DB-123` 형태이므로 `DB-`를 두 번 붙이지 않는다.
 - **찾지 못하면 추측하지 말고 `AskUserQuestion`으로 사용자에게 카드를 묻는다.** 답을 받기 전에는 `gh pr create`를 실행하지 않는다.

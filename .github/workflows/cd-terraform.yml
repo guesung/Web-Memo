@@ -1,39 +1,33 @@
-name: CD - Grafana 알림 (Terraform)
+name: CD - Terraform (Grafana·Cloudflare)
 
-# infra/oracle/terraform/grafana의 알림 규칙·Slack 연락처·외부 헬스체크를 Grafana Cloud에 적용합니다.
-# 노션 DB-1327 4단계. state는 Oracle Object Storage(S3 호환)에 있습니다.
+# infra/oracle/terraform/의 스택을 적용합니다. 노션 DB-1327 4·5단계. state는 Oracle Object Storage(S3 호환)에 있습니다.
+#   grafana    알림 규칙·Slack 연락처·외부 헬스체크
+#   cloudflare staging DNS·SSL 모드·Access(staging 보호)
 #
 # - PR: fmt·validate·plan만 돌고, 바뀔 내용을 실행 요약에 남깁니다
 # - develop 푸시·수동 실행: apply. Oracle VM이 지금 staging만 받으므로 develop 기준으로 적용합니다
 #   (운영 이전 6단계에서 master 기준으로 바꿀지 다시 정합니다)
+# 스택마다 바뀐 파일이 없어도 plan은 돌지만, 바뀐 게 없으면 apply는 아무것도 하지 않습니다.
 
 on:
   pull_request:
     paths:
-      - "infra/oracle/terraform/grafana/**"
-      - ".github/workflows/cd-grafana.yml"
+      - "infra/oracle/terraform/**"
+      - ".github/workflows/cd-terraform.yml"
   push:
     branches: [develop]
     paths:
-      - "infra/oracle/terraform/grafana/**"
-      - ".github/workflows/cd-grafana.yml"
+      - "infra/oracle/terraform/**"
+      - ".github/workflows/cd-terraform.yml"
   workflow_dispatch:
-
-# state 잠금을 쓰지 않으므로(versions.tf 참고) 동시에 한 실행만 돌게 합니다.
-concurrency:
-  group: cd-grafana
-  cancel-in-progress: false
 
 permissions:
   contents: read
 
-defaults:
-  run:
-    working-directory: infra/oracle/terraform/grafana
-
 env:
   TF_IN_AUTOMATION: "true"
   TF_INPUT: "false"
+  # grafana
   TF_VAR_grafana_url: ${{ secrets.GRAFANA_URL }}
   TF_VAR_grafana_auth: ${{ secrets.GRAFANA_TF_TOKEN }}
   TF_VAR_sm_url: ${{ secrets.GRAFANA_SM_URL }}
@@ -41,11 +35,27 @@ env:
   TF_VAR_slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
   TF_VAR_prometheus_datasource_uid: ${{ secrets.GRAFANA_PROM_DATASOURCE_UID }}
   TF_VAR_loki_datasource_uid: ${{ secrets.GRAFANA_LOKI_DATASOURCE_UID }}
+  # cloudflare
+  TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  TF_VAR_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  TF_VAR_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+  TF_VAR_staging_allowed_emails: ${{ secrets.STAGING_ACCESS_EMAILS }}
 
 jobs:
   terraform:
-    name: Terraform ${{ github.event_name == 'pull_request' && 'plan' || 'apply' }}
+    name: ${{ matrix.stack }} ${{ github.event_name == 'pull_request' && 'plan' || 'apply' }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: [grafana, cloudflare]
+    # state 잠금을 쓰지 않으므로(versions.tf 참고) 스택마다 한 실행만 돌게 합니다.
+    concurrency:
+      group: cd-terraform-${{ matrix.stack }}
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: infra/oracle/terraform/${{ matrix.stack }}
     steps:
       - uses: actions/checkout@v5
 
@@ -85,7 +95,7 @@ jobs:
         run: |
           terraform plan -out=tfplan -no-color | tee plan.txt
           {
-            echo "### Terraform plan"
+            echo "### Terraform plan (${{ matrix.stack }})"
             echo '```'
             grep -E '^(Plan:|No changes|  # )' plan.txt || true
             echo '```'

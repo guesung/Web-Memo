@@ -33,7 +33,8 @@ Grafana Synthetic Monitoring ── 1분마다 /api/version ──┘ → Grafan
 | `scripts/deploy.sh` | 대기 색에 새 이미지 기동 → `/api/version` 커밋 확인 → Caddy 전환 | VM (CI가 SSH로 실행) |
 | `scripts/rollback.sh` | 트래픽을 직전 색으로 되돌림 | VM (CI `action=rollback`) |
 | `alloy/config.alloy` | 컨테이너 로그 → Loki, 호스트·컨테이너 지표 → Prometheus | VM (compose `alloy`, `observability` 프로필) |
-| `terraform/grafana/` | 알림 규칙 6종·Slack 연락처·외부 헬스체크 | CI `cd-grafana.yml` (Grafana Cloud) |
+| `terraform/grafana/` | 알림 규칙 6종·Slack 연락처·외부 헬스체크(staging, 비교용 운영 Vercel) | CI `cd-terraform.yml` (Grafana Cloud) |
+| `terraform/cloudflare/` | `staging` DNS(VM·Vercel 전환), SSL Full (strict), staging Access(이메일 OTP)와 bypass 경로 | CI `cd-terraform.yml` (Cloudflare) |
 
 VM에만 있고 레포에 없는 것: `/opt/webmemo/.env`(사이트 주소·이미지 태그), `env/web.env`(앱 런타임 환경변수),
 `env/alloy.env`(Grafana Cloud 쓰기 자격 증명),
@@ -105,6 +106,18 @@ Vercel 무료 플랜에서 받지 못하던 플랫폼 레벨 오류(타임아웃
 - **알림(`terraform/grafana`)**: 5xx 급증, OOM, 메모리 85% 초과, 회수 위험(24시간 평균 메모리 22% 미만),
   외부 헬스체크 실패, 수집 끊김. 모두 `webmemo-slack` 연락처(기존 `SLACK_WEBHOOK_URL`)로 갑니다.
   회수 위험은 Oracle이 7일간 CPU·네트워크·메모리가 모두 20% 미만인 Always Free 인스턴스를 회수할 수 있어서 둡니다.
-- **적용**: `cd-grafana.yml`이 PR에서는 `plan`만, develop 푸시·수동 실행에서 `apply` 합니다. state는 Oracle Object
+- **적용**: `cd-terraform.yml`이 PR에서는 `plan`만, develop 푸시·수동 실행에서 `apply` 합니다. state는 Oracle Object
   Storage 버킷(`TF_STATE_*`)에 있습니다. 잠금을 쓰지 않으니 로컬에서 apply 하지 말고 워크플로로 적용합니다.
 - **UI에서 고치지 않습니다.** 고치면 다음 `plan`에서 코드 기준으로 되돌아갑니다.
+
+## staging (도메인 연결)
+
+`staging.webmemo.xyz` → Cloudflare(프록시·Access) → VM Caddy(HTTPS, Let's Encrypt) → 활성 색.
+
+- **공개 범위**: Vercel staging은 Vercel SSO 뒤에 있었습니다. 같은 수준을 지키려고 Cloudflare Access로 막고,
+  `STAGING_ACCESS_EMAILS`의 이메일만 OTP로 들어갑니다. `/api/version`(외부 헬스체크)과
+  `/.well-known/acme-challenge/`(인증서 갱신)만 Access를 건너뜁니다. 확장의 CORS preflight도 통과시킵니다.
+- **SSL**: Cloudflare→VM 구간도 Full (strict)로 인증서를 검증합니다. Caddy가 `SITE_ADDRESS`로 인증서를 받습니다.
+- **처음 연결할 때**: 프록시를 켠 채로는 Caddy가 첫 인증서를 받기 어려우니, `staging_proxied = false`로 DNS만 VM으로 돌려
+  인증서를 받은 뒤 `true`로 켭니다. 그 몇 분 동안은 Access가 적용되지 않습니다.
+- **롤백**: `terraform/cloudflare`의 `staging_target`을 `"vercel"`로 바꿔 develop에 머지합니다(원래 Vercel CNAME, 프록시 끔).

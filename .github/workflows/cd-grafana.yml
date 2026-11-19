@@ -1,0 +1,99 @@
+name: CD - Grafana 알림 (Terraform)
+
+# infra/oracle/terraform/grafana의 알림 규칙·Slack 연락처·외부 헬스체크를 Grafana Cloud에 적용합니다.
+# 노션 DB-1327 4단계. state는 Oracle Object Storage(S3 호환)에 있습니다.
+#
+# - PR: fmt·validate·plan만 돌고, 바뀔 내용을 실행 요약에 남깁니다
+# - develop 푸시·수동 실행: apply. Oracle VM이 지금 staging만 받으므로 develop 기준으로 적용합니다
+#   (운영 이전 6단계에서 master 기준으로 바꿀지 다시 정합니다)
+
+on:
+  pull_request:
+    paths:
+      - "infra/oracle/terraform/grafana/**"
+      - ".github/workflows/cd-grafana.yml"
+  push:
+    branches: [develop]
+    paths:
+      - "infra/oracle/terraform/grafana/**"
+      - ".github/workflows/cd-grafana.yml"
+  workflow_dispatch:
+
+# state 잠금을 쓰지 않으므로(versions.tf 참고) 동시에 한 실행만 돌게 합니다.
+concurrency:
+  group: cd-grafana
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: infra/oracle/terraform/grafana
+
+env:
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+  TF_VAR_grafana_url: ${{ secrets.GRAFANA_URL }}
+  TF_VAR_grafana_auth: ${{ secrets.GRAFANA_TF_TOKEN }}
+  TF_VAR_sm_url: ${{ secrets.GRAFANA_SM_URL }}
+  TF_VAR_sm_access_token: ${{ secrets.GRAFANA_SM_TOKEN }}
+  TF_VAR_slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+  TF_VAR_prometheus_datasource_uid: ${{ secrets.GRAFANA_PROM_DATASOURCE_UID }}
+  TF_VAR_loki_datasource_uid: ${{ secrets.GRAFANA_LOKI_DATASOURCE_UID }}
+
+jobs:
+  terraform:
+    name: Terraform ${{ github.event_name == 'pull_request' && 'plan' || 'apply' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.17.2"
+          terraform_wrapper: false
+
+      - name: Format check
+        run: terraform fmt -check -diff
+
+      - name: Init
+        env:
+          TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
+          TF_STATE_ENDPOINT: ${{ secrets.TF_STATE_ENDPOINT }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_STATE_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_STATE_SECRET_KEY }}
+        run: |
+          # 포크 PR처럼 Secrets가 없으면 state 없이 문법만 확인합니다
+          if [ -z "$TF_STATE_BUCKET" ]; then
+            terraform init -backend=false
+            echo "NO_BACKEND=true" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          terraform init \
+            -backend-config="bucket=$TF_STATE_BUCKET" \
+            -backend-config="endpoints={s3=\"$TF_STATE_ENDPOINT\"}"
+
+      - name: Validate
+        run: terraform validate
+
+      - name: Plan
+        if: ${{ env.NO_BACKEND != 'true' }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_STATE_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_STATE_SECRET_KEY }}
+        run: |
+          terraform plan -out=tfplan -no-color | tee plan.txt
+          {
+            echo "### Terraform plan"
+            echo '```'
+            grep -E '^(Plan:|No changes|  # )' plan.txt || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Apply
+        if: ${{ env.NO_BACKEND != 'true' && github.event_name != 'pull_request' }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_STATE_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_STATE_SECRET_KEY }}
+        run: terraform apply -auto-approve tfplan

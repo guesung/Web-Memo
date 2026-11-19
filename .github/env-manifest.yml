@@ -81,6 +81,126 @@
   impact: "호스트 키 검증이 실패해 VM 배포·롤백이 멈춘다"
   note: "ssh-keyscan <VM IP> 결과. VM을 다시 만들면 갱신한다"
 
+- name: GRAFANA_CLOUD_LOKI_URL
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-web-oracle.yml]
+  impact: "VM 컨테이너 로그가 Loki로 가지 않아 5xx 알림이 오지 않는다. 앱·배포에는 영향 없다"
+  note: "Grafana Cloud Loki push 주소(.../loki/api/v1/push). 비어 있으면 alloy를 띄우지 않는다"
+
+- name: GRAFANA_CLOUD_LOKI_USER
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-web-oracle.yml]
+  impact: "Loki 인증 실패로 로그 수집이 멈춘다"
+  note: "Loki 사용자(숫자 ID)"
+
+- name: GRAFANA_CLOUD_PROM_URL
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-web-oracle.yml]
+  impact: "VM 지표가 가지 않아 메모리·OOM·수집 끊김 알림이 오지 않는다"
+  note: "Grafana Cloud Prometheus remote_write 주소(.../api/prom/push)"
+
+- name: GRAFANA_CLOUD_PROM_USER
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-web-oracle.yml]
+  impact: "Prometheus 인증 실패로 지표 수집이 멈춘다"
+  note: "Prometheus 사용자(숫자 ID)"
+
+- name: GRAFANA_CLOUD_WRITE_TOKEN
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-web-oracle.yml]
+  impact: "Alloy가 로그·지표를 쓰지 못한다"
+  note: "Cloud Access Policy 토큰(logs:write·metrics:write만)"
+
+- name: GRAFANA_URL
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-grafana.yml]
+  impact: "알림 규칙을 Terraform으로 적용하지 못한다"
+  note: "Grafana Cloud 스택 주소"
+
+- name: GRAFANA_TF_TOKEN
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-grafana.yml]
+  impact: "알림 규칙·연락처를 적용하지 못한다"
+  note: "Terraform 전용 서비스 계정 토큰(Editor)"
+
+- name: GRAFANA_SM_URL
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-grafana.yml]
+  impact: "외부 헬스체크를 적용하지 못한다"
+  note: "Synthetic Monitoring API 주소(스택 리전별)"
+
+- name: GRAFANA_SM_TOKEN
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-grafana.yml]
+  impact: "외부 헬스체크를 적용하지 못한다"
+  note: "Synthetic Monitoring 액세스 토큰"
+
+- name: GRAFANA_PROM_DATASOURCE_UID
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-grafana.yml]
+  impact: "지표 기반 알림 규칙을 만들지 못한다"
+  note: "grafanacloud-<stack>-prom 데이터 소스 UID"
+
+- name: GRAFANA_LOKI_DATASOURCE_UID
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-grafana.yml]
+  impact: "5xx 알림 규칙을 만들지 못한다"
+  note: "grafanacloud-<stack>-logs 데이터 소스 UID"
+
+- name: TF_STATE_BUCKET
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-grafana.yml]
+  impact: "Terraform state를 읽지 못해 plan·apply가 문법 확인만 하고 끝난다"
+  note: "Oracle Object Storage 버킷 이름"
+
+- name: TF_STATE_ENDPOINT
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-grafana.yml]
+  impact: "Terraform state 저장소에 접속하지 못한다"
+  note: "https://<namespace>.compat.objectstorage.ap-osaka-1.oraclecloud.com"
+
+- name: TF_STATE_ACCESS_KEY
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-grafana.yml]
+  impact: "Terraform state 저장소 인증에 실패한다"
+  note: "OCI Customer Secret Key의 access key"
+
+- name: TF_STATE_SECRET_KEY
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-grafana.yml]
+  impact: "Terraform state 저장소 인증에 실패한다"
+  note: "OCI Customer Secret Key의 secret"
+
 - name: ORACLE_DEPLOY_ENABLED
   kind: config
   stores: [github]
@@ -146,7 +266,7 @@
 - name: SLACK_WEBHOOK_URL
   kind: secret
   stores: [github]
-  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/chore-ga-events.yml, .github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/workflows/audit-refactor.yml, .github/workflows/release-notify.yml, .github/workflows/versions.yml, .github/workflows/audit-env-registry.yml, .github/workflows/report-seo.yml, .github/workflows/audit-ga-cid-adoption.yml, .github/workflows/notify-extension-published.yml, .github/workflows/chore-e2e-coverage.yml, .github/workflows/chore-oracle-vm-retry.yml]
+  consumers: [.github/workflows/ci.yml, .github/workflows/cd-web.yml, .github/workflows/chore-ga-events.yml, .github/workflows/report-ga-daily.yml, .github/workflows/report-ga-weekly.yml, .github/workflows/audit-refactor.yml, .github/workflows/release-notify.yml, .github/workflows/versions.yml, .github/workflows/audit-env-registry.yml, .github/workflows/report-seo.yml, .github/workflows/audit-ga-cid-adoption.yml, .github/workflows/notify-extension-published.yml, .github/workflows/chore-e2e-coverage.yml, .github/workflows/chore-oracle-vm-retry.yml, .github/workflows/cd-grafana.yml]
   impact: "빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다"
 
 - name: OCI_CLI_USER

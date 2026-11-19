@@ -60,3 +60,16 @@ reload_caddy_if_changed() {
 		cp caddy/Caddyfile state/Caddyfile.applied
 	fi
 }
+
+# 관측 수집기(alloy)는 Grafana Cloud 자격 증명(env/alloy.env)이 있을 때만 띄웁니다.
+# 설정 파일은 마운트라 up -d만으로는 다시 읽지 않으니, 바뀌었으면 재시작합니다.
+# 수집기가 실패해도 배포는 막지 않습니다.
+start_alloy_if_configured() {
+	[ -s env/alloy.env ] || { echo "env/alloy.env 없음: alloy는 띄우지 않습니다"; return 0; }
+	docker compose up -d alloy || { echo "::warning::alloy를 띄우지 못했습니다"; return 0; }
+	if ! cmp -s alloy/config.alloy state/config.alloy.applied 2>/dev/null; then
+		echo "alloy 설정이 바뀌어 재시작합니다"
+		docker compose restart alloy || echo "::warning::alloy 재시작 실패"
+		cp alloy/config.alloy state/config.alloy.applied
+	fi
+}

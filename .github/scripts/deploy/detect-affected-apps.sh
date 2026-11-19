@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# 이번 변경이 어느 앱에 영향을 주는지 판정해 app/extension/web을 GITHUB_OUTPUT에 씁니다.
+# 이번 변경이 어느 앱에 영향을 주는지 판정해 app/extension/web/oracle을 GITHUB_OUTPUT에 씁니다.
+# oracle은 Oracle VM staging 배포 대상 여부입니다(웹이 바뀌었거나 VM 서버 구성이 바뀜).
 #
 # 판정을 경로 매칭이 아니라 turbo 의존성 그래프로 하는 이유는, 경로 목록을 손으로
 # 관리하면 패키지를 추가할 때 빼먹기 쉽고 그 실패가 "빌드가 조용히 안 도는" 쪽이기
@@ -14,9 +15,11 @@ set -euo pipefail
 HEAD_REF="${HEAD_REF:-}"
 DIFF_HEAD="${HEAD_REF:-HEAD}"
 
+# 네 번째 인자(oracle)를 생략하면 web과 같게 봅니다.
 emit() {
-  printf 'app=%s\nextension=%s\nweb=%s\n' "$1" "$2" "$3" >> "${GITHUB_OUTPUT:-/dev/stdout}"
-  echo "판정 → app=$1 extension=$2 web=$3"
+  local oracle="${4:-$3}"
+  printf 'app=%s\nextension=%s\nweb=%s\noracle=%s\n' "$1" "$2" "$3" "$oracle" >> "${GITHUB_OUTPUT:-/dev/stdout}"
+  echo "판정 → app=$1 extension=$2 web=$3 oracle=$oracle"
 }
 
 # push 이벤트의 before는 새 브랜치·force-push에서 0000...이 됩니다. 기준을 잡을 수
@@ -66,4 +69,12 @@ if ! git diff --quiet "$BASE_REF...$DIFF_HEAD" -- vercel.json; then
   web_affected=true
 fi
 
-emit "$app_affected" "$extension_affected" "$web_affected"
+# VM 서버 구성(compose·Caddy·Alloy·배포 스크립트)은 웹 패키지 밖이라 turbo가 잡지 못한다.
+# 이것만 바뀌어도 VM에 다시 보내야 반영되므로 Oracle 배포 대상으로 본다. Vercel 배포는 하지 않는다.
+# 알림 규칙(terraform)은 cd-grafana.yml이 따로 적용하므로 제외한다.
+oracle_affected="$web_affected"
+if ! git diff --quiet "$BASE_REF...$DIFF_HEAD" -- infra/oracle .github/workflows/cd-web-oracle.yml ':!infra/oracle/terraform'; then
+  oracle_affected=true
+fi
+
+emit "$app_affected" "$extension_affected" "$web_affected" "$oracle_affected"

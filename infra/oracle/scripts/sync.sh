@@ -4,7 +4,8 @@
 # 사용: infra/oracle/scripts/sync.sh <deploy@VM주소> [ssh 키 경로]
 #
 # - compose.yaml·caddy/·scripts/만 보냅니다. VM 상태(state/, env/, .env)는 건드리지 않습니다.
-# - 트래픽을 받는 색이 아직 정해지지 않았으면(첫 실행) blue로 정합니다.
+# - 트래픽을 받는 색(state/color/active)이 아직 없으면(첫 실행) blue로 정합니다.
+# - Caddyfile을 다시 불러옵니다(그 순간 요청이 끊길 수 있음). 배포(deploy.sh)는 Caddyfile이 바뀐 경우에만 다시 불러옵니다.
 # - 여러 번 실행해도 결과가 같습니다.
 set -euo pipefail
 
@@ -21,15 +22,11 @@ rsync -az --delete -e "${SSH[*]}" \
 "${SSH[@]}" "$TARGET" bash -s <<'REMOTE'
 set -euo pipefail
 cd /opt/webmemo
-if [ ! -f state/active/upstream.caddy ]; then
-	cat > state/active/upstream.caddy <<'EOF'
-reverse_proxy web-blue:3000 {
-	header_up X-Real-IP {client_ip}
-}
-EOF
-fi
+mkdir -p state/color
+[ -s state/color/active ] || echo blue > state/color/active
 docker compose pull --quiet
 docker compose up -d --remove-orphans
 docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile
+cp caddy/Caddyfile state/Caddyfile.applied
 docker compose ps
 REMOTE

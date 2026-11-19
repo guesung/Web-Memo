@@ -1,22 +1,29 @@
-# VM의 /opt/webmemo 에서 실행합니다(scripts/sync.sh가 이 파일을 보냅니다).
+# VM의 /opt/webmemo 에서 실행합니다(scripts/sync.sh와 배포 워크플로가 이 파일을 보냅니다).
 # 같은 디렉터리의 .env(VM에만 있음)로 사이트 주소와 색별 이미지를 정합니다.
 #   SITE_ADDRESS     Caddy 사이트 주소. 비우면 ":80"(IP로 HTTP 확인용)
 #   WEB_IMAGE_BLUE   blue 색 이미지. 비우면 확인용 whoami
 #   WEB_IMAGE_GREEN  green 색 이미지. 비우면 확인용 whoami
+#
+# 트래픽을 받는 색은 state/color/active 파일 한 줄(blue·green)이 정합니다. 앱의 /api/health가
+# 이 파일과 자기 DEPLOY_COLOR를 비교해 200·503을 돌려주고, Caddy는 200인 쪽으로만 보냅니다.
 name: webmemo
+
+x-web-env: &web-env
+  PORT: "3000"
+  HOSTNAME: "0.0.0.0"
+  # 확인용 whoami 이미지가 읽는 포트 변수. 앱 이미지는 무시합니다.
+  WHOAMI_PORT_NUMBER: "3000"
 
 x-web: &web
   restart: unless-stopped
   env_file:
     - path: ./env/web.env
       required: false
-  environment:
-    PORT: "3000"
-    HOSTNAME: "0.0.0.0"
-    # 확인용 whoami 이미지가 읽는 포트 변수. 앱 이미지는 무시합니다.
-    WHOAMI_PORT_NUMBER: "3000"
   expose:
     - "3000"
+  volumes:
+    # 활성 색 파일. 파일이 아니라 디렉터리를 마운트해야 mv로 바꾼 새 파일이 컨테이너에 보입니다.
+    - ./state/color:/run/webmemo:ro
   # SIGTERM 뒤 진행 중인 요청과 Next after() 작업을 끝낼 시간을 줍니다.
   stop_grace_period: 30s
 
@@ -32,18 +39,22 @@ services:
       SITE_ADDRESS: ${SITE_ADDRESS:-:80}
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-      # 트래픽을 받는 색(upstream.caddy)은 VM 상태라 레포가 아니라 state/에 둡니다.
-      - ./state/active:/etc/caddy/active:ro
       - caddy_data:/data
       - caddy_config:/config
 
   web-blue:
     <<: *web
     image: ${WEB_IMAGE_BLUE:-traefik/whoami:v1.10}
+    environment:
+      <<: *web-env
+      DEPLOY_COLOR: blue
 
   web-green:
     <<: *web
     image: ${WEB_IMAGE_GREEN:-traefik/whoami:v1.10}
+    environment:
+      <<: *web-env
+      DEPLOY_COLOR: green
 
 volumes:
   caddy_data:

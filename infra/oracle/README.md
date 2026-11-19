@@ -135,6 +135,7 @@ Cloudflare는 기본으로 HTML을 캐시하지 않아, 빌드 때 미리 만든
 - 비우기: `cd-web-oracle.yml`이 배포·롤백 뒤 `.github/scripts/deploy/purge-cloudflare-cache.sh`로 이 URL만 비웁니다.
   옛 HTML이 남으면 새 컨테이너에 없는 JS 파일을 불러 페이지가 깨집니다
 - 페이지를 추가할 때: 동적 페이지·Set-Cookie가 나가는 페이지는 넣지 않습니다. JSON과
-  `edgeCache/index.ts`를 함께 고치면 테스트가 둘이 같은지 확인합니다. 비우기 API는 한 번에 보낼 수 있는
-  URL 수에 플랜별 제한이 있어(지금 26개), 크게 늘리면 스크립트를 나눠 보내게 고칩니다
-- 확인: 응답 헤더 `cf-cache-status`가 `HIT`면 엣지에서 나온 것입니다
+  `edgeCache/index.ts`를 함께 고치면 테스트가 둘이 같은지 확인합니다. 비우기 API는 Free 플랜에서 요청당
+  URL 100개까지라(지금 26개) 그보다 늘리면 스크립트를 나눠 보내게 고칩니다
+- 캐시 규칙의 method 조건에는 `PURGE`가 들어 있어야 합니다. 빠지면 비우기 API가 성공해도 캐시가 남습니다
+- 확인: 응답 헤더 `cf-cache-status`가 `HIT`면 엣지에서 나온 것입니다. 비운 직후 첫 요청은 `MISS`여야 합니다

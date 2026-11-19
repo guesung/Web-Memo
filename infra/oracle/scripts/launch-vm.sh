@@ -35,7 +35,7 @@ IMAGE=$(oci compute image list -c "$T" --operating-system "Canonical Ubuntu" --o
 
 set +e
 OUT=$(oci compute instance launch -c "$T" --availability-domain "$AD" --display-name "$NAME" \
-	--shape "$SHAPE" --shape-config '{"ocpus":1,"memoryInGBs":6}' \
+	--shape "$SHAPE" --shape-config '{"ocpus":1,"memoryInGBs":4}' \
 	--image-id "$IMAGE" --subnet-id "$SUBNET" --assign-public-ip true \
 	--ssh-authorized-keys-file "$KEY" --user-data-file "$DIR/cloud-init.yaml" \
 	--query 'data.id' --raw-output 2>&1)

@@ -16,7 +16,7 @@ Grafana Synthetic Monitoring ── 1분마다 /api/version ──┘ → Grafan
 | 항목 | 값 |
 | --- | --- |
 | 리전 | `ap-osaka-1` (Japan Central). 무료 계층 홈 영역에 서울·춘천이 없어서 골랐습니다 |
-| 셰이프 | `VM.Standard.A1.Flex` 1 OCPU · 6GB (Always Free) |
+| 셰이프 | `VM.Standard.A1.Flex` 1 OCPU · 4GB (Always Free). 처음엔 6GB였는데 메모리 사용률이 회수 기준 20% 아래(약 19%)로 나와 2026-11-19에 4GB로 줄였습니다 |
 | 이미지 | Canonical Ubuntu 24.04 (aarch64) |
 | 네트워크 | `webmemo-vcn`의 `public subnet-webmemo-vcn`, 공인 IPv4 |
 | 접속 | `deploy@<VM 공인 IP>`, 키 `~/.ssh/webmemo_oci` (레포에 두지 않음) |
@@ -55,12 +55,12 @@ VM에만 있고 레포에 없는 것: `/opt/webmemo/.env`(사이트 주소·이�
   들어온 요청을 끊었습니다(전환마다 1건, `Empty reply from server`). 그래서 설정은 고정하고 파일만 바꿉니다.
   둘 다 준비 전인 짧은 순간은 `lb_try_duration 5s`가 기다려 줍니다.
 - **회수 대비.** 7일간 CPU·네트워크·메모리 95백분위가 모두 20% 미만이면 Oracle이 회수할 수 있습니다.
-  1 OCPU·6GB로 작게 잡아 상시 메모리 사용률이 20%를 넘게 하고, 회수돼도 아래 절차로 다시 만듭니다.
+  1 OCPU·4GB로 작게 잡아 상시 메모리 사용률이 20%를 넘게 하고(6GB에서는 약 19%였음, Grafana `회수 위험` 알림으로 감시), 회수돼도 아래 절차로 다시 만듭니다.
 
 ## VM을 처음부터 다시 만들기
 
 1. 콘솔 → Compute → Create instance
-   - 이미지 Ubuntu 24.04, 셰이프 Ampere `VM.Standard.A1.Flex` 1 OCPU · 6GB
+   - 이미지 Ubuntu 24.04, 셰이프 Ampere `VM.Standard.A1.Flex` 1 OCPU · 4GB
    - Advanced options → Initialization script에 `cloud-init.yaml` 업로드
    - 네트워크 `webmemo-vcn` / `public subnet-webmemo-vcn`, 공인 IPv4 자동 할당
    - SSH 키 `~/.ssh/webmemo_oci.pub` 업로드
@@ -87,7 +87,7 @@ vercel pull(Preview) → arm64 이미지 빌드(ubuntu-24.04-arm) → ghcr.io/gu
   Caddyfile이 바뀐 배포에서만 한 번 `caddy reload` 합니다.
   확인이 안 되면 전환하지 않고 실패합니다. 트래픽은 이전 색에 그대로 있습니다.
 - **이전 색은 멈추지 않습니다.** 롤백은 활성 색 파일만 되돌리면 되므로 즉시 끝나고, 이전 색은 다음 배포 때 교체됩니다.
-  두 색이 함께 떠 있어도 6GB 안에 들어갑니다.
+  두 색이 함께 떠 있어도 4GB 안에 들어갑니다(두 색 합쳐 약 450MB).
 - **롤백**: Actions에서 `CD - Web (Oracle Cloud)`를 `action=rollback`으로 실행합니다.
 - **환경변수**: Vercel Preview 값을 받아 `VERCEL*` 표식만 빼고 빌드 secret과 VM `env/web.env`로 씁니다.
 - **켜기**: VM을 만든 뒤 GitHub Secrets `ORACLE_SSH_HOST`·`ORACLE_SSH_KEY`·`ORACLE_SSH_KNOWN_HOSTS`를 등록하고,

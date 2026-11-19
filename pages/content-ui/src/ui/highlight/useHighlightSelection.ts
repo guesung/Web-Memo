@@ -375,6 +375,10 @@ export const useHighlightSelection = (options: IFHighlightSelectionOptions) => {
 				name: "extension_setting_change",
 				params: { keys: "highlightBubblePosition" },
 			});
+			analytics.trackEvent({
+				name: "highlight_bubble_position_change",
+				params: { position: nextPosition },
+			});
 		} catch (error) {
 			reportContentUiError({
 				error,

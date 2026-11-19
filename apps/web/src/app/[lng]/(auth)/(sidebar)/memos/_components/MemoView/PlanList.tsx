@@ -7,6 +7,7 @@ import {
 	type TMemoLoadOutcome,
 	type TMemoRoute,
 } from "@src/modules/observability/client";
+import { analytics } from "@web-memo/shared/modules/analytics";
 import type {
 	GetMemoResponse,
 	HighlightMemoLink,
@@ -76,7 +77,17 @@ const PlanList = ({
 			className="mx-auto w-full max-w-[1124px] space-y-8 pb-24"
 		>
 			{past.length > 0 && (
-				<Collapsible data-testid="plan-section-past" className="space-y-6">
+				<Collapsible
+					data-testid="plan-section-past"
+					className="space-y-6"
+					onOpenChange={(open) => {
+						if (open)
+							analytics.trackEvent({
+								name: "plan_past_section_expand",
+								params: { past_memo_count: pastMemoCount },
+							});
+					}}
+				>
 					<CollapsibleTrigger className="group flex items-center gap-1 rounded text-sm font-semibold text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
 						<ChevronRight
 							className="h-4 w-4 transition-transform group-data-[state=open]:rotate-90"

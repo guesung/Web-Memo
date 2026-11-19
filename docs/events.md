@@ -6,7 +6,7 @@
 
 - **코드 계약:** [type.ts](../packages/shared/src/modules/analytics/type.ts)의 `TAnalyticsEvent`와 `EVENT_CATEGORY`.
 - **발생 동작:** 아래 호출부 코드가 원천입니다. 타입에 이름이 있어도 실행 경로가 없을 수 있습니다.
-- **문서 검토 기준:** 2026-10-28, master `445ea702`의 81종 명세에 PR #788의 신규 3종을 통합해 총 84개 이름을 기술했습니다. 소개 데모 수동 조작 1종과 웹스토어 리뷰 요청 4종(DB-1264), 주간 메일 복귀 1종(DB-1301)을 더해 현재 92개입니다.
+- **문서 검토 기준:** 2026-10-28, master `445ea702`의 81종 명세에 PR #788의 신규 3종을 통합해 총 84개 이름을 기술했습니다. 소개 데모 수동 조작 1종과 웹스토어 리뷰 요청 4종(DB-1264), 주간 메일 복귀 1종(DB-1301)을 더해 현재 94개입니다.
   기존 81종 문서화는 제품 동작을 바꾸지 않았으며, 신규 3종은 PR #788의 구현을 기준으로 기술했습니다.
   아래 한계는 AS-IS 기록이며, 오류 판정·개인정보 공백을 바람직한 동작으로 승인하는 것은 아닙니다.
 - **운영 확인과 구분:** 코드·테스트를 읽은 사실은 테스트 실행·배포·운영 수신의 증거가 아닙니다.
@@ -215,6 +215,15 @@
 - **근거·테스트:** [memoUpdateEvents.ts](../packages/shared/src/modules/analytics/memoUpdateEvents.ts) · [useMemoPatchMutation.ts](../packages/shared/src/hooks/supabase/mutations/useMemoPatchMutation.ts) · [useMemoUpsertMutation.ts](../packages/shared/src/hooks/supabase/mutations/useMemoUpsertMutation.ts); 테스트: [memoUpdateEvents.test.ts](../packages/shared/src/modules/analytics/memoUpdateEvents.test.ts) · [useMemoPatchMutation.test.ts](../packages/shared/src/hooks/supabase/mutations/useMemoPatchMutation.test.ts).
 - **한계·이력:** 계획 수행·실제 읽음이 아니다. 로컬 날짜 기준이며 음수도 타입상 허용된다. DB-1195. 운영 도입 버전·일자 미확인.
 
+### `plan_past_section_expand`
+
+- **질문:** 기한이 지난 읽기 계획 항목을 가진 사용자가 접힌 과거 섹션을 열어 접근을 시도하는가?
+- **발생·제외:** PlanList의 과거(기한 초과) 계획 섹션 Collapsible이 열린 상태로 바뀔 때 onOpenChange에서 발생. 닫는 전환은 제외.
+- **속성:** 필수 `past_memo_count: number`(과거 섹션의 총 메모 수).
+- **단위·중복:** 열기 전환 콜백당 1회. 같은 사용자가 접었다 다시 열면 다시 발생하며 세션 단위 중복 제거 없음.
+- **근거·테스트:** [PlanList.tsx](../apps/web/src/app/%5Blng%5D/%28auth%29/%28sidebar%29/memos/_components/MemoView/PlanList.tsx); 이벤트 전용 단위 검증 미확인.
+- **한계·이력:** 콘텐츠 렌더 완료·개별 메모 열람을 뜻하지 않는다. 추가된 작업: —. 도입 버전·일자 미확인.
+
 ### `memo_category_change`
 
 - **질문:** 카테고리 변경과 입력 경로가 사용되는가?
@@ -405,6 +414,15 @@
 - **단위·중복:** 실행된 X 핸들러마다 1회. URL·사용자당 중복 제거는 없다.
 - **근거·테스트:** [useHighlightSelection](../pages/content-ui/src/ui/highlight/useHighlightSelection.ts), [메뉴 테스트](../pages/content-ui/src/ui/highlight/useHighlightSelectionMenu.test.ts).
 - **한계·이력:** 실제 노출 이벤트가 없어 닫기율·반복 닫기의 원인은 알 수 없다. DB-1225; PR #789에서 첫 안내가 실제 보일 때 X도 안내 완료 저장하도록 변경했지만 이벤트 속성·이름은 유지했다. 스토어 보급 일자는 별도 확인.
+
+### `highlight_bubble_position_change`
+
+- **질문:** 기본 말풍선 위치가 불편해서 바꾸는 사용자가 있는가? 어느 위치를 선호하는가?
+- **발생·제외:** 선택 툴바 설정 메뉴 안의 위치 토글 버튼(handleBubblePositionClick)에서 storage 저장 성공 뒤 발생. storage 오류는 제외.
+- **속성:** 필수 `position: "above" | "below"`(변경 후 새 위치).
+- **단위·중복:** storage 저장 성공 콜백당 1회. 같은 값으로 재설정해도 성공하면 발생. 사용자별 영구 중복 제거 없음.
+- **근거·테스트:** [useHighlightSelection.ts](../pages/content-ui/src/ui/highlight/useHighlightSelection.ts); 이벤트 전용 단위 검증 미확인.
+- **한계·이력:** 선호 위치의 사용 개선 효과를 측정하지 않는다. `extension_setting_change`(keys=highlightBubblePosition)와 동시에 발생한다. 추가된 작업: —. 도입 버전·일자 미확인.
 
 ### `summary_run`
 

@@ -375,6 +375,11 @@ export type TAnalyticsEvent =
 	| {
 			name: "memo_candidate_select";
 			params: { action: "select" | "new"; candidate_count: number };
+	  }
+	| { name: "plan_past_section_expand"; params: { past_memo_count: number } }
+	| {
+			name: "highlight_bubble_position_change";
+			params: { position: "above" | "below" };
 	  };
 
 /** 이벤트 이름만 추린 유니온. */
@@ -479,4 +484,6 @@ export const EVENT_CATEGORY: Record<TAnalyticsEventName, TEventCategory> = {
 	blog_reading_page_move: "engagement",
 	email_unsubscribe: "engagement",
 	memo_candidate_select: "core_action",
+	plan_past_section_expand: "engagement",
+	highlight_bubble_position_change: "engagement",
 };

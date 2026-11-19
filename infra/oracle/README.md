@@ -25,11 +25,14 @@ Cloudflare(프록시) → VM:80/443 Caddy ─┬─ web-blue:3000
 | --- | --- | --- |
 | `cloud-init.yaml` | 첫 부팅 때 한 번: 방화벽, Docker, `deploy` 사용자, `/opt/webmemo` | VM 생성 시 콘솔의 Initialization script |
 | `compose.yaml` | Caddy + `web-blue` + `web-green` | VM `/opt/webmemo` |
-| `caddy/Caddyfile` | 프록시, Cloudflare 신뢰 대역, 활성 색 import | VM (compose가 마운트) |
-| `scripts/sync.sh` | 위 두 파일을 VM에 보내고 `docker compose up` | 로컬·CI |
+| `caddy/Caddyfile` | 프록시, Cloudflare 신뢰 대역, 두 색 + `/api/health` 헬스체크 | VM (compose가 마운트) |
+| `scripts/sync.sh` | compose·Caddy·scripts를 VM에 보내고 `docker compose up` | 로컬 |
+| `scripts/lib.sh` | 활성 색 읽기·쓰기, 컨테이너 안 HTTP 확인, 전환 대기 | VM (deploy·rollback이 source) |
+| `scripts/deploy.sh` | 대기 색에 새 이미지 기동 → `/api/version` 커밋 확인 → Caddy 전환 | VM (CI가 SSH로 실행) |
+| `scripts/rollback.sh` | 트래픽을 직전 색으로 되돌림 | VM (CI `action=rollback`) |
 
 VM에만 있고 레포에 없는 것: `/opt/webmemo/.env`(사이트 주소·이미지 태그), `env/web.env`(앱 런타임 환경변수),
-`state/active/upstream.caddy`(지금 트래픽을 받는 색). `sync.sh`는 이 셋을 덮어쓰지 않습니다.
+`state/color/active`(지금 트래픽을 받는 색 `blue`·`green`). `sync.sh`는 이 셋을 덮어쓰지 않습니다.
 
 ## 왜 이렇게 했나
 
@@ -41,7 +44,11 @@ VM에만 있고 레포에 없는 것: `/opt/webmemo/.env`(사이트 주소·이�
 - **클라이언트 IP는 `CF-Connecting-IP`에서 꺼낸다.** Cloudflare 대역만 `trusted_proxies`로 믿습니다.
   안 그러면 앱(`api/openai`)의 rate limit이 모든 사용자를 Cloudflare 엣지 IP 하나로 묶습니다.
   대역이 바뀌면 https://www.cloudflare.com/ips-v4/ , `/ips-v6/` 기준으로 `Caddyfile`을 갱신합니다.
-- **활성 색은 파일 하나다.** blue-green 전환은 `state/active/upstream.caddy`를 바꾸고 `caddy reload`만 하면 됩니다.
+- **활성 색은 파일 하나고, 전환에 `caddy reload`를 쓰지 않는다.** Caddy는 두 색을 모두 upstream으로 두고 1초마다
+  `/api/health`를 확인해 200인 쪽으로만 보냅니다. 앱은 자기 `DEPLOY_COLOR`와 `state/color/active`가 같을 때만 200,
+  아니면 503을 돌려줍니다. 처음엔 upstream 파일을 바꾸고 `caddy reload` 했는데, 리로드는 서버를 갈아끼우는 순간
+  들어온 요청을 끊었습니다(전환마다 1건, `Empty reply from server`). 그래서 설정은 고정하고 파일만 바꿉니다.
+  둘 다 준비 전인 짧은 순간은 `lb_try_duration 5s`가 기다려 줍니다.
 - **회수 대비.** 7일간 CPU·네트워크·메모리 95백분위가 모두 20% 미만이면 Oracle이 회수할 수 있습니다.
   1 OCPU·6GB로 작게 잡아 상시 메모리 사용률이 20%를 넘게 하고, 회수돼도 아래 절차로 다시 만듭니다.
 
@@ -60,3 +67,24 @@ VM에만 있고 레포에 없는 것: `/opt/webmemo/.env`(사이트 주소·이�
 3. cloud-init 완료 확인: `ssh -i ~/.ssh/webmemo_oci ubuntu@<IP> cloud-init status --wait`
 4. `infra/oracle/scripts/sync.sh deploy@<IP>`
 5. `curl http://<IP>/` 가 확인용 whoami 응답을 돌려주면 끝입니다
+
+## 배포 (CI)
+
+`.github/workflows/cd-web-oracle.yml`이 맡습니다. 지금은 staging만 대상이고 도메인은 아직 VM을 가리키지 않습니다.
+
+```
+vercel pull(Preview) → arm64 이미지 빌드(ubuntu-24.04-arm) → ghcr.io/guesung/web-memo-web:staging-<sha>
+  → compose·Caddy·scripts와 env/web.env를 VM에 rsync → scripts/deploy.sh
+```
+
+- **staged·promote**: `deploy.sh`가 대기 색만 새 이미지로 다시 띄우고, 컨테이너 안에서 `/api/version`의 `commit`이
+  배포한 SHA와 같아질 때까지(최대 120초) 기다린 뒤 `state/color/active`를 바꿉니다. Caddy는 다음 헬스체크(1초)에서 따라옵니다.
+  Caddyfile이 바뀐 배포에서만 한 번 `caddy reload` 합니다.
+  확인이 안 되면 전환하지 않고 실패합니다. 트래픽은 이전 색에 그대로 있습니다.
+- **이전 색은 멈추지 않습니다.** 롤백은 활성 색 파일만 되돌리면 되므로 즉시 끝나고, 이전 색은 다음 배포 때 교체됩니다.
+  두 색이 함께 떠 있어도 6GB 안에 들어갑니다.
+- **롤백**: Actions에서 `CD - Web (Oracle Cloud)`를 `action=rollback`으로 실행합니다.
+- **환경변수**: Vercel Preview 값을 받아 `VERCEL*` 표식만 빼고 빌드 secret과 VM `env/web.env`로 씁니다.
+- **켜기**: VM을 만든 뒤 GitHub Secrets `ORACLE_SSH_HOST`·`ORACLE_SSH_KEY`·`ORACLE_SSH_KNOWN_HOSTS`를 등록하고,
+  저장소 변수 `ORACLE_DEPLOY_ENABLED=true`로 두면 develop 푸시마다 `ci.yml`이 함께 부릅니다. 켜기 전에는
+  Actions에서 수동 실행(`action=deploy`)으로 먼저 확인합니다.

@@ -46,7 +46,7 @@
 
 <!-- env-manifest:start -->
 
-### GitHub Secrets (35개)
+### GitHub Secrets (39개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
@@ -68,6 +68,10 @@
 | `OCI_CLI_KEY_CONTENT` (선택) | Oracle API 인증에 실패해 VM 생성 재시도가 멈춘다 | `.github/workflows/chore-oracle-vm-retry.yml` |
 | `OCI_CLI_TENANCY` (선택) | Oracle API 인증과 컴파트먼트 조회가 실패해 VM 생성 재시도가 멈춘다 | `.github/workflows/chore-oracle-vm-retry.yml` |
 | `OCI_CLI_USER` (선택) | Oracle API 인증에 실패해 VM 생성 재시도(chore-oracle-vm-retry)가 멈춘다 | `.github/workflows/chore-oracle-vm-retry.yml` |
+| `ORACLE_DEPLOY_ENABLED` (선택) | 값이 \"true\"가 아니면 develop 푸시가 Oracle VM staging에 배포되지 않는다. Vercel 배포는 그대로다 | `.github/workflows/ci.yml` |
+| `ORACLE_SSH_HOST` (선택) | Oracle VM에 접속하지 못해 VM staging 배포·롤백이 멈춘다. Vercel 배포에는 영향 없다 | `.github/workflows/cd-web-oracle.yml` |
+| `ORACLE_SSH_KEY` (선택) | Oracle VM의 deploy 사용자로 SSH 인증하지 못해 VM 배포·롤백이 멈춘다 | `.github/workflows/cd-web-oracle.yml` |
+| `ORACLE_SSH_KNOWN_HOSTS` (선택) | 호스트 키 검증이 실패해 VM 배포·롤백이 멈춘다 | `.github/workflows/cd-web-oracle.yml` |
 | `ORACLE_SSH_PUBLIC_KEY` (선택) | 새 VM에 SSH 공개키가 들어가지 않아 접속·배포를 할 수 없다 | `.github/workflows/chore-oracle-vm-retry.yml` |
 | `REFRESH_TOKEN` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `SENTRY_API_TOKEN` (선택) | Sentry 알림에 대표 이벤트 상세(환경·릴리스·브라우저·스택·breadcrumb)가 빠지고, AI 분석이 웹훅 입력만으로 진행된다 | `apps/web/src/modules/sentry/config.ts`, `.github/workflows/chore-sentry-triage.yml`, `.github/scripts/sentry/fetch-sentry-context.mjs` |

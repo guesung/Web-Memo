@@ -57,6 +57,38 @@
   consumers: [.github/workflows/cd-web.yml]
   impact: "스테이징 배포에 alias 도메인이 붙지 않는다"
 
+- name: ORACLE_SSH_HOST
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-web-oracle.yml]
+  impact: "Oracle VM에 접속하지 못해 VM staging 배포·롤백이 멈춘다. Vercel 배포에는 영향 없다"
+  note: "VM 공인 IP(또는 호스트명). ORACLE_DEPLOY_ENABLED를 켜기 전에 등록한다"
+
+- name: ORACLE_SSH_KEY
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-web-oracle.yml]
+  impact: "Oracle VM의 deploy 사용자로 SSH 인증하지 못해 VM 배포·롤백이 멈춘다"
+  note: "~/.ssh/webmemo_oci 개인키 전문. 배포 전용 키로 바꿀 수 있다"
+
+- name: ORACLE_SSH_KNOWN_HOSTS
+  kind: secret
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/cd-web-oracle.yml]
+  impact: "호스트 키 검증이 실패해 VM 배포·롤백이 멈춘다"
+  note: "ssh-keyscan <VM IP> 결과. VM을 다시 만들면 갱신한다"
+
+- name: ORACLE_DEPLOY_ENABLED
+  kind: config
+  stores: [github]
+  required: false
+  consumers: [.github/workflows/ci.yml]
+  impact: "값이 \"true\"가 아니면 develop 푸시가 Oracle VM staging에 배포되지 않는다. Vercel 배포는 그대로다"
+  note: "GitHub Actions 변수(vars)다. VM과 ORACLE_SSH_* 준비가 끝난 뒤 켠다"
+
 - name: CLIENT_ID
   kind: secret
   stores: [github]

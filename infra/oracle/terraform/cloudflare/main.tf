@@ -105,7 +105,8 @@ resource "cloudflare_ruleset" "cache" {
       description = "staging 공개 정적 페이지 HTML 캐시"
       expression = join(" and ", [
         "http.host eq \"${local.staging_host}\"",
-        "http.request.method eq \"GET\"",
+        # PURGE를 넣지 않으면 비우기 요청이 이 규칙과 매칭되지 않아 API가 200이어도 캐시가 남습니다(Cloudflare 문서)
+        "http.request.method in {\"GET\" \"HEAD\" \"PURGE\"}",
         "http.request.uri.query eq \"\"",
         "not any(http.request.headers[\"rsc\"][*] eq \"1\")",
         "http.request.uri.path in {${join(" ", [for p in local.edge_cache_paths : "\"${p}\""])}}",

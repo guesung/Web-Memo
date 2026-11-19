@@ -6,9 +6,11 @@ import { getLanguage, SUPPORTED_LANGUAGES } from "./modules/i18n";
 import { updateAuthorization } from "./modules/supabase";
 
 // Slack은 3초 안에 응답이 없으면 실패로 처리하므로 Supabase 왕복을 건너뛴다.
+// /api/health는 컨테이너 프록시가 1초마다 부르는 헬스체크라 인증이 필요 없다.
 const AUTH_BYPASS_PATHS = [
 	"/api/slack",
 	"/api/version",
+	"/api/health",
 	"/api/install-guide-load",
 ];
 

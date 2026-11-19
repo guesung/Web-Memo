@@ -7,6 +7,10 @@ provider "cloudflare" {
 
 locals {
   staging_host = "staging.webmemo.xyz"
+  edge_cache   = jsondecode(file("${path.module}/../../edge-cache-paths.json"))
+  edge_cache_paths = sort(flatten([
+    for lng in local.edge_cache.languages : [for p in local.edge_cache.paths : "/${lng}${p}"]
+  ]))
   staging_record = {
     oracle = { type = "A", content = var.oracle_vm_ip }
     vercel = { type = "CNAME", content = "87eaac8c58fd77ba.vercel-dns-017.com" }
@@ -79,6 +83,40 @@ resource "cloudflare_zero_trust_access_application" "staging_bypass" {
       decision   = "bypass"
       precedence = 1
       include    = [{ everyone = {} }]
+    },
+  ]
+}
+
+# ---------- 엣지 캐시 ----------
+# Cloudflare는 기본으로 HTML을 캐시하지 않습니다. 빌드 때 미리 만든 공개 페이지만 엣지에서 서빙해
+# 오사카 VM·미들웨어를 거치지 않게 합니다. TTL은 앱이 보내는 s-maxage(1시간)를 따르고,
+# 배포·롤백 뒤에는 cd-web-oracle.yml이 같은 URL을 비웁니다(옛 HTML이 없는 JS 파일을 부르지 않게).
+# 쿼리가 있거나 RSC 요청(클라이언트 이동 시 같은 경로로 RSC 페이로드를 받음)은 캐시하지 않습니다.
+resource "cloudflare_ruleset" "cache" {
+  zone_id     = var.zone_id
+  name        = "webmemo cache rules"
+  description = "Terraform(infra/oracle/terraform/cloudflare)이 관리"
+  kind        = "zone"
+  phase       = "http_request_cache_settings"
+
+  rules = [
+    {
+      ref         = "staging_static_html"
+      description = "staging 공개 정적 페이지 HTML 캐시"
+      expression = join(" and ", [
+        "http.host eq \"${local.staging_host}\"",
+        # PURGE를 넣지 않으면 비우기 요청이 이 규칙과 매칭되지 않아 API가 200이어도 캐시가 남습니다(Cloudflare 문서)
+        "http.request.method in {\"GET\" \"HEAD\" \"PURGE\"}",
+        "http.request.uri.query eq \"\"",
+        "not any(http.request.headers[\"rsc\"][*] eq \"1\")",
+        "http.request.uri.path in {${join(" ", [for p in local.edge_cache_paths : "\"${p}\""])}}",
+      ])
+      action = "set_cache_settings"
+      action_parameters = {
+        cache       = true
+        edge_ttl    = { mode = "respect_origin" }
+        browser_ttl = { mode = "respect_origin" }
+      }
     },
   ]
 }

@@ -121,3 +121,21 @@ Vercel 무료 플랜에서 받지 못하던 플랫폼 레벨 오류(타임아웃
 - **처음 연결할 때**: 프록시를 켠 채로는 Caddy가 첫 인증서를 받기 어려우니, `staging_proxied = false`로 DNS만 VM으로 돌려
   인증서를 받은 뒤 `true`로 켭니다. 그 몇 분 동안은 Access가 적용되지 않습니다.
 - **롤백**: `terraform/cloudflare`의 `staging_target`을 `"vercel"`로 바꿔 develop에 머지합니다(원래 Vercel CNAME, 프록시 끔).
+
+## 엣지 캐시 (공개 정적 페이지)
+
+Cloudflare는 기본으로 HTML을 캐시하지 않아, 빌드 때 미리 만든 페이지도 요청마다 VM까지 갑니다.
+[`edge-cache-paths.json`](edge-cache-paths.json)에 적은 공개 페이지(`/introduce`·`/privacy`·`/features/*` 등)만
+엣지에서 캐시합니다.
+
+- 캐시 규칙: `terraform/cloudflare`의 `cloudflare_ruleset.cache`. 앱의 `s-maxage`(1시간)를 따르고,
+  쿼리가 있거나 RSC 요청(클라이언트 이동)은 캐시하지 않습니다
+- 미들웨어: 이 경로는 Supabase 세션 갱신을 건너뜁니다(`apps/web/src/modules/edgeCache`). `Set-Cookie`가 붙으면
+  캐시되지 않고, 다른 사람의 쿠키가 캐시에 섞일 수 있기 때문입니다
+- 비우기: `cd-web-oracle.yml`이 배포·롤백 뒤 `.github/scripts/deploy/purge-cloudflare-cache.sh`로 이 URL만 비웁니다.
+  옛 HTML이 남으면 새 컨테이너에 없는 JS 파일을 불러 페이지가 깨집니다
+- 페이지를 추가할 때: 동적 페이지·Set-Cookie가 나가는 페이지는 넣지 않습니다. JSON과
+  `edgeCache/index.ts`를 함께 고치면 테스트가 둘이 같은지 확인합니다. 비우기 API는 Free 플랜에서 요청당
+  URL 100개까지라(지금 26개) 그보다 늘리면 스크립트를 나눠 보내게 고칩니다
+- 캐시 규칙의 method 조건에는 `PURGE`가 들어 있어야 합니다. 빠지면 비우기 API가 성공해도 캐시가 남습니다
+- 확인: 응답 헤더 `cf-cache-status`가 `HIT`면 엣지에서 나온 것입니다. 비운 직후 첫 요청은 `MISS`여야 합니다

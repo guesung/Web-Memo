@@ -75,9 +75,9 @@ export const readRows = (report) =>
  * 이 서비스의 주된 사용 경로라 활성 사용자의 대부분이 이 두 값에 몰려 있습니다 —
  * 빼면 리포트가 답하려는 질문 자체에 답하지 못합니다.
  *
- * ⚠️ 같은 목록이 apps/web/src/modules/ga/config.ts 의 INCLUDED_HOST_NAMES 에도
- * 있습니다. 지금은 일부러 복제해 두었으니 **도메인을 바꾸면 두 곳을 함께 고쳐야
- * 합니다.** 한쪽만 고치면 대시보드와 슬랙 리포트가 다른 모수를 세게 됩니다.
+ * 이 목록이 원본 하나입니다. 관리자 대시보드는 GA를 직접 조회하지 않고 데일리 리포트가
+ * 적재한 스냅샷(memo.ga_daily_metrics)만 읽으므로, **도메인을 바꿀 때는 여기만 고치면**
+ * 대시보드와 슬랙 리포트가 같은 모수를 셉니다.
  */
 export const INCLUDED_HOST_NAMES = [
 	"www.webmemo.xyz", // 운영 웹

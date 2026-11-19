@@ -309,10 +309,10 @@ Vercel 프로젝트 환경변수에 두고 서버에서만 읽습니다.
 
 ## 2. 웹 전용 서버 시크릿 — Vercel이 원천, 로컬은 pull
 
-웹의 서버 시크릿(`OPENAI_API_KEY`, `UPSTASH_*`, `GA4_SERVICE_ACCOUNT_JSON`, Slack·GitHub 토큰 등)은
+웹의 서버 시크릿(`OPENAI_API_KEY`, `UPSTASH_*`, Slack·GitHub 토큰 등)은
 **Vercel 프로젝트 환경변수가 유일한 원천**입니다. 로컬 파일을 따로 관리하지 않습니다. 키 목록과 용도는 위
-[전체 목록](#전체-목록)의 Vercel 표가 원천입니다. 웹의 `GA4_PROPERTY_ID`는 비밀이 아니고 환경마다 다르지 않아
-환경변수가 아니라 코드 상수(`apps/web/src/modules/ga/config.ts`)입니다.
+[전체 목록](#전체-목록)의 Vercel 표가 원천입니다. 웹은 GA를 직접 조회하지 않으므로 `GA4_*` 값을 읽지 않습니다.
+관리자 대시보드의 GA 지표는 데일리 리포트가 Supabase에 적재한 스냅샷을 읽습니다.
 
 로컬에서 실행할 때는 development 환경 값을 받아 씁니다.
 
@@ -332,10 +332,6 @@ pnpm env:pull                        # 저장소 루트에서 실행. apps/web/.
 - **development 값은 프로젝트 접근 권한이 있는 사람이 읽을 수 있습니다.** production·preview 값은 sensitive라
   pull로 받을 수 없지만, Vercel은 development 대상을 sensitive로 만들 수 없기 때문입니다. 세 환경을 같게
   두면 production 값도 development 등록본으로 읽을 수 있다는 뜻이니 접근 권한 범위를 그렇게 다루세요.
-- **`GA4_SERVICE_ACCOUNT_JSON`은** 서비스 계정 키 JSON 전문을 한 줄로 넣습니다. 같은 이름의 값이
-  GitHub Secrets에도 있지만(§5, `report-ga-daily.yml`이 읽습니다) 서로 다른 곳이라 **양쪽에 각각
-  등록해야 합니다.** 값이 없으면 실패하지 않고 `/api/admin/ga/active-users`가 `connected: false`를
-  돌려주며, 대시보드는 그래프 대신 "연결 없음"을 그립니다.
 - **e2e도 같은 방식입니다.** `e2e.yml`이 `VERCEL_TOKEN`으로 development 값을 받아
   `apps/web/.env.local`에 씁니다(토큰이 없으면 경고만 하고 넘어갑니다).
 

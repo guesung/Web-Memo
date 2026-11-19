@@ -1,5 +1,3 @@
-// `@src/modules/ga` 배럴에서 내보내지 않습니다. 이 파일은 `@web-memo/env`를 import하므로,
-// 배럴에 넣으면 GA Data API만 쓰는 라우트와 그 테스트까지 WEB_URL이 필요해집니다.
 import { CONFIG } from "@web-memo/env";
 import { ANALYTICS, GA_CLIENT_ID_PATTERN } from "@web-memo/shared/constants";
 import type {

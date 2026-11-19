@@ -12,11 +12,22 @@ import { Suspense } from "react";
 import {
 	ActiveUsersCard,
 	ActivityChart,
-	GaActiveUsersChart,
+	GaMetricsSection,
+	GaMetricsSkeleton,
 	IncludeAdminToggle,
+	RetentionSection,
+	RetentionTabSkeleton,
 	StatsCards,
 	UserGrowthChart,
 } from "./_components";
+
+/**
+ * 통계를 prefetch한 뒤 신선하게 보는 시간(ms).
+ *
+ * @description `StatsCards`와 `ActivityChart`가 같은 쿼리를 각자의 경계에서 prefetch합니다.
+ * 이 값이 0이면 두 번째 경계가 방금 받은 값을 낡은 것으로 보고 같은 RPC를 다시 부릅니다.
+ */
+const ADMIN_STATS_PREFETCH_STALE_MS = 60_000;
 
 interface PageProps extends LanguageParams {
 	searchParams: Promise<{ includeAdmin?: string }>;
@@ -28,6 +39,11 @@ export default async function AdminPage({ params, searchParams }: PageProps) {
 	const { t } = await getTranslation(lng);
 	const supabaseClient = await getSupabaseClient();
 	const adminService = new AdminService(supabaseClient);
+	const adminStatsQuery = {
+		queryKey: QUERY_KEY.adminStats(includeAdmin),
+		queryFn: () => adminService.getAdminStats({ includeAdmin }),
+		staleTime: ADMIN_STATS_PREFETCH_STALE_MS,
+	};
 
 	return (
 		<>
@@ -36,51 +52,53 @@ export default async function AdminPage({ params, searchParams }: PageProps) {
 				<IncludeAdminToggle lng={lng} />
 			</div>
 
-			<HydrationBoundaryWrapper
-				queryKey={QUERY_KEY.adminStats(includeAdmin)}
-				queryFn={() => adminService.getAdminStats({ includeAdmin })}
-			>
-				<Suspense fallback={<Loading />}>
+			<Suspense fallback={<Loading />}>
+				<HydrationBoundaryWrapper {...adminStatsQuery}>
 					<StatsCards lng={lng} includeAdmin={includeAdmin} />
-				</Suspense>
-			</HydrationBoundaryWrapper>
+				</HydrationBoundaryWrapper>
+			</Suspense>
 
 			<div className="mt-8">
-				<HydrationBoundaryWrapper
-					queryKey={QUERY_KEY.activeUsersStats(includeAdmin)}
-					queryFn={() => adminService.getActiveUsersStats({ includeAdmin })}
-				>
-					<Suspense fallback={<Loading />}>
+				<Suspense fallback={<Loading />}>
+					<HydrationBoundaryWrapper
+						queryKey={QUERY_KEY.activeUsersStats(includeAdmin)}
+						queryFn={() => adminService.getActiveUsersStats({ includeAdmin })}
+					>
 						<ActiveUsersCard lng={lng} includeAdmin={includeAdmin} />
-					</Suspense>
-				</HydrationBoundaryWrapper>
+					</HydrationBoundaryWrapper>
+				</Suspense>
 			</div>
 
-			{/* GA는 Supabase를 센 숫자가 아니라 출처가 다르므로, 아래 2열 그리드에 끼워 넣지 않고 자기 섹션에서 전폭을 씁니다. */}
+			{/* GA와 리텐션은 Supabase를 센 숫자와 출처가 다르므로, 아래 2열 그리드에 끼워 넣지 않고 자기 섹션에서 전폭을 씁니다. 두 섹션은 클라이언트에서 조회하며 서버 prefetch로 첫 화면을 막지 않습니다. */}
 			<Separator className="my-8" />
 
-			<GaActiveUsersChart lng={lng} />
+			<Suspense fallback={<GaMetricsSkeleton />}>
+				<GaMetricsSection lng={lng} />
+			</Suspense>
+
+			<div className="mt-12">
+				<Suspense fallback={<RetentionTabSkeleton />}>
+					<RetentionSection lng={lng} />
+				</Suspense>
+			</div>
 
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-				<HydrationBoundaryWrapper
-					queryKey={QUERY_KEY.userGrowth(30, includeAdmin)}
-					queryFn={() =>
-						adminService.getUserGrowth({ daysAgo: 30, includeAdmin })
-					}
-				>
-					<Suspense fallback={<Loading />}>
+				<Suspense fallback={<Loading />}>
+					<HydrationBoundaryWrapper
+						queryKey={QUERY_KEY.userGrowth(30, includeAdmin)}
+						queryFn={() =>
+							adminService.getUserGrowth({ daysAgo: 30, includeAdmin })
+						}
+					>
 						<UserGrowthChart lng={lng} includeAdmin={includeAdmin} />
-					</Suspense>
-				</HydrationBoundaryWrapper>
+					</HydrationBoundaryWrapper>
+				</Suspense>
 
-				<HydrationBoundaryWrapper
-					queryKey={QUERY_KEY.adminStats(includeAdmin)}
-					queryFn={() => adminService.getAdminStats({ includeAdmin })}
-				>
-					<Suspense fallback={<Loading />}>
+				<Suspense fallback={<Loading />}>
+					<HydrationBoundaryWrapper {...adminStatsQuery}>
 						<ActivityChart lng={lng} includeAdmin={includeAdmin} />
-					</Suspense>
-				</HydrationBoundaryWrapper>
+					</HydrationBoundaryWrapper>
+				</Suspense>
 			</div>
 		</>
 	);

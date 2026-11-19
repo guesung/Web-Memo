@@ -24,7 +24,7 @@ interface IFVersionResponse {
 	branch: string | null;
 	/** 빌드 시각(ISO 8601) */
 	builtAt: string | null;
-	/** Vercel 환경 (production / preview / development) */
+	/** 배포 환경. Vercel은 production / preview / development, 컨테이너는 staging / production */
 	environment: string | null;
 }
 
@@ -38,7 +38,8 @@ const VERSION: IFVersionResponse = {
 	branch:
 		process.env.VERCEL_GIT_COMMIT_REF || process.env.GITHUB_REF_NAME || null,
 	builtAt: new Date().toISOString(),
-	environment: process.env.VERCEL_ENV ?? null,
+	// 컨테이너 빌드(apps/web/Dockerfile)는 VERCEL_ENV가 없어 DEPLOY_ENV로 대신 받습니다.
+	environment: process.env.VERCEL_ENV || process.env.DEPLOY_ENV || null,
 };
 
 export const dynamic = "force-static";

@@ -469,6 +469,16 @@
   consumers: [apps/chrome-extension/vite.config.mts]
   note: "Next와 Vite 같은 툴체인이 자기 값으로 채운다. 환경 구분에는 쓰지 않고 BUILD_ENV를 쓴다"
 
+- name: DEPLOY_COLOR
+  kind: platform
+  consumers: [apps/web/src/app/api/health/route.ts]
+  note: "Oracle VM의 blue·green 컨테이너에 compose(infra/oracle/compose.yaml)가 넣는다. 없으면 /api/health가 항상 200이다"
+
+- name: DEPLOY_ENV
+  kind: platform
+  consumers: [apps/web/src/app/api/version/route.ts, apps/web/Dockerfile]
+  note: "컨테이너 빌드(apps/web/Dockerfile)가 build arg로 넣는다. Vercel에서는 VERCEL_ENV를 쓰므로 등록하지 않는다"
+
 - name: CI
   kind: platform
   consumers: [e2e/playwright.config.ts]
@@ -476,7 +486,7 @@
 
 - name: VERCEL
   kind: platform
-  consumers: [apps/web/src/modules/slack/afterResponse.ts, packages/env/tsup.config.ts]
+  consumers: [packages/env/tsup.config.ts]
   note: "Vercel 빌드와 런타임이 넣는다"
   phase: build
 

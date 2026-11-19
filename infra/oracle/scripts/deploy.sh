@@ -32,7 +32,13 @@ mv .env.next .env
 # 활성 색 파일이 없던 첫 배포면 지금 활성 색으로 만들어 둡니다(없으면 두 색 모두 200)
 write_active "$ACTIVE"
 
-docker compose up -d caddy
+# compose의 caddy 정의가 바뀐 배포에서는 컨테이너를 새로 만듭니다. 이전 컨테이너가 포트를 놓기 전에
+# 시작하면 한 번 실패할 수 있어(실제로 겪음) 몇 번 다시 시도합니다.
+for attempt in 1 2 3; do
+	docker compose up -d caddy && break
+	[ "$attempt" = 3 ] && exit 1
+	sleep 3
+done
 docker compose pull --quiet "web-$IDLE"
 docker compose up -d --no-deps --force-recreate "web-$IDLE"
 

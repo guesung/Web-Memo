@@ -325,10 +325,7 @@ describe("확장 하이라이트 생성", () => {
 			await controller.save();
 			expect(state).toMatchObject({
 				isSaving: false,
-				message:
-					error === "unauthenticated"
-						? "highlight_login_required"
-						: "highlight_save_failed",
+				message: "highlight_save_failed",
 			});
 			expect(renderer.add).not.toHaveBeenCalled();
 			await controller.save();

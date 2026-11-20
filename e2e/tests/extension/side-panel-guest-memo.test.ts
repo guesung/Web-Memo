@@ -1,6 +1,6 @@
 import type { BrowserContext, Page } from "@playwright/test";
 import { expect, test } from "../fixtures/extension";
-import { findSidePanelPage, openSidePanel, skipGuide } from "../lib";
+import { findSidePanelPage, openSidePanel } from "../lib";
 
 /**
  * 로그인하지 않아도 패널에서 메모를 쓸 수 있고, 메모는 이 기기에만 저장된다.
@@ -17,7 +17,6 @@ test("로그인하지 않아도 메모를 쓰면 이 기기에 저장되고 다�
 			body: "<h1>Guest memo test</h1>",
 		});
 	});
-	await skipGuide(page);
 	await page.goto(url);
 	await openSidePanel(page);
 	const sidePanelPage = await findSidePanelPage(page);
@@ -45,9 +44,8 @@ test("로그인하지 않아도 메모를 쓰면 이 기기에 저장되고 다�
 	).toBeVisible();
 
 	await memoTextarea.fill("기기에 쓴 메모");
-	await expect(
-		sidePanelPage.getByText(/이 기기에만 저장돼요|saved on this device only/i),
-	).toBeVisible();
+	// 저장 상태 문구는 비로그인에서 저장 전에도 보이므로, 첫 저장 직후에만 뜨는 배너로 저장 완료를 기다린다.
+	await expect(sidePanelPage.getByTestId("guest-login-banner")).toBeVisible();
 
 	await sidePanelPage.reload();
 	await expect(sidePanelPage.locator("#memo-textarea")).toHaveValue(
@@ -71,7 +69,6 @@ const openGuestPanel = async ({
 			body: "<h1>Guest banner test</h1>",
 		});
 	});
-	await skipGuide(page);
 	await page.goto(`https://example.com/${path}`);
 	await openSidePanel(page);
 	return findSidePanelPage(page);

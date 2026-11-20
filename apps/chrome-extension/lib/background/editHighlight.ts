@@ -3,13 +3,10 @@ import type {
 	IFEditHighlightPayload,
 	TEditHighlightResponse,
 } from "@web-memo/shared/modules/extension-bridge";
-import { getPageKey, HighlightService } from "@web-memo/shared/utils";
-import {
-	getSupabaseClient,
-	SupabaseSessionRequiredError,
-} from "@web-memo/shared/utils/extension";
+import { getPageKey } from "@web-memo/shared/utils";
 import { getValidatedHighlightUrl } from "./getValidatedHighlightUrl";
 import { reportBackgroundError } from "./reportBackgroundError";
+import { resolveHighlightStore } from "./resolveHighlightStore";
 
 /** Chrome이 검증한 발신자와 신뢰할 수 없는 변경 본문. */
 interface IFEditHighlightRequest {
@@ -40,18 +37,17 @@ export const handleEditHighlight = async (
 		return { success: false, error: "invalid_request" };
 	}
 	try {
-		const client = await getSupabaseClient();
-		const { data, error } = await client.auth.getUser();
-		if (error || !data.user) {
-			if (error && error.status !== 401 && error.status !== 403) {
+		const resolution = await resolveHighlightStore();
+		if (resolution.status !== "ready") {
+			if (resolution.status === "auth_unavailable") {
 				reportEditFailure("auth_unavailable");
 				return { success: false, error: "save_failed" };
 			}
 			return { success: false, error: "unauthenticated" };
 		}
-		const service = new HighlightService(client);
+		const { store: service, userId } = resolution;
 		const { data: storedHighlight, error: lookupError } =
-			await service.getHighlightById({ id: payload.id, userId: data.user.id });
+			await service.getHighlightById({ id: payload.id, userId });
 		if (lookupError || !storedHighlight) {
 			reportEditFailure(lookupError ? "database_error" : "empty_result");
 			return { success: false, error: "save_failed" };
@@ -59,7 +55,7 @@ export const handleEditHighlight = async (
 		if ((storedHighlight.page_key || getPageKey(storedHighlight.url)) !== getPageKey(url)) {
 			return { success: false, error: "invalid_request" };
 		}
-		const scope = { url: storedHighlight.url, userId: data.user.id };
+		const scope = { url: storedHighlight.url, userId };
 		const result =
 			payload.action === "delete"
 				? await service.deleteHighlight(payload.id, scope)
@@ -79,7 +75,7 @@ export const handleEditHighlight = async (
 			row.id !== payload.id ||
 			row.url !== storedHighlight.url ||
 			(row.page_key || getPageKey(row.url)) !== (storedHighlight.page_key || getPageKey(storedHighlight.url)) ||
-			row.user_id !== data.user.id ||
+			row.user_id !== userId ||
 			(payload.action === "color" && row.color !== payload.color) ||
 			(payload.action === "note" && row.note !== payload.note)
 		) {
@@ -88,10 +84,7 @@ export const handleEditHighlight = async (
 		}
 
 		return { success: true, highlight: row };
-	} catch (error) {
-		if (error instanceof SupabaseSessionRequiredError) {
-			return { success: false, error: "unauthenticated" };
-		}
+	} catch {
 		reportEditFailure("unexpected_error");
 		return { success: false, error: "save_failed" };
 	}
@@ -107,7 +100,8 @@ const isValidPayload = (
 
 	return (
 		Number.isSafeInteger(input.id) &&
-		Number(input.id) > 0 &&
+		/** 0은 없는 id다. 음수는 비로그인 기기 하이라이트다. */
+		input.id !== 0 &&
 		typeof input.url === "string" &&
 		input.url.length <= 8192 &&
 		(input.action === "delete" ||

@@ -3,10 +3,9 @@ import type {
 	IFCreateHighlightPayload,
 	TCreateHighlightResponse,
 } from "@web-memo/shared/modules/extension-bridge";
-import { HighlightService } from "@web-memo/shared/utils";
 import { getValidatedHighlightUrl } from "./getValidatedHighlightUrl";
 import { reportBackgroundError } from "./reportBackgroundError";
-import { getAuthenticatedClient } from "./supabaseAuth";
+import { resolveHighlightStore } from "./resolveHighlightStore";
 
 /** 신뢰할 수 없는 메시지 본문과 Chrome이 제공하는 발신 문서 정보. */
 interface IFCreateHighlightRequest {
@@ -26,31 +25,23 @@ export const handleCreateHighlight = async (
 	if (!url) {
 		return { success: false, error: "invalid_request" };
 	}
-	let operation: THighlightSaveOperation = "client_initialize";
+	let operation: THighlightSaveOperation = "auth_verify";
 	try {
-		const supabaseClient = await getAuthenticatedClient();
-		if (!supabaseClient) {
-			logHighlightFailure(operation, "session_missing");
-			return { success: false, error: "unauthenticated" };
-		}
-		operation = "auth_verify";
-		const { data: authData, error: authError } =
-			await supabaseClient.auth.getUser();
-		if (authError && authError.status !== 401 && authError.status !== 403) {
-			logHighlightFailure(operation, "auth_unavailable");
-			return { success: false, error: "save_failed" };
-		}
-		if (authError || !authData.user) {
-			logHighlightFailure(
-				operation,
-				authError ? "auth_rejected" : "user_missing",
-			);
-			return { success: false, error: "unauthenticated" };
+		const resolution = await resolveHighlightStore();
+		if (resolution.status !== "ready") {
+			logHighlightFailure(operation, resolution.status);
+			return {
+				success: false,
+				error:
+					resolution.status === "auth_unavailable"
+						? "save_failed"
+						: "unauthenticated",
+			};
 		}
 		operation = "insert";
-		const service = new HighlightService(supabaseClient);
+		const { store: service, userId } = resolution;
 		const { data, error } = await service.insertHighlight({
-			user_id: authData.user.id,
+			user_id: userId,
 			url,
 			title: payload.title,
 			favIconUrl: payload.favIconUrl,
@@ -104,11 +95,10 @@ const isValidPayload = (
 };
 
 /** 진단에 허용하는 저장 단계. URL 검증은 외부 입력이므로 기록하지 않는다. */
-type THighlightSaveOperation = "client_initialize" | "auth_verify" | "insert";
+type THighlightSaveOperation = "auth_verify" | "insert";
 
 /** 서버 메시지와 사용자 데이터를 포함하지 않는 고정 진단 코드. */
 type THighlightFailureCode =
-	| "session_missing"
 	| "auth_unavailable"
 	| "auth_rejected"
 	| "user_missing"

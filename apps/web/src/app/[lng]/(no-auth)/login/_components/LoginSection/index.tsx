@@ -53,7 +53,7 @@ const LoginSection = async ({ lng, nextPath }: IFLoginSectionProps) => {
 		<section className="flex flex-col gap-6 rounded-2xl border border-border bg-card px-6 py-8 shadow-sm">
 			<div className="flex flex-col gap-3">
 				<Image
-					src="/images/pngs/icon.png"
+					src="/images/pngs/icon-128.png"
 					width={48}
 					height={48}
 					alt={t("common.webMemo")}

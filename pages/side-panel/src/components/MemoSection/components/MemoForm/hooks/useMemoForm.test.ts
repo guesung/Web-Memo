@@ -2,7 +2,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import useDebounce from "../../../../../../../../packages/shared/src/hooks/common/useDebounce";
 import useMemoForm from "./useMemoForm";
 
@@ -31,7 +31,8 @@ const mocks = vi.hoisted(() => ({
 	hasPendingOfflineMemo: vi.fn(async (_target: unknown) => false),
 	pendingOfflineItem: undefined as unknown,
 	pendingStatus: "absent" as "loading" | "absent" | "present" | "error",
-	userId: "user-1",
+	userId: "user-1" as string | null,
+	storeKind: "remote" as "remote" | "local",
 	getTabInfo: vi.fn(),
 	trackEvent: vi.fn(async (_event: unknown) => {}),
 }));
@@ -40,6 +41,7 @@ vi.mock("@web-memo/shared/hooks", () => ({
 	useDidMount: vi.fn(),
 	useTabQuery: () => ({ data: mocks.tab }),
 	useSupabaseClientQuery: () => ({ data: {} }),
+	useMemoStoreQuery: () => ({ data: { kind: mocks.storeKind } }),
 	useSupabaseUserQuery: () => ({
 		user: { data: { user: mocks.userId ? { id: mocks.userId } : null } },
 	}),
@@ -147,6 +149,7 @@ beforeEach(() => {
 	mocks.pendingOfflineItem = undefined;
 	mocks.pendingStatus = "absent";
 	mocks.userId = "user-1";
+	mocks.storeKind = "remote";
 	mocks.getTabInfo.mockReset().mockImplementation(async () => mocks.tab);
 	mocks.trackEvent.mockReset().mockResolvedValue(undefined);
 	queryClient = new QueryClient({
@@ -665,6 +668,55 @@ it("네트워크 오류로 실패하면 대기열에 넣고 저장 성공으로 
 	expect(mocks.trackEvent).toHaveBeenCalledWith({
 		name: "memo_offline_queued",
 		params: { trigger: "network_error", queue_contract_version: 2 },
+	});
+});
+
+describe("비로그인(기기 저장소)", () => {
+	beforeEach(() => {
+		mocks.userId = null;
+		mocks.storeKind = "local";
+	});
+
+	it("사용자 없이 저장 요청을 보내고 오프라인 대기열은 건드리지 않는다", async () => {
+		mocks.memo = undefined;
+		await render();
+		let isSaved = false;
+		await act(async () => {
+			isSaved = await form.saveMemo({ memo: "기기 메모" });
+		});
+
+		expect(isSaved).toBe(true);
+		expect(mocks.upsert).toHaveBeenCalledTimes(1);
+		expect(mocks.upsert.mock.calls[0][0]).toMatchObject({
+			url: "https://example.com/a",
+			data: { memo: "기기 메모" },
+		});
+		expect(mocks.hasPendingOfflineMemo).not.toHaveBeenCalled();
+		expect(mocks.enqueueOfflineMemo).not.toHaveBeenCalled();
+		expect(form.saveStatus).toBe("saved");
+	});
+
+	it("오프라인이어도 대기열 없이 곧바로 저장한다", async () => {
+		mocks.isOnline = false;
+		await render();
+		await act(async () => {
+			await form.saveMemo({ memo: "오프라인 기기 메모" });
+		});
+
+		expect(mocks.upsert).toHaveBeenCalledTimes(1);
+		expect(mocks.enqueueOfflineMemo).not.toHaveBeenCalled();
+	});
+
+	it("오프라인이어도 상태 토글이 저장된다", async () => {
+		mocks.isOnline = false;
+		await render();
+		let result: boolean | null = null;
+		await act(async () => {
+			result = await form.toggleMemoStatus("isWish");
+		});
+
+		expect(result).toBe(true);
+		expect(mocks.upsert).toHaveBeenCalledTimes(1);
 	});
 });
 

@@ -2,11 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "../../../constants";
 import { analytics } from "../../../modules/analytics";
 import { CategoryService } from "../../../utils";
-import { useSupabaseClientQuery } from "../queries";
+import { supabaseClientQueryOptions } from "../queries";
 
 export default function useCategoryPostMutation() {
 	const queryClient = useQueryClient();
-	const { data: supabaseClient } = useSupabaseClientQuery();
 
 	return useMutation({
 		meta: {
@@ -17,6 +16,10 @@ export default function useCategoryPostMutation() {
 		mutationFn: async (
 			request: Parameters<CategoryService["insertCategory"]>[0],
 		) => {
+			// 기기 저장소를 쓰는 비로그인 패널도 이 훅을 부르므로, 클라이언트는 실제로 저장할 때만 가져온다.
+			const supabaseClient = await queryClient.ensureQueryData(
+				supabaseClientQueryOptions(),
+			);
 			const result = await new CategoryService(supabaseClient).insertCategory(
 				request,
 			);

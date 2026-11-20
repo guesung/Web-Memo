@@ -6,6 +6,7 @@ import type {
 	MemoTable,
 } from "../../types";
 import { getMemoSearchFilter } from "../memoSearchFilter";
+import type { IFMemoStore } from "../memoStore/memoStore";
 import {
 	getDomainFromUrl,
 	getDomainUrlPattern,
@@ -46,7 +47,8 @@ export interface IFMemoPageCursor {
 }
 
 /** 메모 조회와 저장 및 휴지통 작업을 처리한다. */
-export class MemoService {
+export class MemoService implements IFMemoStore {
+	readonly kind = "remote" as const;
 	supabaseClient: MemoSupabaseClient;
 
 	constructor(supabaseClient: MemoSupabaseClient) {

@@ -1,5 +1,8 @@
 export type { ChatMessage } from "./useChat";
 export { default as useChat } from "./useChat";
+export { default as useIsGuest } from "./useIsGuest";
+export type { TLoginProvider } from "./useLoginEntry";
+export { default as useLoginEntry } from "./useLoginEntry";
 export type { TOfflineMemoSyncStatus } from "./useOfflineMemoSync";
 export { default as useOfflineMemoSync } from "./useOfflineMemoSync";
 export { default as useOnlineStatus } from "./useOnlineStatus";

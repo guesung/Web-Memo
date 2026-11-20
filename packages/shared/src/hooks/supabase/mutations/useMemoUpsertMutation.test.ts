@@ -23,7 +23,9 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
 	};
 });
 vi.mock("../queries", () => ({
-	useSupabaseClientQuery: () => ({ data: {} }),
+	useMemoStoreQuery: () => ({
+		data: { getMemoById, getMemoByUrl, updateMemo, insertMemo },
+	}),
 }));
 vi.mock("../../../modules/analytics", () => ({
 	analytics: {
@@ -34,12 +36,6 @@ vi.mock("../../../modules/analytics", () => ({
 	},
 }));
 vi.mock("../../../utils", () => ({
-	MemoService: class {
-		getMemoById = getMemoById;
-		getMemoByUrl = getMemoByUrl;
-		updateMemo = updateMemo;
-		insertMemo = insertMemo;
-	},
 	getPageKey: (url: string) => url,
 	getPathKey: (url: string) => url,
 }));

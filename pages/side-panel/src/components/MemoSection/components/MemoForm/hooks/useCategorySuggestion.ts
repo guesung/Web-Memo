@@ -21,6 +21,7 @@ export const useCategorySuggestion = ({
 	currentCategoryId,
 	currentMemoId,
 	firstSavedMemoId,
+	isEnabled = true,
 	isFirstSavedMemoReady,
 	siblingCategoryId,
 	onCategorySelect,
@@ -111,6 +112,7 @@ export const useCategorySuggestion = ({
 	};
 	const triggerSuggestion = async (memoText: string) => {
 		if (
+			!isEnabled ||
 			currentCategoryId ||
 			suggestionRef.current ||
 			isLoading ||
@@ -248,6 +250,7 @@ export const useCategorySuggestion = ({
 	}, [currentMemoId]);
 	useEffect(() => {
 		if (
+			!isEnabled ||
 			firstSavedMemoId === null ||
 			currentMemoId !== firstSavedMemoId ||
 			firstSuggestedMemoIdRef.current === firstSavedMemoId ||
@@ -267,6 +270,7 @@ export const useCategorySuggestion = ({
 	}, [
 		firstSavedMemoId,
 		currentMemoId,
+		isEnabled,
 		isFirstSavedMemoReady,
 		currentCategoryId,
 		isLoading,
@@ -321,6 +325,8 @@ interface IFUseCategorySuggestionProps {
 	currentCategoryId: number | null;
 	currentMemoId: number | null;
 	firstSavedMemoId: number | null;
+	/** 추천을 시작할 수 있는지. 추천은 AI를 부르므로 로그인했을 때만 켠다 */
+	isEnabled?: boolean;
 	isFirstSavedMemoReady: boolean;
 	/** 같은 페이지 다른 메모(최근 수정순 첫 번째 카테고리 보유 메모)의 카테고리 id. 있으면 OpenAI 없이 이것을 제안한다 */
 	siblingCategoryId?: number | null;

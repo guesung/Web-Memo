@@ -2,9 +2,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "../../../constants";
 import { analytics } from "../../../modules/analytics";
 import type { MemoRow, MemoSupabaseResponse, MemoTable } from "../../../types";
-import { getPageKey, getPathKey, MemoService } from "../../../utils";
+import { getPageKey, getPathKey } from "../../../utils";
 
-import { useSupabaseClientQuery } from "../queries";
+import { useMemoStoreQuery } from "../queries";
 
 /** 메모 ID 또는 페이지 URL로 저장 대상을 지정한다. */
 interface IFMemoUpsertVariables {
@@ -27,8 +27,7 @@ interface IFMemoUpsertContext {
 /** 명시적인 ID 또는 중복이 없는 페이지 후보에만 메모를 저장한다. */
 export default function useMemoUpsertMutation() {
 	const queryClient = useQueryClient();
-	const { data: supabaseClient } = useSupabaseClientQuery();
-	const memoService = new MemoService(supabaseClient);
+	const { data: memoService } = useMemoStoreQuery();
 
 	return useMutation<
 		MemoSupabaseResponse,

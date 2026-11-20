@@ -63,6 +63,15 @@ describe("원문 이동 대상 고정", () => {
 			payload: { pageKey, id: 4 },
 		});
 	});
+	it("비로그인 기기 하이라이트(음수 id)도 원문으로 이동한다", async () => {
+		expect(await handleFocusHighlight({ ...payload, id: -2 }, sender)).toEqual({
+			success: true,
+		});
+		expect(mocks.send).toHaveBeenCalledWith(12, {
+			type: "SCROLL_TO_HIGHLIGHT",
+			payload: { pageKey, id: -2 },
+		});
+	});
 	it.each([
 		{ active: false, url: pageKey },
 		{ active: true, url: "https://example.com/other" },

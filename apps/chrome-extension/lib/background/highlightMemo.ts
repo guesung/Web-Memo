@@ -32,7 +32,8 @@ export async function handleCreateHighlightMemo(
 	if (
 		!payload ||
 		!Number.isSafeInteger(payload.highlightId) ||
-		payload.highlightId <= 0 ||
+		/** 0은 없는 id다. 음수는 비로그인 기기 하이라이트라 세션 확인에서 unauthenticated로 걸러진다. */
+		payload.highlightId === 0 ||
 		typeof payload.memo !== "string" ||
 		!payload.memo.trim()
 	)
@@ -92,7 +93,7 @@ export async function handleGetHighlightMemoLinks(
 		!payload ||
 		!Array.isArray(payload.highlightIds) ||
 		payload.highlightIds.length > 100 ||
-		payload.highlightIds.some((id) => !Number.isSafeInteger(id) || id <= 0) ||
+		payload.highlightIds.some((id) => !Number.isSafeInteger(id) || id === 0) ||
 		!url ||
 		!getValidatedHighlightUrl(sender, url)
 	)

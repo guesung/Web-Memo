@@ -287,10 +287,7 @@ export const createHighlightController = (
 				state = {
 					...state,
 					isSaving: false,
-					message:
-						response?.error === "unauthenticated"
-							? "highlight_login_required"
-							: "highlight_save_failed",
+					message: "highlight_save_failed",
 				};
 				emit();
 

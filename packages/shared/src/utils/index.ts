@@ -9,6 +9,7 @@ export * from "./Export";
 export * from "./errorReporter";
 export * from "./favoriteUrl";
 export * from "./highlightSourceUrl";
+export * from "./highlightStore";
 export * from "./memoSearchFilter";
 export * from "./memoStore";
 export * from "./planDate";

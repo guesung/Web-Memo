@@ -2,12 +2,13 @@ import { SupabaseSessionRequiredError } from "@web-memo/shared/utils/extension";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { handleEditHighlight } from "./editHighlight";
 
-const MOCKS = vi.hoisted(() => ({ getClient: vi.fn(), getUser: vi.fn(), lookup: vi.fn(), update: vi.fn(), remove: vi.fn(), report: vi.fn() }));
+const MOCKS = vi.hoisted(() => ({ getClient: vi.fn(), getUser: vi.fn(), lookup: vi.fn(), update: vi.fn(), remove: vi.fn(), localLookup: vi.fn(), localUpdate: vi.fn(), localRemove: vi.fn(), report: vi.fn() }));
 vi.mock("./reportBackgroundError", () => ({ reportBackgroundError: MOCKS.report }));
 vi.mock("@web-memo/shared/utils", () => ({
  normalizeUrl: (url: string) => url,
  getPageKey: (url: string) => url.replace(/([?&])utm_source=[^&]+&?/, "$1").replace(/[?&]$/, ""),
  HighlightService: class { getHighlightById = MOCKS.lookup; updateHighlight = MOCKS.update; deleteHighlight = MOCKS.remove; },
+ LocalHighlightService: class { getHighlightById = MOCKS.localLookup; updateHighlight = MOCKS.localUpdate; deleteHighlight = MOCKS.localRemove; },
 }));
 vi.mock("@web-memo/shared/utils/extension", () => ({
  getSupabaseClient: MOCKS.getClient, SupabaseSessionRequiredError: class extends Error {},
@@ -64,7 +65,7 @@ describe("하이라이트 편집 요청", () => {
   MOCKS.remove.mockResolvedValue({ data: [], error: null });
   expect((await handleEditHighlight({ payload: { id: 1, url: URL, action: "delete" }, sender: SENDER })).success).toBe(false);
  });
- it.each([null, {}, { ...PAYLOAD, color: "red" }, { ...PAYLOAD, id: -1 }, { ...PAYLOAD, url: "https://other.com/" }])("유효하지 않은 요청을 거부한다: %j", async (payload) => {
+ it.each([null, {}, { ...PAYLOAD, color: "red" }, { ...PAYLOAD, id: 0 }, { ...PAYLOAD, url: "https://other.com/" }])("유효하지 않은 요청을 거부한다: %j", async (payload) => {
   expect((await handleEditHighlight({ payload, sender: SENDER })).success).toBe(false);
   expect(MOCKS.getClient).not.toHaveBeenCalled();
  });
@@ -75,6 +76,20 @@ describe("하이라이트 편집 요청", () => {
  it.each([{ ...ROW, user_id: "other" }, { ...ROW, url: "https://other.com/" }, { ...ROW, id: 2 }])("소유권과 URL이 다른 반환 행은 성공으로 간주하지 않는다", async (row) => {
   MOCKS.update.mockResolvedValue({ data: [row], error: null });
   expect((await handleEditHighlight({ payload: PAYLOAD, sender: SENDER })).success).toBe(false);
+ });
+ it("세션이 없으면 기기 저장소의 음수 id 하이라이트를 수정·삭제한다", async () => {
+  MOCKS.getClient.mockRejectedValue(new SupabaseSessionRequiredError("로그인"));
+  const local = { ...ROW, id: -3, user_id: "", color: "green" };
+  MOCKS.localLookup.mockResolvedValue({ data: local, error: null });
+  MOCKS.localUpdate.mockResolvedValue({ data: [local], error: null });
+  MOCKS.localRemove.mockResolvedValue({ data: [local], error: null });
+  expect(await handleEditHighlight({ payload: { ...PAYLOAD, id: -3, color: "green" }, sender: SENDER })).toEqual({ success: true, highlight: local });
+  expect(MOCKS.localLookup).toHaveBeenCalledWith({ id: -3, userId: "" });
+  expect(MOCKS.localUpdate).toHaveBeenCalledWith({ id: -3, request: { color: "green" }, scope: { url: URL, userId: "" } });
+  expect((await handleEditHighlight({ payload: { id: -3, url: URL, action: "delete" }, sender: SENDER })).success).toBe(true);
+  expect(MOCKS.localRemove).toHaveBeenCalledWith(-3, { url: URL, userId: "" });
+  expect(MOCKS.lookup).not.toHaveBeenCalled();
+  expect(MOCKS.getUser).not.toHaveBeenCalled();
  });
  it("로그인이 없으면 변경하지 않는다", async () => {
   MOCKS.getUser.mockResolvedValue({ data: { user: null }, error: null });
@@ -95,7 +110,6 @@ describe("하이라이트 편집 요청", () => {
   expect(params.error.message).not.toMatch(/secret|boom|example\.com/);
  });
  it.each([
-  { setup: () => MOCKS.getClient.mockRejectedValue(new SupabaseSessionRequiredError("로그인")) },
   { setup: () => MOCKS.getUser.mockResolvedValue({ data: { user: null }, error: { status: 401 } }) },
   { setup: () => MOCKS.getUser.mockResolvedValue({ data: { user: null }, error: null }) },
  ])("로그인 부재처럼 정상적인 실패는 보고하지 않는다", async ({ setup }) => {

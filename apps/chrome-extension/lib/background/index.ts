@@ -5,7 +5,6 @@ import {
 	handleCreateHighlightMemo,
 	handleGetHighlightMemoLinks,
 } from "./highlightMemo";
-import { handleGetLoginStatus } from "./getLoginStatus";
 import { handleFocusHighlight, notifyHighlightChange } from "./highlightPanel";
 import { notifyQuietly } from "./notifyQuietly";
 import { handleOpenSidePanelFromWeb } from "./openSidePanelFromWeb";
@@ -18,14 +17,19 @@ import {
 	STORAGE_KEYS,
 } from "@web-memo/shared/modules/chrome-storage";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
-import { HighlightService, normalizeUrl } from "@web-memo/shared/utils";
-import { getSupabaseClient, I18n, Tab } from "@web-memo/shared/utils/extension";
+import {
+	HighlightService,
+	LocalHighlightService,
+	normalizeUrl,
+} from "@web-memo/shared/utils";
+import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import { initSentry } from "@web-memo/shared/utils";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { configurePanelBehavior } from "./configurePanelBehavior";
 import { openInstallGuideTab } from "./openInstallGuideTab";
 import { registerUninstallUrl } from "./registerUninstallUrl";
 import { reportBackgroundError } from "./reportBackgroundError";
+import { getAuthenticatedClient } from "./supabaseAuth";
 
 void initSentry();
 
@@ -201,13 +205,16 @@ bridge.handle.GET_HIGHLIGHT_MEMO_LINKS(
 // 실패해도 빈 배열을 돌려준다 — 남의 페이지 위에서 조용히 실패해야 한다(설계 §8).
 bridge.handle.GET_HIGHLIGHTS_BY_URL(async (payload, _sender, sendResponse) => {
 	try {
-		const supabaseClient = await getSupabaseClient();
-		const highlightService = new HighlightService(supabaseClient);
+		// 세션이 없으면 이 기기에 저장된 하이라이트를 돌려준다.
+		const supabaseClient = await getAuthenticatedClient();
+		const highlightStore = supabaseClient
+			? new HighlightService(supabaseClient)
+			: new LocalHighlightService();
 
 		// 앱·웹과 같은 기준으로 찾도록 URL을 정규화한다.
 		const normalizedUrl = normalizeUrl(payload.url);
 		const { data, error } =
-			await highlightService.getHighlightsByUrl(normalizedUrl);
+			await highlightStore.getHighlightsByUrl(normalizedUrl);
 
 		if (error) {
 			sendResponse({ highlights: [] });
@@ -218,12 +225,6 @@ bridge.handle.GET_HIGHLIGHTS_BY_URL(async (payload, _sender, sendResponse) => {
 	} catch {
 		sendResponse({ highlights: [] });
 	}
-});
-
-// content-ui가 하이라이트 버블을 띄우기 전에 로그인 여부를 묻는다.
-// 네트워크 검증 없이 저장된 세션만 보고, 실패하면 false를 돌려준다.
-bridge.handle.GET_LOGIN_STATUS(async (_payload, _sender, sendResponse) => {
-	sendResponse(await handleGetLoginStatus());
 });
 
 /** 선택된 텍스트는 인증된 background에서만 저장한다. */

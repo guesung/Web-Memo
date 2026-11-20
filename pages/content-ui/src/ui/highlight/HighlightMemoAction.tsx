@@ -104,15 +104,21 @@ export const HighlightMemoAction = ({ row }: { row: HighlightRow }) => {
 					{I18n.get("highlight_memo_loading")}
 				</output>
 			)}
-			{link.status === "error" && (
+			{link.status === "error" && link.reason === "unauthenticated" && (
+				<div className="flex flex-col gap-1 px-2 text-xs text-muted-foreground">
+					<span>{I18n.get("guest_web_link_message")}</span>
+					<button
+						type="button"
+						onClick={openPanel}
+						className="self-start underline"
+					>
+						{I18n.get("login_button")}
+					</button>
+				</div>
+			)}
+			{link.status === "error" && link.reason === "load_failed" && (
 				<div className="flex flex-col gap-1 px-2 text-xs text-destructive">
-					<span>
-						{I18n.get(
-							link.reason === "unauthenticated"
-								? "highlight_login_required"
-								: "highlight_memo_load_failed",
-						)}
-					</span>
+					<span>{I18n.get("highlight_memo_load_failed")}</span>
 					<button
 						type="button"
 						onClick={() => void loadLink()}

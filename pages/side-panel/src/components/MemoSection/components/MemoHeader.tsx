@@ -1,3 +1,4 @@
+import { useIsGuest } from "@src/hooks";
 import { getMemoUrl } from "@src/utils";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import type { Database } from "@web-memo/shared/types";
@@ -5,6 +6,7 @@ import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import { Button, cn, ErrorBoundary, IconTooltip } from "@web-memo/ui";
 import { ExternalLinkIcon, ListIcon, PlusIcon } from "lucide-react";
 import { Suspense } from "react";
+import GuestWebLinkPopover from "./GuestWebLinkPopover";
 
 /** 메모 헤더에 현재 편집 중인 메모 ID를 전달한다. */
 export default function MemoHeader({ memoData, actions }: IFMemoHeaderProps) {
@@ -74,6 +76,7 @@ function MemoHeaderActions({
 }
 
 function MemoLink({ memoData }: Pick<IFMemoHeaderProps, "memoData">) {
+	const isGuest = useIsGuest();
 	const handleMemoClick = () => {
 		analytics.trackEvent({
 			name: "open_web_from_extension",
@@ -83,6 +86,11 @@ function MemoLink({ memoData }: Pick<IFMemoHeaderProps, "memoData">) {
 			url: getMemoUrl({ id: memoData?.id, isWish: !!memoData?.isWish }),
 		});
 	};
+
+	// 기기 메모는 웹에 없으므로 웹으로 보내지 않고 로그인 안내를 보여 준다.
+	if (isGuest) {
+		return <GuestWebLinkPopover />;
+	}
 
 	return (
 		<IconTooltip label={I18n.get("open_in_new_tab")}>

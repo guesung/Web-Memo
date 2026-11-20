@@ -266,45 +266,6 @@
 	"control_disabled_offline_delete": {
 		"message": "오프라인에서는 지울 수 없어요"
 	},
-	"login_intro_title": {
-		"message": "읽으면서 바로 메모하세요"
-	},
-	"login_intro_description": {
-		"message": "로그인하면 지금 보는 페이지에서 바로 쓸 수 있어요."
-	},
-	"login_example_label": {
-		"message": "예시"
-	},
-	"login_example_quote_before": {
-		"message": "좋은 글은 "
-	},
-	"login_example_quote_highlight": {
-		"message": "읽는 사람의 시간을 아껴 준다"
-	},
-	"login_example_quote_after": {
-		"message": "는 점에서 친절하다."
-	},
-	"login_example_note": {
-		"message": "다음 발표 자료 서문에 인용하기"
-	},
-	"login_benefit_highlight_title": {
-		"message": "문장을 드래그해 하이라이트"
-	},
-	"login_benefit_highlight_description": {
-		"message": "다시 방문하면 그 자리에 그대로 남아 있어요"
-	},
-	"login_benefit_organize_title": {
-		"message": "페이지마다 메모가 자동으로 정리돼요"
-	},
-	"login_benefit_organize_description": {
-		"message": "제목·주소와 함께 저장돼 따로 정리할 필요가 없어요"
-	},
-	"login_benefit_web_title": {
-		"message": "웹에서 모아 보고 검색해요"
-	},
-	"login_benefit_web_description": {
-		"message": "webmemo.xyz에서 모든 메모와 하이라이트를 한곳에"
-	},
 	"login_kakao_button": {
 		"message": "카카오로 시작하기"
 	},
@@ -319,6 +280,21 @@
 	},
 	"login_failed": {
 		"message": "로그인하지 못했어요. 다시 시도해 주세요."
+	},
+	"login_method_label": {
+		"message": "로그인 방법"
+	},
+	"login_menu_hint": {
+		"message": "로그인 창이 열려요. 이 기기 메모는 계정으로 옮겨져요"
+	},
+	"login_button": {
+		"message": "로그인"
+	},
+	"login_required_notice": {
+		"message": "로그인하면 쓸 수 있어요"
+	},
+	"save_status_device_only": {
+		"message": "이 기기에만 저장돼요"
 	},
 	"login_network_unavailable": {
 		"message": "인터넷에 연결되어 있지 않아요. 연결되면 자동으로 다시 불러와요."
@@ -830,5 +806,29 @@
 	},
 	"review_prompt_close": {
 		"message": "닫기"
+	},
+	"guest_banner_first_save": {
+		"message": "로그인하면 웹·앱에서도 볼 수 있어요"
+	},
+	"guest_banner_count": {
+		"message": "메모 $count$개가 이 기기에만 있어요. 로그인하면 계정으로 옮겨져요",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "10"
+			}
+		}
+	},
+	"guest_banner_storage_warning": {
+		"message": "이 기기의 저장 공간이 거의 찼어요. 로그인하면 계속 쓸 수 있어요"
+	},
+	"guest_banner_storage_blocked": {
+		"message": "이 기기에 새 메모를 더 저장할 수 없어요. 쓰던 메모는 고칠 수 있어요. 로그인하면 이어서 쓸 수 있어요"
+	},
+	"guest_banner_close": {
+		"message": "닫기"
+	},
+	"guest_web_link_message": {
+		"message": "이 메모는 이 기기에만 있어요. 로그인하면 웹·앱에서도 볼 수 있어요"
 	}
 }

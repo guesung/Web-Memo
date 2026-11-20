@@ -6,9 +6,7 @@ import {
 import { QUERY_KEY } from "../../../constants";
 import { analytics } from "../../../modules/analytics";
 import type { GetMemoResponse, MemoSupabaseResponse } from "../../../types";
-import { MemoService } from "../../../utils";
-
-import { useSupabaseClientQuery } from "../queries";
+import { useMemoStoreQuery } from "../queries";
 
 interface MemosPageData {
 	data: GetMemoResponse[];
@@ -17,7 +15,7 @@ interface MemosPageData {
 
 export default function useDeleteMemosMutation() {
 	const queryClient = useQueryClient();
-	const { data: supabaseClient } = useSupabaseClientQuery();
+	const { data: memoStore } = useMemoStoreQuery();
 
 	return useMutation<MemoSupabaseResponse, Error, number[]>({
 		meta: {
@@ -25,7 +23,7 @@ export default function useDeleteMemosMutation() {
 			operation: "delete",
 			stage: "save",
 		},
-		mutationFn: new MemoService(supabaseClient).deleteMemos,
+		mutationFn: async (idList) => memoStore.deleteMemos(idList),
 		onMutate: async (idList) => {
 			await queryClient.cancelQueries({ queryKey: QUERY_KEY.memos() });
 

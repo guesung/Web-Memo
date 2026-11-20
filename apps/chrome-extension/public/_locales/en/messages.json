@@ -266,45 +266,6 @@
 	"control_disabled_offline_delete": {
 		"message": "You can't delete this offline"
 	},
-	"login_intro_title": {
-		"message": "Take notes while you read"
-	},
-	"login_intro_description": {
-		"message": "Sign in to start writing on the page you're viewing."
-	},
-	"login_example_label": {
-		"message": "Example"
-	},
-	"login_example_quote_before": {
-		"message": "Good writing is kind because "
-	},
-	"login_example_quote_highlight": {
-		"message": "it saves the reader's time"
-	},
-	"login_example_quote_after": {
-		"message": "."
-	},
-	"login_example_note": {
-		"message": "Quote this in the intro of my next talk"
-	},
-	"login_benefit_highlight_title": {
-		"message": "Drag to highlight any sentence"
-	},
-	"login_benefit_highlight_description": {
-		"message": "Your highlights stay in place when you come back"
-	},
-	"login_benefit_organize_title": {
-		"message": "Notes are organized by page automatically"
-	},
-	"login_benefit_organize_description": {
-		"message": "Saved with the title and URL, so there's nothing to file"
-	},
-	"login_benefit_web_title": {
-		"message": "Browse and search on the web"
-	},
-	"login_benefit_web_description": {
-		"message": "All your notes and highlights in one place at webmemo.xyz"
-	},
 	"login_kakao_button": {
 		"message": "Continue with Kakao"
 	},
@@ -319,6 +280,21 @@
 	},
 	"login_failed": {
 		"message": "Couldn't sign you in. Please try again."
+	},
+	"login_method_label": {
+		"message": "Log in with"
+	},
+	"login_menu_hint": {
+		"message": "A sign-in window will open. Memos on this device will move to your account."
+	},
+	"login_button": {
+		"message": "Log in"
+	},
+	"login_required_notice": {
+		"message": "Log in to use this"
+	},
+	"save_status_device_only": {
+		"message": "Saved on this device only"
 	},
 	"login_network_unavailable": {
 		"message": "You're offline. We'll reload automatically once you're back online."
@@ -830,5 +806,29 @@
 	},
 	"review_prompt_close": {
 		"message": "Close"
+	},
+	"guest_banner_first_save": {
+		"message": "Log in to see your memos on the web and app too"
+	},
+	"guest_banner_count": {
+		"message": "$count$ memos are only on this device. Log in to move them to your account.",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "10"
+			}
+		}
+	},
+	"guest_banner_storage_warning": {
+		"message": "This device is almost out of storage. Log in to keep writing."
+	},
+	"guest_banner_storage_blocked": {
+		"message": "No more new memos can be saved on this device. You can still edit existing ones. Log in to keep writing."
+	},
+	"guest_banner_close": {
+		"message": "Close"
+	},
+	"guest_web_link_message": {
+		"message": "This memo is only on this device. Log in to see it on the web and app too."
 	}
 }

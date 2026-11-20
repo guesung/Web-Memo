@@ -217,7 +217,7 @@ test("오프라인에서 새 페이지로 이동하면 새 페이지의 빈 메�
 
 /**
  * 오프라인에서 패널을 다시 열면 사용자 확인이 실패해 연결 안내가 보이고, 연결이 돌아오면
- * 로그인 안내를 거치지 않고 메모 화면으로 돌아온다.
+ * 비로그인 상태로 보이지 않고(로그인 버튼 없음) 메모 화면으로 돌아온다.
  */
 test("오프라인에서 패널을 다시 연 뒤 온라인이 되면 메모 화면으로 돌아온다", async ({
 	page,
@@ -244,9 +244,7 @@ test("오프라인에서 패널을 다시 연 뒤 온라인이 되면 메모 화
 		sidePanelPage.getByText(/offline|인터넷에 연결되어 있지 않아요/i).first(),
 	).toBeVisible();
 	await expect(
-		sidePanelPage.getByRole("button", {
-			name: /카카오로 시작하기|continue with google/i,
-		}),
+		sidePanelPage.getByRole("button", { name: /^(로그인|log in)$/i }),
 	).toHaveCount(0);
 
 	await network.goOnline();
@@ -255,9 +253,7 @@ test("오프라인에서 패널을 다시 연 뒤 온라인이 되면 메모 화
 		"복귀 메모",
 	);
 	await expect(
-		sidePanelPage.getByRole("button", {
-			name: /카카오로 시작하기|continue with google/i,
-		}),
+		sidePanelPage.getByRole("button", { name: /^(로그인|log in)$/i }),
 	).toHaveCount(0);
 });
 

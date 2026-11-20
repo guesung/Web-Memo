@@ -45,7 +45,7 @@ export default function SaveStatus({
 		setRecoveredAnnouncement("");
 
 		const isRecoveredFromFailure =
-			saveStatus === "saved" &&
+			(saveStatus === "saved" || saveStatus === "device") &&
 			(previousSaveStatus === "failed" ||
 				previousSaveStatus === "retrying" ||
 				previousSaveStatus === "offline" ||
@@ -156,6 +156,25 @@ export default function SaveStatus({
 						{I18n.get("retry")}
 					</button>
 				)}
+				{recoveredAnnouncementRegion}
+			</div>
+		);
+	}
+
+	if (saveStatus === "device") {
+		return (
+			<div
+				data-save-status={saveStatus}
+				className="flex min-w-0 items-center gap-1"
+				title={I18n.get("save_status_device_only")}
+			>
+				<CheckIcon
+					aria-hidden="true"
+					className="h-3 w-3 shrink-0 text-muted-foreground"
+				/>
+				<span className="min-w-0 truncate text-xs text-muted-foreground">
+					{I18n.get("save_status_device_only")}
+				</span>
 				{recoveredAnnouncementRegion}
 			</div>
 		);

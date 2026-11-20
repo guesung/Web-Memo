@@ -46,6 +46,7 @@ vi.mock("@web-memo/shared/hooks", () => ({
 	}),
 	memoQueryOptions: () => ({}),
 	useSupabaseClientQuery: () => ({ data: {} }),
+	useMemoStoreQuery: () => ({ data: {} }),
 	useSettingQuery: () => ({ showImpression: true, showActionItem: true }),
 	useMemoPatchMutation: () => ({
 		mutateAsync: (variables: object) => {

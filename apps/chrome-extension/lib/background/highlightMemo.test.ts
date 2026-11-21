@@ -236,18 +236,6 @@ describe("background 하이라이트 연결 메모 생성", () => {
 		).toMatchObject({ success: true, memoId: 20 });
 	});
 
-	it("비로그인 기기 하이라이트(음수 id)는 invalid_request가 아니라 unauthenticated로 돌려준다", async () => {
-		mocks.getClient.mockRejectedValueOnce(
-			new SupabaseSessionRequiredError("session missing"),
-		);
-		expect(
-			await handleCreateHighlightMemo(
-				{ highlightId: -3, memo: "내 생각" },
-				SENDER,
-			),
-		).toEqual({ success: false, reason: "unauthenticated" });
-	});
-
 	it("로그인 부재와 저장 실패를 구별하고 내부 내용을 응답에 담지 않는다", async () => {
 		mocks.getClient.mockRejectedValueOnce(
 			new SupabaseSessionRequiredError("session missing"),

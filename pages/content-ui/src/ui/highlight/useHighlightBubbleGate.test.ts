@@ -17,6 +17,13 @@ vi.mock("@web-memo/shared/modules/chrome-storage", () => ({
 		highlightBubblePosition: "highlightBubblePosition",
 	},
 }));
+vi.mock("@web-memo/shared/modules/extension-bridge", () => ({
+	bridge: {
+		request: {
+			GET_LOGIN_STATUS: vi.fn().mockResolvedValue({ isLoggedIn: true }),
+		},
+	},
+}));
 
 afterEach(() => {
 	vi.resetAllMocks();

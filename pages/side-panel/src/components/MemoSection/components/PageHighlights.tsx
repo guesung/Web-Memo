@@ -3,12 +3,13 @@ import {
 	HIGHLIGHT_COLOR_STYLE,
 	type HighlightColor,
 } from "@web-memo/shared/constants";
+import { useSupabaseClientQuery } from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { bridge } from "@web-memo/shared/modules/extension-bridge";
 import type { HighlightRow } from "@web-memo/shared/types";
 import {
 	getPageKey,
-	type IFHighlightStore,
+	HighlightService,
 	isNetworkError,
 } from "@web-memo/shared/utils";
 import { I18n } from "@web-memo/shared/utils/extension";
@@ -17,16 +18,9 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const PREVIEW_COUNT = 2;
 
-/** 로그인 전후의 하이라이트 캐시가 섞이지 않도록 비로그인에 붙이는 범위 이름. */
-const GUEST_SCOPE = "guest";
-
-/** 현재 페이지의 인용을 선택된 메모와 독립적으로 보여준다. 로그인하지 않았으면 기기에 저장된 하이라이트를 보여준다. */
-export default function PageHighlights({
-	userId = GUEST_SCOPE,
-	highlightStore,
-	tabId,
-	url,
-}: Props) {
+/** 현재 페이지의 인용을 선택된 메모와 독립적으로 보여준다. */
+export default function PageHighlights({ userId, tabId, url }: Props) {
+	const { data: supabaseClient } = useSupabaseClientQuery();
 	const queryClient = useQueryClient();
 	const pageKey = url ? getPageKey(url) : "";
 	const queryKey = ["pageHighlights", userId, pageKey] as const;
@@ -34,7 +28,9 @@ export default function PageHighlights({
 		queryKey,
 		enabled: Boolean(pageKey),
 		queryFn: async () => {
-			const result = await highlightStore.getHighlightsByUrl(url);
+			const result = await new HighlightService(
+				supabaseClient,
+			).getHighlightsByUrl(url);
 			if (result.error) throw result.error;
 			return (result.data ?? []).sort(
 				(left, right) =>
@@ -242,9 +238,7 @@ function LoadingState() {
 }
 
 interface Props {
-	/** 로그인한 사용자 id. 비로그인이면 없다 */
-	userId?: string;
-	highlightStore: IFHighlightStore;
+	userId: string;
 	tabId?: number;
 	url: string;
 }

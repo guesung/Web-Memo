@@ -6,7 +6,6 @@ const mocks = vi.hoisted(() => ({
 	getClient: vi.fn(),
 	getUser: vi.fn(),
 	insert: vi.fn(),
-	localInsert: vi.fn(),
 	report: vi.fn(),
 }));
 vi.mock("./reportBackgroundError", () => ({
@@ -17,9 +16,6 @@ vi.mock("@web-memo/shared/utils", () => ({
 	getPageKey: (url: string) => url,
 	HighlightService: class {
 		insertHighlight = mocks.insert;
-	},
-	LocalHighlightService: class {
-		insertHighlight = mocks.localInsert;
 	},
 }));
 vi.mock("@web-memo/shared/utils/extension", () => ({
@@ -58,9 +54,6 @@ beforeEach(() => {
 	mocks.insert
 		.mockReset()
 		.mockResolvedValue({ data: [{ id: 1 }], error: null });
-	mocks.localInsert
-		.mockReset()
-		.mockResolvedValue({ data: [{ id: -1 }], error: null });
 	mocks.report.mockReset();
 });
 
@@ -111,27 +104,14 @@ describe("background 하이라이트 저장", () => {
 		});
 		expect(mocks.insert).not.toHaveBeenCalled();
 	});
-	it("세션이 없으면 서버 대신 기기 저장소에 빈 user_id로 저장한다", async () => {
+	it("쿠키가 없어 기존 클라이언트가 예외를 던져도 로그인 안내로 변환한다", async () => {
 		mocks.getClient.mockRejectedValue(
 			new SupabaseSessionRequiredError("로그인을 먼저 해주세요"),
 		);
 		expect(
 			await handleCreateHighlight({ payload: PAYLOAD, sender: SENDER }),
-		).toEqual({ success: true, highlight: { id: -1 } });
-		expect(mocks.localInsert).toHaveBeenCalledWith(
-			expect.objectContaining({ user_id: "", url: PAYLOAD.url }),
-		);
+		).toEqual({ success: false, error: "unauthenticated" });
 		expect(mocks.insert).not.toHaveBeenCalled();
-		expect(mocks.getUser).not.toHaveBeenCalled();
-	});
-	it("기기 저장소가 가득 차 저장하지 못하면 save_failed로 돌려준다", async () => {
-		mocks.getClient.mockRejectedValue(
-			new SupabaseSessionRequiredError("로그인을 먼저 해주세요"),
-		);
-		mocks.localInsert.mockRejectedValue(new Error("full"));
-		expect(
-			await handleCreateHighlight({ payload: PAYLOAD, sender: SENDER }),
-		).toEqual({ success: false, error: "save_failed" });
 	});
 	it("검증된 사용자가 없으면 저장하지 않는다", async () => {
 		mocks.getUser.mockResolvedValue({ data: { user: null }, error: null });
@@ -164,7 +144,7 @@ describe("background 하이라이트 저장", () => {
 		).toEqual({ success: false, error: "save_failed" });
 	});
 	it.each([
-		{ method: "getClient", operation: "auth_verify" },
+		{ method: "getClient", operation: "client_initialize" },
 		{ method: "getUser", operation: "auth_verify" },
 		{ method: "insert", operation: "insert" },
 	] as const)(
@@ -216,6 +196,18 @@ describe("background 하이라이트 저장", () => {
 		expect(console.warn).toHaveBeenCalledWith(
 			"[Web Memo] highlight_save_failed",
 			{ operation: "insert", code },
+		);
+	});
+	it("실제 로그인 부재는 고정 session_missing 코드만 기록한다", async () => {
+		mocks.getClient.mockRejectedValue(
+			new SupabaseSessionRequiredError("sensitive"),
+		);
+		expect(
+			await handleCreateHighlight({ payload: PAYLOAD, sender: SENDER }),
+		).toEqual({ success: false, error: "unauthenticated" });
+		expect(console.warn).toHaveBeenCalledWith(
+			"[Web Memo] highlight_save_failed",
+			{ operation: "client_initialize", code: "session_missing" },
 		);
 	});
 	it("pushState 이후 Chrome의 현재 탭 URL로 저장하고 최초 문서 URL은 origin 검증에 사용한다", async () => {
@@ -276,7 +268,7 @@ describe("background 하이라이트 저장", () => {
 		},
 		{
 			setup: () => mocks.getClient.mockRejectedValue(new Error("boom")),
-			stage: "auth_verify_unexpected_error",
+			stage: "client_initialize_unexpected_error",
 		},
 	])(
 		"저장 실패 $stage는 고정 문자열 오류로 Sentry에 보고한다",
@@ -295,6 +287,12 @@ describe("background 하이라이트 저장", () => {
 		},
 	);
 	it.each([
+		{
+			setup: () =>
+				mocks.getClient.mockRejectedValue(
+					new SupabaseSessionRequiredError("로그인"),
+				),
+		},
 		{
 			setup: () =>
 				mocks.getUser.mockResolvedValue({

@@ -44,6 +44,7 @@ vi.mock("./highlightMemo", () => ({
 	handleCreateHighlightMemo: vi.fn(),
 	handleGetHighlightMemoLinks: vi.fn(),
 }));
+vi.mock("./getLoginStatus", () => ({ handleGetLoginStatus: vi.fn() }));
 vi.mock("./highlightPanel", () => ({
 	handleFocusHighlight: vi.fn(),
 	notifyHighlightChange: vi.fn(),

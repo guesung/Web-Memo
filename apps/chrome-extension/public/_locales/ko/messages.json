@@ -431,6 +431,9 @@
 	"highlight_save_failed": {
 		"message": "저장하지 못했어요. 다시 시도해 주세요."
 	},
+	"highlight_login_required": {
+		"message": "Web Memo에 로그인한 뒤 다시 시도해 주세요."
+	},
 	"highlight_duplicate": {
 		"message": "이미 저장한 하이라이트예요."
 	},

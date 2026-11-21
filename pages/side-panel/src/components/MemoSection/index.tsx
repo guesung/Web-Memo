@@ -16,7 +16,6 @@ import {
 	settingQueryOptions,
 	supabaseClientQueryOptions,
 	useDeleteMemosMutation,
-	useHighlightStoreQuery,
 	useMemoStoreQuery,
 	useRestoreMemosMutation,
 	userQueryOptions,
@@ -165,7 +164,6 @@ const MemoSectionContent = ({
 	isAiTabOpen: boolean;
 }) => {
 	const { data: memoStore } = useMemoStoreQuery();
-	const { data: highlightStore } = useHighlightStoreQuery();
 	const { user } = useSupabaseUserQuery();
 	const { data: tab } = useTabQuery();
 	const userId = user?.data.user?.id;
@@ -182,14 +180,17 @@ const MemoSectionContent = ({
 	return (
 		<>
 			{/* 공지는 로그인한 사용자에게만 띄운다. */}
-			{userId && <NoticeBanner />}
-			<PageHighlights
-				key={`${userId ?? "guest"}:${tab?.id}:${tab?.url ? getPageKey(tab.url) : ""}`}
-				userId={userId}
-				highlightStore={highlightStore}
-				tabId={tab?.id}
-				url={tab?.url ?? ""}
-			/>
+			{userId && (
+				<>
+					<NoticeBanner />
+					<PageHighlights
+						key={`${userId}:${tab?.id}:${tab?.url ? getPageKey(tab.url) : ""}`}
+						userId={userId}
+						tabId={tab?.id}
+						url={tab?.url ?? ""}
+					/>
+				</>
+			)}
 			<MemoSectionBody
 				key={userId ?? "guest"}
 				userId={userId}

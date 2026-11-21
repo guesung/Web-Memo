@@ -80,9 +80,7 @@ const matchesKey = (
 };
 
 /** 읽고 쓰는 동안 다른 탭·컨텍스트가 같은 키를 덮어쓰지 못하게 잠근다. Web Locks가 없으면 그대로 실행한다. */
-export const withStorageLock = async <T>(
-	task: () => Promise<T>,
-): Promise<T> => {
+const withStorageLock = async <T>(task: () => Promise<T>): Promise<T> => {
 	if (typeof navigator === "undefined" || !navigator.locks?.request) {
 		return task();
 	}

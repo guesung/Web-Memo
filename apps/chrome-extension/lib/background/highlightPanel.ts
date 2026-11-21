@@ -24,8 +24,7 @@ export async function handleFocusHighlight(
 		!Number.isSafeInteger(payload.tabId) ||
 		payload.tabId < 0 ||
 		!Number.isSafeInteger(payload.id) ||
-		/** 0은 없는 id다. 음수는 비로그인 기기 하이라이트다. */
-		payload.id === 0 ||
+		payload.id <= 0 ||
 		typeof payload.pageKey !== "string"
 	)
 		return { success: false };

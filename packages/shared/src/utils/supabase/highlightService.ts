@@ -1,6 +1,5 @@
 import { SUPABASE } from "../../constants";
 import type { HighlightTable, MemoSupabaseClient } from "../../types";
-import type { IFHighlightStore } from "../highlightStore/highlightStore";
 import { getLegacyUrlPrefixPattern, getPageKey } from "../Url";
 import { fetchAllByPageKeyBatched } from "./fetchAllByPageKeyBatched";
 
@@ -23,8 +22,7 @@ export interface IFHighlightCountByPageKeyRow {
 }
 
 /** 하이라이트 저장과 조회를 담당한다. */
-export class HighlightService implements IFHighlightStore {
-	readonly kind = "remote" as const;
+export class HighlightService {
 	supabaseClient: MemoSupabaseClient;
 
 	constructor(supabaseClient: MemoSupabaseClient) {

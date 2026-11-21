@@ -4,7 +4,7 @@ import {
 	QueryClient,
 	QueryClientProvider,
 } from "@tanstack/react-query";
-import { getPageKey, type IFHighlightStore } from "@web-memo/shared/utils";
+import { getPageKey } from "@web-memo/shared/utils";
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -12,9 +12,18 @@ import PageHighlights from "./PageHighlights";
 
 const mocks = vi.hoisted(() => ({ getHighlights: vi.fn() }));
 vi.mock("@web-memo/env", () => ({ CONFIG: {} }));
+vi.mock("@web-memo/shared/hooks", () => ({
+	useSupabaseClientQuery: () => ({ data: {} }),
+}));
 vi.mock("@web-memo/shared/modules/analytics", () => ({ analytics: {} }));
 vi.mock("@web-memo/shared/modules/extension-bridge", () => ({
 	bridge: { handle: { HIGHLIGHTS_CHANGED: () => () => {} } },
+}));
+vi.mock("@web-memo/shared/utils", async (importOriginal) => ({
+	...(await importOriginal<typeof import("@web-memo/shared/utils")>()),
+	HighlightService: class {
+		getHighlightsByUrl = mocks.getHighlights;
+	},
 }));
 vi.mock("@web-memo/shared/utils/extension", () => ({
 	I18n: { get: (key: string) => key },
@@ -46,20 +55,14 @@ afterEach(() => {
 	vi.unstubAllGlobals();
 });
 
-async function render(
-	url = "https://example.com/page",
-	userId: string | null = "user-1",
-) {
+async function render(url = "https://example.com/page") {
 	await act(async () => {
 		root.render(
 			createElement(
 				QueryClientProvider,
 				{ client },
 				createElement(PageHighlights, {
-					userId: userId ?? undefined,
-					highlightStore: {
-						getHighlightsByUrl: mocks.getHighlights,
-					} as unknown as IFHighlightStore,
+					userId: "user-1",
 					url,
 				}),
 			),
@@ -140,29 +143,4 @@ it("about:blank에서도 URL 이중 정규화 오류 없이 빈 상태로 끝난
 	expect(container.textContent).toContain("page_highlights_empty");
 	expect(container.textContent).not.toContain("page_highlights_load_failed");
 	expect(onError).not.toHaveBeenCalled();
-});
-
-it("로그인하지 않아도 주입받은 기기 저장소의 하이라이트를 목록으로 보여준다", async () => {
-	mocks.getHighlights.mockResolvedValue({
-		data: [
-			{
-				id: -1,
-				color: "yellow",
-				exact_text: "기기에 저장한 문장",
-				created_at: "2026-11-18T00:00:00.000Z",
-			},
-		],
-		error: null,
-	});
-	await render("https://example.com/page", null);
-	await advanceRetries();
-
-	expect(container.textContent).toContain("기기에 저장한 문장");
-	expect(
-		client.getQueryData([
-			"pageHighlights",
-			"guest",
-			"https://example.com/page",
-		]),
-	).toHaveLength(1);
 });

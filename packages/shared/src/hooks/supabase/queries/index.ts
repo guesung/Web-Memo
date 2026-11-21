@@ -19,10 +19,6 @@ export {
 } from "./useFavoritesQuery";
 export { default as useFeedbackQuery } from "./useFeedbackQuery";
 export { default as useFeedbacksQuery } from "./useFeedbacksQuery";
-export {
-	default as useHighlightStoreQuery,
-	highlightStoreQueryOptions,
-} from "./useHighlightStoreQuery";
 export { default as useMemoDomainsQuery } from "./useMemoDomainsQuery";
 export { default as useMemoQuery, memoQueryOptions } from "./useMemoQuery";
 export {

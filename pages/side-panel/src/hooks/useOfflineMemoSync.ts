@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@web-memo/shared/constants";
-import { supabaseClientQueryOptions } from "@web-memo/shared/hooks";
+import { useSupabaseClientQuery } from "@web-memo/shared/hooks";
 import { analytics } from "@web-memo/shared/modules/analytics";
 import { MemoService } from "@web-memo/shared/utils";
 import { useEffect, useRef, useState } from "react";
@@ -34,6 +34,7 @@ export default function useOfflineMemoSync({
 }: UseOfflineMemoSyncProps) {
 	const isOnline = useOnlineStatus();
 	const queryClient = useQueryClient();
+	const { data: supabaseClient } = useSupabaseClientQuery();
 	const [syncStatus, setSyncStatus] = useState<TOfflineMemoSyncStatus>("idle");
 	// 마지막 flush 시도가 네트워크 오류로 중단됐는지. navigator.onLine이 아직 true인데도
 	// 요청이 네트워크 오류로 실패하는 경우(예: 캡티브 포털)를 오프라인과 구분해 표시줄에 쓴다.
@@ -64,7 +65,6 @@ export default function useOfflineMemoSync({
 		const { userId: currentUserId, epoch: currentEpoch } =
 			latestPropsRef.current;
 
-		// 대기열은 로그인 사용자 전용이다. 비로그인에서는 서버 클라이언트도 준비하지 않는다.
 		if (!currentUserId || isFlushingRef.current) {
 			return;
 		}
@@ -73,9 +73,6 @@ export default function useOfflineMemoSync({
 		setSyncStatus("syncing");
 
 		try {
-			const supabaseClient = await queryClient.ensureQueryData(
-				supabaseClientQueryOptions(),
-			);
 			const memoService = new MemoService(supabaseClient);
 			const result = await flushOfflineMemoQueue({
 				userId: currentUserId,

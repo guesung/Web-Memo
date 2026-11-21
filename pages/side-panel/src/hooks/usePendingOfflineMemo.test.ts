@@ -61,9 +61,9 @@ afterEach(async () => {
 	vi.unstubAllGlobals();
 });
 
-it("has nothing to wait for without a user, and reads the queue with one", async () => {
+it("requires a user and distinguishes absent from loading", async () => {
 	await render({ url: "https://example.com/a" });
-	expect(result.status).toBe("absent");
+	expect(result.status).toBe("loading");
 	expect(mocks.getPendingOfflineMemo).not.toHaveBeenCalled();
 	await render({ userId: "a", url: "https://example.com/a" });
 	expect(result.status).toBe("absent");

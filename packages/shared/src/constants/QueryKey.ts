@@ -12,22 +12,12 @@ export interface HighlightsPaginatedKeyParams {
 export const QUERY_KEY = {
 	tab: () => ["tab"],
 	memos: () => ["memos"],
-	/**
-	 * 메모 후보. 서버 메모의 키는 그대로이고, 기기 메모만 `store: "local"`이 붙어 로그인 전후 캐시가 섞이지 않는다.
-	 * @description 무효화 키에는 `store`가 없어도 부분 매칭으로 두 저장소를 모두 잡는다.
-	 */
-	memo: (params: { url?: string; id?: number; store?: "local" }) => [
-		"memo",
-		params,
-	],
+	memo: (params: { url?: string; id?: number }) => ["memo", params],
 	/**
 	 * 쿼리만 다른 주소까지 포함한 같은 경로의 메모 후보.
 	 * @description `["memo"]` 접두사를 공유해 메모 수정 뒤의 `["memo"]` 무효화에 함께 걸린다.
 	 */
-	samePathMemos: (pathKey: string, store?: "local") =>
-		store
-			? ["memo", "samePath", pathKey, store]
-			: ["memo", "samePath", pathKey],
+	samePathMemos: (pathKey: string) => ["memo", "samePath", pathKey],
 	/** 모든 경로의 {@link QUERY_KEY.samePathMemos}를 부분 매칭한다. */
 	samePathMemosPrefix: () => ["memo", "samePath"],
 	/** 모든 페이지네이션 필터를 부분 매칭하며 휴지통 캐시는 포함하지 않는다. */
@@ -84,14 +74,6 @@ export const QUERY_KEY = {
 	deletedMemos: () => ["memos", "deleted"],
 	option: () => ["option"],
 	supabaseClient: () => ["supabaseClient"],
-	/** 로그인 여부로 고른 메모 저장소. 로그인 신호가 오면 다시 판정한다. */
-	memoStore: () => ["memoStore"],
-	/** 비로그인 권유 배너가 보는 기기 메모 개수와 저장 공간 사용 비율. */
-	guestBannerStats: () => ["guestBannerStats"],
-	/** 비로그인 권유 배너 중 사용자가 닫은 변형. */
-	guestBannerDismissed: () => ["guestBannerDismissed"],
-	/** 비로그인 권유 배너 중 한 번이라도 노출된 1회성 변형. */
-	guestBannerShown: () => ["guestBannerShown"],
 	supabaseFeedbackClient: () => ["supabaseFeedbackClient"],
 	user: () => ["user"],
 	category: () => ["cateogory"],

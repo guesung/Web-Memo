@@ -2,12 +2,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "../../../constants";
 import { analytics } from "../../../modules/analytics";
 import type { MemoSupabaseResponse } from "../../../types";
-import { useMemoStoreQuery } from "../queries";
+import { MemoService } from "../../../utils";
+import { useSupabaseClientQuery } from "../queries";
 
 /** 휴지통의 메모를 되살린다 */
 export default function useRestoreMemosMutation() {
 	const queryClient = useQueryClient();
-	const { data: memoStore } = useMemoStoreQuery();
+	const { data: supabaseClient } = useSupabaseClientQuery();
 
 	return useMutation<MemoSupabaseResponse, Error, number[]>({
 		meta: {
@@ -15,7 +16,7 @@ export default function useRestoreMemosMutation() {
 			operation: "restore",
 			stage: "save",
 		},
-		mutationFn: async (idList) => memoStore.restoreMemos(idList),
+		mutationFn: new MemoService(supabaseClient).restoreMemos,
 		onSuccess: (_, idList) => {
 			analytics.trackEvent({
 				name: "memo_restore",

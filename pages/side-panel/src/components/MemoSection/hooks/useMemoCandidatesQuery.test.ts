@@ -17,20 +17,16 @@ type TQueryResult = {
 const mocks = vi.hoisted(() => ({
 	memoQueryImpl: vi.fn(),
 	samePathQueryImpl: vi.fn(),
-	memoStoreKind: "remote" as "remote" | "local",
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
 	useSupabaseClientQuery: () => ({ data: {} }),
-	useMemoStoreQuery: () => ({ data: { kind: mocks.memoStoreKind } }),
 	memoQueryOptions: ({ url }: { url?: string }) => ({
 		queryKey: ["test-memo", url],
 		queryFn: mocks.memoQueryImpl,
-		networkMode: mocks.memoStoreKind === "local" ? "always" : "online",
 	}),
 	samePathMemoQueryOptions: ({ url }: { url: string }) => ({
 		queryKey: ["test-same-path", url],
 		queryFn: mocks.samePathQueryImpl,
-		networkMode: mocks.memoStoreKind === "local" ? "always" : "online",
 	}),
 }));
 
@@ -66,7 +62,6 @@ const pendingForever = () => new Promise<TQueryResult>(() => {});
 beforeEach(() => {
 	vi.useFakeTimers();
 	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-	mocks.memoStoreKind = "remote";
 	mocks.memoQueryImpl.mockReset().mockResolvedValue(EMPTY_RESULT);
 	mocks.samePathQueryImpl.mockReset().mockResolvedValue(EMPTY_RESULT);
 	queryClient = new QueryClient({
@@ -194,20 +189,6 @@ it("오프라인에서 캐시 없는 새 페이지면 잠그지 않고 빈 후�
 	expect(candidates.isMemoLocked).toBe(false);
 	expect(candidates.isMemoLoadFailed).toBe(false);
 	expect(candidates.memos).toEqual([]);
-});
-
-it("비로그인은 오프라인이어도 기기 저장소를 조회해 저장한 메모를 연다", async () => {
-	mocks.memoStoreKind = "local";
-	mocks.memoQueryImpl.mockResolvedValue({ data: [{ id: -1 }], error: null });
-	mocks.samePathQueryImpl.mockResolvedValue(EMPTY_RESULT);
-	goOffline();
-	await render();
-
-	await flushQueries();
-
-	expect(mocks.memoQueryImpl).toHaveBeenCalled();
-	expect(candidates.isMemoLocked).toBe(false);
-	expect(candidates.memos).toEqual([{ id: -1 }]);
 });
 
 it("오프라인이어도 캐시가 있으면 캐시된 메모를 보여준다", async () => {

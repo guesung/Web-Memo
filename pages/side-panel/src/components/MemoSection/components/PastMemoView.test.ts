@@ -24,7 +24,6 @@ vi.mock("../../../utils/getHostname", () => ({
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
 	useSupabaseClientQuery: () => ({ data: {} }),
-	useMemoStoreQuery: () => ({ data: {} }),
 	useSettingQuery: () => mocks.settings,
 	memoQueryOptions: () => ({ queryKey: ["memo", 101], queryFn: mocks.query }),
 }));

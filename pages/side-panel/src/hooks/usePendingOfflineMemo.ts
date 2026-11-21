@@ -44,17 +44,7 @@ export default function usePendingOfflineMemo({
 		if (scopeRef.current === scope && scopeEpochRef.current === epoch) {
 			setResolved({ scope, epoch, result: { status: "loading" } });
 		}
-		if (!userId) {
-			// 대기열은 로그인 사용자 전용이다. 사용자가 없으면 기다릴 항목이 없다.
-			if (
-				scopeRef.current === scope &&
-				scopeEpochRef.current === epoch &&
-				generationRef.current === generation
-			) {
-				setResolved({ scope, epoch, result: { status: "absent" } });
-			}
-			return;
-		}
+		if (!userId) return;
 		try {
 			const item = await getPendingOfflineMemo({ userId, memoId, url });
 			if (

@@ -18,12 +18,16 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
 	};
 });
 vi.mock("../queries", () => ({
-	useMemoStoreQuery: () => ({ data: { updateMemo } }),
+	useSupabaseClientQuery: () => ({ data: {} }),
 }));
 vi.mock("../../../modules/analytics", () => ({
 	analytics: { trackMemoUpdate: vi.fn(async () => {}) },
 }));
-vi.mock("../../../utils", () => ({}));
+vi.mock("../../../utils", () => ({
+	MemoService: class {
+		updateMemo = updateMemo;
+	},
+}));
 
 const createListCache = () => ({
 	pages: [

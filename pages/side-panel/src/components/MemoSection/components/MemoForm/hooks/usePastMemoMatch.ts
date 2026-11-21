@@ -22,7 +22,7 @@ const PAGE_EXCERPT_MAX_LENGTH = 1000;
 
 /**
  * 현재 탭 페이지와 같은 글이거나 관련 있는 과거 메모를 찾는다.
- * @description 로그인 상태(비로그인에서는 MemoForm이 PastMemoNotice를 그리지 않는다)에서 현재 URL에 메모가 없고
+ * @description 로그인 상태(MemoForm이 withAuthentication 안에 있다)에서 현재 URL에 메모가 없고
  * 무시 목록에 없을 때만 URL당 한 번 요청한다. 어떤 실패든 빈 결과로 취급한다.
  * 결과가 도착한 뒤 메모가 생겨도 이미 받은 결과는 그대로 보여 준다. 결과 도착 전에 메모가 생겼으면 관련 메모는 버린다.
  * 현재 사용처: PastMemoNotice.tsx

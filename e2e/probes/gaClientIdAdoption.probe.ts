@@ -24,7 +24,7 @@ test("확장 client_id가 웹 GA의 cid로 채택된다", async ({ page, context
 		timeout: 30_000,
 	});
 
-	// 확장이 여는 주소와 같은 경로로 들어간다(pages/side-panel의 useLoginEntry).
+	// 확장이 여는 주소와 같은 경로로 들어간다(pages/side-panel의 LoginSection).
 	await page.goto(`/login?ext_cid=${PROBE_CLIENT_ID}`);
 
 	const collectRequest = await firstCollectRequest;

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
 	memoQueryOptions,
 	samePathMemoQueryOptions,
-	useMemoStoreQuery,
+	useSupabaseClientQuery,
 } from "@web-memo/shared/hooks";
 import useOnlineStatus from "../../../hooks/useOnlineStatus";
 
@@ -23,15 +23,15 @@ interface IFUseMemoCandidatesQueryProps {
 export default function useMemoCandidatesQuery({
 	url,
 }: IFUseMemoCandidatesQueryProps) {
-	const { data: memoStore } = useMemoStoreQuery();
+	const { data: supabaseClient } = useSupabaseClientQuery();
 	const isOnline = useOnlineStatus();
 	const memoQuery = useQuery({
-		...memoQueryOptions({ memoStore, url }),
+		...memoQueryOptions({ supabaseClient, url }),
 		// MemoSection이 같은 키를 이미 prefetch했으므로 마운트 때 한 번 더 조회하지 않는다.
 		refetchOnMount: false,
 	});
 	const samePathMemoQuery = useQuery({
-		...samePathMemoQueryOptions({ memoStore, url }),
+		...samePathMemoQueryOptions({ supabaseClient, url }),
 		refetchOnMount: false,
 	});
 
@@ -40,9 +40,7 @@ export default function useMemoCandidatesQuery({
 		Boolean(memoQuery.data?.error) || Boolean(samePathMemoQuery.data?.error);
 	const isDataMissing =
 		memoQuery.data === undefined || samePathMemoQuery.data === undefined;
-	// 기기 저장소 조회는 오프라인에서도 멈추지 않으므로 도착을 기다리며 잠근다.
-	const isOfflineWithoutCache =
-		!isOnline && isDataMissing && memoStore.kind === "remote";
+	const isOfflineWithoutCache = !isOnline && isDataMissing;
 	const isMemoLocked =
 		!isOfflineWithoutCache && (isDataMissing || hasResponseError);
 	const isFetching = memoQuery.isFetching || samePathMemoQuery.isFetching;

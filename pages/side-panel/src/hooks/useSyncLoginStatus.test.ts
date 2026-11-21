@@ -12,11 +12,7 @@ const mocks = vi.hoisted(() => ({
 	reportLoginSyncMismatch: vi.fn(async (_client: unknown) => {}),
 }));
 vi.mock("@web-memo/shared/constants", () => ({
-	QUERY_KEY: {
-		supabaseClient: () => ["supabaseClient"],
-		memoStore: () => ["memoStore"],
-		user: () => ["user"],
-	},
+	QUERY_KEY: { supabaseClient: () => ["supabaseClient"], user: () => ["user"] },
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
 	// 렌더마다 같은 핸들러로 덮어쓰기만 하므로 마운트 시점을 따로 흉내 내지 않는다.

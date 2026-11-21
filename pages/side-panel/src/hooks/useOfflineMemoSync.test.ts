@@ -10,10 +10,7 @@ const mocks = vi.hoisted(() => ({
 	trackEvent: vi.fn(async (_event: unknown) => {}),
 }));
 vi.mock("@web-memo/shared/hooks", () => ({
-	supabaseClientQueryOptions: () => ({
-		queryKey: ["supabaseClient"],
-		queryFn: async () => ({}),
-	}),
+	useSupabaseClientQuery: () => ({ data: {} }),
 }));
 vi.mock("@web-memo/shared/modules/analytics", () => ({
 	analytics: { trackEvent: (event: unknown) => mocks.trackEvent(event) },

@@ -1,14 +1,8 @@
-import LoginRequiredNotice from "@src/components/LoginRequiredNotice";
+import LoginSection from "@src/components/LoginSection";
 import { usePageContentContext } from "@src/components/PageContentProvider";
-import { useIsGuest } from "@src/hooks";
 import { useSupabaseUserQuery, useTabQuery } from "@web-memo/shared/hooks";
 import { I18n } from "@web-memo/shared/utils/extension";
-import {
-	Button,
-	ErrorBoundary,
-	ErrorFallback,
-	TextShimmer,
-} from "@web-memo/ui";
+import { Button, ErrorBoundary, TextShimmer } from "@web-memo/ui";
 import { Sparkles } from "lucide-react";
 import { Suspense } from "react";
 import { formatSummaryText } from "../../../../hooks/useSummary/util";
@@ -22,12 +16,6 @@ export default function Summary({
 	const { content, isLoading, error } = usePageContentContext();
 	const { data: tab } = useTabQuery();
 	const { isAuthPending } = useSummaryContext();
-	const isGuest = useIsGuest();
-
-	// 요약은 AI를 부르므로 비로그인에서는 페이지 상태와 무관하게 로그인 안내만 보여 준다.
-	if (isGuest) {
-		return <LoginRequiredNotice />;
-	}
 
 	if (isLoading) {
 		return (
@@ -65,7 +53,7 @@ export default function Summary({
 	}
 
 	return (
-		<ErrorBoundary FallbackComponent={ErrorFallback}>
+		<ErrorBoundary FallbackComponent={LoginSection}>
 			<Suspense
 				fallback={
 					<p className="pt-4 text-sm text-muted-foreground">
@@ -85,7 +73,7 @@ function AuthenticatedSummary() {
 		useSummaryContext();
 
 	if (!user?.data.user) {
-		return <LoginRequiredNotice />;
+		return <LoginSection />;
 	}
 
 	if (errorMessage) {

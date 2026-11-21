@@ -175,23 +175,3 @@ describe("오프라인·동기화 상태 표시", () => {
 		expect(getLiveRegion().textContent).toBe("toast_saved");
 	});
 });
-
-describe("비로그인 저장 상태", () => {
-	it("device 상태면 이 기기에만 저장된다는 문구를 눈에 보이게 그린다", async () => {
-		await render("device");
-
-		const status = document.querySelector('[data-save-status="device"]');
-		expect(status?.textContent).toContain("save_status_device_only");
-		expect(status?.querySelector(".sr-only")?.textContent).not.toContain(
-			"save_status_device_only",
-		);
-		expect(document.querySelector("button")).toBeNull();
-	});
-
-	it("실패에서 device로 돌아오면 복구 안내를 읽는다", async () => {
-		await render("failed");
-		await render("device");
-
-		expect(getLiveRegion().textContent).toBe("toast_saved");
-	});
-});

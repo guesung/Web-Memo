@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { DEFAULT_CATEGORY_COLOR } from "@web-memo/shared/constants";
 import {
 	memoQueryOptions,
-	useMemoStoreQuery,
 	useSettingQuery,
+	useSupabaseClientQuery,
 } from "@web-memo/shared/hooks";
 import { I18n, Tab } from "@web-memo/shared/utils/extension";
 import { Badge, Button, Skeleton } from "@web-memo/ui";
@@ -23,9 +23,9 @@ import {
  * 현재 사용처: MemoSection/index.tsx
  */
 const PastMemoView = (props: IFPastMemoViewProps) => {
-	const { data: memoStore } = useMemoStoreQuery();
+	const { data: supabaseClient } = useSupabaseClientQuery();
 	const { showImpression, showActionItem } = useSettingQuery();
-	const options = memoQueryOptions({ memoStore, id: props.memoId });
+	const options = memoQueryOptions({ supabaseClient, id: props.memoId });
 	const { data, isPending, isError } = useQuery({
 		...options,
 		queryKey: [

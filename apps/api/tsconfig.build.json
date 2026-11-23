@@ -1,0 +1,16 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"rootDir": "./src",
+		"types": [
+			"node"
+		],
+		"incremental": false
+	},
+	"include": [
+		"src"
+	],
+	"exclude": [
+		"**/*.spec.ts"
+	]
+}

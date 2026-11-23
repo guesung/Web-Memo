@@ -68,6 +68,10 @@ jobs:
       - name: Unit tests
         run: pnpm test:jest --run
 
+      # NestJS DI는 데코레이터 메타데이터가 필요해 SWC로 변환하는 api 전용 Vitest 설정으로 따로 돌린다.
+      - name: API tests
+        run: pnpm -F @web-memo/api test && pnpm -F @web-memo/api test:e2e
+
   changes:
     concurrency:
       group: changes-${{ github.ref == 'refs/heads/develop' && github.ref || github.run_id }}

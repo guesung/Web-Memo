@@ -2,8 +2,15 @@
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
 		"rootDir": "./src",
-		"types": ["node"]
+		"types": [
+			"node"
+		],
+		"incremental": false
 	},
-	"include": ["src"],
-	"exclude": ["**/*.spec.ts"]
+	"include": [
+		"src"
+	],
+	"exclude": [
+		"**/*.spec.ts"
+	]
 }

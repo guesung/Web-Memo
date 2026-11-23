@@ -3,8 +3,8 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "nest start --watch",
-		"build": "nest build",
+		"dev": "tsc-watch -p tsconfig.build.json --onSuccess \"node dist/main.js\"",
+		"build": "rm -rf dist && tsc -p tsconfig.build.json",
 		"start": "node dist/main.js",
 		"type-check": "tsc --noEmit",
 		"test": "vitest run",
@@ -19,12 +19,12 @@
 		"rxjs": "^7.8.2"
 	},
 	"devDependencies": {
-		"@nestjs/cli": "^12.0.15",
 		"@nestjs/testing": "^12.6.0",
-		"@swc/core": "^1.16.22",
+		"@swc/core": "^1.15.11",
 		"@types/node": "^24.0.0",
 		"@types/supertest": "^7.2.1",
 		"supertest": "^7.3.2",
+		"tsc-watch": "^6.2.1",
 		"typescript": "5.5.3",
 		"unplugin-swc": "^2.0.0",
 		"vitest": "^2.1.5"

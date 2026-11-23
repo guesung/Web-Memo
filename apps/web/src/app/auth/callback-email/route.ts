@@ -3,14 +3,14 @@ import {
 	sanitizeNextPath,
 } from "@src/modules/supabase/nextPath";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
+import { CONFIG } from "@web-memo/env";
 import { PATHS, SUPABASE } from "@web-memo/shared/constants";
 import { isProduction } from "@web-memo/shared/utils";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
-	const requestUrl = new URL(request.url);
-
+/** self-host에서는 request.url의 호스트가 바인딩 주소라 서비스 주소로 리다이렉트합니다. */
+export async function GET() {
 	const supabase = await getSupabaseClient();
 	const { data: sessionData } = await supabase.auth.getSession();
 
@@ -44,12 +44,10 @@ export async function GET(request: Request) {
 	cookieStore.delete(LOGIN_NEXT_COOKIE);
 
 	if (!nextPath) {
-		return NextResponse.redirect(
-			`${requestUrl.origin}${PATHS.memos}?login=email`,
-		);
+		return NextResponse.redirect(`${CONFIG.webUrl}${PATHS.memos}?login=email`);
 	}
 
-	const redirectUrl = new URL(`${requestUrl.origin}${nextPath}`);
+	const redirectUrl = new URL(`${CONFIG.webUrl}${nextPath}`);
 	redirectUrl.searchParams.set("login", "email");
 
 	return NextResponse.redirect(redirectUrl);

@@ -9,6 +9,10 @@ const { exchangeCodeForSession, setCookie, deleteCookie, cookieValues } =
 		cookieValues: new Map<string, string>(),
 	}));
 
+vi.mock("@web-memo/env", () => ({
+	CONFIG: { webUrl: "https://webmemo.example" },
+}));
+
 vi.mock("@src/modules/i18n", () => ({
 	DEFAULT_LANGUAGE: "en",
 	getLanguage: () => "ko",
@@ -42,13 +46,13 @@ describe("GET /auth/callback", () => {
 		});
 
 		const response = await GET(
-			new NextRequest("http://localhost/auth/callback?code=secret-code"),
+			new NextRequest("https://0.0.0.0:3000/auth/callback?code=secret-code"),
 		);
 
 		expect(exchangeCodeForSession).toHaveBeenCalledWith("secret-code");
 		expect(response.status).toBe(302);
 		expect(response.headers.get("location")).toBe(
-			"http://localhost/ko/login?error=1",
+			"https://webmemo.example/ko/login?error=1",
 		);
 		expect(setCookie).not.toHaveBeenCalled();
 	});
@@ -68,11 +72,11 @@ describe("GET /auth/callback", () => {
 		});
 
 		const response = await GET(
-			new NextRequest("http://localhost/auth/callback?code=valid-code"),
+			new NextRequest("https://0.0.0.0:3000/auth/callback?code=valid-code"),
 		);
 
 		expect(response.headers.get("location")).toBe(
-			"http://localhost/ko/memos?login=google",
+			"https://webmemo.example/ko/memos?login=google",
 		);
 		expect(setCookie).toHaveBeenCalledTimes(2);
 	});
@@ -100,7 +104,7 @@ describe("GET /auth/callback", () => {
 			});
 
 			const response = await GET(
-				new NextRequest("http://localhost/auth/callback?code=valid-code"),
+				new NextRequest("https://0.0.0.0:3000/auth/callback?code=valid-code"),
 			);
 
 			expect(response.headers.get("location")).toBe(
@@ -112,7 +116,9 @@ describe("GET /auth/callback", () => {
 
 		it("제공자가 취소·실패를 돌려주면 확장 주소로 오류만 알린다", async () => {
 			const response = await GET(
-				new NextRequest("http://localhost/auth/callback?error=access_denied"),
+				new NextRequest(
+					"https://0.0.0.0:3000/auth/callback?error=access_denied",
+				),
 			);
 
 			expect(response.headers.get("location")).toBe(`${EXTENSION_URL}?error=1`);
@@ -123,7 +129,7 @@ describe("GET /auth/callback", () => {
 			exchangeCodeForSession.mockResolvedValue({ data: { session: null } });
 
 			const response = await GET(
-				new NextRequest("http://localhost/auth/callback?code=bad-code"),
+				new NextRequest("https://0.0.0.0:3000/auth/callback?code=bad-code"),
 			);
 
 			expect(response.headers.get("location")).toBe(`${EXTENSION_URL}?error=1`);

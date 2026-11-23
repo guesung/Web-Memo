@@ -9,6 +9,7 @@ import {
 	sanitizeNextPath,
 } from "@src/modules/supabase/nextPath";
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
+import { CONFIG } from "@web-memo/env";
 import { PATHS, SUPABASE } from "@web-memo/shared/constants";
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
@@ -19,6 +20,9 @@ const SIGN_UP_THRESHOLD_MSEC = 60_000;
 
 export async function GET(request: NextRequest) {
 	const requestUrl = new URL(request.url);
+	// self-host(standalone)에서는 request.url의 호스트가 바인딩 주소(0.0.0.0:3000)라
+	// 리다이렉트 목적지는 요청 URL이 아니라 서비스 주소로 만듭니다.
+	const { webUrl } = CONFIG;
 
 	// 로케일 없는 경로로 보내면 미들웨어가 /{lng}로 한 번 더 리다이렉트합니다.
 	// 로그인 직후 화면이 뜨기까지 왕복이 하나 더 늘어나므로 여기서 붙여 보냅니다.
@@ -39,7 +43,7 @@ export async function GET(request: NextRequest) {
 			return NextResponse.redirect(buildExtensionReturnUrl({ error: true }));
 		}
 
-		const loginUrl = new URL(`${requestUrl.origin}/${language}${PATHS.login}`);
+		const loginUrl = new URL(`${webUrl}/${language}${PATHS.login}`);
 		loginUrl.searchParams.set("error", "1");
 
 		return NextResponse.redirect(loginUrl);
@@ -60,9 +64,7 @@ export async function GET(request: NextRequest) {
 				);
 			}
 
-			const loginUrl = new URL(
-				`${requestUrl.origin}/${language}${PATHS.login}`,
-			);
+			const loginUrl = new URL(`${webUrl}/${language}${PATHS.login}`);
 			loginUrl.searchParams.set("error", "1");
 
 			return NextResponse.redirect(loginUrl, 302);
@@ -108,9 +110,7 @@ export async function GET(request: NextRequest) {
 		}
 
 		const redirectUrl = new URL(
-			nextPath
-				? `${requestUrl.origin}${nextPath}`
-				: `${requestUrl.origin}/${language}${PATHS.memos}`,
+			nextPath ? `${webUrl}${nextPath}` : `${webUrl}/${language}${PATHS.memos}`,
 		);
 		redirectUrl.searchParams.set("login", loginMethod ?? "unknown");
 		if (isSignUp) redirectUrl.searchParams.set("signup", "true");
@@ -118,7 +118,5 @@ export async function GET(request: NextRequest) {
 		return NextResponse.redirect(redirectUrl);
 	}
 
-	return NextResponse.redirect(
-		`${requestUrl.origin}/${language}${PATHS.memos}`,
-	);
+	return NextResponse.redirect(`${webUrl}/${language}${PATHS.memos}`);
 }

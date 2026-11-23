@@ -1,17 +1,20 @@
 import { Type } from "class-transformer";
 import {
 	IsDateString,
+	IsInt,
 	IsNotEmpty,
 	IsOptional,
 	IsString,
 	IsUUID,
+	Min,
 	ValidateNested,
 } from "class-validator";
 
-/** feedback.feedbacks에 새로 생긴 행 */
+/** feedback.feedbacks에 새로 생긴 행. id는 bigint라 JSON에서 숫자로 온다 */
 export class FeedbackRecordDto {
-	@IsUUID()
-	id!: string;
+	@IsInt()
+	@Min(1)
+	id!: number;
 
 	@IsString()
 	@IsNotEmpty()

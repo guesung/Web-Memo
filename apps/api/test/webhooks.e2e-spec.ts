@@ -35,7 +35,7 @@ describe("웹훅 엔드포인트", () => {
 		schema: "feedback",
 		old_record: null,
 		record: {
-			id: "8f6f1c1e-6c4b-4f4f-9c1d-2b2f0c1a9e11",
+			id: 42,
 			content: "검색이 느려요",
 			user_id: null,
 			email: null,
@@ -58,7 +58,7 @@ describe("웹훅 엔드포인트", () => {
 
 		it("record 형식이 틀리면 400이고 Slack을 부르지 않는다", async () => {
 			const response = await post("/webhooks/feedback", {
-				record: { ...feedbackBody.record, id: "not-uuid", content: "" },
+				record: { ...feedbackBody.record, id: "not-a-number", content: "" },
 			});
 
 			expect(response.status).toBe(400);
@@ -74,6 +74,21 @@ describe("웹훅 엔드포인트", () => {
 				TEST_ENV.SLACK_FEEDBACK_WEBHOOK_URL,
 				expect.stringContaining("검색이 느려요"),
 			);
+		});
+
+		it("DB 트리거가 보내는 실제 형식(숫자 id·마이크로초·+00:00 시각·추가 컬럼)을 받는다", async () => {
+			const response = await post("/webhooks/feedback", {
+				record: {
+					id: 1234,
+					created_at: "2026-11-23T07:30:00.123456+00:00",
+					content: "실제 형식",
+					user_id: "1b0e4a52-3f8d-4c62-9f7e-6a1d2c3b4e5f",
+					email: null,
+					source_path: "/ko/memos",
+				},
+			});
+
+			expect(response.status).toBe(200);
 		});
 
 		it("Slack 전송이 실패하면 502를 돌려준다", async () => {

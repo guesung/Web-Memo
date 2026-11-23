@@ -10,7 +10,7 @@ const createService = (webUrl?: string) => {
 };
 
 const record = {
-	id: "8f6f1c1e-6c4b-4f4f-9c1d-2b2f0c1a9e11",
+	id: 42,
 	content: "검색이 느려요",
 	created_at: "2026-11-23T06:00:00.000Z",
 };

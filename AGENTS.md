@@ -78,7 +78,7 @@ const UNSUPPORTED_SUMMARY_PAGES = [
 - **프론트엔드**: TypeScript 5.5.3, React 19.1.0, Next.js 16.3.5(웹 앱, dev·build 모두 Turbopack), Vite 5.3.3(확장), TailwindCSS 3.4.x
 - **상태/데이터**: TanStack Query (React Query) v5.59.0, React Hook Form 7.53.2
 - **UI/스타일링**: TailwindCSS, Framer Motion 11.11.8, Lucide React 0.456.0, Next Themes, Driver.js(튜토리얼/가이드)
-- **백엔드/DB**: Supabase (인증, 데이터베이스, 타입 생성, 실시간)
+- **백엔드/DB**: Supabase (인증, 데이터베이스, 타입 생성, 실시간), NestJS 12.6 (`apps/api`, 이전 중)
 - **빌드**: Turbo 2.1.1, Vite 5.3.3, Cross-env, Rimraf
 - **테스트**: Vitest, Playwright 1.47.0
 - **코드 품질**: Biome 2.0.0
@@ -105,6 +105,7 @@ Turborepo 기반 모노레포입니다.
 - `apps/chrome-extension/` — Chrome Extension Manifest V3 코어
 - `apps/web/` — Next.js 16.3.5 웹 애플리케이션
 - `apps/app/` — React Native/Expo 모바일 애플리케이션
+- `apps/api/` — NestJS 12 API 서버 (Supabase 백엔드 이전용, ESM). 주의점은 `apps/api/README.md`
 
 **Pages (확장 UI)**
 - `pages/side-panel/` — 메인 메모 인터페이스
@@ -182,6 +183,7 @@ pnpm dev:extension     # 확장만
 pnpm dev:web           # 웹만
 pnpm env:pull           # Vercel development 환경변수를 apps/web/.env.local로 받기 (최초 vercel link, 루트에서)
 pnpm dev:app           # 앱만 (Expo)
+pnpm -F @web-memo/api dev   # API 서버만 (NestJS, 기본 포트 4000)
 
 # 빌드
 pnpm build             # 전체

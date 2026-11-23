@@ -1,0 +1,25 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"compilerOptions": {
+		"module": "nodenext",
+		"moduleResolution": "nodenext",
+		"resolvePackageJsonExports": true,
+		"target": "ES2023",
+		"esModuleInterop": true,
+		"isolatedModules": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
+		"declaration": false,
+		"removeComments": true,
+		"sourceMap": true,
+		"outDir": "./dist",
+		"rootDir": ".",
+		"incremental": true,
+		"skipLibCheck": true,
+		"strict": true,
+		"strictPropertyInitialization": false,
+		"types": ["vitest/globals", "node"]
+	},
+	"include": ["src", "test", "vitest.config.ts", "vitest.config.e2e.ts"]
+}

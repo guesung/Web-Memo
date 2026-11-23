@@ -8,7 +8,8 @@
 
 ```
 Cloudflare(프록시) → VM:80/443 Caddy ─┬─ web-blue:3000
-                                      └─ web-green:3000
+                                      ├─ web-green:3000
+                                      └─ api:4000        (api.webmemo.xyz, apps/api)
                      VM alloy ── 컨테이너 로그·지표 ──→ Grafana Cloud (Loki·Prometheus)
 Grafana Synthetic Monitoring ── 1분마다 /api/version ──┘ → Grafana Alerting → Slack
 ```
@@ -32,11 +33,13 @@ Grafana Synthetic Monitoring ── 1분마다 /api/version ──┘ → Grafan
 | `scripts/lib.sh` | 활성 색 읽기·쓰기, 컨테이너 안 HTTP 확인, 전환 대기 | VM (deploy·rollback이 source) |
 | `scripts/deploy.sh` | 대기 색에 새 이미지 기동 → `/api/version` 커밋 확인 → Caddy 전환 | VM (CI가 SSH로 실행) |
 | `scripts/rollback.sh` | 트래픽을 직전 색으로 되돌림 | VM (CI `action=rollback`) |
+| `scripts/deploy-api.sh` | API 컨테이너를 새 이미지로 교체 → `/health` 200 확인 | VM (CI `cd-api-oracle.yml`이 SSH로 실행) |
 | `alloy/config.alloy` | 컨테이너 로그 → Loki, 호스트·컨테이너 지표 → Prometheus | VM (compose `alloy`, `observability` 프로필) |
 | `terraform/grafana/` | 알림 규칙 6종·Slack 연락처·외부 헬스체크(staging, 비교용 운영 Vercel) | CI `cd-terraform.yml` (Grafana Cloud) |
 | `terraform/cloudflare/` | `staging` DNS(VM·Vercel 전환), SSL Full (strict), staging Access(이메일 OTP)와 bypass 경로 | CI `cd-terraform.yml` (Cloudflare) |
 
 VM에만 있고 레포에 없는 것: `/opt/webmemo/.env`(사이트 주소·이미지 태그), `env/web.env`(앱 런타임 환경변수),
+`env/api.env`(API 런타임 환경변수, 배포 때 GitHub Secrets로 새로 씀),
 `env/alloy.env`(Grafana Cloud 쓰기 자격 증명),
 `state/color/active`(지금 트래픽을 받는 색 `blue`·`green`). `sync.sh`는 이 셋을 덮어쓰지 않습니다.
 
@@ -121,6 +124,29 @@ Vercel 무료 플랜에서 받지 못하던 플랫폼 레벨 오류(타임아웃
 - **처음 연결할 때**: 프록시를 켠 채로는 Caddy가 첫 인증서를 받기 어려우니, `staging_proxied = false`로 DNS만 VM으로 돌려
   인증서를 받은 뒤 `true`로 켭니다. 그 몇 분 동안은 Access가 적용되지 않습니다.
 - **롤백**: `terraform/cloudflare`의 `staging_target`을 `"vercel"`로 바꿔 develop에 머지합니다(원래 Vercel CNAME, 프록시 끔).
+
+## API (`api.webmemo.xyz`)
+
+Supabase 웹훅(피드백·가입 알림)을 받는 NestJS 서버(`apps/api`)입니다. 이전 계획은 노션
+[DB-1337](https://app.notion.com/p/Supabase-NestJS-42189de02fde8183a3f9c992154e7bc9)에 있습니다.
+
+```
+develop 푸시(apps/api 또는 VM 구성 변경) → cd-api-oracle.yml
+  → arm64 이미지 빌드 → ghcr.io/guesung/web-memo-api:<sha>
+  → GitHub Secrets로 env/api.env 작성 → compose·Caddy·scripts와 함께 rsync → scripts/deploy-api.sh
+```
+
+- **한 대만 둡니다.** 웹과 달리 blue-green이 아니라 컨테이너를 바로 교체해서, 교체하는 몇 초 동안 들어온 요청은 실패합니다.
+  가입 트리거(pg_net)는 다시 보내지 않으므로 그 사이 알림 한 건이 빠질 수 있습니다. 무중단 배포는 ECS 실습(Phase 1.5)에서 비교합니다.
+- **웹 배포와 같은 VM 구성을 씁니다.** 두 워크플로 모두 develop 기준으로 `infra/oracle`을 통째로 보내고, 같은 concurrency 그룹
+  (`cd-web-oracle-staging`)으로 줄 서서 서로의 설정을 덮어쓰지 않습니다.
+- **환경 변수는 GitHub Secrets가 원천입니다**(`WEBHOOK_SECRET`·`SLACK_FEEDBACK_WEBHOOK_URL`·`SLACK_SIGNUP_WEBHOOK_URL`).
+  하나라도 비면 배포가 env 작성 단계에서 멈춥니다. API는 필수 값이 없으면 시작하지 않습니다.
+- **Access를 걸지 않습니다.** Supabase가 부르는 서버라 사람 로그인이 없습니다. 호출자는 앱이 `x-webhook-secret` 헤더로 확인하고,
+  Caddy는 웹과 같이 Cloudflare를 거치지 않은 연결을 403으로 막습니다.
+- **처음 연결할 때**: `terraform/cloudflare`의 `api_proxied`가 `false`라 DNS만 VM을 가리키고, Caddy가 첫 인증서를 받습니다.
+  이 동안은 Cloudflare 밖 연결이 403이라 외부에서 부를 수 없습니다. 인증서를 받은 뒤(`docker compose logs caddy`에서
+  `certificate obtained successfully` 확인) `api_proxied = true`로 바꿔 develop에 머지합니다.
 
 ## 엣지 캐시 (공개 정적 페이지)
 

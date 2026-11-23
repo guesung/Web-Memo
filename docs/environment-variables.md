@@ -46,7 +46,7 @@
 
 <!-- env-manifest:start -->
 
-### GitHub Secrets (58개)
+### GitHub Secrets (61개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
@@ -83,9 +83,9 @@
 | `OCI_CLI_TENANCY` (선택) | Oracle API 인증과 컴파트먼트 조회가 실패해 VM 생성 재시도가 멈춘다 | `.github/workflows/chore-oracle-vm-retry.yml` |
 | `OCI_CLI_USER` (선택) | Oracle API 인증에 실패해 VM 생성 재시도(chore-oracle-vm-retry)가 멈춘다 | `.github/workflows/chore-oracle-vm-retry.yml` |
 | `ORACLE_DEPLOY_ENABLED` (선택) | 값이 \"true\"가 아니면 develop 푸시가 Oracle VM staging에 배포되지 않는다. Vercel 배포는 그대로다 | `.github/workflows/ci.yml` |
-| `ORACLE_SSH_HOST` (선택) | Oracle VM에 접속하지 못해 VM staging 배포·롤백이 멈춘다. Vercel 배포에는 영향 없다 | `.github/workflows/cd-web-oracle.yml` |
-| `ORACLE_SSH_KEY` (선택) | Oracle VM의 deploy 사용자로 SSH 인증하지 못해 VM 배포·롤백이 멈춘다 | `.github/workflows/cd-web-oracle.yml` |
-| `ORACLE_SSH_KNOWN_HOSTS` (선택) | 호스트 키 검증이 실패해 VM 배포·롤백이 멈춘다 | `.github/workflows/cd-web-oracle.yml` |
+| `ORACLE_SSH_HOST` (선택) | Oracle VM에 접속하지 못해 VM staging 배포·롤백이 멈춘다. Vercel 배포에는 영향 없다 | `.github/workflows/cd-web-oracle.yml`, `.github/workflows/cd-api-oracle.yml` |
+| `ORACLE_SSH_KEY` (선택) | Oracle VM의 deploy 사용자로 SSH 인증하지 못해 VM 배포·롤백이 멈춘다 | `.github/workflows/cd-web-oracle.yml`, `.github/workflows/cd-api-oracle.yml` |
+| `ORACLE_SSH_KNOWN_HOSTS` (선택) | 호스트 키 검증이 실패해 VM 배포·롤백이 멈춘다 | `.github/workflows/cd-web-oracle.yml`, `.github/workflows/cd-api-oracle.yml` |
 | `ORACLE_SSH_PUBLIC_KEY` (선택) | 새 VM에 SSH 공개키가 들어가지 않아 접속·배포를 할 수 없다 | `.github/workflows/chore-oracle-vm-retry.yml` |
 | `REFRESH_TOKEN` | 크롬 웹스토어 API 인증이 실패해 확장 배포와 스토어 현황 조회가 멈춘다 | `.github/workflows/cd-extension.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `SENTRY_API_TOKEN` (선택) | Sentry 알림에 대표 이벤트 상세(환경·릴리스·브라우저·스택·breadcrumb)가 빠지고, AI 분석이 웹훅 입력만으로 진행된다 | `apps/web/src/modules/sentry/config.ts`, `.github/workflows/chore-sentry-triage.yml`, `.github/scripts/sentry/fetch-sentry-context.mjs` |
@@ -94,8 +94,10 @@
 | `SEO_SHEET_ID` (선택) | SEO·GSC 장기 이력이 Google Sheets에 쌓이지 않는다(공개 SEO 검사와 원본 아티팩트는 유지된다) | `.github/workflows/report-seo.yml` |
 | `SLACK_BOT_TOKEN` | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다. GA 리포트는 웹훅 폴백으로 #ga-리포트 에 본문만 올라가고 AI 인사이트 댓글과 주간 채널 분리가 빠진다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts`, `.github/workflows/report-seo.yml`, `.github/workflows/chore-sentry-triage.yml`, `.github/scripts/sentry/report-sentry-triage.mjs`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/scripts/ga/report-delivery.mjs`, `.github/scripts/ga/send-ga-insight.mjs` |
 | `SLACK_CHANNEL_ID` | 머지 스레드가 생기지 않고 웹훅 알림으로 폴백한다 | `.github/workflows/ci.yml` |
+| `SLACK_FEEDBACK_WEBHOOK_URL` | 피드백 Slack 알림이 오지 않는다. GitHub에 없으면 API 배포가 env 작성 단계에서 멈춘다 | `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts`, `apps/api/src/feedback/feedback.service.ts`, `.github/workflows/cd-api-oracle.yml` |
 | `SLACK_REPORT_CHANNEL_ID` | SEO AI 리포트를 스레드로 보내지 못하고 기존 기계 판정 알림으로 대신한다. 봇(SLACK_BOT_TOKEN)이 이 채널에 초대돼 있어야 한다 | `.github/workflows/report-seo.yml` |
 | `SLACK_REPORT_WEBHOOK_URL` | 주간 리팩토링 점검 결과, 주간 GA 이벤트 누락 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다. GA 리포트는 봇(SLACK_BOT_TOKEN)으로 먼저 올리므로 이 값은 봇 게시가 실패했을 때의 폴백이며, 없으면 그날 리포트가 통째로 빠진다 | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/chore-ga-events.yml` |
+| `SLACK_SIGNUP_WEBHOOK_URL` | 신규 가입 Slack 알림이 오지 않는다. 함수가 예외를 던지고 로그에만 남는다. GitHub에 없으면 API 배포가 env 작성 단계에서 멈춘다 | `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts`, `apps/api/src/signup/signup.service.ts`, `.github/workflows/cd-api-oracle.yml` |
 | `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/versions.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/audit-ga-cid-adoption.yml`, `.github/workflows/notify-extension-published.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/chore-oracle-vm-retry.yml`, `.github/workflows/cd-terraform.yml` |
 | `STAGING_ACCESS_EMAILS` (선택) | Access 허용 정책을 만들지 못해 staging에 아무도 들어가지 못한다 | `.github/workflows/cd-terraform.yml` |
 | `STAGING_WEB_URL_WITHOUT_PROTOCOL` | 스테이징 배포에 alias 도메인이 붙지 않는다 | `.github/workflows/cd-web.yml` |
@@ -108,6 +110,7 @@
 | `TURBO_TEAM` | Turborepo 원격 캐시 팀을 못 찾아 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/chore-ga-events.yml` |
 | `TURBO_TOKEN` | Turborepo 원격 캐시를 못 써 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/chore-ga-events.yml` |
 | `VERCEL_TOKEN` | vercel pull, build, deploy, alias가 인증에 실패해 웹 배포가 멈추고, e2e가 웹 서버 환경 변수를 받지 못한다 | `.github/workflows/cd-web.yml`, `.github/workflows/e2e.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-e2e-coverage.yml` |
+| `WEBHOOK_SECRET` | API 배포가 env 작성 단계에서 멈춘다. VM에 값이 없으면 API가 시작 검증에서 죽는다 | `apps/api/src/config/env.validation.ts`, `apps/api/src/webhook/webhook-secret.guard.ts`, `.github/workflows/cd-api-oracle.yml` |
 
 ### Vercel 프로젝트 환경변수 (19개)
 
@@ -142,8 +145,8 @@
 | `CRON_SECRET` | DB 트리거·pg_cron이 부르는 함수의 호출자 확인이 실패해 가입 메일·가입 알림·아티클 리마인더가 401로 끝난다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
 | `RESEND_API_KEY` | 가입 안내 메일이 발송되지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
 | `RESURFACE_ENABLED` (선택) | 정확히 true일 때만 크론이 다시 꺼내기(resurface) 메일을 보낸다. 없거나 다른 값이면 크론 resurface는 건너뛰고, resurfaceLimit를 준 수동 호출만 보낸다 | `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
-| `SLACK_FEEDBACK_WEBHOOK_URL` | 피드백 Slack 알림이 오지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts` |
-| `SLACK_SIGNUP_WEBHOOK_URL` | 신규 가입 Slack 알림이 오지 않는다. 함수가 예외를 던지고 로그에만 남는다 | `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts` |
+| `SLACK_FEEDBACK_WEBHOOK_URL` | 피드백 Slack 알림이 오지 않는다. GitHub에 없으면 API 배포가 env 작성 단계에서 멈춘다 | `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts`, `apps/api/src/feedback/feedback.service.ts`, `.github/workflows/cd-api-oracle.yml` |
+| `SLACK_SIGNUP_WEBHOOK_URL` | 신규 가입 Slack 알림이 오지 않는다. 함수가 예외를 던지고 로그에만 남는다. GitHub에 없으면 API 배포가 env 작성 단계에서 멈춘다 | `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts`, `apps/api/src/signup/signup.service.ts`, `.github/workflows/cd-api-oracle.yml` |
 | `UNSUBSCRIBE_SECRET` | 주간 메일의 수신 거부·클릭 기록 토큰을 서명하지 못해 report·resurface 발송이 시작 전에 실패하고, 수신 거부·클릭 링크가 모두 홈으로만 간다 | `packages/supabase-edge-functions/supabase/functions/_shared/reportToken.ts` |
 | `WEB_URL` | envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 피드백 알림에서 관리자 링크 줄만 빠진다 | `packages/env/src/config.ts`, `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts`, `packages/supabase-edge-functions/supabase/functions/_shared/webUrl.ts` |
 
@@ -175,6 +178,7 @@
 | `NODE_ENV` | Next와 Vite 같은 툴체인이 자기 값으로 채운다. 환경 구분에는 쓰지 않고 BUILD_ENV를 쓴다 | `apps/chrome-extension/vite.config.mts` |
 | `PLAYWRIGHT_BASE_URL` | 독립 QA 서버의 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 localhost:3000을 본다. 확장 QA 빌드의 WEB_URL과 맞추며 외부 서비스에 등록하지 않는다 | `e2e/tests/fixtures/web.ts`, `e2e/tests/fixtures/extension.ts` |
 | `PLAYWRIGHT_NO_COPY_PROMPT` | 전용 성능 프로브 설정이 1로 지정해 Playwright 1.58.2의 실패 DOM snapshot 자동 저장을 차단한다. 외부 서비스에 등록하지 않는다 | `e2e/playwright.memo-performance.config.ts`, `e2e/playwright.category-streaming.config.ts` |
+| `PORT` | API 서버가 듣는 포트. infra/oracle/compose.yaml이 4000으로 주입하고, 없으면 4000이다 | `apps/api/src/main.ts`, `apps/api/src/config/env.validation.ts` |
 | `PROBE_BASE_URL` | 운영 프로브의 대상 주소를 바꿀 때 셸에서 넣는 선택 값. 없으면 운영 도메인을 본다. 등록하지 않는다 | `e2e/playwright.probe.config.ts` |
 | `PW_CHROMIUM_ATTACH_TO_OTHER` | Playwright가 넣는 내부 플래그 | `e2e/tests/fixtures/extension.ts` |
 | `SUPABASE_ANON_KEY` | Supabase가 Edge Function에 주입한다. 테스트 발송에서 사용자 토큰을 auth.getUser로 검증할 때만 쓴다 | `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |

@@ -1,0 +1,117 @@
+name: CD - API (Oracle Cloud)
+
+# API 서버(apps/api)를 웹과 같은 Oracle Cloud VM(infra/oracle)에 컨테이너로 배포합니다(노션 DB-1337 Phase 1-B).
+# 웹 Oracle 배포(cd-web-oracle.yml)와 같은 VM 구성(compose·Caddy·스크립트)을 보내므로, 둘 다 develop 기준으로 돌고
+# 같은 concurrency 그룹으로 줄 세워 서로 덮어쓰지 않게 합니다.
+#
+# 흐름: arm64 이미지 빌드 → GHCR push → GitHub Secrets로 env/api.env 작성 → VM에서 deploy-api.sh(교체 → /health 확인)
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "체크아웃할 커밋 (비우면 호출한 워크플로의 기본 ref)"
+        type: string
+        default: ""
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "체크아웃할 커밋/태그 (비우면 실행한 브랜치)"
+        type: string
+        default: ""
+
+concurrency:
+  group: cd-web-oracle-staging
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/web-memo-api
+  API_SITE_ADDRESS: api.webmemo.xyz
+  # 피드백 알림의 관리자 링크. Supabase가 하나(운영)라 알림도 운영 화면을 가리킵니다
+  API_WEB_URL: https://www.webmemo.xyz
+  REMOTE: deploy@${{ secrets.ORACLE_SSH_HOST }}
+
+jobs:
+  deploy:
+    name: API 배포
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve commit
+        id: commit
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: ${{ env.IMAGE }}:${{ steps.commit.outputs.sha }}
+          cache-from: type=gha,scope=api-oracle
+          cache-to: type=gha,scope=api-oracle,mode=max
+
+      # 값이 하나라도 비면 여기서 멈춥니다. 빈 값으로 배포하면 API가 시작 검증(validateEnv)에서 죽어 원인이 늦게 보입니다.
+      - name: Write api env
+        env:
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+          SLACK_FEEDBACK_WEBHOOK_URL: ${{ secrets.SLACK_FEEDBACK_WEBHOOK_URL }}
+          SLACK_SIGNUP_WEBHOOK_URL: ${{ secrets.SLACK_SIGNUP_WEBHOOK_URL }}
+        run: |
+          for name in WEBHOOK_SECRET SLACK_FEEDBACK_WEBHOOK_URL SLACK_SIGNUP_WEBHOOK_URL; do
+            if [ -z "${!name}" ]; then
+              echo "::error::GitHub Secret $name 이 비어 있습니다"
+              exit 1
+            fi
+          done
+          umask 077
+          {
+            echo "WEBHOOK_SECRET=$WEBHOOK_SECRET"
+            echo "SLACK_FEEDBACK_WEBHOOK_URL=$SLACK_FEEDBACK_WEBHOOK_URL"
+            echo "SLACK_SIGNUP_WEBHOOK_URL=$SLACK_SIGNUP_WEBHOOK_URL"
+            echo "WEB_URL=$API_WEB_URL"
+          } > "$RUNNER_TEMP/api.env"
+
+      - name: Setup SSH
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "${{ secrets.ORACLE_SSH_KEY }}" > ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.ORACLE_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+
+      # 웹 배포와 같은 VM 구성을 보냅니다. VM 상태(.env·env/·state/)는 덮어쓰지 않고 env/api.env만 교체합니다.
+      - name: Ship config and env
+        run: |
+          rsync -az --delete infra/oracle/compose.yaml infra/oracle/caddy infra/oracle/alloy infra/oracle/scripts "$REMOTE:/opt/webmemo/"
+          rsync -az --chmod=F600 "$RUNNER_TEMP/api.env" "$REMOTE:/opt/webmemo/env/api.env"
+
+      # GHCR 패키지가 비공개라 VM이 받을 수 있도록 이 실행의 토큰으로 잠깐 로그인했다 나옵니다.
+      - name: Deploy
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ env.IMAGE }}:${{ steps.commit.outputs.sha }}
+        run: |
+          printf '%s' "$GHCR_TOKEN" | ssh "$REMOTE" "docker login ghcr.io -u ${{ github.actor }} --password-stdin >/dev/null"
+          set +e
+          # 값은 러너에서 펼쳐 VM에 넘기는 것이 의도입니다
+          # shellcheck disable=SC2029
+          ssh "$REMOTE" "API_SITE_ADDRESS='$API_SITE_ADDRESS' /opt/webmemo/scripts/deploy-api.sh '$TAG'"
+          STATUS=$?
+          ssh "$REMOTE" "docker logout ghcr.io >/dev/null" || true
+          echo "배포 이미지: \`$TAG\`" >> "$GITHUB_STEP_SUMMARY"
+          exit $STATUS

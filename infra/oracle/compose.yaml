@@ -3,6 +3,8 @@
 #   SITE_ADDRESS     Caddy 사이트 주소. 비우면 ":80"(IP로 HTTP 확인용)
 #   WEB_IMAGE_BLUE   blue 색 이미지. 비우면 확인용 whoami
 #   WEB_IMAGE_GREEN  green 색 이미지. 비우면 확인용 whoami
+#   API_IMAGE        API 서버(apps/api) 이미지. 비우면 확인용 whoami
+#   API_SITE_ADDRESS API의 Caddy 사이트 주소(api.webmemo.xyz). 비우면 api.localhost(외부에서 안 보임)
 #
 # alloy(관측 수집기)는 observability 프로필이라 `docker compose up -d`로는 뜨지 않습니다.
 # env/alloy.env(Grafana Cloud 자격 증명)가 있을 때 deploy.sh가 `docker compose up -d alloy`로 띄웁니다.
@@ -40,6 +42,7 @@ services:
       - "443:443/udp"
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+      API_SITE_ADDRESS: ${API_SITE_ADDRESS:-api.localhost}
       # Cloudflare 대역. Caddy가 trusted_proxies(실제 사용자 IP 꺼내기)와 직접 접속 차단에 함께 씁니다.
       # 출처: https://www.cloudflare.com/ips-v4/ , https://www.cloudflare.com/ips-v6/ (2026-11-18)
       CLOUDFLARE_IPS: >-
@@ -88,6 +91,22 @@ services:
     environment:
       <<: *web-env
       DEPLOY_COLOR: green
+
+  # API 서버(apps/api). 웹과 달리 한 대만 둡니다(blue-green 없음) — 교체하는 몇 초 동안은 요청이 실패합니다.
+  # 배포는 scripts/deploy-api.sh가 맡고, 런타임 환경 변수는 CI가 GitHub Secrets로 만든 env/api.env입니다.
+  api:
+    image: ${API_IMAGE:-traefik/whoami:v1.10}
+    restart: unless-stopped
+    env_file:
+      - path: ./env/api.env
+        required: false
+    environment:
+      PORT: "4000"
+      WHOAMI_PORT_NUMBER: "4000"
+    expose:
+      - "4000"
+    stop_grace_period: 15s
+    mem_limit: 256m
 
 volumes:
   caddy_data:

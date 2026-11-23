@@ -255,6 +255,7 @@ const matchAll = (text, pattern) =>
 /**
  * 한 파일이 읽는 환경 변수 이름을 뽑습니다.
  * 워크플로는 `secrets.X`만, 코드는 process.env·import.meta.env·Deno.env·requireServerEnv·readServerEnv를 봅니다.
+ * apps/api는 ConfigService의 `.get("NAME")`도 봅니다.
  *
  * @returns {{ name: string, source: "secrets" | "code" }[]}
  */
@@ -284,6 +285,12 @@ export const extractReferences = (path, content) => {
 			/\b(?:require|read)ServerEnv\(\s*["']([A-Za-z_][A-Za-z0-9_]*)["']\s*\)/g,
 		),
 	];
+
+	// apps/api(NestJS)는 process.env 대신 ConfigService.get("NAME")으로 읽는다. Map.get 같은 다른 .get과
+	// 섞이지 않게 이 앱에서만, 환경 변수처럼 대문자로 시작하는 이름만 잡는다.
+	if (path.startsWith("apps/api/")) {
+		codeNames.push(...matchAll(content, /\.get\(\s*["']([A-Z][A-Z0-9_]*)["']/g));
+	}
 
 	return codeNames.map((name) => ({ name, source: "code" }));
 };

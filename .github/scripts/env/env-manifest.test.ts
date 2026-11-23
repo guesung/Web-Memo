@@ -127,6 +127,16 @@ describe("extractReferences", () => {
 		expect(names).toEqual(["ALPHA", "BETA", "VITE_EPSILON", "GAMMA", "DELTA", "ZETA"]);
 	});
 
+	it("apps/api에서만 ConfigService.get의 대문자 이름을 뽑는다", () => {
+		const content = 'this.config.get("SLACK_URL", { infer: true });\nmap.get("key");\napp.get(ConfigService).get("PORT");';
+
+		expect(extractReferences("apps/api/src/a.ts", content).map((reference) => reference.name)).toEqual([
+			"SLACK_URL",
+			"PORT",
+		]);
+		expect(extractReferences("apps/web/a.ts", content)).toEqual([]);
+	});
+
 	it("워크플로는 secrets.* 만 보고 GITHUB_TOKEN은 뺀다", () => {
 		const references = extractReferences(
 			".github/workflows/ci.yml",

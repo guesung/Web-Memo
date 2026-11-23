@@ -66,6 +66,21 @@
 	},
 	"overrides": [
 		{
+			"includes": ["apps/api/**"],
+			"javascript": {
+				"parser": {
+					"unsafeParameterDecoratorsEnabled": true
+				}
+			},
+			"linter": {
+				"rules": {
+					"style": {
+						"useImportType": "off"
+					}
+				}
+			}
+		},
+		{
 			"includes": ["apps/web/src/modules/i18n/**"],
 			"linter": {
 				"rules": {

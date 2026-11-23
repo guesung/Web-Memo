@@ -106,7 +106,7 @@ describe("앱 영향 판정 스크립트", () => {
 		commitFixture();
 
 		expect(runDetector([]).status).toBe(0);
-		expect(readOutput()).toBe("app=true\nextension=false\nweb=false\noracle=false\n");
+		expect(readOutput()).toBe("app=true\nextension=false\nweb=false\noracle=false\napi=false\n");
 	});
 
 	it("문서 변경만 있고 영향 패키지가 없으면 모두 건너뛴다", () => {
@@ -114,17 +114,19 @@ describe("앱 영향 판정 스크립트", () => {
 		commitFixture();
 
 		expect(runDetector([]).status).toBe(0);
-		expect(readOutput()).toBe("app=false\nextension=false\nweb=false\noracle=false\n");
+		expect(readOutput()).toBe("app=false\nextension=false\nweb=false\noracle=false\napi=false\n");
 	});
 
 	it.each([
-		[["@web-memo/app"], "app=true\nextension=false\nweb=false\noracle=false\n"],
-		[["@web-memo/web", "e2e"], "app=false\nextension=false\nweb=true\noracle=true\n"],
+		[["@web-memo/app"], "app=true\nextension=false\nweb=false\noracle=false\napi=false\n"],
+		[["@web-memo/web", "e2e"], "app=false\nextension=false\nweb=true\noracle=true\napi=false\n"],
 		[
 			["@web-memo/shared", "@web-memo/app", "@web-memo/web"],
-			"app=true\nextension=true\nweb=true\noracle=true\n",
+			"app=true\nextension=true\nweb=true\noracle=true\napi=false\n",
 		],
-		[["@web-memo/side-panel"], "app=false\nextension=true\nweb=false\noracle=false\n"],
+		[["@web-memo/side-panel"], "app=false\nextension=true\nweb=false\noracle=false\napi=false\n"],
+		// api는 확장이 의존하지 않는 별도 서버라 확장 빌드를 부르지 않는다
+		[["@web-memo/api"], "app=false\nextension=false\nweb=false\noracle=false\napi=true\n"],
 	] as const)("실제 Turbo 응답 구조로 %j를 판정한다", (packages, expected) => {
 		expect(runDetector([...packages]).status).toBe(0);
 		expect(readOutput()).toBe(expected);
@@ -139,7 +141,7 @@ describe("앱 영향 판정 스크립트", () => {
 
 	it("기준 커밋을 찾지 못하면 전체 빌드한다", () => {
 		expect(runDetector([], { BASE_REF: "missing-ref" }).status).toBe(0);
-		expect(readOutput()).toBe("app=true\nextension=true\nweb=true\noracle=true\n");
+		expect(readOutput()).toBe("app=true\nextension=true\nweb=true\noracle=true\napi=true\n");
 	});
 
 	it("의존성이 바뀌면 전체 빌드한다", () => {
@@ -147,7 +149,7 @@ describe("앱 영향 판정 스크립트", () => {
 		commitFixture();
 
 		expect(runDetector([]).status).toBe(0);
-		expect(readOutput()).toBe("app=true\nextension=true\nweb=true\noracle=true\n");
+		expect(readOutput()).toBe("app=true\nextension=true\nweb=true\noracle=true\napi=true\n");
 	});
 
 	it("HEAD_REF가 없으면 TURBO_SCM_HEAD를 넘기지 않는다", () => {
@@ -174,7 +176,7 @@ describe("앱 영향 판정 스크립트", () => {
 		expect(readFileSync(join(fixtureDirectory, "turbohead"), "utf8")).toBe(
 			headRef,
 		);
-		expect(readOutput()).toBe("app=false\nextension=false\nweb=true\noracle=true\n");
+		expect(readOutput()).toBe("app=false\nextension=false\nweb=true\noracle=true\napi=false\n");
 	});
 
 	it("의존성·워크플로 변경 판정도 HEAD가 아니라 HEAD_REF까지만 본다", () => {
@@ -184,22 +186,23 @@ describe("앱 영향 판정 스크립트", () => {
 
 		// HEAD_REF가 기준과 같으면 그 뒤의 lockfile·워크플로 변경은 보지 않는다
 		expect(runDetector([], { HEAD_REF: baseRef }).status).toBe(0);
-		expect(readOutput()).toBe("app=false\nextension=false\nweb=false\noracle=false\n");
+		expect(readOutput()).toBe("app=false\nextension=false\nweb=false\noracle=false\napi=false\n");
 	});
 
 	it.each([
-		["infra/oracle/compose.yaml", "true"],
-		["infra/oracle/alloy/config.alloy", "true"],
-		[".github/workflows/cd-web-oracle.yml", "true"],
-		["infra/oracle/terraform/grafana/main.tf", "false"],
-	])("%s만 바뀌면 Oracle 배포 여부는 %s, Vercel 웹 배포는 건너뛴다", (path, oracle) => {
+		["infra/oracle/compose.yaml", "true", "true"],
+		["infra/oracle/alloy/config.alloy", "true", "true"],
+		[".github/workflows/cd-web-oracle.yml", "true", "false"],
+		[".github/workflows/cd-api-oracle.yml", "false", "true"],
+		["infra/oracle/terraform/grafana/main.tf", "false", "false"],
+	])("%s만 바뀌면 Oracle 웹 배포는 %s, API 배포는 %s, Vercel 웹 배포는 건너뛴다", (path, oracle, api) => {
 		mkdirSync(join(fixtureDirectory, path, ".."), { recursive: true });
 		writeFileSync(join(fixtureDirectory, path), "updated");
 		commitFixture();
 
 		expect(runDetector([]).status).toBe(0);
 		expect(readOutput()).toBe(
-			`app=false\nextension=false\nweb=false\noracle=${oracle}\n`,
+			`app=false\nextension=false\nweb=false\noracle=${oracle}\napi=${api}\n`,
 		);
 	});
 });

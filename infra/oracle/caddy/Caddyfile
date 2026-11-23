@@ -40,3 +40,24 @@
 		header_up X-Real-IP {client_ip}
 	}
 }
+
+# API 서버(apps/api). Supabase 웹훅만 부르는 서버라 Cloudflare Access를 걸지 않고, 호출자는 앱이 공유 비밀 헤더로 확인합니다.
+# 웹과 같이 Cloudflare를 거치지 않은 연결은 거절합니다.
+{$API_SITE_ADDRESS} {
+	encode zstd gzip
+
+	@not_cloudflare not remote_ip {$CLOUDFLARE_IPS}
+	respond @not_cloudflare "Forbidden" 403
+
+	log {
+		output stdout
+		format json
+	}
+
+	reverse_proxy api:4000 {
+		health_uri /health
+		health_interval 5s
+		health_timeout 2s
+		header_up X-Real-IP {client_ip}
+	}
+}

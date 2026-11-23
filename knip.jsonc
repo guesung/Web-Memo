@@ -37,6 +37,10 @@
 	],
 
 	"workspaces": {
+		"apps/api": {
+			// knip의 vitest 플러그인은 기본 설정(vitest.config.ts)만 읽어 E2E 설정과 그 테스트를 진입점으로 못 봅니다. entry를 적으면 기본값이 덮이므로 main.ts도 함께 적습니다.
+			"entry": ["src/main.ts", "test/**/*.e2e-spec.ts", "vitest.config.e2e.ts"]
+		},
 		"apps/web": {
 			// tsconfig의 baseUrl/paths를 knip이 자동으로 집지 못해, 별칭을 못 푼 import가
 			// 전부 "미사용"으로 보고됐습니다. 여기서 다시 적어 줍니다.

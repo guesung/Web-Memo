@@ -51,5 +51,6 @@ variable "api_proxied" {
   type        = bool
   # 처음엔 false로 DNS만 VM으로 돌려 Caddy가 인증서를 받게 하고, 받은 뒤 true로 켭니다(README 「API」 참고).
   # false인 동안은 Caddy가 Cloudflare 밖 연결을 403으로 막으므로 외부에서 API를 부를 수 없습니다.
-  default = false
+  # 2026-11-23 인증서 발급(Let's Encrypt, CN=api.webmemo.xyz)을 확인하고 켰습니다.
+  default = true
 }

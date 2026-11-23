@@ -21,8 +21,10 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
 COPY . .
 
 FROM base AS builder
+# --offline을 쓰지 않습니다. store는 캐시 마운트라 CI(GHA 레이어 캐시)에서는 비어 있을 수 있는데, 그때 위 fetch 레이어는
+# 캐시로 건너뛰어 다시 채워지지 않습니다. 없는 패키지만 레지스트리에서 받고, 버전은 --frozen-lockfile이 고정합니다.
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-    pnpm install --frozen-lockfile --offline --filter "@web-memo/api"
+    pnpm install --frozen-lockfile --filter "@web-memo/api"
 RUN pnpm -F @web-memo/api build
 
 # 운영 의존성만 lockfile 그대로 설치합니다. pnpm은 루트 node_modules/.pnpm에 실체를 두고
@@ -33,7 +35,7 @@ RUN pnpm -F @web-memo/api build
 FROM base AS prod-deps
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     rm -rf node_modules \
-    && pnpm install --frozen-lockfile --offline --prod --ignore-scripts --filter "@web-memo/api"
+    && pnpm install --frozen-lockfile --prod --ignore-scripts --filter "@web-memo/api"
 
 FROM node:${NODE_VERSION}-slim AS runner
 ENV NODE_ENV=production \

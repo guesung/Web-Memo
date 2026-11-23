@@ -45,3 +45,11 @@ variable "oracle_vm_ip" {
   type        = string
   default     = "161.33.33.168"
 }
+
+variable "api_proxied" {
+  description = "api.webmemo.xyz의 Cloudflare 프록시 여부. Caddy가 첫 인증서를 받을 때까지 false로 둡니다"
+  type        = bool
+  # 처음엔 false로 DNS만 VM으로 돌려 Caddy가 인증서를 받게 하고, 받은 뒤 true로 켭니다(README 「API」 참고).
+  # false인 동안은 Caddy가 Cloudflare 밖 연결을 403으로 막으므로 외부에서 API를 부를 수 없습니다.
+  default = false
+}

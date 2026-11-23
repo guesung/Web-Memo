@@ -37,6 +37,17 @@ resource "cloudflare_dns_record" "staging" {
 
 # 프록시를 켠 레코드는 Cloudflare→VM 구간도 인증서를 검증하게 합니다(Caddy가 Let's Encrypt 인증서를 가짐).
 # 지금 프록시를 켠 레코드는 staging뿐이라 다른 레코드에는 영향이 없습니다.
+# API 서버(apps/api). Supabase 웹훅만 부르므로 Access를 걸지 않습니다(호출자는 앱이 공유 비밀 헤더로 확인).
+resource "cloudflare_dns_record" "api" {
+  zone_id = var.zone_id
+  name    = "api.webmemo.xyz"
+  type    = "A"
+  content = var.oracle_vm_ip
+  proxied = var.api_proxied
+  ttl     = 1
+  comment = "Terraform(infra/oracle/terraform/cloudflare)이 관리. 수동 수정 금지"
+}
+
 resource "cloudflare_zone_setting" "ssl" {
   zone_id    = var.zone_id
   setting_id = "ssl"

@@ -55,4 +55,48 @@ describe("initSentry", () => {
 			expect.objectContaining({ release: undefined }),
 		);
 	});
+
+	describe("beforeSend", () => {
+		const getBeforeSend = async () => {
+			vi.stubGlobal("chrome", undefined);
+
+			await initSentry();
+
+			const { beforeSend } = mocks.init.mock.calls[0][0];
+
+			return beforeSend;
+		};
+
+		it("auth-js 락 타임아웃이 흘린 미처리 AbortError는 버린다", async () => {
+			const beforeSend = await getBeforeSend();
+
+			const event = {
+				exception: {
+					values: [
+						{
+							type: "AbortError",
+							value: "signal is aborted without reason",
+							mechanism: {
+								type: "auto.browser.global_handlers.onunhandledrejection",
+							},
+						},
+					],
+				},
+			};
+
+			expect(beforeSend(event)).toBeNull();
+		});
+
+		it("다른 오류는 그대로 보낸다", async () => {
+			const beforeSend = await getBeforeSend();
+
+			const event = {
+				exception: {
+					values: [{ type: "TypeError", value: "something broke" }],
+				},
+			};
+
+			expect(beforeSend(event)).toBe(event);
+		});
+	});
 });

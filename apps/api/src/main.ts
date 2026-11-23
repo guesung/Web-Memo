@@ -2,8 +2,7 @@ import "reflect-metadata";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module.js";
-
-const DEFAULT_PORT = 4000;
+import type { Env } from "./config/env.validation.js";
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -12,8 +11,8 @@ async function bootstrap() {
 	// blue-green 전환(infra/oracle)에서 요청이 끊기지 않게 하는 장치입니다.
 	app.enableShutdownHooks();
 
-	// 환경 변수는 언제나 문자열이라 get<number>로 받아도 실제 값은 "4000" 같은 문자열입니다. 숫자로 바꿔 씁니다.
-	const port = Number(app.get(ConfigService).get("PORT") ?? DEFAULT_PORT);
+	// PORT는 시작할 때 validateEnv가 숫자로 바꾸고 범위를 검사한 값이다
+	const port = app.get(ConfigService<Env, true>).get("PORT", { infer: true });
 
 	await app.listen(port);
 }

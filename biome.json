@@ -67,6 +67,11 @@
 	"overrides": [
 		{
 			"includes": ["apps/api/**"],
+			"javascript": {
+				"parser": {
+					"unsafeParameterDecoratorsEnabled": true
+				}
+			},
 			"linter": {
 				"rules": {
 					"style": {

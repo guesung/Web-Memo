@@ -3,6 +3,7 @@ import {
 	sendMeasurementProtocolEvent,
 } from "@src/modules/ga/measurementProtocol";
 import { DEFAULT_LANGUAGE, getLanguage } from "@src/modules/i18n";
+import { CONFIG } from "@web-memo/env";
 import { PATHS } from "@web-memo/shared/constants";
 import { after, type NextRequest, NextResponse } from "next/server";
 
@@ -11,13 +12,14 @@ const VERSION_PATTERN = /^[0-9]{1,5}(?:\.[0-9]{1,5}){0,3}$/;
 /**
  * 언어가 붙은 제거 페이지로 바로 보냅니다.
  * @description `/uninstall`로 보내면 미들웨어가 언어를 붙이려고 한 번 더 리다이렉트합니다.
- * 언어는 미들웨어와 같은 `getLanguage`로 고릅니다.
+ * 언어는 미들웨어와 같은 `getLanguage`로 고릅니다. self-host에서는 request.url의 호스트가
+ * 바인딩 주소(0.0.0.0:3000)라 서비스 주소 기준으로 만듭니다.
  */
 const redirectToUninstall = (request: NextRequest) => {
 	const language = getLanguage(request) ?? DEFAULT_LANGUAGE;
 
 	return NextResponse.redirect(
-		new URL(`/${language}${PATHS.uninstall}`, request.url),
+		new URL(`/${language}${PATHS.uninstall}`, CONFIG.webUrl),
 		{
 			status: 302,
 			headers: {

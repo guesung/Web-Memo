@@ -1,6 +1,7 @@
 import type { Page, Route } from "@playwright/test";
-import { SUPABASE } from "@web-memo/shared/constants";
+import { E2E_MOCK_SUPABASE_COOKIE, SUPABASE } from "@web-memo/shared/constants";
 import type { Database } from "@web-memo/shared/types";
+import { WEB_BASE_URL } from "../constants";
 import {
 	createMockCategory,
 	createMockFavorite,
@@ -1200,9 +1201,14 @@ const dispatchByMethod = async ({
  * 컨텍스트의 다른 페이지가 보내는 요청도 같은 저장소로 받기 위해서다. 브라우저가 보내는 요청만
  * 가로챈다. 서버 컴포넌트의 프리페치는 여기 걸리지 않는다.
  * 목이 처리하지 못하는 요청은 `fallback`해 목 가드(supabaseGuard.ts)가 막고 기록하게 한다.
+ * 그래서 목 쿠키를 함께 심어 서버가 prefetch를 건너뛰고 브라우저가 직접(=목으로) 조회하게 한다.
  */
 export async function setupSupabaseMocks(page: Page, store: MockSupabaseStore) {
 	const context = page.context();
+
+	await context.addCookies([
+		{ name: E2E_MOCK_SUPABASE_COOKIE, value: "1", url: WEB_BASE_URL },
+	]);
 
 	await context.route(`${SUPABASE.url}/rest/v1/memo**`, (route) =>
 		dispatchByMethod({

@@ -1,7 +1,9 @@
 import { getSupabaseClient } from "@src/modules/supabase/util.server";
 import { getQueryClient } from "@src/utils";
 import { dehydrate, HydrationBoundary, hashKey } from "@tanstack/react-query";
+import { E2E_MOCK_SUPABASE_COOKIE } from "@web-memo/shared/constants";
 import { memosInfiniteQueryOptions } from "@web-memo/shared/utils";
+import { cookies } from "next/headers";
 import type { PropsWithChildren } from "react";
 import type { TMemoFilter, TMemoSearchParams } from "../../_types";
 import { getMemoListQueryParams, getMemoListView } from "../../_utils";
@@ -25,7 +27,8 @@ export default async function MemoListHydrationBoundary({
 	children,
 }: MemoListHydrationBoundaryProps) {
 	// 읽을 계획은 페이지 단위가 아니라 한 번에 전부 읽는 다른 쿼리를 쓴다.
-	if (filter === "plan") {
+	// E2E 목은 브라우저 요청만 가로채므로, 목을 건 테스트에서는 서버 조회를 넘기지 않는다.
+	if (filter === "plan" || (await cookies()).has(E2E_MOCK_SUPABASE_COOKIE)) {
 		return children;
 	}
 

@@ -3,6 +3,7 @@ export * from "./Analytics";
 export * from "./blogCatalog";
 export * from "./Category";
 export * from "./ChromeExtension";
+export * from "./E2E";
 export * from "./ExternalLink";
 export * from "./Highlight";
 export * from "./MemoError";

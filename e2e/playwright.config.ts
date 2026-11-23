@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-import { AUTH_STORAGE_STATE_PATH } from "./tests/lib/constants";
+import { AUTH_STORAGE_STATE_PATH, WEB_BASE_URL } from "./tests/lib/constants";
 
 export default defineConfig({
 	testDir: "./tests",
@@ -24,7 +24,7 @@ export default defineConfig({
 	globalTeardown: "./globalTeardown.ts",
 	webServer: {
 		command: "pnpm run -w dev:web:preview",
-		url: "http://localhost:3000",
+		url: WEB_BASE_URL,
 		reuseExistingServer: !process.env.CI,
 		stdout: "ignore",
 		// preview가 next build를 거치므로 기본 60초로는 부족하다.
@@ -33,7 +33,7 @@ export default defineConfig({
 	use: {
 		trace: "on-first-retry",
 		screenshot: "only-on-failure",
-		baseURL: "http://localhost:3000",
+		baseURL: WEB_BASE_URL,
 	},
 	// 폴더는 테스트 대상으로 나눈다. web은 확장 없는 일반 브라우저라 로그인 세션을 setup이 한 번 만들어
 	// 나눠 쓰고, extension·hybrid는 확장을 올린 persistent context라 테스트마다 로그인한다.

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# 이번 변경이 어느 앱에 영향을 주는지 판정해 app/extension/web/oracle을 GITHUB_OUTPUT에 씁니다.
-# oracle은 Oracle VM staging 배포 대상 여부입니다(웹이 바뀌었거나 VM 서버 구성이 바뀜).
+# 이번 변경이 어느 앱에 영향을 주는지 판정해 app/extension/web/oracle/api를 GITHUB_OUTPUT에 씁니다.
+# oracle은 Oracle VM staging 웹 배포 대상 여부입니다(웹이 바뀌었거나 VM 서버 구성이 바뀜).
+# api는 같은 VM의 API 서버(apps/api) 배포 대상 여부입니다(API가 바뀌었거나 VM 서버 구성이 바뀜).
 #
 # 판정을 경로 매칭이 아니라 turbo 의존성 그래프로 하는 이유는, 경로 목록을 손으로
 # 관리하면 패키지를 추가할 때 빼먹기 쉽고 그 실패가 "빌드가 조용히 안 도는" 쪽이기
@@ -15,11 +16,12 @@ set -euo pipefail
 HEAD_REF="${HEAD_REF:-}"
 DIFF_HEAD="${HEAD_REF:-HEAD}"
 
-# 네 번째 인자(oracle)를 생략하면 web과 같게 봅니다.
+# 네 번째 인자(oracle)·다섯 번째 인자(api)를 생략하면 web과 같게 봅니다.
 emit() {
   local oracle="${4:-$3}"
-  printf 'app=%s\nextension=%s\nweb=%s\noracle=%s\n' "$1" "$2" "$3" "$oracle" >> "${GITHUB_OUTPUT:-/dev/stdout}"
-  echo "판정 → app=$1 extension=$2 web=$3 oracle=$oracle"
+  local api="${5:-$3}"
+  printf 'app=%s\nextension=%s\nweb=%s\noracle=%s\napi=%s\n' "$1" "$2" "$3" "$oracle" "$api" >> "${GITHUB_OUTPUT:-/dev/stdout}"
+  echo "판정 → app=$1 extension=$2 web=$3 oracle=$oracle api=$api"
 }
 
 # push 이벤트의 before는 새 브랜치·force-push에서 0000...이 됩니다. 기준을 잡을 수
@@ -50,9 +52,11 @@ TURBO="turbo@$(node -p "require('./package.json').devDependencies.turbo")"
 affected_packages="$(npx --yes "$TURBO" ls --affected --output=json --skip-infer)"
 app_affected="$(printf '%s' "$affected_packages" | jq -r 'any(.packages.items[]; .name == "@web-memo/app")')"
 web_affected="$(printf '%s' "$affected_packages" | jq -r 'any(.packages.items[]; .name == "@web-memo/web")')"
+api_affected="$(printf '%s' "$affected_packages" | jq -r 'any(.packages.items[]; .name == "@web-memo/api")')"
 
-# 확장은 build:extension과 같이 web·app·e2e를 뺀 패키지가 하나라도 바뀌면 빌드합니다.
-extension_affected="$(printf '%s' "$affected_packages" | jq -r 'any(.packages.items[]; .name != "@web-memo/app" and .name != "@web-memo/web" and .name != "e2e")')"
+# 확장은 build:extension과 같이 web·app·api·e2e를 뺀 패키지가 하나라도 바뀌면 빌드합니다.
+# api는 확장이 의존하지 않는 별도 서버라, api만 바뀐 변경에 확장을 빌드하지 않습니다.
+extension_affected="$(printf '%s' "$affected_packages" | jq -r 'any(.packages.items[]; .name != "@web-memo/app" and .name != "@web-memo/web" and .name != "@web-memo/api" and .name != "e2e")')"
 
 # 앱 배포 워크플로는 패키지 밖에 있어 turbo가 감지하지 못합니다.
 # 앱 큐·성공 이력·영향 판정이 바뀌어도 새 빌드·배포 경로를 검증합니다.
@@ -77,4 +81,13 @@ if ! git diff --quiet "$BASE_REF...$DIFF_HEAD" -- infra/oracle .github/workflows
   oracle_affected=true
 fi
 
-emit "$app_affected" "$extension_affected" "$web_affected" "$oracle_affected"
+# API도 같은 VM 구성(compose·Caddy·스크립트)을 쓰므로 구성이 바뀌면 함께 다시 배포합니다.
+vm_config_changed=false
+if ! git diff --quiet "$BASE_REF...$DIFF_HEAD" -- infra/oracle ':!infra/oracle/terraform'; then
+  vm_config_changed=true
+fi
+if [ "$vm_config_changed" = true ] || ! git diff --quiet "$BASE_REF...$DIFF_HEAD" -- .github/workflows/cd-api-oracle.yml; then
+  api_affected=true
+fi
+
+emit "$app_affected" "$extension_affected" "$web_affected" "$oracle_affected" "$api_affected"

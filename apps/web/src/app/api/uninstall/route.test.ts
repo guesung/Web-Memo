@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { config, afterTasks } = vi.hoisted(() => ({
-	config: { buildEnv: "production" },
+	config: { buildEnv: "production", webUrl: "https://webmemo.example" },
 	afterTasks: [] as Array<() => unknown>,
 }));
 

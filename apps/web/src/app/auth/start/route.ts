@@ -47,9 +47,10 @@ const isStartProvider = (
  * 패널로 돌아갈 길이 없으므로, 실패해도 로그인 페이지 대신 확장 주소로 보내 창을 닫습니다.
  */
 export async function GET(request: NextRequest) {
-	const { searchParams, origin } = request.nextUrl;
+	const { searchParams } = request.nextUrl;
 	const language = getLanguage(request) ?? DEFAULT_LANGUAGE;
-	const loginUrl = new URL(`${origin}/${language}${PATHS.login}`);
+	// self-host에서는 nextUrl.origin이 바인딩 주소(0.0.0.0:3000)라 서비스 주소를 씁니다.
+	const loginUrl = new URL(`${CONFIG.webUrl}/${language}${PATHS.login}`);
 	const provider = searchParams.get("provider");
 	const isExtensionReturn =
 		searchParams.get(LOGIN_RETURN_PARAM) === LOGIN_RETURN_EXTENSION;

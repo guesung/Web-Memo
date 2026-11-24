@@ -200,11 +200,12 @@ jobs:
       contents: read
       packages: write
 
-  # API 서버(apps/api)를 같은 Oracle VM에 올립니다(노션 DB-1337). 웹 Oracle 배포와 같은 조건(develop·ORACLE_DEPLOY_ENABLED)으로
-  # 돌아 같은 브랜치의 VM 구성을 보내고, 두 워크플로는 같은 concurrency 그룹으로 줄 섭니다.
+  # API 서버(apps/api)를 같은 Oracle VM에 올립니다(노션 DB-1337). 운영 알림이 이 서버를 거치므로 master 푸시에서만 배포합니다.
+  # VM 구성(compose·Caddy·스크립트)은 보내지 않습니다. 구성은 develop의 웹 Oracle 배포가 보내고, 여기서는 이미지와 env만 바꿉니다.
+  # 두 워크플로는 같은 VM을 만지므로 같은 concurrency 그룹으로 줄 섭니다.
   cd-api-oracle:
     needs: [ci, changes]
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' && needs.changes.outputs.api == 'true' && vars.ORACLE_DEPLOY_ENABLED == 'true' }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.changes.outputs.api == 'true' && vars.ORACLE_DEPLOY_ENABLED == 'true' }}
     uses: ./.github/workflows/cd-api-oracle.yml
     secrets: inherit
     permissions:

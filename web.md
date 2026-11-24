@@ -1,5 +1,19 @@
 # 웹 배포 기록
 
+## web · 2026-11-24 15:43 KST · 345b354
+<!-- ref: 345b354c89684dbd1d7a0eb789cb0998f63d686f -->
+
+- #898 [DB-1337] feat: API 서버가 Prisma로 DB에 붙어 주간 리포트 메일 링크를 처리한다 (Phase 2-A·B)
+- #895 [DB-1338] fix: 목을 쓰는 E2E에서 메모 목록 서버 prefetch를 건너뛴다
+- #894 fix: Sentry WEB-MEMO-4Q packages/shared/src/utils/Sentry.ts의 확장용 initSentr…
+- #889 [DB-1327] fix: self-host에서 로그인 후 0.0.0.0으로 이동하지 않게 서비스 주소로 리다이렉트
+- #891 [DB-1337] feat: 피드백·가입 Slack 알림 웹훅을 API 서버로 옮긴다 (Phase 1-A)
+- #890 [DB-1337] feat: Supabase 백엔드 이전용 NestJS 서버 apps/api 뼈대 추가
+- #886 [DB-1336] fix: 로그인 화면 로고가 레티나에서 흐려 보이던 문제 수정
+- #883 perf: 공개 정적 페이지를 Cloudflare 엣지에서 캐시한다
+- #874 [DB-1327] chore: 웹을 컨테이너로도 띄울 수 있게 standalone 빌드와 Dockerfile을 추가한다
+- #878 feat: GA 이벤트 추가 (plan_past_section_expand, highlight_bubble_position_change)
+
 ## web · 2026-11-18 15:10 KST · ed4edda
 <!-- ref: ed4edda746275c28f8e873d9f8c5d0caa459758e -->
 

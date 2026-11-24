@@ -76,10 +76,12 @@ resource "cloudflare_zero_trust_access_application" "staging" {
 
 # Access를 거치지 않아도 되는 경로. 경로가 더 구체적인 앱이 우선합니다.
 #  - /api/version: 외부 헬스체크(Synthetic Monitoring)가 로그인 없이 확인
+#  - /api/health: 요청마다 함수가 실행되는 경로라 Vercel 운영과 유휴 후 첫 요청 지연을 같은 방식으로 비교. 응답은 ok와 blue/green 색뿐
 #  - /.well-known/acme-challenge/: Caddy가 Let's Encrypt 인증서를 갱신(HTTP-01)
 resource "cloudflare_zero_trust_access_application" "staging_bypass" {
   for_each = {
     version = "${local.staging_host}/api/version"
+    health  = "${local.staging_host}/api/health"
     acme    = "${local.staging_host}/.well-known/acme-challenge/*"
   }
 

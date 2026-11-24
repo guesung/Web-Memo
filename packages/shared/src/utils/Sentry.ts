@@ -40,6 +40,22 @@ export const initSentry = async () => {
 
 		tracesSampleRate: 1.0,
 		release: isExtension() ? chrome.runtime.getManifest().version : undefined,
+		// supabase-js가 자동 등록한 onAuthStateChange가 auth-js 락 획득 타임아웃 때 catch 없이 흘리는 AbortError라 사용자 영향 없는 노이즈다.
+		beforeSend: (event) => {
+			const exception = event.exception?.values?.[0];
+
+			const isUnhandledAbortError =
+				exception?.type === "AbortError" &&
+				exception.value === "signal is aborted without reason" &&
+				exception.mechanism?.type ===
+					"auto.browser.global_handlers.onunhandledrejection";
+
+			if (isUnhandledAbortError) {
+				return null;
+			}
+
+			return event;
+		},
 	});
 
 	if (isExtension()) {

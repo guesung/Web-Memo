@@ -580,8 +580,8 @@
 - name: WEB_URL
   kind: config
   stores: [envpkg, supabase]
-  consumers: [packages/env/src/config.ts, packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts, packages/supabase-edge-functions/supabase/functions/_shared/webUrl.ts]
-  impact: "envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 피드백 알림에서 관리자 링크 줄만 빠진다"
+  consumers: [packages/env/src/config.ts, packages/supabase-edge-functions/supabase/functions/_shared/webUrl.ts]
+  impact: "envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 없으면 운영 주소(https://www.webmemo.xyz)를 쓴다"
   note: "Supabase secret은 packages/env의 production 값(https://www.webmemo.xyz)과 같아야 한다"
 
 # ---------------------------------------------------------------------------
@@ -591,8 +591,8 @@
 - name: CRON_SECRET
   kind: secret
   stores: [supabase]
-  consumers: [packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts, packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts, packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
-  impact: "DB 트리거·pg_cron이 부르는 함수의 호출자 확인이 실패해 가입 메일·가입 알림·아티클 리마인더가 401로 끝난다"
+  consumers: [packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts, packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts, packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts]
+  impact: "DB 트리거·pg_cron이 부르는 함수의 호출자 확인이 실패해 가입 메일·아티클 리마인더가 401로 끝난다"
   note: "Vault의 cron_secret과 같은 값이어야 한다"
 
 - name: BLOG_DIGEST_ENABLED
@@ -626,17 +626,17 @@
 
 - name: SLACK_FEEDBACK_WEBHOOK_URL
   kind: secret
-  stores: [supabase, github]
-  consumers: [packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts, apps/api/src/feedback/feedback.service.ts, .github/workflows/cd-api-oracle.yml]
-  impact: "피드백 Slack 알림이 오지 않는다. GitHub에 없으면 API 배포가 env 작성 단계에서 멈춘다"
-  note: "Edge Function(Supabase secret)과 API 서버(GitHub Secret → 배포 때 VM env/api.env)가 같은 값을 쓴다. 웹훅 전환(Phase 1-C) 뒤 Edge Function을 지우면 supabase를 뺀다"
+  stores: [github]
+  consumers: [apps/api/src/feedback/feedback.service.ts, .github/workflows/cd-api-oracle.yml]
+  impact: "피드백 Slack 알림이 오지 않는다. 없으면 API 배포가 env 작성 단계에서 멈춘다"
+  note: "API 서버가 쓴다(GitHub Secret → 배포 때 VM env/api.env)"
 
 - name: SLACK_SIGNUP_WEBHOOK_URL
   kind: secret
-  stores: [supabase, github]
-  consumers: [packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts, apps/api/src/signup/signup.service.ts, .github/workflows/cd-api-oracle.yml]
-  impact: "신규 가입 Slack 알림이 오지 않는다. 함수가 예외를 던지고 로그에만 남는다. GitHub에 없으면 API 배포가 env 작성 단계에서 멈춘다"
-  note: "Edge Function(Supabase secret)과 API 서버(GitHub Secret → 배포 때 VM env/api.env)가 같은 값을 쓴다. 웹훅 전환(Phase 1-C) 뒤 Edge Function을 지우면 supabase를 뺀다"
+  stores: [github]
+  consumers: [apps/api/src/signup/signup.service.ts, .github/workflows/cd-api-oracle.yml]
+  impact: "신규 가입 Slack 알림이 오지 않는다. 없으면 API 배포가 env 작성 단계에서 멈춘다"
+  note: "API 서버가 쓴다(GitHub Secret → 배포 때 VM env/api.env)"
 
 # ---------------------------------------------------------------------------
 # 플랫폼이 주입하는 값: 등록하지 않는다. 코드가 읽으므로 이름만 적어 둔다

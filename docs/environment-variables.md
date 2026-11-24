@@ -94,10 +94,10 @@
 | `SEO_SHEET_ID` (선택) | SEO·GSC 장기 이력이 Google Sheets에 쌓이지 않는다(공개 SEO 검사와 원본 아티팩트는 유지된다) | `.github/workflows/report-seo.yml` |
 | `SLACK_BOT_TOKEN` | GitHub는 머지 스레드 생성과 댓글이, Vercel은 Slack 배포 모달이 동작하지 않는다. GA 리포트는 웹훅 폴백으로 #ga-리포트 에 본문만 올라가고 AI 인사이트 댓글과 주간 채널 분리가 빠진다 | `.github/workflows/ci.yml`, `apps/web/src/modules/slack/config.ts`, `.github/workflows/report-seo.yml`, `.github/workflows/chore-sentry-triage.yml`, `.github/scripts/sentry/report-sentry-triage.mjs`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/scripts/ga/report-delivery.mjs`, `.github/scripts/ga/send-ga-insight.mjs` |
 | `SLACK_CHANNEL_ID` | 머지 스레드가 생기지 않고 웹훅 알림으로 폴백한다 | `.github/workflows/ci.yml` |
-| `SLACK_FEEDBACK_WEBHOOK_URL` | 피드백 Slack 알림이 오지 않는다. GitHub에 없으면 API 배포가 env 작성 단계에서 멈춘다 | `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts`, `apps/api/src/feedback/feedback.service.ts`, `.github/workflows/cd-api-oracle.yml` |
+| `SLACK_FEEDBACK_WEBHOOK_URL` | 피드백 Slack 알림이 오지 않는다. 없으면 API 배포가 env 작성 단계에서 멈춘다 | `apps/api/src/feedback/feedback.service.ts`, `.github/workflows/cd-api-oracle.yml` |
 | `SLACK_REPORT_CHANNEL_ID` | SEO AI 리포트를 스레드로 보내지 못하고 기존 기계 판정 알림으로 대신한다. 봇(SLACK_BOT_TOKEN)이 이 채널에 초대돼 있어야 한다 | `.github/workflows/report-seo.yml` |
 | `SLACK_REPORT_WEBHOOK_URL` | 주간 리팩토링 점검 결과, 주간 GA 이벤트 누락 점검 결과, 조치가 필요한 SEO 감사 결과가 전용 채널로 게시되지 않는다. GA 리포트는 봇(SLACK_BOT_TOKEN)으로 먼저 올리므로 이 값은 봇 게시가 실패했을 때의 폴백이며, 없으면 그날 리포트가 통째로 빠진다 | `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/chore-ga-events.yml` |
-| `SLACK_SIGNUP_WEBHOOK_URL` | 신규 가입 Slack 알림이 오지 않는다. 함수가 예외를 던지고 로그에만 남는다. GitHub에 없으면 API 배포가 env 작성 단계에서 멈춘다 | `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts`, `apps/api/src/signup/signup.service.ts`, `.github/workflows/cd-api-oracle.yml` |
+| `SLACK_SIGNUP_WEBHOOK_URL` | 신규 가입 Slack 알림이 오지 않는다. 없으면 API 배포가 env 작성 단계에서 멈춘다 | `apps/api/src/signup/signup.service.ts`, `.github/workflows/cd-api-oracle.yml` |
 | `SLACK_WEBHOOK_URL` | 빌드, 배포, 릴리스 결과와 리포트 알림이 오지 않는다 | `.github/workflows/ci.yml`, `.github/workflows/cd-web.yml`, `.github/workflows/chore-ga-events.yml`, `.github/workflows/report-ga-daily.yml`, `.github/workflows/report-ga-weekly.yml`, `.github/workflows/audit-refactor.yml`, `.github/workflows/release-notify.yml`, `.github/workflows/versions.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/report-seo.yml`, `.github/workflows/audit-ga-cid-adoption.yml`, `.github/workflows/notify-extension-published.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/chore-oracle-vm-retry.yml`, `.github/workflows/cd-terraform.yml` |
 | `STAGING_ACCESS_EMAILS` (선택) | Access 허용 정책을 만들지 못해 staging에 아무도 들어가지 못한다 | `.github/workflows/cd-terraform.yml` |
 | `STAGING_WEB_URL_WITHOUT_PROTOCOL` | 스테이징 배포에 alias 도메인이 붙지 않는다 | `.github/workflows/cd-web.yml` |
@@ -135,25 +135,23 @@
 | `UPSTASH_REDIS_REST_TOKEN` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/modules/ratelimit/rateLimit.ts` |
 | `UPSTASH_REDIS_REST_URL` | 전체 | OpenAI API와 과거 메모 판정의 레이트 리밋이 조용히 꺼진다 | `apps/web/src/modules/ratelimit/rateLimit.ts` |
 
-### Supabase Edge Function secrets (9개)
+### Supabase Edge Function secrets (7개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
 | `BLOG_CATALOG_INGEST_SECRET` | 블로그 정주행 카탈로그 수집이 멈춘다. GitHub에 없으면 수집기가 시작하지 못하고, Supabase에 없으면 수집 엔드포인트가 500으로 모든 요청을 거절해 토스·당근·긱뉴스의 새 글과 재개 요청이 반영되지 않는다(이미 수집된 글 조회는 그대로다) | `.github/workflows/chore-blog-catalog.yml`, `.github/scripts/blog-reading/collect.mjs`, `packages/supabase-edge-functions/supabase/functions/blog-catalog-ingest/index.ts` |
 | `BLOG_DIGEST_ENABLED` (선택) | 정확히 true일 때만 긱뉴스 새 글 묶음 알림이 켜진다. 없거나 다른 값이면 묶음 알림 분기를 건너뛴다(위시 리마인더는 그대로) | `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/blogDigest.ts` |
-| `CRON_SECRET` | DB 트리거·pg_cron이 부르는 함수의 호출자 확인이 실패해 가입 메일·가입 알림·아티클 리마인더가 401로 끝난다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
+| `CRON_SECRET` | DB 트리거·pg_cron이 부르는 함수의 호출자 확인이 실패해 가입 메일·아티클 리마인더가 401로 끝난다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
 | `RESEND_API_KEY` | 가입 안내 메일이 발송되지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
 | `RESURFACE_ENABLED` (선택) | 정확히 true일 때만 크론이 다시 꺼내기(resurface) 메일을 보낸다. 없거나 다른 값이면 크론 resurface는 건너뛰고, resurfaceLimit를 준 수동 호출만 보낸다 | `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
-| `SLACK_FEEDBACK_WEBHOOK_URL` | 피드백 Slack 알림이 오지 않는다. GitHub에 없으면 API 배포가 env 작성 단계에서 멈춘다 | `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts`, `apps/api/src/feedback/feedback.service.ts`, `.github/workflows/cd-api-oracle.yml` |
-| `SLACK_SIGNUP_WEBHOOK_URL` | 신규 가입 Slack 알림이 오지 않는다. 함수가 예외를 던지고 로그에만 남는다. GitHub에 없으면 API 배포가 env 작성 단계에서 멈춘다 | `packages/supabase-edge-functions/supabase/functions/send-signup-slack-notification/index.ts`, `apps/api/src/signup/signup.service.ts`, `.github/workflows/cd-api-oracle.yml` |
 | `UNSUBSCRIBE_SECRET` | 주간 메일의 수신 거부·클릭 기록 토큰을 서명하지 못해 report·resurface 발송이 시작 전에 실패하고, 수신 거부·클릭 링크가 모두 홈으로만 간다 | `packages/supabase-edge-functions/supabase/functions/_shared/reportToken.ts` |
-| `WEB_URL` | envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 피드백 알림에서 관리자 링크 줄만 빠진다 | `packages/env/src/config.ts`, `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts`, `packages/supabase-edge-functions/supabase/functions/_shared/webUrl.ts` |
+| `WEB_URL` | envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 없으면 운영 주소(https://www.webmemo.xyz)를 쓴다 | `packages/env/src/config.ts`, `packages/supabase-edge-functions/supabase/functions/_shared/webUrl.ts` |
 
 ### `packages/env/.env.{환경}` (1개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
-| `WEB_URL` | envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 피드백 알림에서 관리자 링크 줄만 빠진다 | `packages/env/src/config.ts`, `packages/supabase-edge-functions/supabase/functions/send-feedback/index.ts`, `packages/supabase-edge-functions/supabase/functions/_shared/webUrl.ts` |
+| `WEB_URL` | envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 없으면 운영 주소(https://www.webmemo.xyz)를 쓴다 | `packages/env/src/config.ts`, `packages/supabase-edge-functions/supabase/functions/_shared/webUrl.ts` |
 
 ### 플랫폼이 주입하는 값 (등록하지 않음)
 
@@ -559,11 +557,11 @@ gitignore 대상이라 EAS 샌드박스에 복사되지 않아 iOS 빌드가 깨
 Supabase 표가 원천입니다. 레포에도 `.env`에도 두지 않습니다. `CRON_SECRET`은 DB에서 함수를 부를 때의
 호출자 확인에 쓰며 Vault의 `cron_secret`과 같은 값이어야 합니다.
 
-`send-welcome-email`과 `send-signup-slack-notification`은 JWT 검증을 끄고
-(`--no-verify-jwt`) 배포하며, 호출자는 `x-cron-secret` 헤더로 확인합니다. 두 함수
-모두 같은 `memo.send_welcome_email()` 트리거가 부르므로 이 헤더와 호출 주소를
-Vault의 `cron_secret`·`project_url`에서 읽어 `daily-article-reminder`와 같은 두
-값을 공유합니다. 새로 넣을 DB 설정은 없습니다.
+`send-welcome-email`은 JWT 검증을 끄고(`--no-verify-jwt`) 배포하며, 호출자는
+`x-cron-secret` 헤더로 확인합니다. `memo.send_welcome_email()` 트리거가 이 헤더와 호출 주소를
+Vault의 `cron_secret`·`project_url`에서 읽어 `daily-article-reminder`와 같은 두 값을 공유합니다.
+같은 트리거가 보내는 가입 Slack 알림은 API 서버(`api.webmemo.xyz`)로 가며, 주소와 공유 비밀은
+Vault의 `api_base_url`·`api_webhook_secret`에서 읽습니다.
 
 `blog-catalog-ingest`도 JWT 검증을 끄고 배포합니다(`config.toml`의 `verify_jwt = false`).
 호출자는 GitHub Actions의 블로그 카탈로그 수집기(`chore-blog-catalog.yml`) 하나이고, `x-blog-catalog-ingest-secret`

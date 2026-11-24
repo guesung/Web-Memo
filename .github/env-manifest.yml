@@ -69,7 +69,7 @@
   stores: [github]
   consumers: [apps/api/src/config/env.validation.ts, apps/api/src/prisma/prisma.service.ts, apps/api/prisma.config.ts, .github/workflows/cd-api-oracle.yml]
   impact: "API 배포가 env 작성 단계에서 멈춘다. VM에 값이 없으면 API가 시작 검증에서 죽는다"
-  note: "API 서버 전용 DB 역할(api_server)의 Postgres 접속 주소. Supabase 풀러의 세션 모드(포트 5432)로 붙는다. 배포 때 VM env/api.env에 쓴다. postgres·service_role 계정의 주소를 넣지 않는다"
+  note: "API 서버 전용 DB 역할(api_server)의 Postgres 접속 주소. Supabase 풀러의 세션 모드(포트 5432)에 sslmode=verify-full로 붙는다(CA는 이미지에 들어 있다). 배포 때 VM env/api.env에 쓴다. postgres·service_role 계정의 주소를 넣지 않는다"
 
 - name: ORACLE_SSH_HOST
   kind: secret

@@ -6,7 +6,7 @@
 -- 비밀번호는 이 파일에 적지 않는다. 적용한 뒤 따로 넣는다.
 --   alter role api_server with password '<무작위 값>';
 -- 접속 주소(GitHub Secret DATABASE_URL)는 Supabase 풀러의 세션 모드를 쓴다.
---   postgresql://api_server.<project-ref>:<비밀번호>@aws-0-ap-northeast-2.pooler.supabase.com:5432/postgres
+--   postgresql://api_server.<project-ref>:<비밀번호>@aws-0-ap-northeast-2.pooler.supabase.com:5432/postgres?sslmode=verify-full
 --
 -- 되돌리기
 --   drop policy api_server_insert_click on memo.weekly_report_click;

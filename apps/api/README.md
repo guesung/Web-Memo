@@ -42,6 +42,9 @@ pnpm -F @web-memo/api test:e2e   # E2E 테스트 (test/**/*.e2e-spec.ts)
 - **전용 DB 역할(`api_server`)로 붙습니다.** `postgres`·`service_role`과 달리 RLS를 건너뛰지 못하고,
   마이그레이션이 허용한 테이블·동작만 할 수 있습니다. 새 테이블을 쓰려면 그 역할에 권한과 정책을 주는 마이그레이션이 필요합니다.
   반대로 말하면, 이 서버에서는 "누구의 데이터인가"를 RLS가 아니라 서버 코드가 확인해야 합니다(지금은 메일의 서명 토큰).
+- **운영 접속은 TLS로 서버 신원까지 확인합니다**(`sslmode=verify-full`). Supabase 풀러의 인증서는 Supabase 자체 CA가
+  서명해서, 공개된 루트 CA(`certs/supabase-prod-ca-2021.crt`, 2031-04 만료)를 이미지에 넣고 `NODE_EXTRA_CA_CERTS`로 알려 줍니다.
+  `sslmode`를 빼면 평문으로 붙고, `require`만 쓰면 이 CA 없이는 검증에 실패합니다. 로컬 Postgres에는 `sslmode` 없이 붙습니다.
 - **서버가 뜰 때 DB에 미리 붙지 않습니다.** 연결은 첫 쿼리 때 풀이 만듭니다. DB가 잠깐 죽어 있어도 서버는 뜨고,
   DB를 쓰지 않는 요청(Slack 웹훅·`/health`)은 그대로 처리합니다.
 - **테스트는 `PrismaService`를 가짜로 바꿉니다.** 실제 쿼리는 로컬 Postgres 컨테이너로 따로 확인했습니다.

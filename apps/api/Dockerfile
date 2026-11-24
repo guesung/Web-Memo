@@ -42,14 +42,18 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     && rm -rf prisma@* @prisma+studio-core@* @prisma+dev@* @electric-sql+pglite* typescript@* effect@*
 
 FROM node:${NODE_VERSION}-slim AS runner
+# NODE_EXTRA_CA_CERTS: Supabase 풀러의 TLS 인증서는 Supabase 자체 CA가 서명해 Node 기본 신뢰 목록으로는 검증되지 않습니다.
+# 이 CA를 더해 DATABASE_URL의 sslmode=verify-full(암호화 + 서버 신원 확인)이 통과하게 합니다.
 ENV NODE_ENV=production \
-    PORT=4000
+    PORT=4000 \
+    NODE_EXTRA_CA_CERTS=/app/apps/api/certs/supabase-prod-ca-2021.crt
 WORKDIR /app
 
 COPY --from=prod-deps --chown=node:node /repo/node_modules ./node_modules
 COPY --from=prod-deps --chown=node:node /repo/apps/api/node_modules ./apps/api/node_modules
 COPY --from=builder --chown=node:node /repo/apps/api/package.json ./apps/api/package.json
 COPY --from=builder --chown=node:node /repo/apps/api/dist ./apps/api/dist
+COPY --from=builder --chown=node:node /repo/apps/api/certs ./apps/api/certs
 
 WORKDIR /app/apps/api
 USER node

@@ -1,6 +1,9 @@
 import path from "node:path";
 
 export const LANGUAGE = "en";
+
+/** 테스트가 띄우는 웹 서버 주소. playwright.config의 baseURL과 목 쿠키가 같은 값을 써야 한다. */
+export const WEB_BASE_URL = "http://localhost:3000";
 export const EXAMPLE_URL = "https://example.com";
 
 /**

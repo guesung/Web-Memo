@@ -35,7 +35,11 @@ RUN pnpm -F @web-memo/api build
 FROM base AS prod-deps
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     rm -rf node_modules \
-    && pnpm install --frozen-lockfile --prod --ignore-scripts --filter "@web-memo/api"
+    && pnpm install --frozen-lockfile --prod --ignore-scripts --filter "@web-memo/api" \
+    # @prisma/client의 peer로 Prisma CLI(prisma)가 딸려 오고, CLI가 Studio·내장 Postgres(pglite)·TypeScript까지 끌어옵니다.
+    # 실행에는 생성된 클라이언트(dist/generated)와 @prisma/client 런타임만 쓰므로 CLI 쪽은 지웁니다(약 190MB).
+    && cd node_modules/.pnpm \
+    && rm -rf prisma@* @prisma+studio-core@* @prisma+dev@* @electric-sql+pglite* typescript@* effect@*
 
 FROM node:${NODE_VERSION}-slim AS runner
 ENV NODE_ENV=production \

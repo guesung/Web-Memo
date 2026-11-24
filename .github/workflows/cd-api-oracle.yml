@@ -74,8 +74,10 @@ jobs:
           WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
           SLACK_FEEDBACK_WEBHOOK_URL: ${{ secrets.SLACK_FEEDBACK_WEBHOOK_URL }}
           SLACK_SIGNUP_WEBHOOK_URL: ${{ secrets.SLACK_SIGNUP_WEBHOOK_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          UNSUBSCRIBE_SECRET: ${{ secrets.UNSUBSCRIBE_SECRET }}
         run: |
-          for name in WEBHOOK_SECRET SLACK_FEEDBACK_WEBHOOK_URL SLACK_SIGNUP_WEBHOOK_URL; do
+          for name in WEBHOOK_SECRET SLACK_FEEDBACK_WEBHOOK_URL SLACK_SIGNUP_WEBHOOK_URL DATABASE_URL UNSUBSCRIBE_SECRET; do
             if [ -z "${!name}" ]; then
               echo "::error::GitHub Secret $name 이 비어 있습니다"
               exit 1
@@ -86,6 +88,8 @@ jobs:
             echo "WEBHOOK_SECRET=$WEBHOOK_SECRET"
             echo "SLACK_FEEDBACK_WEBHOOK_URL=$SLACK_FEEDBACK_WEBHOOK_URL"
             echo "SLACK_SIGNUP_WEBHOOK_URL=$SLACK_SIGNUP_WEBHOOK_URL"
+            echo "DATABASE_URL=$DATABASE_URL"
+            echo "UNSUBSCRIBE_SECRET=$UNSUBSCRIBE_SECRET"
             echo "WEB_URL=$API_WEB_URL"
           } > "$RUNNER_TEMP/api.env"
 

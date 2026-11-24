@@ -143,7 +143,7 @@ master 푸시(apps/api 또는 VM 구성 변경) → cd-api-oracle.yml
   API 배포는 이미지와 `env/api.env`만 바꿉니다(master의 구성을 보내면 develop의 구성을 덮어씁니다). 그래서 API 쪽 구성
   (compose의 `api` 서비스, `deploy-api.sh`, Caddy의 API 사이트)을 고칠 때는 develop에 먼저 머지해 VM에 반영한 뒤 master에 넣습니다.
   두 워크플로는 같은 concurrency 그룹(`cd-web-oracle-staging`)으로 줄 섭니다.
-- **환경 변수는 GitHub Secrets가 원천입니다**(`WEBHOOK_SECRET`·`SLACK_FEEDBACK_WEBHOOK_URL`·`SLACK_SIGNUP_WEBHOOK_URL`).
+- **환경 변수는 GitHub Secrets가 원천입니다**(`WEBHOOK_SECRET`·`SLACK_FEEDBACK_WEBHOOK_URL`·`SLACK_SIGNUP_WEBHOOK_URL`·`DATABASE_URL`·`UNSUBSCRIBE_SECRET`).
   하나라도 비면 배포가 env 작성 단계에서 멈춥니다. API는 필수 값이 없으면 시작하지 않습니다.
 - **Access를 걸지 않습니다.** Supabase가 부르는 서버라 사람 로그인이 없습니다. 호출자는 앱이 `x-webhook-secret` 헤더로 확인하고,
   Caddy는 웹과 같이 Cloudflare를 거치지 않은 연결을 403으로 막습니다.

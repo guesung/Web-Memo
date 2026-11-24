@@ -1,2 +1,4 @@
 dist
 *.tsbuildinfo
+# prisma generate가 만든다(prisma/schema.prisma가 원본)
+src/generated

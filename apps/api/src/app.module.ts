@@ -6,6 +6,7 @@ import { FeedbackModule } from "./feedback/feedback.module.js";
 import { HealthModule } from "./health/health.module.js";
 import { SignupModule } from "./signup/signup.module.js";
 import { SlackDeliveryFilter } from "./slack/slack-delivery.filter.js";
+import { WeeklyReportModule } from "./weekly-report/weekly-report.module.js";
 
 @Module({
 	imports: [
@@ -13,6 +14,7 @@ import { SlackDeliveryFilter } from "./slack/slack-delivery.filter.js";
 		HealthModule,
 		FeedbackModule,
 		SignupModule,
+		WeeklyReportModule,
 	],
 	providers: [
 		// main.ts의 app.useGlobalPipes 대신 여기 등록하면 테스트 모듈(Test.createTestingModule)에도 똑같이 적용된다

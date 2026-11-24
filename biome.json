@@ -24,6 +24,7 @@
 			"!e2e/store-screenshots/.tmp/**",
 			"!e2e/store-screenshots/assets/**",
 			"!**/dist/**",
+			"!apps/api/src/generated/**",
 			"!**/node_modules/**",
 			"!**/.next/**",
 			"!**/.vercel/**",

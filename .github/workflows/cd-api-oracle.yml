@@ -1,8 +1,10 @@
 name: CD - API (Oracle Cloud)
 
 # API 서버(apps/api)를 웹과 같은 Oracle Cloud VM(infra/oracle)에 컨테이너로 배포합니다(노션 DB-1337 Phase 1-B).
-# 웹 Oracle 배포(cd-web-oracle.yml)와 같은 VM 구성(compose·Caddy·스크립트)을 보내므로, 둘 다 develop 기준으로 돌고
-# 같은 concurrency 그룹으로 줄 세워 서로 덮어쓰지 않게 합니다.
+# 운영 알림(피드백·가입)이 이 서버를 거치므로 ci.yml이 master 푸시에서만 부릅니다.
+# VM 구성(compose·Caddy·스크립트)은 보내지 않습니다. 웹 Oracle 배포(cd-web-oracle.yml)가 develop 기준으로 같은 구성을
+# rsync --delete로 통째로 보내므로, 여기서 master의 구성을 보내면 서로 덮어씁니다. 구성 변경은 develop 머지로 VM에 반영하고,
+# 이 워크플로는 VM에 이미 있는 scripts/deploy-api.sh를 실행합니다. 같은 VM을 만지므로 concurrency 그룹은 웹과 같이 씁니다.
 #
 # 흐름: arm64 이미지 빌드 → GHCR push → GitHub Secrets로 env/api.env 작성 → VM에서 deploy-api.sh(교체 → /health 확인)
 
@@ -72,8 +74,10 @@ jobs:
           WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
           SLACK_FEEDBACK_WEBHOOK_URL: ${{ secrets.SLACK_FEEDBACK_WEBHOOK_URL }}
           SLACK_SIGNUP_WEBHOOK_URL: ${{ secrets.SLACK_SIGNUP_WEBHOOK_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          UNSUBSCRIBE_SECRET: ${{ secrets.UNSUBSCRIBE_SECRET }}
         run: |
-          for name in WEBHOOK_SECRET SLACK_FEEDBACK_WEBHOOK_URL SLACK_SIGNUP_WEBHOOK_URL; do
+          for name in WEBHOOK_SECRET SLACK_FEEDBACK_WEBHOOK_URL SLACK_SIGNUP_WEBHOOK_URL DATABASE_URL UNSUBSCRIBE_SECRET; do
             if [ -z "${!name}" ]; then
               echo "::error::GitHub Secret $name 이 비어 있습니다"
               exit 1
@@ -84,6 +88,8 @@ jobs:
             echo "WEBHOOK_SECRET=$WEBHOOK_SECRET"
             echo "SLACK_FEEDBACK_WEBHOOK_URL=$SLACK_FEEDBACK_WEBHOOK_URL"
             echo "SLACK_SIGNUP_WEBHOOK_URL=$SLACK_SIGNUP_WEBHOOK_URL"
+            echo "DATABASE_URL=$DATABASE_URL"
+            echo "UNSUBSCRIBE_SECRET=$UNSUBSCRIBE_SECRET"
             echo "WEB_URL=$API_WEB_URL"
           } > "$RUNNER_TEMP/api.env"
 
@@ -94,11 +100,9 @@ jobs:
           printf '%s\n' "${{ secrets.ORACLE_SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
 
-      # 웹 배포와 같은 VM 구성을 보냅니다. VM 상태(.env·env/·state/)는 덮어쓰지 않고 env/api.env만 교체합니다.
-      - name: Ship config and env
-        run: |
-          rsync -az --delete infra/oracle/compose.yaml infra/oracle/caddy infra/oracle/alloy infra/oracle/scripts "$REMOTE:/opt/webmemo/"
-          rsync -az --chmod=F600 "$RUNNER_TEMP/api.env" "$REMOTE:/opt/webmemo/env/api.env"
+      # env/api.env만 교체합니다. VM 구성은 develop의 웹 Oracle 배포가 보낸 것을 그대로 씁니다(머리 주석 참고).
+      - name: Ship env
+        run: rsync -az --chmod=F600 "$RUNNER_TEMP/api.env" "$REMOTE:/opt/webmemo/env/api.env"
 
       # GHCR 패키지가 비공개라 VM이 받을 수 있도록 이 실행의 토큰으로 잠깐 로그인했다 나옵니다.
       - name: Deploy

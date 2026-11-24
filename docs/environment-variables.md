@@ -46,7 +46,7 @@
 
 <!-- env-manifest:start -->
 
-### GitHub Secrets (61개)
+### GitHub Secrets (63개)
 
 | 이름 | 없으면 생기는 일 | 읽는 곳 |
 | --- | --- | --- |
@@ -59,6 +59,7 @@
 | `CLOUDFLARE_ACCOUNT_ID` (선택) | Access 앱을 적용하지 못한다 | `.github/workflows/cd-terraform.yml` |
 | `CLOUDFLARE_API_TOKEN` (선택) | staging DNS·SSL·Access를 Terraform으로 적용하지 못한다 | `.github/workflows/cd-terraform.yml` |
 | `CLOUDFLARE_ZONE_ID` (선택) | staging DNS·SSL 설정을 적용하지 못한다 | `.github/workflows/cd-terraform.yml` |
+| `DATABASE_URL` | API 배포가 env 작성 단계에서 멈춘다. VM에 값이 없으면 API가 시작 검증에서 죽는다 | `apps/api/src/config/env.validation.ts`, `apps/api/src/prisma/prisma.service.ts`, `apps/api/prisma.config.ts`, `.github/workflows/cd-api-oracle.yml` |
 | `EXPO_ANDROID_SERVICE_ACCOUNT_JSON` | master 릴리스(release.yml)의 Google Play 내부 테스트 제출과 현황 조회가 실패한다 | `.github/workflows/cd-app.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `EXPO_ASC_API_KEY_P8` | TestFlight 제출과 App Store 현황 조회가 실패한다 | `.github/workflows/cd-app.yml`, `.github/workflows/ci.yml`, `.github/workflows/versions.yml` |
 | `EXPO_TOKEN` | EAS 로그인이 실패해 앱 빌드가 멈춘다 | `.github/workflows/cd-app.yml` |
@@ -109,6 +110,7 @@
 | `TF_STATE_SECRET_KEY` (선택) | Terraform state 저장소 인증에 실패한다 | `.github/workflows/cd-terraform.yml` |
 | `TURBO_TEAM` | Turborepo 원격 캐시 팀을 못 찾아 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/chore-ga-events.yml` |
 | `TURBO_TOKEN` | Turborepo 원격 캐시를 못 써 CI가 느려진다 | `.github/workflows/ci.yml`, `.github/workflows/cd-extension.yml`, `.github/workflows/chore-cleanup-unused.yml`, `.github/workflows/e2e.yml`, `.github/workflows/chore-e2e-coverage.yml`, `.github/workflows/chore-ga-events.yml` |
+| `UNSUBSCRIBE_SECRET` | 주간 메일의 수신 거부·클릭 기록 토큰을 서명하지 못해 report·resurface 발송이 시작 전에 실패하고, 수신 거부·클릭 링크가 모두 홈으로만 간다 | `packages/supabase-edge-functions/supabase/functions/_shared/reportToken.ts`, `apps/api/src/config/env.validation.ts`, `apps/api/src/weekly-report/weekly-report.service.ts`, `.github/workflows/cd-api-oracle.yml` |
 | `VERCEL_TOKEN` | vercel pull, build, deploy, alias가 인증에 실패해 웹 배포가 멈추고, e2e가 웹 서버 환경 변수를 받지 못한다 | `.github/workflows/cd-web.yml`, `.github/workflows/e2e.yml`, `.github/workflows/audit-env-registry.yml`, `.github/workflows/chore-e2e-coverage.yml` |
 | `WEBHOOK_SECRET` | API 배포가 env 작성 단계에서 멈춘다. VM에 값이 없으면 API가 시작 검증에서 죽는다 | `apps/api/src/config/env.validation.ts`, `apps/api/src/webhook/webhook-secret.guard.ts`, `.github/workflows/cd-api-oracle.yml` |
 
@@ -145,7 +147,7 @@
 | `CRON_SECRET` | DB 트리거·pg_cron이 부르는 함수의 호출자 확인이 실패해 가입 메일·아티클 리마인더가 401로 끝난다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/daily-article-reminder/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
 | `RESEND_API_KEY` | 가입 안내 메일이 발송되지 않는다 | `packages/supabase-edge-functions/supabase/functions/send-welcome-email/index.ts`, `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
 | `RESURFACE_ENABLED` (선택) | 정확히 true일 때만 크론이 다시 꺼내기(resurface) 메일을 보낸다. 없거나 다른 값이면 크론 resurface는 건너뛰고, resurfaceLimit를 준 수동 호출만 보낸다 | `packages/supabase-edge-functions/supabase/functions/weekly-memo-report/index.ts` |
-| `UNSUBSCRIBE_SECRET` | 주간 메일의 수신 거부·클릭 기록 토큰을 서명하지 못해 report·resurface 발송이 시작 전에 실패하고, 수신 거부·클릭 링크가 모두 홈으로만 간다 | `packages/supabase-edge-functions/supabase/functions/_shared/reportToken.ts` |
+| `UNSUBSCRIBE_SECRET` | 주간 메일의 수신 거부·클릭 기록 토큰을 서명하지 못해 report·resurface 발송이 시작 전에 실패하고, 수신 거부·클릭 링크가 모두 홈으로만 간다 | `packages/supabase-edge-functions/supabase/functions/_shared/reportToken.ts`, `apps/api/src/config/env.validation.ts`, `apps/api/src/weekly-report/weekly-report.service.ts`, `.github/workflows/cd-api-oracle.yml` |
 | `WEB_URL` | envpkg는 없으면 모듈 로드 즉시 실패하고, Supabase는 없으면 운영 주소(https://www.webmemo.xyz)를 쓴다 | `packages/env/src/config.ts`, `packages/supabase-edge-functions/supabase/functions/_shared/webUrl.ts` |
 
 ### `packages/env/.env.{환경}` (1개)

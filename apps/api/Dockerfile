@@ -35,17 +35,25 @@ RUN pnpm -F @web-memo/api build
 FROM base AS prod-deps
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     rm -rf node_modules \
-    && pnpm install --frozen-lockfile --prod --ignore-scripts --filter "@web-memo/api"
+    && pnpm install --frozen-lockfile --prod --ignore-scripts --filter "@web-memo/api" \
+    # @prisma/client의 peer로 Prisma CLI(prisma)가 딸려 오고, CLI가 Studio·내장 Postgres(pglite)·TypeScript까지 끌어옵니다.
+    # 실행에는 생성된 클라이언트(dist/generated)와 @prisma/client 런타임만 쓰므로 CLI 쪽은 지웁니다(약 190MB).
+    && cd node_modules/.pnpm \
+    && rm -rf prisma@* @prisma+studio-core@* @prisma+dev@* @electric-sql+pglite* typescript@* effect@*
 
 FROM node:${NODE_VERSION}-slim AS runner
+# NODE_EXTRA_CA_CERTS: Supabase 풀러의 TLS 인증서는 Supabase 자체 CA가 서명해 Node 기본 신뢰 목록으로는 검증되지 않습니다.
+# 이 CA를 더해 DATABASE_URL의 sslmode=verify-full(암호화 + 서버 신원 확인)이 통과하게 합니다.
 ENV NODE_ENV=production \
-    PORT=4000
+    PORT=4000 \
+    NODE_EXTRA_CA_CERTS=/app/apps/api/certs/supabase-prod-ca-2021.crt
 WORKDIR /app
 
 COPY --from=prod-deps --chown=node:node /repo/node_modules ./node_modules
 COPY --from=prod-deps --chown=node:node /repo/apps/api/node_modules ./apps/api/node_modules
 COPY --from=builder --chown=node:node /repo/apps/api/package.json ./apps/api/package.json
 COPY --from=builder --chown=node:node /repo/apps/api/dist ./apps/api/dist
+COPY --from=builder --chown=node:node /repo/apps/api/certs ./apps/api/certs
 
 WORKDIR /app/apps/api
 USER node

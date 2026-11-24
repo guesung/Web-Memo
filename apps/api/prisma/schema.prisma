@@ -1,0 +1,39 @@
+// API 서버가 읽고 쓰는 테이블만 적는다. 운영 DB(Supabase Postgres)에 이미 있는 테이블이다.
+//
+// 테이블을 만들거나 바꾸는 일은 여기서 하지 않는다. 스키마 변경의 원본은 지금처럼
+// packages/supabase-edge-functions/supabase/migrations의 SQL 파일이고, 이 파일은 그 결과를 옮겨 적은 것이다.
+// 그래서 `prisma migrate`·`prisma db push`는 쓰지 않는다. 컬럼이 바뀌면 SQL 마이그레이션과 이 파일을 함께 고친다.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["memo"]
+}
+
+/// 주간 리포트 메일 링크 클릭 기록. 한 번 누를 때마다 한 행이 쌓인다.
+model WeeklyReportClick {
+  id        BigInt   @id @default(autoincrement())
+  userId    String   @map("user_id") @db.Uuid
+  weekStart DateTime @map("week_start") @db.Date
+  kind      String
+  position  String
+  clickedAt DateTime @default(now()) @map("clicked_at") @db.Timestamptz
+
+  @@map("weekly_report_click")
+  @@schema("memo")
+}
+
+/// 사용자 설정. 사용자당 한 행(user_id unique). API는 주간 리포트 수신 여부만 바꾼다.
+model Setting {
+  id                  BigInt  @id @default(autoincrement())
+  userId              String? @unique @map("user_id") @db.Uuid
+  weeklyReportEnabled Boolean @default(true) @map("weekly_report_enabled")
+
+  @@map("setting")
+  @@schema("memo")
+}

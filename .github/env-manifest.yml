@@ -64,6 +64,13 @@
   impact: "API 배포가 env 작성 단계에서 멈춘다. VM에 값이 없으면 API가 시작 검증에서 죽는다"
   note: "Supabase(DB 웹훅·가입 트리거)가 API를 부를 때 x-webhook-secret 헤더에 싣는 공유 비밀. 32자 이상 무작위 값. 웹훅 전환(Phase 1-C) 때 Supabase 쪽에도 같은 값을 넣고, 바꿀 때는 양쪽을 함께 바꾼다. CRON_SECRET·BLOG_CATALOG_INGEST_SECRET을 재사용하지 않는다"
 
+- name: DATABASE_URL
+  kind: secret
+  stores: [github]
+  consumers: [apps/api/src/config/env.validation.ts, apps/api/src/prisma/prisma.service.ts, apps/api/prisma.config.ts, .github/workflows/cd-api-oracle.yml]
+  impact: "API 배포가 env 작성 단계에서 멈춘다. VM에 값이 없으면 API가 시작 검증에서 죽는다"
+  note: "API 서버 전용 DB 역할(api_server)의 Postgres 접속 주소. Supabase 풀러의 세션 모드(포트 5432)에 sslmode=verify-full로 붙는다(CA는 이미지에 들어 있다). 배포 때 VM env/api.env에 쓴다. postgres·service_role 계정의 주소를 넣지 않는다"
+
 - name: ORACLE_SSH_HOST
   kind: secret
   stores: [github]
@@ -605,10 +612,10 @@
 
 - name: UNSUBSCRIBE_SECRET
   kind: secret
-  stores: [supabase]
-  consumers: [packages/supabase-edge-functions/supabase/functions/_shared/reportToken.ts]
+  stores: [supabase, github]
+  consumers: [packages/supabase-edge-functions/supabase/functions/_shared/reportToken.ts, apps/api/src/config/env.validation.ts, apps/api/src/weekly-report/weekly-report.service.ts, .github/workflows/cd-api-oracle.yml]
   impact: "주간 메일의 수신 거부·클릭 기록 토큰을 서명하지 못해 report·resurface 발송이 시작 전에 실패하고, 수신 거부·클릭 링크가 모두 홈으로만 간다"
-  note: "32자 이상 무작위 값. 바꾸면 이미 보낸 메일의 수신 거부·클릭 링크가 무효가 된다"
+  note: "32자 이상 무작위 값. 바꾸면 이미 보낸 메일의 수신 거부·클릭 링크가 무효가 된다. 토큰을 만드는 Edge Function(Supabase secret)과 검증하는 API 서버(GitHub Secret → VM env/api.env)가 같은 값을 써야 한다"
 
 - name: RESURFACE_ENABLED
   kind: config

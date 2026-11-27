@@ -17,7 +17,6 @@ import {
 	isNetworkError,
 } from "@web-memo/shared/utils";
 import type { PropsWithChildren } from "react";
-import { useState } from "react";
 
 interface QueryProviderProps extends PropsWithChildren, LanguageType {}
 
@@ -33,94 +32,106 @@ function notifyExtension(request: () => Promise<void>) {
 	}
 }
 
+function makeQueryClient() {
+	return new QueryClient({
+		// defaultOptions.mutations는 개별 useMutation 옵션에 덮어써진다.
+		// 메모·카테고리 뮤테이션은 대부분 자체 onSuccess를 갖고 있어
+		// 확장 프로그램 동기화가 누락되므로 MutationCache에 등록한다.
+		// Supabase는 실패를 던지지 않고 `{ error }` 값으로 돌려줘 React Query가 성공으로 본다.
+		// 화면 동작은 그대로 두고, 값으로 담긴 오류만 Sentry에 보고한다.
+		// 조회의 네트워크 오류는 사용자 쪽 연결 끊김이라 고칠 것이 없고, 끊길 때마다
+		// 쿼리 키별 이슈가 쌓이며 breadcrumb에 방문 URL이 실려 보고하지 않는다.
+		queryCache: new QueryCache({
+			onError: (error, query) => {
+				if (
+					isAbortError(error) ||
+					isLoggedOutError(error) ||
+					isNetworkError(error)
+				) {
+					return;
+				}
+
+				reportWebError({
+					error,
+					feature: "web",
+					operation: String(query.queryKey[0]),
+					stage: "query",
+					groupByMessage: true,
+				});
+			},
+			onSuccess: (data, query) => {
+				const resultError = getResultError(data);
+
+				if (!resultError || isNetworkError(resultError)) {
+					return;
+				}
+
+				reportWebError({
+					error: resultError,
+					feature: "web",
+					operation: String(query.queryKey[0]),
+					stage: "query-result",
+					groupByMessage: true,
+				});
+			},
+		}),
+		mutationCache: new MutationCache({
+			onSuccess: (data, _variables, _context, mutation) => {
+				const resultError = getResultError(data);
+				const mutationMeta = mutation?.options?.meta;
+
+				if (resultError) {
+					reportWebError({
+						error: resultError,
+						feature: mutationMeta?.feature ?? "web",
+						operation: mutationMeta?.operation ?? "mutation",
+						stage: mutationMeta?.stage ?? "unknown",
+						groupByMessage: true,
+					});
+				}
+
+				if (
+					!resultError &&
+					mutationMeta?.feature === "setting" &&
+					mutationMeta.operation === "upsert"
+				) {
+					notifyExtension(bridge.request.SETTING_UPDATED_FROM_WEB);
+				}
+
+				notifyExtension(bridge.request.REFETCH_THE_MEMO_LIST_FROM_WEB);
+			},
+			onError: (error, _variables, _context, mutation) => {
+				if (isAbortError(error)) {
+					return;
+				}
+
+				const mutationMeta = mutation?.options?.meta;
+
+				reportWebError({
+					error,
+					feature: mutationMeta?.feature ?? "web",
+					operation: mutationMeta?.operation ?? "mutation",
+					stage: mutationMeta?.stage ?? "unknown",
+					groupByMessage: true,
+				});
+			},
+		}),
+	});
+}
+
+let browserQueryClient: QueryClient | undefined;
+
+function getQueryClient() {
+	if (typeof window === "undefined") {
+		return makeQueryClient();
+	}
+
+	browserQueryClient ??= makeQueryClient();
+	return browserQueryClient;
+}
+
 export default function QueryProvider({ children }: QueryProviderProps) {
-	const [queryClient] = useState(
-		() =>
-			new QueryClient({
-				// defaultOptions.mutations는 개별 useMutation 옵션에 덮어써진다.
-				// 메모·카테고리 뮤테이션은 대부분 자체 onSuccess를 갖고 있어
-				// 확장 프로그램 동기화가 누락되므로 MutationCache에 등록한다.
-				// Supabase는 실패를 던지지 않고 `{ error }` 값으로 돌려줘 React Query가 성공으로 본다.
-				// 화면 동작은 그대로 두고, 값으로 담긴 오류만 Sentry에 보고한다.
-				// 조회의 네트워크 오류는 사용자 쪽 연결 끊김이라 고칠 것이 없고, 끊길 때마다
-				// 쿼리 키별 이슈가 쌓이며 breadcrumb에 방문 URL이 실려 보고하지 않는다.
-				queryCache: new QueryCache({
-					onError: (error, query) => {
-						if (
-							isAbortError(error) ||
-							isLoggedOutError(error) ||
-							isNetworkError(error)
-						) {
-							return;
-						}
-
-						reportWebError({
-							error,
-							feature: "web",
-							operation: String(query.queryKey[0]),
-							stage: "query",
-							groupByMessage: true,
-						});
-					},
-					onSuccess: (data, query) => {
-						const resultError = getResultError(data);
-
-						if (!resultError || isNetworkError(resultError)) {
-							return;
-						}
-
-						reportWebError({
-							error: resultError,
-							feature: "web",
-							operation: String(query.queryKey[0]),
-							stage: "query-result",
-							groupByMessage: true,
-						});
-					},
-				}),
-				mutationCache: new MutationCache({
-					onSuccess: (data, _variables, _context, mutation) => {
-						const resultError = getResultError(data);
-						const mutationMeta = mutation?.options?.meta;
-
-						if (resultError) {
-							reportWebError({
-								error: resultError,
-								feature: mutationMeta?.feature ?? "web",
-								operation: mutationMeta?.operation ?? "mutation",
-								stage: mutationMeta?.stage ?? "unknown",
-								groupByMessage: true,
-							});
-						}
-
-						if (
-							!resultError &&
-							mutationMeta?.feature === "setting" &&
-							mutationMeta.operation === "upsert"
-						) {
-							notifyExtension(bridge.request.SETTING_UPDATED_FROM_WEB);
-						}
-
-						notifyExtension(bridge.request.REFETCH_THE_MEMO_LIST_FROM_WEB);
-					},
-					onError: (error, _variables, _context, mutation) => {
-						if (isAbortError(error)) {
-							return;
-						}
-
-						const mutationMeta = mutation?.options?.meta;
-
-						reportWebError({
-							error,
-							feature: mutationMeta?.feature ?? "web",
-							operation: mutationMeta?.operation ?? "mutation",
-							stage: mutationMeta?.stage ?? "unknown",
-							groupByMessage: true,
-						});
-					},
-				}),
-			}),
-	);
+	const queryClient = getQueryClient();
 
 	return (
 		<QueryClientProvider client={queryClient}>
